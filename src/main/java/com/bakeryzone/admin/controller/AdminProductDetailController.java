@@ -15,7 +15,7 @@ import java.util.UUID;
 
 /**
  * Controller Servlet for handling the admin product detail display and CRUD saving.
- * Maps to /admin/product-detail.
+ * Refactored to match JavaBean model structure and MySQL schema updates.
  */
 @WebServlet(name = "AdminProductDetailController", urlPatterns = {"/admin/product-detail"})
 public class AdminProductDetailController extends HttpServlet {
@@ -30,35 +30,13 @@ public class AdminProductDetailController extends HttpServlet {
         String id = request.getParameter("id");
         Product product = null;
         
-        if ("new".equalsIgnoreCase(id)) {
-            // Provide empty template for "Add New Cake"
-            product = new Product(
-                "new", "", "", "Chocolate Cakes", 0.0, 1.0, 0, "Active", false,
-                "", "Chocolate Sponge", "Chocolate Ganache", "Chocolate Shavings & Cherry", "Cake",
-                "Egg, Milk, Wheat, Soy", "1 kg", "3 Days", "Keep refrigerated. Best served chilled.",
-                "", "", "Same Day"
-            );
-        } else {
-            // Retrieve all products to search from
-            List<Product> products = productDAO.getAllProductsAdmin();
-            if (id != null && !id.trim().isEmpty()) {
-                for (Product p : products) {
-                    if (p.id().equalsIgnoreCase(id) || p.sku().equalsIgnoreCase(id)) {
-                        product = p;
-                        break;
-                    }
-                }
-            }
+        if (id != null && !"new".equalsIgnoreCase(id) && !id.trim().isEmpty()) {
+            product = productDAO.getProductById(id);
         }
         
         // Fallback default product if ID is invalid or not found
         if (product == null) {
-            product = new Product(
-                "new", "", "", "Chocolate Cakes", 0.0, 1.0, 0, "Active", false,
-                "", "Chocolate Sponge", "Chocolate Ganache", "Chocolate Shavings & Cherry", "Cake",
-                "Egg, Milk, Wheat, Soy", "1 kg", "3 Days", "Keep refrigerated. Best served chilled.",
-                "", "", "Same Day"
-            );
+            product = new Product("new", "", "", "Chocolate Cakes", 0.0, 1.0, "Active", false, "", "", "", "Cake");
         }
         
         // Expose product to the JSP detail view
@@ -80,38 +58,30 @@ public class AdminProductDetailController extends HttpServlet {
         
         double price = 0.0;
         try {
-            price = Double.parseDouble(request.getParameter("price"));
-        } catch (NumberFormatException e) {}
-        
-        int stock = 0;
-        try {
-            stock = Integer.parseInt(request.getParameter("stock"));
-        } catch (NumberFormatException e) {}
+            String priceParam = request.getParameter("price");
+            if (priceParam != null && !priceParam.trim().isEmpty()) {
+                price = Double.parseDouble(priceParam);
+            }
+        } catch (NumberFormatException | NullPointerException e) {}
         
         double laborHours = 1.0;
         try {
-            laborHours = Double.parseDouble(request.getParameter("laborHours"));
-        } catch (NumberFormatException e) {}
+            String laborHoursParam = request.getParameter("laborHours");
+            if (laborHoursParam != null && !laborHoursParam.trim().isEmpty()) {
+                laborHours = Double.parseDouble(laborHoursParam);
+            }
+        } catch (NumberFormatException | NullPointerException e) {}
         
-        String availability = request.getParameter("availability");
+        String imageUrl = request.getParameter("imageUrl");
         String status = request.getParameter("status");
         
         // Checkboxes / Switches are only sent if checked
-        boolean featured = request.getParameter("featured") != null;
-        
-        String spongeFlavor = request.getParameter("spongeFlavor");
-        String frostingFlavor = request.getParameter("frostingFlavor");
-        String toppingChoice = request.getParameter("toppingChoice");
-        String allergens = request.getParameter("allergens");
-        String weightSize = request.getParameter("weightSize");
+        boolean isFeatured = request.getParameter("isFeatured") != null && "true".equalsIgnoreCase(request.getParameter("isFeatured"));
         
         String shortDescription = request.getParameter("shortDescription");
         String fullDescription = request.getParameter("fullDescription");
         
-        String shelfLife = request.getParameter("shelfLife");
-        String storageInstructions = request.getParameter("storageInstructions");
-        
-        // 2. Adjust ID & type for new entries
+        // 2. Adjust ID, SKU, and Type
         if (id == null || id.trim().isEmpty() || "new".equalsIgnoreCase(id)) {
             id = "CZ-PROD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         }
@@ -120,29 +90,20 @@ public class AdminProductDetailController extends HttpServlet {
             sku = id;
         }
         
-        String type = "Cake";
-        if ("Accessories".equalsIgnoreCase(category)) {
-            type = "Accessory";
-            spongeFlavor = "";
-            frostingFlavor = "";
-            toppingChoice = "";
-        }
+        String productType = "Accessories".equalsIgnoreCase(category) ? "Accessory" : "Cake";
         
-        // Image URL mapping: default image from unsplash if custom image isn't provided
-        String imageUrl = request.getParameter("imageUrl");
         if (imageUrl == null || imageUrl.trim().isEmpty()) {
             if ("Accessories".equalsIgnoreCase(category)) {
-                imageUrl = "https://images.unsplash.com/photo-1549465220-1a8b9238cd48"; // default gift box
+                imageUrl = "https://images.unsplash.com/photo-1549465220-1a8b9238cd48"; 
             } else {
-                imageUrl = "https://images.unsplash.com/photo-1578985545062-69928b1d9587"; // default cake
+                imageUrl = "https://images.unsplash.com/photo-1578985545062-69928b1d9587"; 
             }
         }
         
-        // 3. Construct product record
+        // 3. Construct product JavaBean
         Product product = new Product(
-            id, name, sku, category, price, laborHours, stock, status, featured, imageUrl,
-            spongeFlavor, frostingFlavor, toppingChoice, type, allergens, weightSize,
-            shelfLife, storageInstructions, shortDescription, fullDescription, availability
+            id, name, sku, category, price, laborHours, status, isFeatured, imageUrl,
+            shortDescription, fullDescription, productType
         );
         
         // 4. Save via DAO

@@ -776,10 +776,26 @@
         <!-- Dashboard Container -->
         <div class="content-container">
             
+            <!-- Flash Message Alerts -->
+            <c:if test="${not empty sessionScope.errorMessage}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i> ${sessionScope.errorMessage}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <c:remove var="errorMessage" scope="session" />
+            </c:if>
+            <c:if test="${not empty sessionScope.successMessage}">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fa-solid fa-circle-check me-2"></i> ${sessionScope.successMessage}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <c:remove var="successMessage" scope="session" />
+            </c:if>
+            
             <!-- Page Title Area -->
             <div class="page-title-area">
                 <div>
-                    <h1 class="page-title">Product List <span class="level-badge">Level 3</span></h1>
+                    <h1 class="page-title">Product List </h1>
                     <p class="page-subtitle">Manage all cake products, inventory, and availability.</p>
                 </div>
                 <a href="${pageContext.request.contextPath}/admin/product-detail?id=new" class="btn btn-cz-primary">
@@ -833,7 +849,7 @@
                             <th>Product</th>
                             <th>Category</th>
                             <th>Price</th>
-                            <th>Stock</th>
+                            <th>Labor Hours</th>
                             <th>Featured</th>
                             <th>Status</th>
                             <th style="width: 150px;">Actions</th>
@@ -848,29 +864,29 @@
                                         <td>
                                             <div class="product-cell">
                                                 <c:choose>
-                                                    <c:when test="${not empty p.imageUrl()}">
-                                                        <img src="${p.imageUrl()}" alt="${p.name()}" class="product-thumb">
+                                                    <c:when test="${not empty p.imageUrl}">
+                                                        <img src="${p.imageUrl}" alt="${p.name}" class="product-thumb">
                                                     </c:when>
                                                     <c:otherwise>
                                                         <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=100" alt="Default Cake" class="product-thumb">
                                                     </c:otherwise>
                                                 </c:choose>
                                                 <div class="product-meta">
-                                                    <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id()}" class="product-name-link">${p.name()}</a>
-                                                    <span class="product-sku">SKU: ${p.sku()}</span>
-                                                    <span class="product-desc">${p.shortDescription()}</span>
+                                                    <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="product-name-link">${p.name}</a>
+                                                    <span class="product-sku">SKU: ${p.sku}</span>
+                                                    <span class="product-desc">${p.shortDescription}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>${p.category()}</td>
-                                        <td class="fw-bold" style="color: #444;">$${String.format("%.2f", p.price())}</td>
+                                        <td>${p.category}</td>
+                                        <td class="fw-bold" style="color: #444;">$${String.format("%.2f", p.price)}</td>
                                         <td>
-                                            <span class="stock-badge-in">${p.stock()}</span>
-                                            <span class="stock-subtext">In Stock</span>
+                                            <span class="stock-badge-in">${p.laborHours}</span>
+                                            <span class="stock-subtext">hours</span>
                                         </td>
                                         <td class="text-center">
                                             <c:choose>
-                                                <c:when test="${p.featured()}">
+                                                <c:when test="${p.featured}">
                                                     <i class="fa-solid fa-star featured-star active"></i>
                                                 </c:when>
                                                 <c:otherwise>
@@ -880,7 +896,7 @@
                                         </td>
                                         <td>
                                             <c:choose>
-                                                <c:when test="${p.status() eq 'Active'}">
+                                                <c:when test="${p.status eq 'Active'}">
                                                     <span class="status-badge-active">Active</span>
                                                 </c:when>
                                                 <c:otherwise>
@@ -890,13 +906,13 @@
                                         </td>
                                         <td>
                                             <div class="actions-cell">
-                                                <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id()}" class="btn-action-view" title="View Detail">
+                                                <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="btn-action-view" title="View Detail">
                                                     <i class="fa-regular fa-eye"></i>
                                                 </a>
-                                                <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id()}" class="btn-action-edit" title="Edit Product">
+                                                <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="btn-action-edit" title="Edit Product">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </a>
-                                                <button class="btn-action-delete" title="Delete" onclick="if(confirm('Are you sure you want to delete ${p.name()}?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=delete&id=${p.id()}'; }">
+                                                <button class="btn-action-delete" title="Delete" onclick="if(confirm('Are you sure you want to delete ${p.name}?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=delete&id=${p.id}'; }">
                                                     <i class="fa-regular fa-trash-can"></i>
                                                 </button>
                                             </div>

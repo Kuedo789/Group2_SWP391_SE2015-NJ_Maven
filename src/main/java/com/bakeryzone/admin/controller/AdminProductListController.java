@@ -32,7 +32,12 @@ public class AdminProductListController extends HttpServlet {
         if ("delete".equalsIgnoreCase(action)) {
             String deleteId = request.getParameter("id");
             if (deleteId != null && !deleteId.trim().isEmpty()) {
-                productDAO.deleteProduct(deleteId);
+                try {
+                    productDAO.deleteProduct(deleteId);
+                    request.getSession().setAttribute("successMessage", "Deleted product successfully!");
+                } catch (java.sql.SQLException e) {
+                    request.getSession().setAttribute("errorMessage", "Cannot delete this product because it is currently referenced by other database records (such as orders or customized recipes).");
+                }
             }
             response.sendRedirect(request.getContextPath() + "/admin/products");
             return;
@@ -108,28 +113,17 @@ public class AdminProductListController extends HttpServlet {
                     + "\"category\":\"%s\","
                     + "\"price\":%.2f,"
                     + "\"laborHours\":%.2f,"
-                    + "\"stock\":%d,"
                     + "\"status\":\"%s\","
                     + "\"featured\":%b,"
                     + "\"imageUrl\":\"%s\","
-                    + "\"spongeFlavor\":\"%s\","
-                    + "\"frostingFlavor\":\"%s\","
-                    + "\"toppingChoice\":\"%s\","
-                    + "\"type\":\"%s\","
-                    + "\"allergens\":\"%s\","
-                    + "\"weightSize\":\"%s\","
-                    + "\"shelfLife\":\"%s\","
-                    + "\"storageInstructions\":\"%s\","
                     + "\"shortDescription\":\"%s\","
                     + "\"fullDescription\":\"%s\","
-                    + "\"availability\":\"%s\""
+                    + "\"productType\":\"%s\""
                     + "}",
-                    p.id(), escapeJson(p.name()), escapeJson(p.sku()), escapeJson(p.category()), 
-                    p.price(), p.laborHours(), p.stock(), escapeJson(p.status()), p.featured(), 
-                    escapeJson(p.imageUrl()), escapeJson(p.spongeFlavor()), escapeJson(p.frostingFlavor()), 
-                    escapeJson(p.toppingChoice()), escapeJson(p.type()), escapeJson(p.allergens()), 
-                    escapeJson(p.weightSize()), escapeJson(p.shelfLife()), escapeJson(p.storageInstructions()), 
-                    escapeJson(p.shortDescription()), escapeJson(p.fullDescription()), escapeJson(p.availability())
+                    p.getId(), escapeJson(p.getName()), escapeJson(p.getSku()), escapeJson(p.getCategory()), 
+                    p.getPrice(), p.getLaborHours(), escapeJson(p.getStatus()), p.isFeatured(), 
+                    escapeJson(p.getImageUrl()), escapeJson(p.getShortDescription()), 
+                    escapeJson(p.getFullDescription()), escapeJson(p.getProductType())
                 ));
                 if (i < products.size() - 1) {
                     json.append(",");

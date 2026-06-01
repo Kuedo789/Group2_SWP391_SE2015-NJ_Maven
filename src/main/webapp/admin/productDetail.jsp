@@ -814,20 +814,21 @@
             
             <form action="${pageContext.request.contextPath}/admin/product-detail" method="post">
                 <!-- Keep track of the product ID -->
-                <input type="hidden" name="id" value="${product.id()}">
-                <input type="hidden" name="imageUrl" value="${product.imageUrl()}">
+                <input type="hidden" name="id" value="${product.id}">
+                <input type="hidden" name="imageUrl" value="${product.imageUrl}">
+                <input type="hidden" name="productType" value="${product.productType}">
 
                 <!-- Page Title Area -->
                 <div class="page-title-area">
                     <div>
-                        <h1 class="page-title">Product Detail <span class="level-badge">Level 4</span></h1>
-                        <p class="page-subtitle">View and manage cake product information, pricing, inventory, and recipe.</p>
+                        <h1 class="page-title">Product Detail </h1>
+                        <p class="page-subtitle">View and manage cake product information, pricing, and estimated labor hours.</p>
                     </div>
                     <div class="action-button-group">
                         <button type="button" class="btn-cz-outline" onclick="alert('Previewing cake layers structure...')"><i class="fa-regular fa-eye"></i> Preview</button>
                         <button type="button" class="btn-cz-outline" onclick="alert('Draft saved successfully!')">Save Draft</button>
                         <button type="submit" class="btn-cz-primary">Publish</button>
-                        <button type="button" class="btn-cz-danger" onclick="if(confirm('Are you sure you want to delete this product?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=delete&id=${product.id()}'; }">Delete</button>
+                        <button type="button" class="btn-cz-danger" onclick="if(confirm('Are you sure you want to delete this product?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=delete&id=${product.id}'; }">Delete</button>
                     </div>
                 </div>
 
@@ -842,8 +843,8 @@
                             
                             <div class="main-cover-wrapper">
                                 <c:choose>
-                                    <c:when test="${not empty product.imageUrl()}">
-                                        <img src="${product.imageUrl()}" alt="${product.name()}" class="main-cover-img">
+                                    <c:when test="${not empty product.imageUrl}">
+                                        <img src="${product.imageUrl}" alt="${product.name}" class="main-cover-img">
                                     </c:when>
                                     <c:otherwise>
                                         <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587" alt="Default Cover" class="main-cover-img">
@@ -859,8 +860,8 @@
                             <div class="thumbnails-grid">
                                 <div class="thumb-box">
                                     <c:choose>
-                                        <c:when test="${not empty product.imageUrl()}">
-                                            <img src="${product.imageUrl()}" alt="Thumbnail">
+                                        <c:when test="${not empty product.imageUrl}">
+                                            <img src="${product.imageUrl}" alt="Thumbnail">
                                         </c:when>
                                         <c:otherwise>
                                             <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587" alt="Thumbnail">
@@ -880,109 +881,6 @@
                                 <div class="upload-info-text">Drag & drop or click to upload (You can upload up to 8 images, max 5MB each)</div>
                             </div>
                         </div>
-
-                        <!-- Recipe Configuration Card -->
-                        <div class="detail-card">
-                            <h5 class="card-header-title">Recipe Configuration</h5>
-                            <p class="card-header-desc">Define the core components that make up this delicious cake.</p>
-                            
-                            <!-- Sponge -->
-                            <div class="recipe-item-wrapper">
-                                <label class="form-label-cz">Sponge Flavor <span>*</span></label>
-                                <select class="form-select-cz" name="spongeFlavor">
-                                    <option value="Chocolate Sponge" ${product.spongeFlavor() eq 'Chocolate Sponge' ? 'selected' : ''}>Chocolate Sponge</option>
-                                    <option value="Vanilla Sponge" ${product.spongeFlavor() eq 'Vanilla Sponge' ? 'selected' : ''}>Vanilla Sponge</option>
-                                    <option value="Graham Cracker Crust" ${product.spongeFlavor() eq 'Graham Cracker Crust' ? 'selected' : ''}>Graham Cracker Crust</option>
-                                    <option value="Moist Chocolate Cupcake" ${product.spongeFlavor() eq 'Moist Chocolate Cupcake' ? 'selected' : ''}>Moist Chocolate Cupcake</option>
-                                </select>
-                                
-                                <div class="recipe-preview-card">
-                                    <img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c" alt="Sponge Preview" class="recipe-preview-img">
-                                    <div class="recipe-preview-info">
-                                        <div class="recipe-preview-title">Sponge Layer Preview</div>
-                                        <p class="recipe-preview-desc">
-                                            <c:choose>
-                                                <c:when test="${not empty product.spongeFlavor()}">${product.spongeFlavor()} layer base prepared fresh.</c:when>
-                                                <c:otherwise>Delicious sponge layer prepared according to traditional recipe.</c:otherwise>
-                                            </c:choose>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Frosting -->
-                            <div class="recipe-item-wrapper">
-                                <label class="form-label-cz">Frosting <span>*</span></label>
-                                <select class="form-select-cz" name="frostingFlavor">
-                                    <option value="Chocolate Ganache" ${product.frostingFlavor() eq 'Chocolate Ganache' ? 'selected' : ''}>Chocolate Ganache</option>
-                                    <option value="Strawberry Frosting" ${product.frostingFlavor() eq 'Strawberry Frosting' ? 'selected' : ''}>Strawberry Frosting</option>
-                                    <option value="Cream Cheese" ${product.frostingFlavor() eq 'Cream Cheese' ? 'selected' : ''}>Cream Cheese</option>
-                                    <option value="Creamy Chocolate Frosting" ${product.frostingFlavor() eq 'Creamy Chocolate Frosting' ? 'selected' : ''}>Creamy Chocolate Frosting</option>
-                                    <option value="Vanilla Buttercream" ${product.frostingFlavor() eq 'Vanilla Buttercream' ? 'selected' : ''}>Vanilla Buttercream</option>
-                                </select>
-                                
-                                <div class="recipe-preview-card">
-                                    <img src="https://images.unsplash.com/photo-1511018556340-d16986a1c194" alt="Frosting Preview" class="recipe-preview-img">
-                                    <div class="recipe-preview-info">
-                                        <div class="recipe-preview-title">Frosting Layer Preview</div>
-                                        <p class="recipe-preview-desc">
-                                            <c:choose>
-                                                <c:when test="${not empty product.frostingFlavor()}">${product.frostingFlavor()} whipped coating.</c:when>
-                                                <c:otherwise>Creamy and rich frosting layer applied by master decorators.</c:otherwise>
-                                            </c:choose>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Topping -->
-                            <div class="recipe-item-wrapper">
-                                <label class="form-label-cz">Topping <span>*</span></label>
-                                <select class="form-select-cz" name="toppingChoice">
-                                    <option value="Chocolate Shavings & Cherry" ${product.toppingChoice() eq 'Chocolate Shavings & Cherry' ? 'selected' : ''}>Chocolate Shavings & Cherry</option>
-                                    <option value="Fresh Strawberries & Whipped Cream" ${product.toppingChoice() eq 'Fresh Strawberries & Whipped Cream' ? 'selected' : ''}>Fresh Strawberries & Whipped Cream</option>
-                                    <option value="Sour Cream Layer" ${product.toppingChoice() eq 'Sour Cream Layer' ? 'selected' : ''}>Sour Cream Layer</option>
-                                    <option value="Chocolate Shavings" ${product.toppingChoice() eq 'Chocolate Shavings' ? 'selected' : ''}>Chocolate Shavings</option>
-                                    <option value="Colorful Sprinkles" ${product.toppingChoice() eq 'Colorful Sprinkles' ? 'selected' : ''}>Colorful Sprinkles</option>
-                                </select>
-                                
-                                <div class="recipe-preview-card">
-                                    <img src="https://images.unsplash.com/photo-1519869325930-281384150729" alt="Topping Preview" class="recipe-preview-img">
-                                    <div class="recipe-preview-info">
-                                        <div class="recipe-preview-title">Topping Choice Preview</div>
-                                        <p class="recipe-preview-desc">
-                                            <c:choose>
-                                                <c:when test="${not empty product.toppingChoice()}">Finished with ${product.toppingChoice()} garnish.</c:when>
-                                                <c:otherwise>Beautiful selection of toppings and candy drops to garnish the top.</c:otherwise>
-                                            </c:choose>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Allergens -->
-                            <div class="recipe-item-wrapper">
-                                <label class="form-label-cz">Allergens</label>
-                                <select class="form-select-cz" name="allergens">
-                                    <option value="Egg, Milk, Wheat, Soy" ${product.allergens() eq 'Egg, Milk, Wheat, Soy' ? 'selected' : ''}>Egg, Milk, Wheat, Soy</option>
-                                    <option value="Egg, Milk, Wheat" ${product.allergens() eq 'Egg, Milk, Wheat' ? 'selected' : ''}>Egg, Milk, Wheat</option>
-                                    <option value="Milk, Egg, Wheat" ${product.allergens() eq 'Milk, Egg, Wheat' ? 'selected' : ''}>Milk, Egg, Wheat</option>
-                                    <option value="None" ${product.allergens() eq 'None' ? 'selected' : ''}>None (Allergen Free)</option>
-                                </select>
-                            </div>
-
-                            <!-- Weight / Size -->
-                            <div class="recipe-item-wrapper">
-                                <label class="form-label-cz">Weight / Size</label>
-                                <select class="form-select-cz" name="weightSize">
-                                    <option value="1 kg" ${product.weightSize() eq '1 kg' ? 'selected' : ''}>1 kg</option>
-                                    <option value="1.2 kg" ${product.weightSize() eq '1.2 kg' ? 'selected' : ''}>1.2 kg</option>
-                                    <option value="6 pieces" ${product.weightSize() eq '6 pieces' ? 'selected' : ''}>6 pieces (Pack)</option>
-                                    <option value="Standard" ${product.weightSize() eq 'Standard' ? 'selected' : ''}>Standard</option>
-                                </select>
-                            </div>
-
-                        </div>
                     </div>
 
                     <!-- Right Column -->
@@ -995,66 +893,43 @@
                             <div class="row g-3">
                                 <div class="col-md-8">
                                     <label class="form-label-cz">Cake Name <span>*</span></label>
-                                    <input type="text" class="form-control-cz" name="name" value="${product.name()}" required>
+                                    <input type="text" class="form-control-cz" name="name" value="${product.name}" required>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label-cz">SKU <span>*</span></label>
-                                    <input type="text" class="form-control-cz" name="sku" value="${product.sku()}" required>
+                                    <input type="text" class="form-control-cz" name="sku" value="${product.sku}" required>
                                 </div>
 
                                 <div class="col-md-12">
                                     <label class="form-label-cz">Category <span>*</span></label>
                                     <select class="form-select-cz" name="category">
-                                        <option value="Chocolate Cakes" ${product.category() eq 'Chocolate Cakes' ? 'selected' : ''}>Chocolate Cakes</option>
-                                        <option value="Fruit Cakes" ${product.category() eq 'Fruit Cakes' ? 'selected' : ''}>Fruit Cakes</option>
-                                        <option value="Cheesecakes" ${product.category() eq 'Cheesecakes' ? 'selected' : ''}>Cheesecakes</option>
-                                        <option value="Cupcakes" ${product.category() eq 'Cupcakes' ? 'selected' : ''}>Cupcakes</option>
-                                        <option value="Accessories" ${product.category() eq 'Accessories' ? 'selected' : ''}>Accessories</option>
-                                        <option value="Celebration Cakes" ${product.category() eq 'Celebration Cakes' ? 'selected' : ''}>Celebration Cakes</option>
+                                        <option value="Chocolate Cakes" ${product.category eq 'Chocolate Cakes' ? 'selected' : ''}>Chocolate Cakes</option>
+                                        <option value="Fruit Cakes" ${product.category eq 'Fruit Cakes' ? 'selected' : ''}>Fruit Cakes</option>
+                                        <option value="Cheesecakes" ${product.category eq 'Cheesecakes' ? 'selected' : ''}>Cheesecakes</option>
+                                        <option value="Cupcakes" ${product.category eq 'Cupcakes' ? 'selected' : ''}>Cupcakes</option>
+                                        <option value="Accessories" ${product.category eq 'Accessories' ? 'selected' : ''}>Accessories</option>
+                                        <option value="Celebration Cakes" ${product.category eq 'Celebration Cakes' ? 'selected' : ''}>Celebration Cakes</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label-cz">Base Price (USD) <span>*</span></label>
-                                    <input type="number" step="0.01" class="form-control-cz" name="price" value="${product.price()}" required>
+                                    <input type="number" step="0.01" class="form-control-cz" name="price" value="${product.price}" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label-cz">Sale Price (USD)</label>
-                                    <input type="number" step="0.01" class="form-control-cz" name="salePrice" value="${product.price() * 0.9}">
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="form-label-cz">Stock Quantity <span>*</span></label>
-                                    <input type="number" class="form-control-cz" name="stock" value="${product.stock()}" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label-cz">Preparation Time</label>
-                                    <select class="form-select-cz" name="laborHours">
-                                        <option value="1.0" ${product.laborHours() == 1.0 ? 'selected' : ''}>1 hour</option>
-                                        <option value="1.5" ${product.laborHours() == 1.5 ? 'selected' : ''}>1.5 hours</option>
-                                        <option value="2.0" ${product.laborHours() == 2.0 ? 'selected' : ''}>2 hours</option>
-                                        <option value="2.5" ${product.laborHours() == 2.5 ? 'selected' : ''}>2.5 hours</option>
-                                        <option value="3.0" ${product.laborHours() == 3.0 ? 'selected' : ''}>3 hours</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label-cz">Availability</label>
-                                    <select class="form-select-cz" name="availability">
-                                        <option value="Same Day" ${product.availability() eq 'Same Day' ? 'selected' : ''}>Same Day</option>
-                                        <option value="1 Day Notice" ${product.availability() eq '1 Day Notice' ? 'selected' : ''}>1 Day Notice</option>
-                                        <option value="2 Days Notice" ${product.availability() eq '2 Days Notice' ? 'selected' : ''}>2 Days Notice</option>
-                                    </select>
+                                    <label class="form-label-cz">Estimated Labor Hours <span>*</span></label>
+                                    <input type="number" step="0.1" class="form-control-cz" name="laborHours" value="${product.laborHours}" required>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label class="form-label-cz">Status <span>*</span></label>
                                     <div class="status-radio-group">
                                         <label class="status-radio-label">
-                                            <input type="radio" name="status" class="status-radio-input" value="Active" ${product.status() eq 'Active' ? 'checked' : ''}>
+                                            <input type="radio" name="status" class="status-radio-input" value="Active" ${product.status eq 'Active' ? 'checked' : ''}>
                                             Active
                                         </label>
                                         <label class="status-radio-label">
-                                            <input type="radio" name="status" class="status-radio-input" value="Inactive" ${product.status() eq 'Inactive' ? 'checked' : ''}>
+                                            <input type="radio" name="status" class="status-radio-input" value="Inactive" ${product.status eq 'Inactive' ? 'checked' : ''}>
                                             Inactive
                                         </label>
                                     </div>
@@ -1063,13 +938,13 @@
                                     <label class="form-label-cz">Featured</label>
                                     <div class="switch-container">
                                         <span class="switch-label-text">Show on homepage & featured section</span>
-                                        <input type="checkbox" class="switch-input" name="featured" value="true" ${product.featured() ? 'checked' : ''}>
+                                        <input type="checkbox" class="switch-input" name="isFeatured" value="true" ${product.featured ? 'checked' : ''}>
                                     </div>
                                 </div>
 
                                 <div class="col-md-12">
                                     <label class="form-label-cz">Short Description <span>*</span></label>
-                                    <textarea class="form-control-cz" name="shortDescription" rows="2" required>${product.shortDescription()}</textarea>
+                                    <textarea class="form-control-cz" name="shortDescription" rows="2" required>${product.shortDescription}</textarea>
                                 </div>
 
                                 <div class="col-md-12">
@@ -1090,46 +965,10 @@
                                         <i class="fa-solid fa-link" title="Insert Link"></i>
                                         <i class="fa-solid fa-image" title="Insert Image"></i>
                                     </div>
-                                    <textarea class="editor-textarea" name="fullDescription" rows="5">${product.fullDescription()}</textarea>
+                                    <textarea class="editor-textarea" name="fullDescription" rows="5">${product.fullDescription}</textarea>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Additional Information Card -->
-                        <div class="detail-card">
-                            <h5 class="card-header-title">Additional Information</h5>
-                            
-                            <div class="row g-3">
-                                <div class="col-md-12">
-                                    <label class="form-label-cz">Tags</label>
-                                    <div class="tags-wrapper">
-                                        <span class="tag-badge">Chocolate <i class="fa-solid fa-xmark"></i></span>
-                                        <span class="tag-badge">Best Seller <i class="fa-solid fa-xmark"></i></span>
-                                        <span class="tag-badge">Birthday <i class="fa-solid fa-xmark"></i></span>
-                                        <div class="upload-placeholder-box" style="height: auto; padding: 5px 12px; border-radius: 6px; border-style: solid; border-width: 1px;" onclick="alert('Add custom tags...')">
-                                            <span style="font-size: 12px; font-weight: 500;"><i class="fa-solid fa-plus" style="font-size: 10px; margin-right: 4px;"></i> Add Tag</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-12">
-                                    <label class="form-label-cz">Shelf Life</label>
-                                    <select class="form-select-cz" name="shelfLife">
-                                        <option value="1 Day" ${product.shelfLife() eq '1 Day' ? 'selected' : ''}>1 Day</option>
-                                        <option value="2 Days" ${product.shelfLife() eq '2 Days' ? 'selected' : ''}>2 Days</option>
-                                        <option value="3 Days" ${product.shelfLife() eq '3 Days' ? 'selected' : ''}>3 Days</option>
-                                        <option value="5 Days" ${product.shelfLife() eq '5 Days' ? 'selected' : ''}>5 Days</option>
-                                        <option value="1 Year" ${product.shelfLife() eq '1 Year' ? 'selected' : ''}>1 Year</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-12">
-                                    <label class="form-label-cz">Storage Instructions</label>
-                                    <textarea class="form-control-cz" name="storageInstructions" rows="2">${product.storageInstructions()}</textarea>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </form>
