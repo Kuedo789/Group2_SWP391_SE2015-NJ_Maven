@@ -2,10 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-package controller;
+package com.bakeryzone.admin.controller;
 
-import dao.UserDAO;
-import entities.User;
+import com.bakeryzone.dao.UserDAO;
+import com.bakeryzone.model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -18,7 +18,7 @@ import java.io.PrintWriter;
  *
  * @author Asus
  */
-@WebServlet(name = "UserDetailServlet", urlPatterns = {"/userdetail"})
+@WebServlet(name = "UserDetailServlet", urlPatterns = {"/userDetail"})
 public class UserDetailServlet extends HttpServlet {
 
     /**
@@ -69,7 +69,7 @@ public class UserDetailServlet extends HttpServlet {
             if (action != null && action.equals("delete")) {
                 int id = Integer.parseInt(idStr);
                 dao.deleteUser(id);
-                response.sendRedirect("user-list");
+                response.sendRedirect("userList");
                 return;
             }
 
@@ -78,7 +78,7 @@ public class UserDetailServlet extends HttpServlet {
                 User existingUser = dao.getUserById(id);
                 request.setAttribute("USER_DATA", existingUser);
             }
-            request.getRequestDispatcher("user-detail.jsp").forward(request, response);
+            request.getRequestDispatcher("userDetail.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -122,7 +122,7 @@ public class UserDetailServlet extends HttpServlet {
                 dao.insertUser(u);
 
             }
-            response.sendRedirect("user-list");
+            response.sendRedirect("userList");
         } catch (Exception e) {
             e.printStackTrace();
         }
