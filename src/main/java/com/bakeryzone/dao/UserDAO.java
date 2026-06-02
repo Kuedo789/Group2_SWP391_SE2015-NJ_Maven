@@ -2,10 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dao;
+package com.bakeryzone.dao;
 
-import com.mycompany.bakery_swp.DBContext;
-import entities.User;
+import com.bakeryzone.utils.DBContext;
+
+
+import com.bakeryzone.model.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
