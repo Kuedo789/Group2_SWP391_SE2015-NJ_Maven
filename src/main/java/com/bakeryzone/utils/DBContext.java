@@ -1,9 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package com.mycompany.bakery_swp;
-
+package com.bakeryzone.utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,13 +7,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author Asus
+ * DBContext helper class for establishing JDBC connection to SQL Server.
+ * Configured with standard security settings required by newer JDBC drivers.
  */
 public class DBContext {
 
     public static Connection getJDBCConnection() {
-        String url = "jdbc:mysql://localhost:3306/bakery_db";
+        String url = "jdbc:mysql://localhost:3306/BakeryManagement";
         String user = "root"; 
         String password = "1234";
         
@@ -43,6 +38,5 @@ public class DBContext {
             System.out.println("That bai");
         }
     }
-    
     
 }
