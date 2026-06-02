@@ -36,9 +36,10 @@ public class UserDAO {
             while (rs.next() == true) { //doc du lieu tung dong tu tren xuong duoi
                 User u = new User();
                 u.setUserId(rs.getInt("User_ID"));
-                u.setFullname(rs.getString("Full_Name"));
+                u.setFullName(rs.getString("Full_Name"));
                 u.setEmail(rs.getString("Email"));
                 u.setPassword(rs.getString("Password"));
+                u.setPhone(rs.getString("Phone"));
                 u.setRoleId(rs.getString("Role_ID"));
                 u.setRoleName(rs.getString("Role_Name"));
 
@@ -75,12 +76,12 @@ public class UserDAO {
         PreparedStatement ps = null;
 
         try {
-            String sql = "INSERT INTO User (Full_Name, Email, Password, Phone, Role_ID VALUES (?,?,?,?,?)";
+            String sql = "INSERT INTO User (Full_Name, Email, Password, Phone, Role_ID) VALUES (?,?,?,?,?)";
 
             conn = db.getJDBCConnection();
             ps = conn.prepareStatement(sql);
 
-            ps.setString(1, user.getFullname());
+            ps.setString(1, user.getFullName());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getPassword());
             ps.setString(4, user.getPhone());
@@ -159,7 +160,7 @@ public class UserDAO {
             if (rs.next() == true) {
                 u = new User();
                 u.setUserId(rs.getInt("User_ID"));
-                u.setFullname(rs.getString("Full_Name"));
+                u.setFullName(rs.getString("Full_Name"));
                 u.setEmail(rs.getString("Email"));
                 u.setPassword(rs.getString("Password"));
                 u.setPhone(rs.getString("Phone"));
@@ -192,12 +193,12 @@ public class UserDAO {
         PreparedStatement ps = null;
 
         try {
-            String sql = "UPDATE User SET Full_Name = ?, Email = ?, Password = ?, Phone = ?, Role_ID = ?, WHERE User_ID = ?";
+            String sql = "UPDATE User SET Full_Name = ?, Email = ?, Password = ?, Phone = ?, Role_ID = ? WHERE User_ID = ?";
 
             conn = db.getJDBCConnection();
             ps = conn.prepareStatement(sql);
 
-            ps.setString(1, user.getFullname());
+            ps.setString(1, user.getFullName());
             ps.setString(2, user.getEmail());
             ps.setString(3, user.getPassword());
             ps.setString(4, user.getPhone());
@@ -220,6 +221,65 @@ public class UserDAO {
                 ex.printStackTrace();
             }
         }
+    }
+
+    public List<User> searchAndFilterUsers(String keyword, String roleId) {
+        List<User> list = new java.util.ArrayList<>();
+        DBContext db = new DBContext();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        String sql = "SELECT u.*, r.roleName FROM Users u JOIN Roles r ON u.roleId = r.roleId WHERE 1=1";
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql += " AND (u.fullName LIKE ? OR u.email LIKE ?)";
+        }
+        if (roleId != null && !roleId.trim().isEmpty()) {
+            sql += " AND u.roleId = ?";
+        }
+
+        try {
+            conn = new DBContext().getJDBCConnection();
+            ps = conn.prepareStatement(sql);
+
+            int paramIndex = 1;
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                ps.setString(paramIndex++, "%" + keyword.trim() + "%");
+                ps.setString(paramIndex++, "%" + keyword.trim() + "%");
+            }
+            if (roleId != null && !roleId.trim().isEmpty()) {
+                ps.setString(paramIndex++, roleId);
+            }
+
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                User u = new User();
+                u.setUserId(rs.getInt("userId"));
+                u.setFullName(rs.getString("fullName"));
+                u.setEmail(rs.getString("email"));
+                u.setPhone(rs.getString("Phone"));
+                u.setRoleId(rs.getString("roleId"));
+                u.setRoleName(rs.getString("roleName"));
+                list.add(u);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (ps != null) {
+                    ps.close();
+                }
+                if (conn != null) {
+                    conn.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return list;
     }
 
 }
