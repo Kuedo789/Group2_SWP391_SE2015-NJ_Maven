@@ -225,46 +225,52 @@ public class UserDAO {
         }
     }
 
-    public List<User> searchAndFilterUsers(String keyword, String roleId) {
-        List<User> list = new java.util.ArrayList<>();
+public List<User> searchAndFilterUsers(String keyword, String roleId) {
+        List<User> list = new ArrayList<User>();
+
         DBContext db = new DBContext();
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
 
-        String sql = "SELECT u.*, r.roleName FROM Users u JOIN Roles r ON u.roleId = r.roleId WHERE 1=1";
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql += " AND (u.fullName LIKE ? OR u.email LIKE ?)";
-        }
-        if (roleId != null && !roleId.trim().isEmpty()) {
-            sql += " AND u.roleId = ?";
-        }
-
         try {
-            conn = new DBContext().getJDBCConnection();
-            ps = conn.prepareStatement(sql);
+            String sql = "Select u.User_ID, u.Full_Name, u.Email, u.Password, u.Phone, u.Role_ID, r.Role_Name " 
+                       + "FROM User u JOIN Role r ON u.Role_ID = r.Role_ID WHERE 1 = 1";
+
+            if (keyword != null && keyword.trim().isEmpty() == false) {
+                sql += " AND (u.Full_Name LIKE ? OR u.Email LIKE ?)";
+            }
+            if (roleId != null && roleId.trim().isEmpty() == false) {
+                sql += " AND u.Role_ID = ?";
+            }
+
+            conn = db.getJDBCConnection(); //mo cong ket noi
+            ps = conn.prepareStatement(sql); //dua cau lenh sql vao duong truyen
 
             int paramIndex = 1;
-            if (keyword != null && !keyword.trim().isEmpty()) {
+            if (keyword != null && keyword.trim().isEmpty() == false) {
                 ps.setString(paramIndex++, "%" + keyword.trim() + "%");
                 ps.setString(paramIndex++, "%" + keyword.trim() + "%");
             }
-            if (roleId != null && !roleId.trim().isEmpty()) {
+            if (roleId != null && roleId.trim().isEmpty() == false) {
                 ps.setString(paramIndex++, roleId);
             }
 
-            rs = ps.executeQuery();
-            while (rs.next()) {
+            rs = ps.executeQuery(); //execute va nhan ket qua tu bien rs
+
+            while (rs.next() == true) { //doc du lieu tung dong tu tren xuong duoi
                 User u = new User();
-                u.setUserId(rs.getInt("userId"));
-                u.setFullName(rs.getString("fullName"));
-                u.setEmail(rs.getString("email"));
+                u.setUserId(rs.getInt("User_ID"));
+                u.setFullName(rs.getString("Full_Name"));
+                u.setEmail(rs.getString("Email"));
+                u.setPassword(rs.getString("Password"));
                 u.setPhone(rs.getString("Phone"));
-                u.setRoleId(rs.getString("roleId"));
-                u.setRoleName(rs.getString("roleName"));
-                list.add(u);
+                u.setRoleId(rs.getString("Role_ID"));
+                u.setRoleName(rs.getString("Role_Name"));
+
+                list.add(u); //truyen du lieu vao trong list
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -279,8 +285,10 @@ public class UserDAO {
                     conn.close();
                 }
             } catch (Exception e) {
+                e.printStackTrace();
             }
         }
+
         return list;
     }
 

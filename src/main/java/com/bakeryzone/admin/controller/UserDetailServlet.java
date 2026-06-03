@@ -78,7 +78,7 @@ public class UserDetailServlet extends HttpServlet {
                 User existingUser = dao.getUserById(id);
                 request.setAttribute("USER_DATA", existingUser);
             }
-            request.getRequestDispatcher("userDetail.jsp").forward(request, response);
+            request.getRequestDispatcher("admin/userDetail.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();

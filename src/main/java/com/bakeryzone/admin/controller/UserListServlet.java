@@ -4,7 +4,6 @@
  */
 package com.bakeryzone.admin.controller;
 
-
 import com.bakeryzone.dao.UserDAO;
 import com.bakeryzone.model.User;
 import jakarta.servlet.ServletException;
@@ -62,17 +61,32 @@ public class UserListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            UserDAO dao = new UserDAO();
 
-            List<User> userList = dao.getAllUsers();
+            String keyword = request.getParameter("searchKeyword");
+            String roleId = request.getParameter("filterRoleId");
+
+            UserDAO dao = new UserDAO();
+            List<User> userList;
+
+            if (keyword != null && keyword.trim().isEmpty()) {
+                keyword = null;
+            }
+            if (roleId != null && roleId.trim().isEmpty()) {
+                roleId = null;
+            }
+            if (keyword != null || roleId != null) {
+
+                userList = dao.searchAndFilterUsers(keyword, roleId);
+            } else {
+                userList = dao.getAllUsers();
+            }
 
             request.setAttribute("USERS", userList);
 
-            request.getRequestDispatcher("userList.jsp").forward(request, response);
-
+            request.getRequestDispatcher("admin/userList.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
-        }   
+        }
     }
 
     /**

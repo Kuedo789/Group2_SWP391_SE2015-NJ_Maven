@@ -34,13 +34,13 @@
                         <h1 class="text-uppercase mb-0">Danh sách người dùng</h1>
                         <p class="text-muted mb-0">Hệ thống quản lý Admin, Staff, Shipper và Customer</p>
                     </div>
-                    <a href="userdetail?action=add" class="btn btn-primary border-inner py-3 px-4 text-uppercase font-weight-bold">
+                    <a href="${pageContext.request.contextPath}/userDetail?action=add" class="btn btn-primary py-3 px-4 text-uppercase font-weight-bold">
                         <i class="fa fa-plus me-2"></i>Thêm tài khoản mới
                     </a>
                 </div>
 
                 <div class="bg-dark p-4 border-inner mb-5">
-                    <form action="user-list" method="GET">
+                    <form action="${pageContext.request.contextPath}/userList" method="GET">
                         <div class="row g-3 align-items-end">
                             <div class="col-md-5">
                                 <label class="form-label text-white font-weight-bold">Từ khóa tìm kiếm:</label>
@@ -50,14 +50,14 @@
                                 <label class="form-label text-white font-weight-bold">Chức vụ (Role):</label>
                                 <select name="filterRoleId" class="form-select bg-light border-0 px-3" style="height: 45px; width: 100%;">
                                     <option value="">-- Tất cả chức vụ --</option>
-                                    <option value="ADMIN" ${param.filterRoleId == 'ADMIN' ? 'selected' : ''}>Administrator</option>
-                                    <option value="STAFF" ${param.filterRoleId == 'STAFF' ? 'selected' : ''}>Bakery Kitchen Staff</option>
-                                    <option value="SHIPPER" ${param.filterRoleId == 'SHIPPER' ? 'selected' : ''}>Deliverier</option>
+                                    <option value="ADMIN" ${param.filterRoleId == 'ADMIN' ? 'selected' : ''}>Admin</option>
+                                    <option value="STAFF" ${param.filterRoleId == 'STAFF' ? 'selected' : ''}>Staff</option>
+                                    <option value="SHIPPER" ${param.filterRoleId == 'SHIPPER' ? 'selected' : ''}>Shipper</option>
                                     <option value="CUSTOMER" ${param.filterRoleId == 'CUSTOMER' ? 'selected' : ''}>Customer</option>
                                 </select>
                             </div>
                             <div class="col-md-4 d-flex gap-2">
-                                <button type="submit" class="btn btn-primary border-inner flex-grow-1 font-weight-bold text-uppercase" style="height: 45px;">Lọc kết quả</button>
+                                <button type="submit" class="btn btn-primary flex-grow-1 font-weight-bold text-uppercase" style="height: 45px;">Lọc kết quả</button>
                                 <a href="user-list" class="btn btn-secondary flex-grow-1 font-weight-bold text-uppercase d-flex align-items-center justify-content-center text-white" style="height: 45px; background: #555; border: none;">Xóa bộ lọc</a>
                             </div>
                         </div>
@@ -73,7 +73,7 @@
                                         <th style="padding: 15px; width: 80px;">STT</th>
                                         <th style="padding: 15px; text-align: left;">Họ và Tên</th>
                                         <th style="padding: 15px; text-align: left;">Email đăng nhập</th>
-                                        <th style="padding: 15px; width: 180px;">Số điện thoại</th>
+                                        <th style="padding: 15px; padding-left: 30px; width: 180px; text-align: left;">Số điện thoại</th>
                                         <th style="padding: 15px; width: 160px;">Chức vụ</th>
                                         <th style="padding: 15px; width: 180px;">Hành động</th>
                                     </tr>
@@ -84,7 +84,7 @@
                                             <td class="text-center font-weight-bold text-muted" style="padding: 15px;">${loop.index + 1}</td>
                                             <td class="font-weight-bold text-dark" style="padding: 15px;">${u.fullName}</td>
                                             <td style="padding: 15px;">${u.email}</td>
-                                            <td class="text-primary font-weight-bold" style="padding: 15px;">${u.phone}</td>
+                                           <td class="text-primary font-weight-bold" style="padding: 15px; padding-left: 30px; text-align: left;">${u.phone}</td>
                                             <td class="text-center" style="padding: 15px;">
                                                 <span class="badge ${u.roleId == 'ADMIN' ? 'bg-danger' : 'bg-warning text-dark'} px-2 py-2 text-uppercase">
                                                     ${u.roleId}
@@ -92,8 +92,8 @@
                                             </td>
                                             <td class="text-center" style="padding: 15px;">
                                                 <div class="d-inline-flex gap-2">
-                                                    <a href="userdetail?action=edit&id=${u.userId}" class="btn btn-sm btn-outline-warning font-weight-bold px-3 py-2 text-dark" style="border-width: 2px;">Sửa</a>
-                                                    <a href="userdetail?action=delete&id=${u.userId}" class="btn btn-sm btn-outline-danger font-weight-bold px-3 py-2" style="border-width: 2px;" onclick="return confirm('Bạn có chắc muốn xóa tài khoản này không?')">Xóa</a>
+                                                    <a href="${pageContext.request.contextPath}/userDetail?action=edit&id=${u.userId}" class="btn btn-sm btn-outline-warning font-weight-bold px-3 py-2 text-dark" style="border-width: 2px;">Sửa</a>
+                                                    <a href=""${pageContext.request.contextPath}/userDetail?action=delete&id=${u.userId}" class="btn btn-sm btn-outline-danger font-weight-bold px-3 py-2" style="border-width: 2px;" onclick="return confirm('Bạn có chắc muốn xóa tài khoản này không?')">Xóa</a>
                                                 </div>
                                             </td>
                                         </tr>
