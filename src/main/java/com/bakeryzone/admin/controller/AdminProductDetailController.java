@@ -11,11 +11,12 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
  * Controller Servlet for handling the admin product detail display and CRUD saving.
- * Refactored to match JavaBean model structure and MySQL schema updates.
+ * Refactored to support exclusive Cake category features and cake_recipe formula assignments.
  */
 @WebServlet(name = "AdminProductDetailController", urlPatterns = {"/admin/product-detail"})
 public class AdminProductDetailController extends HttpServlet {
@@ -34,18 +35,25 @@ public class AdminProductDetailController extends HttpServlet {
             product = productDAO.getProductById(id);
         }
         
-        // Fallback default product if ID is invalid or not found
+        // Fallback default product if ID is invalid or not found (default 35% margin, 30% service)
         if (product == null) {
-            product = new Product("new", "", "", "Chocolate Cakes", 0.0, 1.0, "Active", false, "", "", "", "Cake");
+            product = new Product("new", "", "", "", "", 35.0, 30.0, "", "", "Active", false, "", "", "Cake");
+            product.setEstimatedLaborHours(1.0);
         }
         
-        // Expose product to the JSP detail view
+        // Load categories and recipe masters from DAO
+        List<Map<String, String>> categories = productDAO.getAllProductCategories();
+        List<Map<String, String>> recipes = productDAO.getAllRecipeMasters();
+        
+        // Expose them to the JSTL detail view
         request.setAttribute("product", product);
+        request.setAttribute("productCategories", categories);
+        request.setAttribute("recipeMasters", recipes);
         
         // Forward to the product detail JSP page
         request.getRequestDispatcher("/admin/productDetail.jsp").forward(request, response);
     }
-
+ 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -54,24 +62,33 @@ public class AdminProductDetailController extends HttpServlet {
         String id = request.getParameter("id");
         String name = request.getParameter("name");
         String sku = request.getParameter("sku");
-        String category = request.getParameter("category");
+        String categoryId = request.getParameter("categoryId");
         
-        double price = 0.0;
+        double marginPercent = 35.0;
         try {
-            String priceParam = request.getParameter("price");
-            if (priceParam != null && !priceParam.trim().isEmpty()) {
-                price = Double.parseDouble(priceParam);
+            String marginParam = request.getParameter("marginPercent");
+            if (marginParam != null && !marginParam.trim().isEmpty()) {
+                marginPercent = Double.parseDouble(marginParam);
             }
         } catch (NumberFormatException | NullPointerException e) {}
         
-        double laborHours = 1.0;
+        double servicePercent = 30.0;
         try {
-            String laborHoursParam = request.getParameter("laborHours");
-            if (laborHoursParam != null && !laborHoursParam.trim().isEmpty()) {
-                laborHours = Double.parseDouble(laborHoursParam);
+            String serviceParam = request.getParameter("servicePercent");
+            if (serviceParam != null && !serviceParam.trim().isEmpty()) {
+                servicePercent = Double.parseDouble(serviceParam);
             }
         } catch (NumberFormatException | NullPointerException e) {}
         
+        double estimatedLaborHours = 1.0;
+        try {
+            String laborParam = request.getParameter("estimatedLaborHours");
+            if (laborParam != null && !laborParam.trim().isEmpty()) {
+                estimatedLaborHours = Double.parseDouble(laborParam);
+            }
+        } catch (NumberFormatException | NullPointerException e) {}
+        
+        String recipeId = request.getParameter("recipeId");
         String imageUrl = request.getParameter("imageUrl");
         String status = request.getParameter("status");
         
@@ -90,21 +107,30 @@ public class AdminProductDetailController extends HttpServlet {
             sku = id;
         }
         
-        String productType = "Accessories".equalsIgnoreCase(category) ? "Accessory" : "Cake";
+        String productType = "Cake";
         
         if (imageUrl == null || imageUrl.trim().isEmpty()) {
-            if ("Accessories".equalsIgnoreCase(category)) {
-                imageUrl = "https://images.unsplash.com/photo-1549465220-1a8b9238cd48"; 
-            } else {
-                imageUrl = "https://images.unsplash.com/photo-1578985545062-69928b1d9587"; 
-            }
+            imageUrl = "https://images.unsplash.com/photo-1578985545062-69928b1d9587"; 
         }
         
         // 3. Construct product JavaBean
         Product product = new Product(
-            id, name, sku, category, price, laborHours, status, isFeatured, imageUrl,
-            shortDescription, fullDescription, productType
+            id, name, sku, categoryId, "", marginPercent, servicePercent, recipeId, imageUrl,
+            status, isFeatured, shortDescription, fullDescription, productType
         );
+        product.setEstimatedLaborHours(estimatedLaborHours);
+        
+        // Retrieve dynamic product images from form
+        String[] additionalImagesArr = request.getParameterValues("additionalImages");
+        if (additionalImagesArr != null) {
+            java.util.List<String> additionalImages = new java.util.ArrayList<>();
+            for (String img : additionalImagesArr) {
+                if (img != null && !img.trim().isEmpty()) {
+                    additionalImages.add(img.trim());
+                }
+            }
+            product.setAdditionalImages(additionalImages);
+        }
         
         // 4. Save via DAO
         productDAO.saveProduct(product);

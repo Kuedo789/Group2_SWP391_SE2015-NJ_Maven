@@ -79,6 +79,9 @@ public class AdminProductListController extends HttpServlet {
         }
         
         // 3. Query records from DAO
+        List<java.util.Map<String, String>> categories = productDAO.getAllProductCategories();
+        request.setAttribute("productCategories", categories);
+        
         ProductSearchResult searchResult = productDAO.getAllProductsAdmin(category, status, search, sortBy, page, pageSize);
         List<Product> products = searchResult.list();
         int totalCount = searchResult.totalCount();
@@ -110,9 +113,11 @@ public class AdminProductListController extends HttpServlet {
                     + "\"id\":\"%s\","
                     + "\"name\":\"%s\","
                     + "\"sku\":\"%s\","
-                    + "\"category\":\"%s\","
-                    + "\"price\":%.2f,"
-                    + "\"laborHours\":%.2f,"
+                    + "\"categoryId\":\"%s\","
+                    + "\"categoryName\":\"%s\","
+                    + "\"marginPercent\":%.2f,"
+                    + "\"servicePercent\":%.2f,"
+                    + "\"recipeId\":\"%s\","
                     + "\"status\":\"%s\","
                     + "\"featured\":%b,"
                     + "\"imageUrl\":\"%s\","
@@ -120,10 +125,13 @@ public class AdminProductListController extends HttpServlet {
                     + "\"fullDescription\":\"%s\","
                     + "\"productType\":\"%s\""
                     + "}",
-                    p.getId(), escapeJson(p.getName()), escapeJson(p.getSku()), escapeJson(p.getCategory()), 
-                    p.getPrice(), p.getLaborHours(), escapeJson(p.getStatus()), p.isFeatured(), 
-                    escapeJson(p.getImageUrl()), escapeJson(p.getShortDescription()), 
-                    escapeJson(p.getFullDescription()), escapeJson(p.getProductType())
+                    p.getId(), escapeJson(p.getName()), escapeJson(p.getSku()), 
+                    escapeJson(p.getCategoryId()), escapeJson(p.getCategoryName()),
+                    p.getMarginPercent(), p.getServicePercent(),
+                    p.getRecipeId() != null ? escapeJson(p.getRecipeId()) : "",
+                    escapeJson(p.getStatus()), p.isFeatured(), escapeJson(p.getImageUrl()), 
+                    escapeJson(p.getShortDescription()), escapeJson(p.getFullDescription()), 
+                    escapeJson(p.getProductType())
                 ));
                 if (i < products.size() - 1) {
                     json.append(",");

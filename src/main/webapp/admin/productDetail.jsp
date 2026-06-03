@@ -825,9 +825,7 @@
                         <p class="page-subtitle">View and manage cake product information, pricing, and estimated labor hours.</p>
                     </div>
                     <div class="action-button-group">
-                        <button type="button" class="btn-cz-outline" onclick="alert('Previewing cake layers structure...')"><i class="fa-regular fa-eye"></i> Preview</button>
-                        <button type="button" class="btn-cz-outline" onclick="alert('Draft saved successfully!')">Save Draft</button>
-                        <button type="submit" class="btn-cz-primary">Publish</button>
+                        <button type="submit" class="btn-cz-primary"><i class="fa-regular fa-floppy-disk me-1"></i> Save</button>
                         <button type="button" class="btn-cz-danger" onclick="if(confirm('Are you sure you want to delete this product?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=delete&id=${product.id}'; }">Delete</button>
                     </div>
                 </div>
@@ -839,46 +837,38 @@
                         <!-- Product Images Card -->
                         <div class="detail-card">
                             <h5 class="card-header-title">Product Images</h5>
-                            <p class="card-header-desc">Upload high quality images of the cake. First image will be used as the cover.</p>
+                            <p class="card-header-desc">Upload high quality images of the cake. Click on any thumbnail below to set it as the primary cover image.</p>
                             
                             <div class="main-cover-wrapper">
-                                <c:choose>
-                                    <c:when test="${not empty product.imageUrl}">
-                                        <img src="${product.imageUrl}" alt="${product.name}" class="main-cover-img">
-                                    </c:when>
-                                    <c:otherwise>
-                                        <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587" alt="Default Cover" class="main-cover-img">
-                                    </c:otherwise>
-                                </c:choose>
+                                <img id="mainCoverImage" src="${not empty product.imageUrl ? product.imageUrl : 'https://images.unsplash.com/photo-1578985545062-69928b1d9587'}" alt="${product.name}" class="main-cover-img">
                                 <span class="cover-badge">Cover</span>
                                 <div class="image-controls">
-                                    <button type="button" class="img-control-btn"><i class="fa-regular fa-pen-to-square"></i></button>
-                                    <button type="button" class="img-control-btn delete"><i class="fa-regular fa-trash-can"></i></button>
+                                    <button type="button" class="img-control-btn" onclick="editMainImageUrl()"><i class="fa-regular fa-pen-to-square"></i></button>
+                                    <button type="button" class="img-control-btn delete" onclick="deleteMainImage()"><i class="fa-regular fa-trash-can"></i></button>
                                 </div>
                             </div>
                             
-                            <div class="thumbnails-grid">
-                                <div class="thumb-box">
-                                    <c:choose>
-                                        <c:when test="${not empty product.imageUrl}">
-                                            <img src="${product.imageUrl}" alt="Thumbnail">
-                                        </c:when>
-                                        <c:otherwise>
-                                            <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587" alt="Thumbnail">
-                                        </c:otherwise>
-                                    </c:choose>
-                                </div>
-                                <div class="thumb-box">
-                                    <img src="https://images.unsplash.com/photo-1565958011703-44f9829ba187" alt="Thumbnail 2">
-                                </div>
-                                <div class="thumb-box">
-                                    <img src="https://images.unsplash.com/photo-1524351199679-46cddf530c04" alt="Thumbnail 3">
-                                </div>
-                                <div class="upload-placeholder-box" onclick="alert('Select image to upload...')">
+                            <!-- Container for hidden inputs to keep the list synchronized with POST -->
+                            <div id="hiddenImagesContainer">
+                                <c:forEach var="img" items="${product.additionalImages}">
+                                    <input type="hidden" name="additionalImages" value="${img}">
+                                </c:forEach>
+                            </div>
+
+                            <div class="thumbnails-grid" id="thumbnailsGrid">
+                                <c:forEach var="img" items="${product.additionalImages}">
+                                    <div class="thumb-box" onclick="setAsCover('${img}')" data-url="${img}">
+                                        <img src="${img}" alt="Thumbnail">
+                                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1" style="font-size: 8px; line-height: 1;" onclick="event.stopPropagation(); removeThumbnail('${img}')">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </c:forEach>
+                                <div class="upload-placeholder-box" onclick="addNewImagePrompt()">
                                     <i class="fa-solid fa-plus"></i>
-                                    <span>Upload Image</span>
+                                    <span>Add Image</span>
                                 </div>
-                                <div class="upload-info-text">Drag & drop or click to upload (You can upload up to 8 images, max 5MB each)</div>
+                                <div class="upload-info-text">Click 'Add Image' to enter an image URL. Click a thumbnail to set as main cover.</div>
                             </div>
                         </div>
                     </div>
@@ -900,25 +890,35 @@
                                     <input type="text" class="form-control-cz" name="sku" value="${product.sku}" required>
                                 </div>
 
-                                <div class="col-md-12">
+                                <div class="col-md-6">
                                     <label class="form-label-cz">Category <span>*</span></label>
-                                    <select class="form-select-cz" name="category">
-                                        <option value="Chocolate Cakes" ${product.category eq 'Chocolate Cakes' ? 'selected' : ''}>Chocolate Cakes</option>
-                                        <option value="Fruit Cakes" ${product.category eq 'Fruit Cakes' ? 'selected' : ''}>Fruit Cakes</option>
-                                        <option value="Cheesecakes" ${product.category eq 'Cheesecakes' ? 'selected' : ''}>Cheesecakes</option>
-                                        <option value="Cupcakes" ${product.category eq 'Cupcakes' ? 'selected' : ''}>Cupcakes</option>
-                                        <option value="Accessories" ${product.category eq 'Accessories' ? 'selected' : ''}>Accessories</option>
-                                        <option value="Celebration Cakes" ${product.category eq 'Celebration Cakes' ? 'selected' : ''}>Celebration Cakes</option>
+                                    <select class="form-select-cz" name="categoryId">
+                                        <c:forEach var="cat" items="${productCategories}">
+                                            <option value="${cat.id}" ${product.categoryId eq cat.id ? 'selected' : ''}>${cat.name}</option>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-cz">Recipe Formula <span>*</span></label>
+                                    <select class="form-select-cz" name="recipeId">
+                                        <option value="">-- Select Recipe Formula --</option>
+                                        <c:forEach var="rec" items="${recipeMasters}">
+                                            <option value="${rec.id}" ${product.recipeId eq rec.id ? 'selected' : ''}>${rec.name}</option>
+                                        </c:forEach>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6">
-                                    <label class="form-label-cz">Base Price (USD) <span>*</span></label>
-                                    <input type="number" step="0.01" class="form-control-cz" name="price" value="${product.price}" required>
+                                    <label class="form-label-cz">Profit Margin (%) <span>*</span></label>
+                                    <input type="number" step="0.1" class="form-control-cz" name="marginPercent" value="${product.marginPercent}" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label-cz">Estimated Labor Hours <span>*</span></label>
-                                    <input type="number" step="0.1" class="form-control-cz" name="laborHours" value="${product.laborHours}" required>
+                                    <label class="form-label-cz">Service Fee (%) <span>*</span></label>
+                                    <input type="number" step="0.1" class="form-control-cz" name="servicePercent" value="${product.servicePercent}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-cz">Estimated Labor Hours (hours) <span>*</span></label>
+                                    <input type="number" step="0.01" class="form-control-cz" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required>
                                 </div>
 
                                 <div class="col-md-6">
@@ -978,5 +978,119 @@
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Set main cover image when a thumbnail is clicked
+        function setAsCover(url) {
+            document.getElementById('mainCoverImage').src = url;
+            document.querySelector('input[name="imageUrl"]').value = url;
+        }
+
+        // Add new image URL dynamically to form and thumbnail grid
+        function addNewImagePrompt() {
+            const url = prompt("Please enter the Image URL:");
+            if (url && url.trim() !== "") {
+                const cleanUrl = url.trim();
+                
+                // Add to hidden container
+                const container = document.getElementById('hiddenImagesContainer');
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'additionalImages';
+                hiddenInput.value = cleanUrl;
+                container.appendChild(hiddenInput);
+
+                // Add thumbnail box
+                const grid = document.getElementById('thumbnailsGrid');
+                const placeholder = grid.querySelector('.upload-placeholder-box');
+                
+                const thumbBox = document.createElement('div');
+                thumbBox.className = 'thumb-box';
+                thumbBox.setAttribute('data-url', cleanUrl);
+                thumbBox.onclick = function() { setAsCover(cleanUrl); };
+                
+                thumbBox.innerHTML = `
+                    <img src="${cleanUrl}" alt="Thumbnail">
+                    <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1" style="font-size: 8px; line-height: 1;" onclick="event.stopPropagation(); removeThumbnail('${cleanUrl}')">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+                
+                grid.insertBefore(thumbBox, placeholder);
+            }
+        }
+
+        // Remove a thumbnail and its corresponding hidden input
+        function removeThumbnail(url) {
+            // Remove the hidden input element
+            const inputs = document.querySelectorAll(`input[name="additionalImages"][value="${url}"]`);
+            inputs.forEach(input => input.remove());
+
+            // Remove the thumbnail block
+            const thumbs = document.querySelectorAll(`.thumb-box[data-url="${url}"]`);
+            thumbs.forEach(thumb => thumb.remove());
+
+            // Check if deleted image was the cover image
+            const mainImgInput = document.querySelector('input[name="imageUrl"]');
+            if (mainImgInput.value === url) {
+                // Try to fallback to the first remaining thumbnail
+                const remainingThumbs = document.querySelectorAll('.thumb-box');
+                if (remainingThumbs.length > 0) {
+                    const fallbackUrl = remainingThumbs[0].getAttribute('data-url');
+                    setAsCover(fallbackUrl);
+                } else {
+                    const defaultUrl = 'https://images.unsplash.com/photo-1578985545062-69928b1d9587';
+                    document.getElementById('mainCoverImage').src = defaultUrl;
+                    mainImgInput.value = defaultUrl;
+                }
+            }
+        }
+
+        // Edit the main cover image URL directly
+        function editMainImageUrl() {
+            const currentUrl = document.querySelector('input[name="imageUrl"]').value;
+            const newUrl = prompt("Enter main cover Image URL:", currentUrl);
+            if (newUrl && newUrl.trim() !== "") {
+                const cleanUrl = newUrl.trim();
+                setAsCover(cleanUrl);
+                
+                // Add to list if not already present
+                const existingInput = document.querySelector(`input[name="additionalImages"][value="${cleanUrl}"]`);
+                if (!existingInput) {
+                    // Add hidden input
+                    const container = document.getElementById('hiddenImagesContainer');
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'additionalImages';
+                    hiddenInput.value = cleanUrl;
+                    container.appendChild(hiddenInput);
+
+                    // Add thumbnail box
+                    const grid = document.getElementById('thumbnailsGrid');
+                    const placeholder = grid.querySelector('.upload-placeholder-box');
+                    const thumbBox = document.createElement('div');
+                    thumbBox.className = 'thumb-box';
+                    thumbBox.setAttribute('data-url', cleanUrl);
+                    thumbBox.onclick = function() { setAsCover(cleanUrl); };
+                    thumbBox.innerHTML = `
+                        <img src="${cleanUrl}" alt="Thumbnail">
+                        <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1" style="font-size: 8px; line-height: 1;" onclick="event.stopPropagation(); removeThumbnail('${cleanUrl}')">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    `;
+                    grid.insertBefore(thumbBox, placeholder);
+                }
+            }
+        }
+
+        // Reset main cover image to default
+        function deleteMainImage() {
+            if (confirm("Reset cover image to default template image?")) {
+                const defaultUrl = 'https://images.unsplash.com/photo-1578985545062-69928b1d9587';
+                document.getElementById('mainCoverImage').src = defaultUrl;
+                document.querySelector('input[name="imageUrl"]').value = defaultUrl;
+            }
+        }
+    </script>
 </body>
 </html>
