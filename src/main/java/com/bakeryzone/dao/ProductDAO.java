@@ -1,9 +1,3 @@
-
-
-/**
- * DAO class for managing Product CRUD operations matching the simplified MySQL schema.
- * Operates on Cake_Template and Accessory tables.
- */
 package com.bakeryzone.dao;
 
 import com.bakeryzone.model.Product;
@@ -15,13 +9,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * DAO class for managing Product CRUD operations matching the simplified MySQL schema.
- * Operates strictly on Cake_Template and Accessory tables from the database.
+ * Operates strictly on cake_template, product_category, and cake_recipe tables.
  */
 public class ProductDAO {
     private static final Logger LOGGER = Logger.getLogger(ProductDAO.class.getName());
@@ -34,7 +30,7 @@ public class ProductDAO {
     }
 
     /**
-     * Retrieves a single product by its ID from either Cake_Template or Accessory.
+     * Retrieves a single product by its ID from cake_template.
      */
     public Product getProductById(String id) {
         if (id == null || id.trim().isEmpty() || "new".equalsIgnoreCase(id)) {
@@ -46,7 +42,20 @@ public class ProductDAO {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapRowToProduct(rs);
+                    Product product = mapRowToProduct(rs);
+                    // Query additional images
+                    List<String> images = new ArrayList<>();
+                    String imgSql = "SELECT Image_URL FROM product_image WHERE Product_ID = ? ORDER BY Sort_Order ASC";
+                    try (PreparedStatement imgPs = conn.prepareStatement(imgSql)) {
+                        imgPs.setString(1, id);
+                        try (ResultSet imgRs = imgPs.executeQuery()) {
+                            while (imgRs.next()) {
+                                images.add(imgRs.getString("Image_URL"));
+                            }
+                        }
+                    }
+                    product.setAdditionalImages(images);
+                    return product;
                 }
             }
         } catch (Exception e) {
@@ -110,20 +119,31 @@ public class ProductDAO {
         return new ProductSearchResult(list, totalCount);
     }
 
+    /**
+     * Performs a delete operation.
+     */
     public void deleteProduct(String id) throws SQLException {
         try (Connection conn = DBContext.getJDBCConnection()) {
-            // Check & delete from Accessory
-            String deleteAcc = "DELETE FROM Accessory WHERE Accessory_ID = ?";
-            try (PreparedStatement ps = conn.prepareStatement(deleteAcc)) {
-                ps.setString(1, id);
-                if (ps.executeUpdate() > 0) return;
-            }
-
-            // Check & delete from Cake_Template
-            String deleteTemplate = "DELETE FROM Cake_Template WHERE Template_ID = ?";
-            try (PreparedStatement ps = conn.prepareStatement(deleteTemplate)) {
-                ps.setString(1, id);
-                ps.executeUpdate();
+            conn.setAutoCommit(false);
+            try {
+                // Delete additional images first to prevent FK/dependency constraints
+                String deleteImages = "DELETE FROM product_image WHERE Product_ID = ?";
+                try (PreparedStatement ps = conn.prepareStatement(deleteImages)) {
+                    ps.setString(1, id);
+                    ps.executeUpdate();
+                }
+                // Then delete template
+                String deleteTemplate = "DELETE FROM cake_template WHERE Template_ID = ?";
+                try (PreparedStatement ps = conn.prepareStatement(deleteTemplate)) {
+                    ps.setString(1, id);
+                    ps.executeUpdate();
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
             }
         }
     }
@@ -133,64 +153,11 @@ public class ProductDAO {
      */
     public boolean saveProduct(Product product) {
         try (Connection conn = DBContext.getJDBCConnection()) {
-            boolean exists = false;
-            
-            if ("Accessory".equalsIgnoreCase(product.getProductType())) {
-                // Clean up from Cake_Template if type changed
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Cake_Template WHERE Template_ID = ?")) {
-                    ps.setString(1, product.getId());
-                    ps.executeUpdate();
-                }
-
-                try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM Accessory WHERE Accessory_ID = ?")) {
-                    ps.setString(1, product.getId());
-                    try (ResultSet rs = ps.executeQuery()) {
-                        if (rs.next() && rs.getInt(1) > 0) exists = true;
-                    }
-                }
-
-                if (exists) {
-                    // Update
-                    String sql = "UPDATE Accessory SET Accessory_Name = ?, Price = ?, SKU = ?, Image_URL = ?, "
-                               + "Status = ?, Is_Featured = ?, Short_Description = ?, Full_Description = ? WHERE Accessory_ID = ?";
-                    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                        ps.setString(1, product.getName());
-                        ps.setDouble(2, product.getPrice());
-                        ps.setString(3, product.getSku());
-                        ps.setString(4, product.getImageUrl());
-                        ps.setString(5, product.getStatus());
-                        ps.setBoolean(6, product.isFeatured());
-                        ps.setString(7, product.getShortDescription());
-                        ps.setString(8, product.getFullDescription());
-                        ps.setString(9, product.getId());
-                        return ps.executeUpdate() > 0;
-                    }
-                } else {
-                    // Insert
-                    String sql = "INSERT INTO Accessory (Accessory_ID, Accessory_Name, Price, SKU, Image_URL, Status, Is_Featured, Short_Description, Full_Description) "
-                               + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-                        ps.setString(1, product.getId());
-                        ps.setString(2, product.getName());
-                        ps.setDouble(3, product.getPrice());
-                        ps.setString(4, product.getSku());
-                        ps.setString(5, product.getImageUrl());
-                        ps.setString(6, product.getStatus());
-                        ps.setBoolean(7, product.isFeatured());
-                        ps.setString(8, product.getShortDescription());
-                        ps.setString(9, product.getFullDescription());
-                        return ps.executeUpdate() > 0;
-                    }
-                }
-            } else {
-                // Clean up from Accessory if type changed
-                try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Accessory WHERE Accessory_ID = ?")) {
-                    ps.setString(1, product.getId());
-                    ps.executeUpdate();
-                }
-
-                // Cake Template
-                try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM Cake_Template WHERE Template_ID = ?")) {
+            conn.setAutoCommit(false);
+            boolean success = false;
+            try {
+                boolean exists = false;
+                try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM cake_template WHERE Template_ID = ?")) {
                     ps.setString(1, product.getId());
                     try (ResultSet rs = ps.executeQuery()) {
                         if (rs.next() && rs.getInt(1) > 0) exists = true;
@@ -199,45 +166,141 @@ public class ProductDAO {
 
                 if (exists) {
                     // Update Template
-                    String updateT = "UPDATE Cake_Template SET Template_Name = ?, Base_Price = ?, Estimated_Labor_Hours = ?, "
-                                   + "SKU = ?, Image_URL = ?, Status = ?, Is_Featured = ?, Short_Description = ?, Full_Description = ? "
+                    String updateT = "UPDATE cake_template SET Template_Name = ?, SKU = ?, Default_Margin_Percent = ?, "
+                                   + "Default_Service_Percent = ?, Recipe_ID = ?, Image_URL = ?, Status = ?, "
+                                   + "Is_Featured = ?, Short_Description = ?, Full_Description = ?, Category_ID = ?, "
+                                   + "Estimated_Labor_Hours = ? "
                                    + "WHERE Template_ID = ?";
                     try (PreparedStatement ps = conn.prepareStatement(updateT)) {
                         ps.setString(1, product.getName());
-                        ps.setDouble(2, product.getPrice());
-                        ps.setDouble(3, product.getLaborHours());
-                        ps.setString(4, product.getSku());
-                        ps.setString(5, product.getImageUrl());
-                        ps.setString(6, product.getStatus());
-                        ps.setBoolean(7, product.isFeatured());
-                        ps.setString(8, product.getShortDescription());
-                        ps.setString(9, product.getFullDescription());
-                        ps.setString(10, product.getId());
-                        return ps.executeUpdate() > 0;
-                    }
-                } else {
-                    // Insert Template
-                    String insertT = "INSERT INTO Cake_Template (Template_ID, Template_Name, Base_Price, Estimated_Labor_Hours, SKU, Image_URL, Status, Is_Featured, Short_Description, Full_Description) "
-                                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                    try (PreparedStatement ps = conn.prepareStatement(insertT)) {
-                        ps.setString(1, product.getId());
-                        ps.setString(2, product.getName());
-                        ps.setDouble(3, product.getPrice());
-                        ps.setDouble(4, product.getLaborHours());
-                        ps.setString(5, product.getSku());
+                        ps.setString(2, product.getSku());
+                        ps.setDouble(3, product.getMarginPercent());
+                        ps.setDouble(4, product.getServicePercent());
+                        
+                        String rId = product.getRecipeId();
+                        ps.setString(5, (rId == null || rId.trim().isEmpty()) ? null : rId.trim());
+                        
                         ps.setString(6, product.getImageUrl());
                         ps.setString(7, product.getStatus());
                         ps.setBoolean(8, product.isFeatured());
                         ps.setString(9, product.getShortDescription());
                         ps.setString(10, product.getFullDescription());
-                        return ps.executeUpdate() > 0;
+                        
+                        String cId = product.getCategoryId();
+                        ps.setString(11, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
+                        
+                        ps.setDouble(12, product.getEstimatedLaborHours());
+                        ps.setString(13, product.getId());
+                        success = ps.executeUpdate() > 0;
+                    }
+                } else {
+                    // Insert Template
+                    String insertT = "INSERT INTO cake_template (Template_ID, Template_Name, SKU, Default_Margin_Percent, "
+                                   + "Default_Service_Percent, Recipe_ID, Image_URL, Status, Is_Featured, "
+                                   + "Short_Description, Full_Description, Category_ID, Estimated_Labor_Hours) "
+                                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    try (PreparedStatement ps = conn.prepareStatement(insertT)) {
+                        ps.setString(1, product.getId());
+                        ps.setString(2, product.getName());
+                        ps.setString(3, product.getSku());
+                        ps.setDouble(4, product.getMarginPercent());
+                        ps.setDouble(5, product.getServicePercent());
+                        
+                        String rId = product.getRecipeId();
+                        ps.setString(6, (rId == null || rId.trim().isEmpty()) ? null : rId.trim());
+                        
+                        ps.setString(7, product.getImageUrl());
+                        ps.setString(8, product.getStatus());
+                        ps.setBoolean(9, product.isFeatured());
+                        ps.setString(10, product.getShortDescription());
+                        ps.setString(11, product.getFullDescription());
+                        
+                        String cId = product.getCategoryId();
+                        ps.setString(12, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
+                        
+                        ps.setDouble(13, product.getEstimatedLaborHours());
+                        success = ps.executeUpdate() > 0;
                     }
                 }
+
+                if (success) {
+                    // Delete existing product images
+                    String deleteImages = "DELETE FROM product_image WHERE Product_ID = ?";
+                    try (PreparedStatement ps = conn.prepareStatement(deleteImages)) {
+                        ps.setString(1, product.getId());
+                        ps.executeUpdate();
+                    }
+
+                    // Insert fresh product images list
+                    List<String> list = product.getAdditionalImages();
+                    if (list != null && !list.isEmpty()) {
+                        String insertImg = "INSERT INTO product_image (Product_ID, Image_URL, Is_Cover, Sort_Order) VALUES (?, ?, ?, ?)";
+                        try (PreparedStatement ps = conn.prepareStatement(insertImg)) {
+                            for (int i = 0; i < list.size(); i++) {
+                                String url = list.get(i);
+                                ps.setString(1, product.getId());
+                                ps.setString(2, url);
+                                // If this image is the main preview image, mark as cover
+                                boolean isCover = url.equalsIgnoreCase(product.getImageUrl());
+                                ps.setInt(3, isCover ? 1 : 0);
+                                ps.setInt(4, i + 1);
+                                ps.addBatch();
+                            }
+                            ps.executeBatch();
+                        }
+                    }
+                }
+
+                conn.commit();
+                return success;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to save product in database: " + product.getId(), e);
         }
         return false;
+    }
+    public List<Map<String, String>> getAllProductCategories() {
+        List<Map<String, String>> categories = new ArrayList<>();
+        String sql = "SELECT Category_ID, Category_Name FROM product_category";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Map<String, String> cat = new HashMap<>();
+                cat.put("id", rs.getString("Category_ID"));
+                cat.put("name", rs.getString("Category_Name"));
+                categories.add(cat);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to get product categories.", e);
+        }
+        return categories;
+    }
+
+    /**
+     * Queries the cake_recipe table to retrieve all Recipe IDs and Names.
+     */
+    public List<Map<String, String>> getAllRecipeMasters() {
+        List<Map<String, String>> recipes = new ArrayList<>();
+        String sql = "SELECT Recipe_ID, Recipe_Name FROM cake_recipe";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Map<String, String> rec = new HashMap<>();
+                rec.put("id", rs.getString("Recipe_ID"));
+                rec.put("name", rs.getString("Recipe_Name"));
+                recipes.add(rec);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to get recipe masters.", e);
+        }
+        return recipes;
     }
 
     /* Helper Methods */
@@ -247,61 +310,48 @@ public class ProductDAO {
              + "    t.Template_ID AS Product_ID, "
              + "    t.Template_Name AS Product_Name, "
              + "    t.SKU AS SKU, "
-             + "    t.Base_Price AS Price, "
-             + "    t.Estimated_Labor_Hours AS Labor_Hours, "
+             + "    t.Default_Margin_Percent AS Margin_Percent, "
+             + "    t.Default_Service_Percent AS Service_Percent, "
+             + "    t.Recipe_ID AS Recipe_ID, "
              + "    t.Image_URL AS Image_URL, "
              + "    t.Status AS Status, "
              + "    t.Is_Featured AS Is_Featured, "
              + "    t.Short_Description AS Short_Description, "
              + "    t.Full_Description AS Full_Description, "
              + "    'Cake' AS Product_Type, "
-             + "    CASE "
-             + "        WHEN t.Template_Name LIKE '%Chocolate%' THEN 'Chocolate Cakes' "
-             + "        WHEN t.Template_Name LIKE '%Strawberry%' OR t.Template_Name LIKE '%Fruit%' THEN 'Fruit Cakes' "
-             + "        WHEN t.Template_Name LIKE '%Cheesecake%' THEN 'Cheesecakes' "
-             + "        WHEN t.Template_Name LIKE '%Cupcake%' THEN 'Cupcakes' "
-             + "        WHEN t.Template_Name LIKE '%Celebration%' OR t.Template_Name LIKE '%Birthday%' THEN 'Celebration Cakes' "
-             + "        ELSE 'Cakes' "
-             + "    END AS Category "
-             + "FROM Cake_Template t ";
-//             + "UNION ALL "
-//             + "SELECT "
-//             + "    a.Accessory_ID AS Product_ID, "
-//             + "    a.Accessory_Name AS Product_Name, "
-//             + "    a.SKU AS SKU, "
-//             + "    a.Price AS Price, "
-//             + "    0.0 AS Labor_Hours, "
-//             + "    a.Image_URL AS Image_URL, "
-//             + "    a.Status AS Status, "
-//             + "    a.Is_Featured AS Is_Featured, "
-//             + "    a.Short_Description AS Short_Description, "
-//             + "    a.Full_Description AS Full_Description, "
-//             + "    'Accessory' AS Product_Type, "
-//             + "    'Accessories' AS Category "
-//             + "FROM Accessory a"; 
+             + "    t.Category_ID AS Category_ID, "
+             + "    c.Category_Name AS Category_Name, "
+             + "    t.Estimated_Labor_Hours AS Estimated_Labor_Hours "
+             + "FROM cake_template t "
+             + "LEFT JOIN product_category c ON t.Category_ID = c.Category_ID";
     }
 
     public Product mapRowToProduct(ResultSet rs) throws SQLException {
-        return new Product(
+        Product p = new Product(
             rs.getString("Product_ID"),
             rs.getString("Product_Name"),
             rs.getString("SKU"),
-            rs.getString("Category"),
-            rs.getDouble("Price"),
-            rs.getDouble("Labor_Hours"),
+            rs.getString("Category_ID"),
+            rs.getString("Category_Name"),
+            rs.getDouble("Margin_Percent"),
+            rs.getDouble("Service_Percent"),
+            rs.getString("Recipe_ID"),
+            rs.getString("Image_URL"),
             rs.getString("Status"),
             rs.getBoolean("Is_Featured"),
-            rs.getString("Image_URL"),
             rs.getString("Short_Description"),
             rs.getString("Full_Description"),
             rs.getString("Product_Type")
         );
+        p.setEstimatedLaborHours(rs.getDouble("Estimated_Labor_Hours"));
+        return p;
     }
 
     private String appendFilterConditions(String sql, String category, String status, String search, List<Object> params) {
         StringBuilder sb = new StringBuilder(sql);
         if (category != null && !category.trim().isEmpty()) {
-            sb.append(" AND p.Category = ?");
+            sb.append(" AND (p.Category_Name = ? OR p.Category_ID = ?)");
+            params.add(category);
             params.add(category);
         }
         if (status != null && !status.trim().isEmpty()) {
@@ -317,12 +367,11 @@ public class ProductDAO {
     }
 
     private String getOrderByClause(String sortBy) {
-        if ("price-asc".equalsIgnoreCase(sortBy)) {
-            return " ORDER BY p.Price ASC";
-        } else if ("price-desc".equalsIgnoreCase(sortBy)) {
-            return " ORDER BY p.Price DESC";
-        } else {
-            return " ORDER BY p.Product_ID DESC"; // newest first
+        if ("margin-asc".equalsIgnoreCase(sortBy)) {
+            return " ORDER BY p.Margin_Percent ASC";
+        } else if ("margin-desc".equalsIgnoreCase(sortBy)) {
+            return " ORDER BY p.Margin_Percent DESC";
         }
+        return " ORDER BY p.Product_ID DESC"; // newest first
     }
 }

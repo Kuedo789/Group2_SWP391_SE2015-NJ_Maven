@@ -809,14 +809,11 @@
                     <!-- Maintain page size -->
                     <input type="hidden" name="pageSize" value="${pageSize}">
                     
-                    <select class="filter-select" name="category" onchange="this.form.submit()">
+                     <select class="filter-select" name="category" onchange="this.form.submit()">
                         <option value="" ${empty category ? 'selected' : ''}>All Categories</option>
-                        <option value="Chocolate Cakes" ${category eq 'Chocolate Cakes' ? 'selected' : ''}>Chocolate Cakes</option>
-                        <option value="Fruit Cakes" ${category eq 'Fruit Cakes' ? 'selected' : ''}>Fruit Cakes</option>
-                        <option value="Cheesecakes" ${category eq 'Cheesecakes' ? 'selected' : ''}>Cheesecakes</option>
-                        <option value="Cupcakes" ${category eq 'Cupcakes' ? 'selected' : ''}>Cupcakes</option>
-                        <option value="Accessories" ${category eq 'Accessories' ? 'selected' : ''}>Accessories</option>
-                        <option value="Celebration Cakes" ${category eq 'Celebration Cakes' ? 'selected' : ''}>Celebration Cakes</option>
+                        <c:forEach var="cat" items="${productCategories}">
+                            <option value="${cat.id}" ${category eq cat.id or category eq cat.name ? 'selected' : ''}>${cat.name}</option>
+                        </c:forEach>
                     </select>
 
                     <select class="filter-select" name="status" onchange="this.form.submit()">
@@ -832,8 +829,8 @@
 
                     <select class="filter-select" name="sortBy" onchange="this.form.submit()">
                         <option value="newest" ${sortBy eq 'newest' ? 'selected' : ''}>Sort by: Newest First</option>
-                        <option value="price-asc" ${sortBy eq 'price-asc' ? 'selected' : ''}>Sort by: Price Low to High</option>
-                        <option value="price-desc" ${sortBy eq 'price-desc' ? 'selected' : ''}>Sort by: Price High to Low</option>
+                        <option value="margin-asc" ${sortBy eq 'margin-asc' ? 'selected' : ''}>Sort by: Margin Low to High</option>
+                        <option value="margin-desc" ${sortBy eq 'margin-desc' ? 'selected' : ''}>Sort by: Margin High to Low</option>
                     </select>
 
                     <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Filter</button>
@@ -848,8 +845,7 @@
                             <th style="width: 50px;">#</th>
                             <th>Product</th>
                             <th>Category</th>
-                            <th>Price</th>
-                            <th>Labor Hours</th>
+                            <th style="min-width: 200px;">Pricing & Recipe Formula</th>
                             <th>Featured</th>
                             <th>Status</th>
                             <th style="width: 150px;">Actions</th>
@@ -878,12 +874,12 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>${p.category}</td>
-                                        <td class="fw-bold" style="color: #444;">$${String.format("%.2f", p.price)}</td>
-                                        <td>
-                                            <span class="stock-badge-in">${p.laborHours}</span>
-                                            <span class="stock-subtext">hours</span>
-                                        </td>
+                                         <td>${p.categoryName}</td>
+                                         <td>
+                                             <span class="badge bg-success text-white mb-1" style="display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 4px;">Margin: ${p.marginPercent}%</span>
+                                             <span class="badge bg-warning text-dark mb-1" style="display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 4px;">Service: ${p.servicePercent}%</span>
+                                             <div class="text-muted mt-1" style="font-size: 11px; font-weight: 500;"><i class="fa-solid fa-receipt me-1"></i> Recipe ID: ${p.recipeId}</div>
+                                         </td>
                                         <td class="text-center">
                                             <c:choose>
                                                 <c:when test="${p.featured}">
