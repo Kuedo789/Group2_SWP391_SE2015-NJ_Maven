@@ -56,25 +56,6 @@
             padding: 40px;
         }
 
-        .avatar-box {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-
-        .profile-avatar {
-            width: 125px;
-            height: 125px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #e88f2a;
-        }
-
-        .avatar-name {
-            margin-top: 12px;
-            font-weight: bold;
-            color: #2b1b17;
-        }
-
         .form-title {
             color: #2b1b17;
             font-weight: bold;
@@ -172,14 +153,6 @@
                     <i class="fa fa-user-pen me-2"></i>
                     Update Profile
                 </h3>
-                <!-- Avatar -->
-                <div class="avatar-box">
-                    <img src="${pageContext.request.contextPath}/img/user-default.png"
-                         alt="User Avatar"
-                         class="profile-avatar">
-
-                    <h5 class="avatar-name">${sessionScope.user.fullName}</h5>
-                </div>
 
                 <% if (request.getAttribute("success") != null) { %>
                     <div class="alert alert-success">
