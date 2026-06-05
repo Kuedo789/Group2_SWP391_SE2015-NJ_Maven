@@ -19,7 +19,7 @@ public class DBContext {
         
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            return DriverManager.getConnection(url, user, password); //quan li driver(tao ra 1 ket noi tu netbean sang my sql
+            return DriverManager.getConnection(url, user, password); 
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
