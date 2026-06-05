@@ -13,7 +13,7 @@
 
         <div class="nav-menu">
             <a href="${pageContext.request.contextPath}/common/home.jsp" class="active">Trang chủ</a>
-            <a href="#">Menu bánh</a>
+            <a href="${pageContext.request.contextPath}/customer/productList.jsp">Menu bánh</a>
             <a href="#">Tự thiết kế</a>
             <a href="#">Bộ sưu tập</a>
             <a href="#">Ưu đãi</a>
