@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 <%-- 
     Document   : home
     Created on : Jun 4, 2026, 1:15:29 PM
@@ -368,4 +369,5 @@
     <jsp:include page="footer.jsp" />
     <jsp:include page="scripts.jsp" />
 </body>
+
 </html>
