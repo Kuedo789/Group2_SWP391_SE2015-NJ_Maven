@@ -1,246 +1,237 @@
 <%-- 
     Document   : profile
-    Created on : Jun 3, 2026, 4:56:53 PM
+    Created on : Jun 2026
     Author     : Nguyễn Hùng
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Update Profile - CakeZone</title>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <head>
+        <jsp:include page="../common/header.jsp" />
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            /* ===== PROFILE PAGE ===== */
 
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+            .profile-page {
+                max-width: 1180px;
+                margin: 0 auto;
+                padding: 110px 32px 90px;
+            }
 
-    <style>
-        body {
-            background-color: #f8f5f0;
-            font-family: Arial, sans-serif;
-        }
+            .profile-card {
+                background-color: var(--white);
+                border-radius: 22px;
+                padding: 48px 54px;
+                box-shadow: var(--shadow);
+            }
 
-        .navbar {
-            background-color: #2b1b17;
-        }
+            .profile-title {
+                display: flex;
+                align-items: center;
+                gap: 18px;
+                margin-bottom: 34px;
+                color: var(--text);
+            }
 
-        .navbar-brand {
-            color: #e88f2a !important;
-            font-weight: bold;
-            font-size: 28px;
-            text-transform: uppercase;
-        }
+            .profile-title i {
+                font-size: 34px;
+                color: var(--primary);
+            }
 
-        .navbar .nav-link {
-            color: #ddd !important;
-        }
+            .profile-title h1 {
+                margin: 0;
+                font-size: 34px;
+                font-weight: 800;
+            }
 
-        .navbar .nav-link:hover,
-        .navbar .nav-link.active {
-            color: #e88f2a !important;
-        }
+            .profile-form {
+                width: 100%;
+            }
 
-        .profile-section {
-            padding: 60px 0;
-        }
+            .form-row {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
 
-        .profile-card {
-            background-color: #ffffff;
-            border-radius: 14px;
-            box-shadow: 0 0 22px rgba(0, 0, 0, 0.08);
-            padding: 40px;
-        }
+            .form-group {
+                margin-bottom: 24px;
+            }
 
-        .form-title {
-            color: #2b1b17;
-            font-weight: bold;
-            margin-bottom: 25px;
-        }
+            .form-group label {
+                display: block;
+                margin-bottom: 10px;
+                color: var(--text);
+                font-size: 16px;
+                font-weight: 700;
+            }
 
-        .form-label {
-            font-weight: 600;
-            color: #222;
-        }
+            .required {
+                color: #d62828;
+            }
 
-        .form-control {
-            border-radius: 8px;
-            padding: 10px 12px;
-        }
+            .form-control {
+                width: 100%;
+                height: 56px;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                background-color: var(--white);
+                color: var(--text);
+                font-size: 16px;
+                padding: 0 16px;
+                outline: none;
+                box-sizing: border-box;
+            }
 
-        .form-control:focus {
-            border-color: #e88f2a;
-            box-shadow: 0 0 0 0.2rem rgba(232, 143, 42, 0.2);
-        }
+            .form-control:focus {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px rgba(21, 92, 46, 0.1);
+            }
 
-        .small-note {
-            font-size: 13px;
-            color: #777;
-        }
+            .form-control[readonly] {
+                background-color: #f7f5ef;
+                color: var(--text-muted);
+                cursor: not-allowed;
+            }
 
-        .btn-update {
-            background-color: #e88f2a;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 28px;
-            font-weight: bold;
-        }
+            .form-note {
+                margin-top: 8px;
+                color: var(--text-muted);
+                font-size: 14px;
+            }
 
-        .btn-update:hover {
-            background-color: #d17b1d;
-            color: white;
-        }
+            .address-area {
+                min-height: 145px;
+                padding-top: 14px;
+                resize: vertical;
+                font-family: inherit;
+            }
 
-        .btn-cancel {
-            border-radius: 8px;
-            padding: 10px 28px;
-        }
-    </style>
-</head>
+            .profile-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 14px;
+                margin-top: 18px;
+            }
 
-<body>
+            .btn-cancel,
+            .btn-update {
+                min-width: 140px;
+                height: 52px;
+                border: none;
+                border-radius: 9px;
+                color: white;
+                font-size: 16px;
+                font-weight: 700;
+                cursor: pointer;
+            }
 
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark px-5 py-3">
-    <a href="${pageContext.request.contextPath}/index.jsp" class="navbar-brand">
-        <i class="fa fa-birthday-cake me-2"></i>CAKEZONE
-    </a>
+            .btn-cancel {
+                background-color: #6c757d;
+            }
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
-        <span class="navbar-toggler-icon"></span>
-    </button>
+            .btn-update {
+                background-color: var(--primary);
+            }
 
-    <div class="collapse navbar-collapse" id="navbarCollapse">
-        <div class="navbar-nav ms-auto">
+            .btn-cancel:hover {
+                background-color: #5c636a;
+            }
 
-            <a href="${pageContext.request.contextPath}/index.jsp" class="nav-item nav-link">
-                Home
-            </a>
+            .btn-update:hover {
+                background-color: #104823;
+            }
 
-            <div class="nav-item dropdown">
-                <a href="#" class="nav-link dropdown-toggle active" data-bs-toggle="dropdown">
-                    <i class="fa fa-user me-1"></i>
-                    ${sessionScope.user.fullName}
-                </a>
+            .btn-update i {
+                margin-right: 8px;
+            }
 
-                <div class="dropdown-menu dropdown-menu-end">
-                    <a href="${pageContext.request.contextPath}/customer/profile.jsp" class="dropdown-item">
-                        Update Profile
-                    </a>
-                    <a href="${pageContext.request.contextPath}/logout" class="dropdown-item">
-                        Logout
-                    </a>
-                </div>
-            </div>
+            @media (max-width: 768px) {
+                .profile-page {
+                    padding: 32px 18px 70px;
+                }
 
-        </div>
-    </div>
-</nav>
+                .profile-card {
+                    padding: 32px 24px;
+                }
 
-<!-- Profile Section -->
-<div class="container profile-section">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10">
+                .profile-title h1 {
+                    font-size: 28px;
+                }
 
+                .form-row {
+                    grid-template-columns: 1fr;
+                    gap: 0;
+                }
+
+                .profile-actions {
+                    flex-direction: column;
+                }
+
+                .btn-cancel,
+                .btn-update {
+                    width: 100%;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <jsp:include page="../common/navbar.jsp" />
+
+        <main class="profile-page">
             <div class="profile-card">
-                
-                <h3 class="form-title">
-                    <i class="fa fa-user-pen me-2"></i>
-                    Update Profile
-                </h3>
 
-                <% if (request.getAttribute("success") != null) { %>
-                    <div class="alert alert-success">
-                        Profile updated successfully.
-                    </div>
-                <% } %>
+                <div class="profile-title">
+                    <i class="fa fa-user-edit"></i>
+                    <h1>Thông tin cá nhân</h1>
+                </div>
 
-                <% if (request.getAttribute("error") != null) { %>
-                    <div class="alert alert-danger">
-                        ${error}
-                    </div>
-                <% } %>
+                <form class="profile-form" action="#" method="post">
 
-                <form action="${pageContext.request.contextPath}/profile/update" method="post">
-
-                    <div class="row">
-
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">
-                                Full Name <span class="text-danger">*</span>
-                            </label>
-                            <input type="text"
-                                   name="fullName"
-                                   class="form-control"
-                                   value="${sessionScope.user.fullName}"
-                                   placeholder="Enter your full name"
-                                   required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Họ và tên <span class="required">*</span></label>
+                            <input type="text" name="fullName" class="form-control" placeholder="Nhập họ và tên của bạn">
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">
-                                Phone Number <span class="text-danger">*</span>
-                            </label>
-                            <input type="text"
-                                   name="phone"
-                                   class="form-control"
-                                   value="${sessionScope.user.phone}"
-                                   placeholder="Enter phone number"
-                                   required>
+                        <div class="form-group">
+                            <label>Số điện thoại <span class="required">*</span></label>
+                            <input type="text" name="phone" class="form-control" placeholder="Nhập số điện thoại">
                         </div>
-
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email"
-                                   name="email"
-                                   class="form-control"
-                                   value="${sessionScope.user.email}"
-                                   readonly>
-                            <div class="small-note mt-1">
-                                Email is used for login and cannot be changed here.
-                            </div>
-                        </div>
-
-                        <div class="col-md-12 mb-3">
-                            <label class="form-label">
-                                Delivery Address <span class="text-danger">*</span>
-                            </label>
-                            <textarea name="address"
-                                      class="form-control"
-                                      rows="4"
-                                      placeholder="Enter your delivery address"
-                                      required>${sessionScope.user.address}</textarea>
-                        </div>
-
                     </div>
 
-                    <div class="d-flex justify-content-end gap-2 mt-3">
-                        <a href="${pageContext.request.contextPath}/index.jsp"
-                           class="btn btn-secondary btn-cancel">
-                            Cancel
-                        </a>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" name="email" class="form-control" value="" readonly>
+                        <div class="form-note">Email dùng để đăng nhập và không thể thay đổi tại đây.</div>
+                    </div>
 
-                        <button type="submit" class="btn btn-update">
-                            <i class="fa fa-save me-2"></i>
-                            Update Profile
+                    <div class="form-group">
+                        <label>Địa chỉ giao hàng <span class="required">*</span></label>
+                        <textarea name="address" class="form-control address-area" placeholder="Nhập địa chỉ giao hàng"></textarea>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button type="button" class="btn-cancel" onclick="history.back()">Hủy</button>
+
+                        <button type="submit" class="btn-update">
+                            <i class="fa fa-save"></i>
+                            Cập nhật
                         </button>
                     </div>
 
                 </form>
 
             </div>
+        </main>
 
-        </div>
-    </div>
-</div>
+        <jsp:include page="../common/footer.jsp" />
+        <jsp:include page="../common/scripts.jsp" />
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
+    </body>
 </html>
