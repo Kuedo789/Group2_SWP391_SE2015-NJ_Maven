@@ -64,9 +64,7 @@ public class UserListServlet extends HttpServlet {
 
             String keyword = request.getParameter("searchKeyword");
             String roleId = request.getParameter("filterRoleId");
-
-            UserDAO dao = new UserDAO();
-            List<User> userList;
+            String status = request.getParameter("filterStatus");
 
             if (keyword != null && keyword.trim().isEmpty()) {
                 keyword = null;
@@ -74,9 +72,14 @@ public class UserListServlet extends HttpServlet {
             if (roleId != null && roleId.trim().isEmpty()) {
                 roleId = null;
             }
-            if (keyword != null || roleId != null) {
+            if (status != null && status.trim().isEmpty()) {
+                status = null;
+            }
+            UserDAO dao = new UserDAO();
+            List<User> userList;
 
-                userList = dao.searchAndFilterUsers(keyword, roleId);
+            if (keyword != null || roleId != null || status != null) {
+                userList = dao.searchAndFilterUsers(keyword, roleId, status);
             } else {
                 userList = dao.getAllUsers();
             }

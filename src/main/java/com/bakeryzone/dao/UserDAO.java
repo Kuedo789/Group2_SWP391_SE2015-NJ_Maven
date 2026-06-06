@@ -29,7 +29,7 @@ public class UserDAO {
         ResultSet rs = null;
 
         try {
-            String sql = "Select u.User_ID, u.Full_Name, u.Email, u.Password, u.Phone, u.Role_ID, r.Role_Name " + "FROM user u JOIN role r ON u.Role_ID = r.Role_ID";
+            String sql = "Select u.User_ID, u.Full_Name, u.Email, u.Password, u.Phone, u.Role_ID, u.Account_Status, r.Role_Name " + "FROM user u JOIN role r ON u.Role_ID = r.Role_ID";
             conn = db.getJDBCConnection(); //mo cong ket noi
             ps = conn.prepareStatement(sql); //dua cau lenh sql vao duong truyen
             rs = ps.executeQuery(); //execute va nhan ket qua tu bien rs
@@ -42,6 +42,7 @@ public class UserDAO {
                 u.setPassword(rs.getString("Password"));
                 u.setPhone(rs.getString("Phone"));
                 u.setRoleId(rs.getString("Role_ID"));
+                u.setAccountStatus(rs.getString("Account_Status"));
                 u.setRoleName(rs.getString("Role_Name"));
 
                 list.add(u); //truyen du lieu vao trong list
@@ -77,7 +78,7 @@ public class UserDAO {
         PreparedStatement ps = null;
 
         try {
-            String sql = "INSERT INTO user (User_ID, Full_Name, Email, Password, Phone, Role_ID) VALUES (?,?,?,?,?,?)";
+            String sql = "INSERT INTO user (User_ID, Full_Name, Email, Password, Phone, Role_ID, Account_Status) VALUES (?,?,?,?,?,?,?)";
 
             conn = db.getJDBCConnection();
             ps = conn.prepareStatement(sql);
@@ -88,6 +89,7 @@ public class UserDAO {
             ps.setString(4, user.getPassword());
             ps.setString(5, user.getPhone());
             ps.setString(6, user.getRoleId());
+            ps.setString(7, "Active");
 
             ps.executeUpdate();
 
@@ -166,7 +168,8 @@ public class UserDAO {
                 u.setPassword(rs.getString("Password"));
                 u.setPhone(rs.getString("Phone"));
                 u.setRoleId(rs.getString("Role_ID"));
-                u.setRoleId(rs.getString("Role_Name"));
+                u.setAccountStatus(rs.getString("Account_Status"));
+                u.setRoleName(rs.getString("Role_Name"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -195,7 +198,7 @@ public class UserDAO {
         PreparedStatement ps = null;
 
         try {
-            String sql = "UPDATE user SET Full_Name = ?, Email = ?, Password = ?, Phone = ?, Role_ID = ? WHERE User_ID = ?";
+            String sql = "UPDATE user SET Full_Name = ?, Email = ?, Password = ?, Phone = ?, Role_ID = ?, Account_Status = ? WHERE User_ID = ?";
 
             conn = db.getJDBCConnection();
             ps = conn.prepareStatement(sql);
@@ -205,7 +208,8 @@ public class UserDAO {
             ps.setString(3, user.getPassword());
             ps.setString(4, user.getPhone());
             ps.setString(5, user.getRoleId());
-            ps.setString(6, user.getUserId());
+            ps.setString(6, user.getAccountStatus());
+            ps.setString(7, user.getUserId());
 
             ps.executeUpdate();
         } catch (Exception e) {
@@ -225,7 +229,7 @@ public class UserDAO {
         }
     }
 
-    public List<User> searchAndFilterUsers(String keyword, String roleId) {
+    public List<User> searchAndFilterUsers(String keyword, String roleId, String status) {
         List<User> list = new ArrayList<>();
 
         DBContext db = new DBContext();
@@ -234,7 +238,7 @@ public class UserDAO {
         ResultSet rs = null;
 
         try {
-            String sql = "SELECT u.User_ID, u.Full_Name, u.Email, u.Password, u.Phone, u.Role_ID, r.Role_Name "
+            String sql = "SELECT u.User_ID, u.Full_Name, u.Email, u.Password, u.Phone, u.Role_ID, u.Account_Status, r.Role_Name "
                     + "FROM user u JOIN role r ON u.Role_ID = r.Role_ID WHERE 1=1";
 
             if (keyword != null) {
@@ -242,6 +246,9 @@ public class UserDAO {
             }
             if (roleId != null) {
                 sql += " AND u.Role_ID = ?";
+            }
+            if (status != null) {
+                sql += " AND u.Account_Status = ?";
             }
 
             conn = db.getJDBCConnection(); //mo cong ket noi
@@ -255,6 +262,9 @@ public class UserDAO {
             if (roleId != null) {
                 ps.setString(paramIndex++, roleId);
             }
+            if (status != null) {
+                ps.setString(paramIndex++, status);
+            }
 
             rs = ps.executeQuery(); //execute va nhan ket qua tu bien rs
 
@@ -266,6 +276,7 @@ public class UserDAO {
                 u.setPassword(rs.getString("Password"));
                 u.setPhone(rs.getString("Phone"));
                 u.setRoleId(rs.getString("Role_ID"));
+                u.setAccountStatus(rs.getString("Account_Status"));
                 u.setRoleName(rs.getString("Role_Name"));
 
                 list.add(u); //truyen du lieu vao trong list
@@ -290,6 +301,34 @@ public class UserDAO {
         }
 
         return list;
+    }
+
+    public boolean checkEmailExist(String email, String currentUserId) {
+        DBContext db = new DBContext();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            // Neu la Edit thi bo qua chinh Email cua minh, neu la Add thi kiem tra toan bo
+            String sql = "SELECT * FROM user WHERE Email = ?";
+            if (currentUserId != null && !currentUserId.isEmpty()) {
+                sql += " AND User_ID != ?";
+            }
+            conn = db.getJDBCConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, email.trim());
+            if (currentUserId != null && !currentUserId.isEmpty()) {
+                ps.setString(2, currentUserId);
+            }
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return true; // Email da ton tai
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            /* close resources */ }
+        return false;
     }
 
 }

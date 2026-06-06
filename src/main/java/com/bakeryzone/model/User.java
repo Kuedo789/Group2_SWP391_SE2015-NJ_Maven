@@ -17,11 +17,12 @@ public class User {
     private String phone;
     private String roleId;
     private String roleName;
+    private String accountStatus;
 
     public User() {
     }
 
-    public User(String userId, String fullname, String email, String password, String phone, String roleId, String roleName) {
+    public User(String userId, String fullname, String email, String password, String phone, String roleId, String roleName, String accountStatus) {
         this.userId = userId;
         this.fullName = fullname;
         this.email = email;
@@ -29,8 +30,18 @@ public class User {
         this.phone = phone;
         this.roleId = roleId;
         this.roleName = roleName;
+        this.accountStatus = accountStatus;
     }
 
+    public String getAccountStatus() {
+        return accountStatus;
+    }
+
+    public void setAccountStatus(String accountStatus) {
+        this.accountStatus = accountStatus;
+    }
+
+    
     public String getUserId() {
         return userId;
     }
