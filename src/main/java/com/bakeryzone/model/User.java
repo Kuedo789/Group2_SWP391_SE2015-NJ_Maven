@@ -4,13 +4,13 @@
  */
 package com.bakeryzone.model;
 
-
 /**
  *
  * @author Asus
  */
 public class User {
-    private int userId;
+
+    private String userId;
     private String fullName;
     private String email;
     private String password;
@@ -21,7 +21,7 @@ public class User {
     public User() {
     }
 
-    public User(int userId, String fullname, String email, String password, String phone, String roleId, String roleName) {
+    public User(String userId, String fullname, String email, String password, String phone, String roleId, String roleName) {
         this.userId = userId;
         this.fullName = fullname;
         this.email = email;
@@ -31,11 +31,11 @@ public class User {
         this.roleName = roleName;
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
@@ -86,7 +86,5 @@ public class User {
     public void setRoleName(String roleName) {
         this.roleName = roleName;
     }
-    
-    
-    
+
 }

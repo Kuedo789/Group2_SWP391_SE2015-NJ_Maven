@@ -82,7 +82,6 @@ public class UserListServlet extends HttpServlet {
             }
 
             request.setAttribute("USERS", userList);
-
             request.getRequestDispatcher("admin/userList.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();

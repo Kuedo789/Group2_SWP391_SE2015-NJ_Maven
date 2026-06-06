@@ -52,7 +52,7 @@
                                     <label class="form-label font-weight-bold text-dark">Họ và Tên người dùng:</label>
                                     <input type="text" name="fullName" value="${USER_DATA.fullName}" required class="form-control bg-light border-0 px-4" placeholder="Nhập đầy đủ họ và tên..." style="height: 55px;">
                                 </div>
-
+                                
                                 <div class="col-sm-12">
                                     <label class="form-label font-weight-bold text-dark">Email đăng nhập hệ thống:</label>
                                     <input type="email" name="email" value="${USER_DATA.email}" required class="form-control bg-light border-0 px-4" placeholder="username@gmail.com" style="height: 55px;">

@@ -6,7 +6,6 @@ package com.bakeryzone.dao;
 
 import com.bakeryzone.utils.DBContext;
 
-
 import com.bakeryzone.model.User;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -22,7 +21,7 @@ public class UserDAO {
 
     //ham lay toan bo danh sach user kem theo role tuong ung
     public List<User> getAllUsers() {
-        List<User> list = new ArrayList<User>();
+        List<User> list = new ArrayList<>();
 
         DBContext db = new DBContext();
         Connection conn = null;
@@ -30,14 +29,14 @@ public class UserDAO {
         ResultSet rs = null;
 
         try {
-            String sql = "Select u.User_ID, u.Full_Name, u.Email, u.Password, u.Phone, u.Role_ID, r.Role_Name " + "FROM User u JOIN Role r ON u.Role_ID = r.Role_ID";
+            String sql = "Select u.User_ID, u.Full_Name, u.Email, u.Password, u.Phone, u.Role_ID, r.Role_Name " + "FROM user u JOIN role r ON u.Role_ID = r.Role_ID";
             conn = db.getJDBCConnection(); //mo cong ket noi
             ps = conn.prepareStatement(sql); //dua cau lenh sql vao duong truyen
             rs = ps.executeQuery(); //execute va nhan ket qua tu bien rs
 
             while (rs.next() == true) { //doc du lieu tung dong tu tren xuong duoi
                 User u = new User();
-                u.setUserId(rs.getInt("User_ID"));
+                u.setUserId(rs.getString("User_ID"));
                 u.setFullName(rs.getString("Full_Name"));
                 u.setEmail(rs.getString("Email"));
                 u.setPassword(rs.getString("Password"));
@@ -78,16 +77,17 @@ public class UserDAO {
         PreparedStatement ps = null;
 
         try {
-            String sql = "INSERT INTO User (Full_Name, Email, Password, Phone, Role_ID) VALUES (?,?,?,?,?)";
+            String sql = "INSERT INTO user (User_ID, Full_Name, Email, Password, Phone, Role_ID) VALUES (?,?,?,?,?,?)";
 
             conn = db.getJDBCConnection();
             ps = conn.prepareStatement(sql);
 
-            ps.setString(1, user.getFullName());
-            ps.setString(2, user.getEmail());
-            ps.setString(3, user.getPassword());
-            ps.setString(4, user.getPhone());
-            ps.setString(5, user.getRoleId());
+            ps.setString(1, user.getUserId());
+            ps.setString(2, user.getFullName());
+            ps.setString(3, user.getEmail());
+            ps.setString(4, user.getPassword());
+            ps.setString(5, user.getPhone());
+            ps.setString(6, user.getRoleId());
 
             ps.executeUpdate();
 
@@ -110,18 +110,18 @@ public class UserDAO {
     }
 
     //ham xoa tai khoan theo id
-    public void deleteUser(int id) {
+    public void deleteUser(String id) {
         DBContext db = new DBContext();
         Connection conn = null;
         PreparedStatement ps = null;
 
         try {
-            String sql = "DELETE FROM User WHERE User_ID = ?";
+            String sql = "DELETE FROM user WHERE User_ID = ?";
 
             conn = db.getJDBCConnection();
             ps = conn.prepareStatement(sql);
 
-            ps.setInt(1, id);
+            ps.setString(1, id);
 
             ps.executeUpdate();
         } catch (Exception e) {
@@ -143,7 +143,7 @@ public class UserDAO {
     }
 
     //ham tim user theo id
-    public User getUserById(int id) {
+    public User getUserById(String id) {
         DBContext db = new DBContext();
         Connection conn = null;
         PreparedStatement ps = null;
@@ -151,22 +151,22 @@ public class UserDAO {
         User u = null;
 
         try {
-            String sql = "SELECT * FROM User WHERE User_ID = ?";
-
+            String sql = "SELECT u.*, r.Role_Name FROM user u JOIN role r ON u.Role_ID = r.Role_ID WHERE u.User_ID = ?";
             conn = db.getJDBCConnection();
             ps = conn.prepareStatement(sql);
-            ps.setInt(1, id);
+            ps.setString(1, id);
 
             rs = ps.executeQuery();
 
             if (rs.next() == true) {
                 u = new User();
-                u.setUserId(rs.getInt("User_ID"));
+                u.setUserId(rs.getString("User_ID"));
                 u.setFullName(rs.getString("Full_Name"));
                 u.setEmail(rs.getString("Email"));
                 u.setPassword(rs.getString("Password"));
                 u.setPhone(rs.getString("Phone"));
                 u.setRoleId(rs.getString("Role_ID"));
+                u.setRoleId(rs.getString("Role_Name"));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -195,7 +195,7 @@ public class UserDAO {
         PreparedStatement ps = null;
 
         try {
-            String sql = "UPDATE User SET Full_Name = ?, Email = ?, Password = ?, Phone = ?, Role_ID = ? WHERE User_ID = ?";
+            String sql = "UPDATE user SET Full_Name = ?, Email = ?, Password = ?, Phone = ?, Role_ID = ? WHERE User_ID = ?";
 
             conn = db.getJDBCConnection();
             ps = conn.prepareStatement(sql);
@@ -205,8 +205,8 @@ public class UserDAO {
             ps.setString(3, user.getPassword());
             ps.setString(4, user.getPhone());
             ps.setString(5, user.getRoleId());
+            ps.setString(6, user.getUserId());
 
-            ps.setInt(6, user.getUserId());
             ps.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -225,8 +225,8 @@ public class UserDAO {
         }
     }
 
-public List<User> searchAndFilterUsers(String keyword, String roleId) {
-        List<User> list = new ArrayList<User>();
+    public List<User> searchAndFilterUsers(String keyword, String roleId) {
+        List<User> list = new ArrayList<>();
 
         DBContext db = new DBContext();
         Connection conn = null;
@@ -234,13 +234,13 @@ public List<User> searchAndFilterUsers(String keyword, String roleId) {
         ResultSet rs = null;
 
         try {
-            String sql = "Select u.User_ID, u.Full_Name, u.Email, u.Password, u.Phone, u.Role_ID, r.Role_Name " 
-                       + "FROM User u JOIN Role r ON u.Role_ID = r.Role_ID WHERE 1 = 1";
+            String sql = "SELECT u.User_ID, u.Full_Name, u.Email, u.Password, u.Phone, u.Role_ID, r.Role_Name "
+                    + "FROM user u JOIN role r ON u.Role_ID = r.Role_ID WHERE 1=1";
 
-            if (keyword != null && keyword.trim().isEmpty() == false) {
+            if (keyword != null) {
                 sql += " AND (u.Full_Name LIKE ? OR u.Email LIKE ?)";
             }
-            if (roleId != null && roleId.trim().isEmpty() == false) {
+            if (roleId != null) {
                 sql += " AND u.Role_ID = ?";
             }
 
@@ -248,11 +248,11 @@ public List<User> searchAndFilterUsers(String keyword, String roleId) {
             ps = conn.prepareStatement(sql); //dua cau lenh sql vao duong truyen
 
             int paramIndex = 1;
-            if (keyword != null && keyword.trim().isEmpty() == false) {
+            if (keyword != null) {
                 ps.setString(paramIndex++, "%" + keyword.trim() + "%");
                 ps.setString(paramIndex++, "%" + keyword.trim() + "%");
             }
-            if (roleId != null && roleId.trim().isEmpty() == false) {
+            if (roleId != null) {
                 ps.setString(paramIndex++, roleId);
             }
 
@@ -260,7 +260,7 @@ public List<User> searchAndFilterUsers(String keyword, String roleId) {
 
             while (rs.next() == true) { //doc du lieu tung dong tu tren xuong duoi
                 User u = new User();
-                u.setUserId(rs.getInt("User_ID"));
+                u.setUserId(rs.getString("User_ID"));
                 u.setFullName(rs.getString("Full_Name"));
                 u.setEmail(rs.getString("Email"));
                 u.setPassword(rs.getString("Password"));

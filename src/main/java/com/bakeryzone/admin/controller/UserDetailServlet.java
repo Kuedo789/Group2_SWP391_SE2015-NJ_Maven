@@ -62,19 +62,17 @@ public class UserDetailServlet extends HttpServlet {
 
         try {
             String action = request.getParameter("action");
-            String idStr = request.getParameter("id");
+            String id = request.getParameter("id");
 
             UserDAO dao = new UserDAO();
 
             if (action != null && action.equals("delete")) {
-                int id = Integer.parseInt(idStr);
                 dao.deleteUser(id);
                 response.sendRedirect("userList");
                 return;
             }
 
             if (action != null && action.equals("edit")) {
-                int id = Integer.parseInt(idStr);
                 User existingUser = dao.getUserById(id);
                 request.setAttribute("USER_DATA", existingUser);
             }
@@ -99,7 +97,7 @@ public class UserDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             String action = request.getParameter("action");
-            String idStr = request.getParameter("userId");
+            String userId = request.getParameter("userId");
             String fullName = request.getParameter("fullName");
             String email = request.getParameter("email");
             String password = request.getParameter("password");
@@ -116,9 +114,11 @@ public class UserDetailServlet extends HttpServlet {
             u.setRoleId(roleId);
 
             if (action != null && action.equals("edit")) {
-                u.setUserId(Integer.parseInt(idStr));
+                u.setUserId(userId);
                 dao.updateUser(u);
             } else {
+                String generatedId = "USR" + (System.currentTimeMillis() % 100000);
+                u.setUserId(generatedId);
                 dao.insertUser(u);
 
             }
