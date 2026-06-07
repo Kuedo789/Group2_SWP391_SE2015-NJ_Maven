@@ -229,7 +229,7 @@ public class UserDAO {
         }
     }
 
-    public List<User> searchAndFilterUsers(String keyword, String roleId, String status) {
+    public List<User> searchAndFilterUsers(String keyword, String roleId, String status, int pageIndex, int pageSize) {
         List<User> list = new ArrayList<>();
 
         DBContext db = new DBContext();
@@ -250,6 +250,7 @@ public class UserDAO {
             if (status != null) {
                 sql += " AND u.Account_Status = ?";
             }
+            sql += " LIMIT ? OFFSET ?";
 
             conn = db.getJDBCConnection(); //mo cong ket noi
             ps = conn.prepareStatement(sql); //dua cau lenh sql vao duong truyen
@@ -265,6 +266,9 @@ public class UserDAO {
             if (status != null) {
                 ps.setString(paramIndex++, status);
             }
+
+            ps.setInt(paramIndex++, pageSize);
+            ps.setInt(paramIndex++, (pageIndex - 1) * pageSize);
 
             rs = ps.executeQuery(); //execute va nhan ket qua tu bien rs
 
@@ -329,6 +333,48 @@ public class UserDAO {
         } finally {
             /* close resources */ }
         return false;
+    }
+
+    public int getTotalUsers(String keyword, String roleId, String status) {
+        DBContext db = new DBContext();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            String sql = "SELECT COUNT(*) FROM user WHERE 1=1";
+            if (keyword != null) {
+                sql += " AND (Full_Name LIKE ? OR Email LIKE ?)";
+            }
+            if (roleId != null) {
+                sql += " AND Role_ID = ?";
+            }
+            if (status != null) {
+                sql += " AND Account_Status = ?";
+            }
+
+            conn = db.getJDBCConnection();
+            ps = conn.prepareStatement(sql);
+            int paramIndex = 1;
+            if (keyword != null) {
+                ps.setString(paramIndex++, "%" + keyword.trim() + "%");
+                ps.setString(paramIndex++, "%" + keyword.trim() + "%");
+            }
+            if (roleId != null) {
+                ps.setString(paramIndex++, roleId);
+            }
+            if (status != null) {
+                ps.setString(paramIndex++, status);
+            }
+
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+        }
+        return 0;
     }
 
 }

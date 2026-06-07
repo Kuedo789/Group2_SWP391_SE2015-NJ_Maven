@@ -66,6 +66,13 @@ public class UserListServlet extends HttpServlet {
             String roleId = request.getParameter("filterRoleId");
             String status = request.getParameter("filterStatus");
 
+            String pageParam = request.getParameter("page");
+            int pageIndex = 1;
+            if (pageParam != null && !pageParam.trim().isEmpty()) {
+                pageIndex = Integer.parseInt(pageParam);
+            }
+            int pageSize = 5;
+
             if (keyword != null && keyword.trim().isEmpty()) {
                 keyword = null;
             }
@@ -76,15 +83,17 @@ public class UserListServlet extends HttpServlet {
                 status = null;
             }
             UserDAO dao = new UserDAO();
-            List<User> userList;
 
-            if (keyword != null || roleId != null || status != null) {
-                userList = dao.searchAndFilterUsers(keyword, roleId, status);
-            } else {
-                userList = dao.getAllUsers();
+            int totalRecords = dao.getTotalUsers(keyword, roleId, status);
+            int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+            if (totalPages == 0) {
+                totalPages = 1;
             }
-
+            List<User> userList = dao.searchAndFilterUsers(keyword, roleId, status, pageIndex, pageSize);
+            
             request.setAttribute("USERS", userList);
+            request.setAttribute("currentPage", pageIndex);
+            request.setAttribute("endPage", totalPages);
             request.getRequestDispatcher("admin/userList.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();

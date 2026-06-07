@@ -110,7 +110,9 @@
                                     <c:catch var="ex">
                                         <c:forEach var="u" items="${USERS}" varStatus="loop">
                                             <tr class="align-middle">
-                                                <td class="text-center font-weight-bold text-muted" style="padding: 15px;">${loop.index + 1}</td>
+                                                <td class="text-center font-weight-bold text-muted" style="padding: 15px;">
+                                                    ${(currentPage - 1) * 5 + loop.index + 1}
+                                                </td>
                                                 <td class="font-weight-bold text-dark" style="padding: 15px;">${u.fullName}</td>
                                                 <td style="padding: 15px;">${u.email}</td>
                                                 <td class="text-primary font-weight-bold" style="padding: 15px; padding-left: 30px; text-align: left;">${u.phone}</td>
@@ -138,7 +140,9 @@
                                     <c:if test="${ex != null}">
                                         <c_old:forEach var="u" items="${USERS}" varStatus="loop">
                                             <tr class="align-middle">
-                                                <td class="text-center font-weight-bold text-muted" style="padding: 15px;">${loop.index + 1}</td>
+                                                <td class="text-center font-weight-bold text-muted" style="padding: 15px;">
+                                                    ${(currentPage - 1) * 5 + loop.index + 1}
+                                                </td>                                              
                                                 <td class="font-weight-bold text-dark" style="padding: 15px;">${u.fullName}</td>
                                                 <td style="padding: 15px;">${u.email}</td>
                                                 <td class="text-primary font-weight-bold" style="padding: 15px; padding-left: 30px; text-align: left;">${u.phone}</td>
@@ -170,7 +174,38 @@
                                         </tr>
                                     </c:if>
                                 </tbody>
+
                             </table>
+                            <div class="d-flex justify-content-center mt-4">
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination pagination-md m-0">
+
+                                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                                            <a class="page-link border-cake" style="color: #2b2b2b;" 
+                                               href="userList?page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
+                                                « Previous
+                                            </a>
+                                        </li>
+
+                                        <c:forEach begin="1" end="${endPage}" var="i">
+                                            <li class="page-item ${currentPage == i ? 'active' : ''}">
+                                                <a class="page-link ${currentPage == i ? 'btn-cake-primary text-white' : 'border-cake'}" 
+                                                   style="display: flex; align-items: center; justify-content: center; height: 38px; line-height: 1; ${currentPage != i ? 'color: #2b2b2b;' : ''}"
+                                                   href="userList?page=${i}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
+                                                    ${i}
+                                                </a>
+                                            </li>
+                                        </c:forEach>
+                                        <li class="page-item ${currentPage == endPage ? 'disabled' : ''}">
+                                            <a class="page-link border-cake" style="color: #2b2b2b;" 
+                                               href="userList?page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
+                                                Next »
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </nav>
+                            </div>
                         </div>
                     </div>
                 </div>
