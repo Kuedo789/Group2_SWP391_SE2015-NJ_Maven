@@ -33,13 +33,17 @@ public class AdminProductListController extends HttpServlet {
             String deleteId = request.getParameter("id");
             if (deleteId != null && !deleteId.trim().isEmpty()) {
                 try {
+                    System.out.println("[INFO] Bat dau xoa banh kem co ID: " + deleteId);
                     productDAO.deleteProduct(deleteId);
-                    request.getSession().setAttribute("successMessage", "Deleted product successfully!");
+                    System.out.println("[SUCCESS] Xoa banh kem co ID: " + deleteId + " thanh cong!");
+                    response.sendRedirect(request.getContextPath() + "/admin/products?msg=delete_success");
                 } catch (java.sql.SQLException e) {
-                    request.getSession().setAttribute("errorMessage", "Cannot delete this product because it is currently referenced by other database records (such as orders or customized recipes).");
+                    System.err.println("[ERROR] Loi khi xoa banh kem co ID: " + deleteId + " - " + e.getMessage());
+                    response.sendRedirect(request.getContextPath() + "/admin/products?msg=delete_error");
                 }
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/products");
             }
-            response.sendRedirect(request.getContextPath() + "/admin/products");
             return;
         }
         
@@ -112,25 +116,22 @@ public class AdminProductListController extends HttpServlet {
                     "{"
                     + "\"id\":\"%s\","
                     + "\"name\":\"%s\","
-                    + "\"sku\":\"%s\","
                     + "\"categoryId\":\"%s\","
                     + "\"categoryName\":\"%s\","
-                    + "\"marginPercent\":%.2f,"
-                    + "\"servicePercent\":%.2f,"
-                    + "\"recipeId\":\"%s\","
+                    + "\"basePrice\":%.2f,"
+                    + "\"estimatedLaborHours\":%.2f,"
+                    + "\"allowsGreeting\":%b,"
                     + "\"status\":\"%s\","
                     + "\"featured\":%b,"
                     + "\"imageUrl\":\"%s\","
-                    + "\"shortDescription\":\"%s\","
                     + "\"fullDescription\":\"%s\","
                     + "\"productType\":\"%s\""
                     + "}",
-                    p.getId(), escapeJson(p.getName()), escapeJson(p.getSku()), 
+                    p.getId(), escapeJson(p.getName()), 
                     escapeJson(p.getCategoryId()), escapeJson(p.getCategoryName()),
-                    p.getMarginPercent(), p.getServicePercent(),
-                    p.getRecipeId() != null ? escapeJson(p.getRecipeId()) : "",
+                    p.getBasePrice(), p.getEstimatedLaborHours(), p.isAllowsGreeting(),
                     escapeJson(p.getStatus()), p.isFeatured(), escapeJson(p.getImageUrl()), 
-                    escapeJson(p.getShortDescription()), escapeJson(p.getFullDescription()), 
+                    escapeJson(p.getFullDescription()), 
                     escapeJson(p.getProductType())
                 ));
                 if (i < products.size() - 1) {
