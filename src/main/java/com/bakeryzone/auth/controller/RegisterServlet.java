@@ -1,17 +1,34 @@
+<<<<<<< Updated upstream
 package com.bakeryzone.auth.controller;
 
 import com.bakeryzone.dao.UserDAO;
 import com.bakeryzone.model.User;
+=======
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
+ */
+package com.bakeryzone.auth.controller;
+import com.bakeryzone.dao.UserDAO;
+import com.bakeryzone.model.User;
+import java.io.IOException;
+import java.io.PrintWriter;
+>>>>>>> Stashed changes
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+<<<<<<< Updated upstream
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Random;
+=======
+import java.sql.Timestamp;
+>>>>>>> Stashed changes
 
 public class RegisterServlet extends HttpServlet {
 
+<<<<<<< Updated upstream
     // Tạo OTP 6 chữ số
     private String generateOtp() {
         return String.format("%06d", new Random().nextInt(1000000));
@@ -22,6 +39,82 @@ public class RegisterServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.sendRedirect(request.getContextPath() + "/auth/register.jsp");
+=======
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.sendRedirect(request.getContextPath() + "/auth/register.jsp");
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+
+        String fullName = request.getParameter("fullName");
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+        String confirmPassword = request.getParameter("confirmPassword");
+        
+        if (fullName == null || fullName.trim().isEmpty()
+                || email == null || email.trim().isEmpty()
+                || password == null || password.trim().isEmpty()
+                || confirmPassword == null || confirmPassword.trim().isEmpty()) {
+
+            request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+        
+              if (!password.equals(confirmPassword)) {
+            request.setAttribute("error", "Mật khẩu xác nhận không khớp.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        if (password.length() < 6) {
+            request.setAttribute("error", "Mật khẩu phải có ít nhất 6 ký tự.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+        
+          UserDAO dao = new UserDAO();
+
+        if (dao.isEmailExists(email)) {
+            request.setAttribute("error", "Email này đã được đăng ký.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+        String otp = generateOtp();
+        Timestamp otpExpiry = new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000);
+
+        User user = new User();
+        user.setFullName(fullName.trim());
+        user.setEmail(email.trim());
+        user.setPassword(password); // Nếu bạn có PasswordUtils thì hash ở đây
+        user.setPhone(null);
+        user.setRoleId("CUS");
+        user.setVerified(false);
+        user.setOtpCode(otp);
+        user.setOtpExpiry(otpExpiry);
+        user.setProvider("LOCAL");
+        user.setProviderId(null);
+        user.setAccountStatus("Active");
+        user.setActiveStaff(false);
+    }
+
+    @Override
+    public String getServletInfo() {
+        return "Short description";
+>>>>>>> Stashed changes
     }
 
     // Khi submit form đăng ký
