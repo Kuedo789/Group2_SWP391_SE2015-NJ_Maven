@@ -98,7 +98,7 @@
 
                                     <input type="email"
                                            id="account"
-                                           name="account"
+                                           name="email"
                                            value="<%= accountInput %>"
                                            placeholder="Nhập email của bạn"
                                            required>

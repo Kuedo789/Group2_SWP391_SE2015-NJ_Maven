@@ -8,6 +8,38 @@
         <servlet-name>UserListServlet</servlet-name>
         <servlet-class>com.bakeryzone.admin.controller.UserListServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>RegisterServlet</servlet-name>
+        <servlet-class>com.bakeryzone.auth.controller.RegisterServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>com.bakeryzone.auth.controller.LoginServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>VerifyOtpServlet</servlet-name>
+        <servlet-class>com.bakeryzone.auth.controller.VerifyOtpServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ForgotPasswordServlet</servlet-name>
+        <servlet-class>com.bakeryzone.auth.controller.ForgotPasswordServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>VerifyForgotOtpServlet</servlet-name>
+        <servlet-class>com.bakeryzone.auth.controller.VerifyForgotOtpServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ResetPasswordServlet</servlet-name>
+        <servlet-class>com.bakeryzone.auth.controller.ResetPasswordServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>LogoutServlet</servlet-name>
+        <servlet-class>com.bakeryzone.auth.controller.LogoutServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>com.bakeryzone.auth.controller.HomeServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UserDetailServlet</servlet-name>
         <url-pattern>/userDetail</url-pattern>
@@ -15,6 +47,39 @@
     <servlet-mapping>
         <servlet-name>UserListServlet</servlet-name>
         <url-pattern>/userList</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RegisterServlet</servlet-name>
+        <url-pattern>/register</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>VerifyOtpServlet</servlet-name>
+        <url-pattern>/verify-otp</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ForgotPasswordServlet</servlet-name>
+        <url-pattern>/forgot-password</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>VerifyForgotOtpServlet</servlet-name>
+        <url-pattern>/verify-forgot-otp</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ResetPasswordServlet</servlet-name>
+        <url-pattern>/reset-password</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>LogoutServlet</servlet-name>
+        <url-pattern>/logout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
