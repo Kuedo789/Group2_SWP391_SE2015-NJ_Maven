@@ -13,33 +13,6 @@ import java.sql.Timestamp;
 
 public class UserDAO {
 
-    // Hàm map ResultSet sang User để tránh lặp code
-    private User mapUser(ResultSet rs) throws Exception {
-        User u = new User();
-
-        u.setUserId(rs.getString("User_ID"));
-        u.setFullName(rs.getString("Full_Name"));
-        u.setEmail(rs.getString("Email"));
-        u.setPassword(rs.getString("Password"));
-        u.setPhone(rs.getString("Phone"));
-        u.setRoleId(rs.getString("Role_ID"));
-
-        try {
-            u.setRoleName(rs.getString("Role_Name"));
-        } catch (Exception ignored) {
-        }
-
-        u.setVerified(rs.getBoolean("Is_Verified"));
-        u.setOtpCode(rs.getString("OTP_Code"));
-        u.setOtpExpiry(rs.getTimestamp("OTP_Expiry"));
-        u.setProvider(rs.getString("Provider"));
-        u.setProviderId(rs.getString("Provider_ID"));
-        u.setAccountStatus(rs.getString("Account_Status"));
-        u.setActiveStaff(rs.getBoolean("Is_Active_Staff"));
-
-        return u;
-    }
-
     // Tạo User_ID nếu chưa có
     private String generateUserId(String roleId) {
         String prefix = "U";
@@ -80,7 +53,24 @@ public class UserDAO {
             rs = ps.executeQuery();
 
             while (rs.next()) {
-                User u = mapUser(rs);
+                User u = new User();
+
+                u.setUserId(rs.getString("User_ID"));
+                u.setFullName(rs.getString("Full_Name"));
+                u.setEmail(rs.getString("Email"));
+                u.setPassword(rs.getString("Password"));
+                u.setPhone(rs.getString("Phone"));
+                u.setRoleId(rs.getString("Role_ID"));
+                u.setRoleName(rs.getString("Role_Name"));
+
+                u.setVerified(rs.getBoolean("Is_Verified"));
+                u.setOtpCode(rs.getString("OTP_Code"));
+                u.setOtpExpiry(rs.getTimestamp("OTP_Expiry"));
+                u.setProvider(rs.getString("Provider"));
+                u.setProviderId(rs.getString("Provider_ID"));
+                u.setAccountStatus(rs.getString("Account_Status"));
+                u.setActiveStaff(rs.getBoolean("Is_Active_Staff"));
+
                 list.add(u);
             }
 
@@ -193,7 +183,22 @@ public class UserDAO {
             rs = ps.executeQuery();
 
             if (rs.next()) {
-                u = mapUser(rs);
+
+                u.setUserId(rs.getString("User_ID"));
+                u.setFullName(rs.getString("Full_Name"));
+                u.setEmail(rs.getString("Email"));
+                u.setPassword(rs.getString("Password"));
+                u.setPhone(rs.getString("Phone"));
+                u.setRoleId(rs.getString("Role_ID"));
+                u.setRoleName(rs.getString("Role_Name"));
+
+                u.setVerified(rs.getBoolean("Is_Verified"));
+                u.setOtpCode(rs.getString("OTP_Code"));
+                u.setOtpExpiry(rs.getTimestamp("OTP_Expiry"));
+                u.setProvider(rs.getString("Provider"));
+                u.setProviderId(rs.getString("Provider_ID"));
+                u.setAccountStatus(rs.getString("Account_Status"));
+                u.setActiveStaff(rs.getBoolean("Is_Active_Staff"));
             }
 
         } catch (Exception e) {
@@ -292,7 +297,24 @@ public class UserDAO {
             rs = ps.executeQuery();
 
             while (rs.next()) {
-                User u = mapUser(rs);
+                User u = new User();
+
+                u.setUserId(rs.getString("User_ID"));
+                u.setFullName(rs.getString("Full_Name"));
+                u.setEmail(rs.getString("Email"));
+                u.setPassword(rs.getString("Password"));
+                u.setPhone(rs.getString("Phone"));
+                u.setRoleId(rs.getString("Role_ID"));
+                u.setRoleName(rs.getString("Role_Name"));
+
+                u.setVerified(rs.getBoolean("Is_Verified"));
+                u.setOtpCode(rs.getString("OTP_Code"));
+                u.setOtpExpiry(rs.getTimestamp("OTP_Expiry"));
+                u.setProvider(rs.getString("Provider"));
+                u.setProviderId(rs.getString("Provider_ID"));
+                u.setAccountStatus(rs.getString("Account_Status"));
+                u.setActiveStaff(rs.getBoolean("Is_Active_Staff"));
+
                 list.add(u);
             }
 
@@ -492,29 +514,29 @@ public class UserDAO {
     }
 
     public boolean verifyOtp(String email, String otpCode) {
-        String sql = "SELECT User_ID FROM `user` "
-                + "WHERE Email = ? "
-                + "AND OTP_Code = ? "
-                + "AND OTP_Expiry > NOW() "
-                + "AND Is_Verified = false "
-                + "AND Account_Status = 'Active'";
+    String sql = "SELECT User_ID FROM `user` "
+            + "WHERE Email = ? "
+            + "AND OTP_Code = ? "
+            + "AND OTP_Expiry > NOW() "
+            + "AND Account_Status = 'Active'";
 
-        try (
-                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+    try (
+            Connection conn = DBContext.getJDBCConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, email);
-            ps.setString(2, otpCode);
+        ps.setString(1, email);
+        ps.setString(2, otpCode);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        try (ResultSet rs = ps.executeQuery()) {
+            return rs.next();
         }
 
-        return false;
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+
+    return false;
+}
 
     public void markUserVerified(String email) {
         String sql = "UPDATE `user` "
@@ -671,4 +693,30 @@ public class UserDAO {
             e.printStackTrace();
         }
     }
+    
+    public void updateUnverifiedRegisterByEmail(User user) {
+    String sql = "UPDATE `user` "
+            + "SET Full_Name = ?, Password = ?, Phone = ?, "
+            + "OTP_Code = ?, OTP_Expiry = ?, "
+            + "Provider = 'LOCAL', Account_Status = 'Active' "
+            + "WHERE Email = ? "
+            + "AND Is_Verified = false";
+
+    try (
+            Connection conn = DBContext.getJDBCConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, user.getFullName());
+        ps.setString(2, user.getPassword());
+        ps.setString(3, user.getPhone());
+        ps.setString(4, user.getOtpCode());
+        ps.setTimestamp(5, user.getOtpExpiry());
+        ps.setString(6, user.getEmail());
+
+        ps.executeUpdate();
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
 }// end class

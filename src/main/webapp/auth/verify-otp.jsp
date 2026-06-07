@@ -43,157 +43,196 @@
 <!DOCTYPE html>
 <html lang="vi">
 
-<head>
-    <jsp:include page="../common/header.jsp" />
-</head>
+    <head>
+        <jsp:include page="../common/header.jsp" />
+    </head>
 
-<body>
+    <body>
 
-    <jsp:include page="../common/navbar.jsp" />
+        <jsp:include page="../common/navbar.jsp" />
 
-    <main class="main auth-main">
+        <main class="main auth-main">
 
-        <section class="auth-section">
+            <section class="auth-section">
 
-            <div class="auth-card otp-card">
+                <div class="auth-card otp-card">
 
-                <!-- LEFT -->
-                <div class="auth-visual otp-visual">
+                    <!-- LEFT -->
+                    <div class="auth-visual otp-visual">
 
-                    <div class="auth-badge">
-                        <span class="material-symbols-outlined">
-                            <%= forgotFlow ? "lock_reset" : "verified_user" %>
-                        </span>
-                        <%= pageLabel %>
-                    </div>
-
-                    <h1>
-                        <%= forgotFlow
-                                ? "Xác thực email để đặt lại mật khẩu"
-                                : "Xác thực email để bắt đầu đặt bánh" %>
-                    </h1>
-
-                    <p>
-                        Mã OTP giúp chúng tôi xác nhận đúng email của bạn.
-                        Vui lòng kiểm tra hộp thư đến hoặc thư rác nếu chưa thấy mã.
-                    </p>
-
-                    <div class="auth-benefits">
-
-                        <div>
-                            <span class="material-symbols-outlined">mail</span>
-                            Mã xác nhận được gửi qua email
+                        <div class="auth-badge">
+                            <span class="material-symbols-outlined">
+                                <%= forgotFlow ? "lock_reset" : "verified_user" %>
+                            </span>
+                            <%= pageLabel %>
                         </div>
 
-                        <div>
-                            <span class="material-symbols-outlined">timer</span>
-                            Mã có hiệu lực trong thời gian giới hạn
-                        </div>
+                        <h1>
+                            <%= forgotFlow
+                                    ? "Xác thực email để đặt lại mật khẩu"
+                                    : "Xác thực email để bắt đầu đặt bánh" %>
+                        </h1>
 
-                        <div>
-                            <span class="material-symbols-outlined">shield</span>
-                            Bảo vệ tài khoản an toàn hơn
-                        </div>
+                        <p>
+                            Mã OTP giúp chúng tôi xác nhận đúng email của bạn.
+                            Vui lòng kiểm tra hộp thư đến hoặc thư rác nếu chưa thấy mã.
+                        </p>
 
-                    </div>
+                        <div class="auth-benefits">
 
-                </div>
+                            <div>
+                                <span class="material-symbols-outlined">mail</span>
+                                Mã xác nhận được gửi qua email
+                            </div>
 
-                <!-- RIGHT -->
-                <div class="auth-form-wrap">
+                            <div>
+                                <span class="material-symbols-outlined">timer</span>
+                                Mã có hiệu lực trong thời gian giới hạn
+                            </div>
 
-                    <div class="auth-form-header">
-                        <span class="auth-label"><%= pageLabel %></span>
-                        <h2><%= pageTitle %></h2>
-                    </div>
-
-                    <% if (error != null) { %>
-                        <div class="auth-message auth-error">
-                            <span class="material-symbols-outlined">error</span>
-                            <%= error %>
-                        </div>
-                    <% } %>
-
-                    <% if (message != null) { %>
-                        <div class="auth-message auth-success">
-                            <span class="material-symbols-outlined">check_circle</span>
-                            <%= message %>
-                        </div>
-                    <% } %>
-
-                    <form action="<%= formAction %>" method="post" class="auth-form">
-
-                        <div class="otp-intro">
-                            <span class="material-symbols-outlined">mark_email_read</span>
-                            <p><%= pageDesc %></p>
-                        </div>
-
-                        <div class="form-group">
-
-                            <label for="otp">Mã OTP</label>
-
-                            <div class="input-wrap otp-input-wrap">
-                                <span class="material-symbols-outlined">pin</span>
-
-                                <input
-                                    type="text"
-                                    id="otp"
-                                    name="otp"
-                                    class="otp-input"
-                                    placeholder="Nhập mã OTP"
-                                    maxlength="6"
-                                    inputmode="numeric"
-                                    autocomplete="one-time-code"
-                                    required>
+                            <div>
+                                <span class="material-symbols-outlined">shield</span>
+                                Bảo vệ tài khoản an toàn hơn
                             </div>
 
                         </div>
 
-                        <button type="submit" class="btn btn-primary auth-submit">
-                            Xác nhận OTP
-                        </button>
+                    </div>
 
-                        <div class="auth-note">
-                            Không nhận được mã?
-                            <a href="<%= resendAction %>" class="otp-link">
-                                Gửi lại OTP
-                            </a>
+                    <!-- RIGHT -->
+                    <div class="auth-form-wrap">
+
+                        <div class="auth-form-header">
+                            <span class="auth-label"><%= pageLabel %></span>
+                            <h2><%= pageTitle %></h2>
                         </div>
 
-                        <div class="auth-switch otp-back-wrap">
-                            <a href="<%= backHref %>">
-                                <span class="material-symbols-outlined otp-back-icon">arrow_back</span>
-                                <span><%= backText %></span>
-                            </a>
+                        <% if (error != null) { %>
+                        <div class="auth-message auth-error">
+                            <span class="material-symbols-outlined">error</span>
+                            <%= error %>
                         </div>
+                        <% } %>
 
-                        <div class="auth-switch">
-                            Đã có tài khoản?
-                            <a href="<%= contextPath %>/auth/login.jsp">Đăng nhập</a>
+                        <% if (message != null) { %>
+                        <div class="auth-message auth-success">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            <%= message %>
                         </div>
+                        <% } %>
 
-                    </form>
+                        <form action="<%= formAction %>" method="post" class="auth-form">
+
+                            <div class="otp-intro">
+                                <span class="material-symbols-outlined">mark_email_read</span>
+                                <p><%= pageDesc %></p>
+                            </div>
+                            <%
+                                Long otpExpireAtMillis = (Long) session.getAttribute("otpExpireAtMillis");
+
+                                if (otpExpireAtMillis == null) {
+                                    otpExpireAtMillis = 0L;
+                                }
+                            %>
+
+                            <div class="otp-timer-box">
+                                <span class="material-symbols-outlined">timer</span>
+                                <span>
+                                    Mã OTP hết hạn sau:
+                                    <strong id="otpTimer">--:--</strong>
+                                </span>
+                            </div>
+                            <div class="form-group">
+
+                                <label for="otp">Mã OTP</label>
+
+                                <div class="input-wrap otp-input-wrap">
+                                    <span class="material-symbols-outlined">pin</span>
+
+                                    <input
+                                        type="text"
+                                        id="otp"
+                                        name="otp"
+                                        class="otp-input"
+                                        placeholder="Nhập mã OTP"
+                                        maxlength="6"
+                                        inputmode="numeric"
+                                        autocomplete="one-time-code"
+                                        required>
+                                </div>
+
+                            </div>
+
+                            <button type="submit" class="btn btn-primary auth-submit">
+                                Xác nhận OTP
+                            </button>
+
+                            <div class="auth-note">
+                                Không nhận được mã?
+                                <a href="<%= resendAction %>" class="otp-link">
+                                    Gửi lại OTP
+                                </a>
+                            </div>
+
+                            <div class="auth-switch otp-back-wrap">
+                                <a href="<%= backHref %>">
+                                    <span class="material-symbols-outlined otp-back-icon">arrow_back</span>
+                                    <span><%= backText %></span>
+                                </a>
+                            </div>
+
+                            <div class="auth-switch">
+                                Đã có tài khoản?
+                                <a href="<%= contextPath %>/auth/login.jsp">Đăng nhập</a>
+                            </div>
+
+                        </form>
+
+                    </div>
 
                 </div>
 
-            </div>
+            </section>
 
-        </section>
+        </main>
 
-    </main>
+        <jsp:include page="../common/footer.jsp" />
+        <jsp:include page="../common/scripts.jsp" />
 
-    <jsp:include page="../common/footer.jsp" />
-    <jsp:include page="../common/scripts.jsp" />
+        <script>
+            const otpInput = document.getElementById("otp");
 
-    <script>
-        const otpInput = document.getElementById("otp");
+            if (otpInput) {
+                otpInput.addEventListener("input", function () {
+                    this.value = this.value.replace(/[^0-9]/g, "");
+                });
+            }
 
-        if (otpInput) {
-            otpInput.addEventListener("input", function () {
-                this.value = this.value.replace(/[^0-9]/g, "");
-            });
-        }
-    </script>
+            const otpExpireAtMillis = <%= otpExpireAtMillis %>;
+            const otpTimer = document.getElementById("otpTimer");
 
-</body>
+            function updateOtpTimer() {
+                const now = new Date().getTime();
+                const distance = otpExpireAtMillis - now;
+
+                if (distance <= 0) {
+                    otpTimer.textContent = "Đã hết hạn";
+                    otpTimer.classList.add("expired");
+                    return;
+                }
+
+                const totalSeconds = Math.floor(distance / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+
+                otpTimer.textContent =
+                        String(minutes).padStart(2, "0") + ":" +
+                        String(seconds).padStart(2, "0");
+            }
+
+            updateOtpTimer();
+            setInterval(updateOtpTimer, 1000);
+        </script>
+
+    </body>
 </html>

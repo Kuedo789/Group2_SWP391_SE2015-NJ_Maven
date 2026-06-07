@@ -1,81 +1,94 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
 package com.bakeryzone.auth.controller;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import com.bakeryzone.dao.UserDAO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Random;
 
-/**
- *
- * @author admin
- */
 public class VerifyForgotOtpServlet extends HttpServlet {
-   
-    /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet VerifyForgotOtpServlet</title>");  
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet VerifyForgotOtpServlet at " + request.getContextPath () + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    } 
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
-    } 
-
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
+    // Tạo OTP 6 chữ số
+    private String generateOtp() {
+        return String.format("%06d", new Random().nextInt(1000000));
     }
 
-    /** 
-     * Returns a short description of the servlet.
-     * @return a String containing servlet description
-     */
+    // Xử lý gửi lại OTP quên mật khẩu
     @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
+        String action = request.getParameter("action");
+
+        if ("resend".equalsIgnoreCase(action)) {
+            String email = (String) request.getSession().getAttribute("resetEmail");
+
+            if (email == null) {
+                response.sendRedirect(request.getContextPath() + "/auth/forgot-password.jsp");
+                return;
+            }
+
+            String newOtp = generateOtp();
+            Timestamp newExpiry = new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000);
+
+            UserDAO dao = new UserDAO();
+            dao.updateOtpByEmail(email, newOtp, newExpiry);
+
+            request.getSession().setAttribute("otpExpireAtMillis", newExpiry.getTime());
+
+            System.out.println("OTP quên mật khẩu mới cho " + email + " là: " + newOtp);
+
+            request.setAttribute("otpType", "forgot");
+            request.setAttribute("message", "Mã OTP mới đã được gửi lại.");
+            request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+            return;
+        }
+
+        response.sendRedirect(request.getContextPath() + "/auth/forgot-password.jsp");
+    }
+
+    // Xác thực OTP quên mật khẩu
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+
+        String otp = request.getParameter("otp");
+        String email = (String) request.getSession().getAttribute("resetEmail");
+
+        if (email == null) {
+            response.sendRedirect(request.getContextPath() + "/auth/forgot-password.jsp");
+            return;
+        }
+
+        if (otp == null || otp.trim().isEmpty()) {
+            request.setAttribute("otpType", "forgot");
+            request.setAttribute("error", "Vui lòng nhập mã OTP.");
+            request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+            return;
+        }
+
+        UserDAO dao = new UserDAO();
+
+        // Kiểm tra OTP đúng/sai
+        boolean validOtp = dao.verifyOtp(email, otp.trim());
+
+        if (!validOtp) {
+            request.setAttribute("otpType", "forgot");
+            request.setAttribute("error", "Mã OTP không đúng hoặc đã hết hạn.");
+            request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+            return;
+        }
+
+        // Đánh dấu đã xác thực OTP quên mật khẩu
+        request.getSession().setAttribute("resetOtpVerified", true);
+        request.getSession().removeAttribute("otpExpireAtMillis");
+
+        // Chuyển sang trang đặt lại mật khẩu
+        response.sendRedirect(request.getContextPath() + "/auth/reset-password.jsp");
+    }
 }

@@ -1,81 +1,147 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
-
 package com.bakeryzone.auth.controller;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import com.bakeryzone.dao.UserDAO;
+import com.bakeryzone.model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Random;
 
-/**
- *
- * @author admin
- */
 public class RegisterServlet extends HttpServlet {
-   
-    /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet RegisterServlet</title>");  
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet RegisterServlet at " + request.getContextPath () + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    } 
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
-    } 
-
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
+    // Tạo OTP 6 chữ số
+    private String generateOtp() {
+        return String.format("%06d", new Random().nextInt(1000000));
     }
 
-    /** 
-     * Returns a short description of the servlet.
-     * @return a String containing servlet description
-     */
+    // Khi truy cập /register bằng GET thì chuyển về trang register.jsp
     @Override
-    public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.sendRedirect(request.getContextPath() + "/auth/register.jsp");
+    }
 
+    // Khi submit form đăng ký
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        // Đọc tiếng Việt đúng
+        request.setCharacterEncoding("UTF-8");
+
+        // Lấy dữ liệu từ form register.jsp
+        String fullName = request.getParameter("fullName");
+        String email = request.getParameter("email");
+        String password = request.getParameter("password");
+        String confirmPassword = request.getParameter("confirmPassword");
+
+        // Kiểm tra rỗng
+        if (fullName == null || fullName.trim().isEmpty()
+                || email == null || email.trim().isEmpty()
+                || password == null || password.trim().isEmpty()
+                || confirmPassword == null || confirmPassword.trim().isEmpty()) {
+
+            request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        // Kiểm tra mật khẩu nhập lại
+        if (!password.equals(confirmPassword)) {
+            request.setAttribute("error", "Mật khẩu xác nhận không khớp.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        // Kiểm tra độ dài mật khẩu
+        if (password.length() < 6) {
+            request.setAttribute("error", "Mật khẩu phải có ít nhất 6 ký tự.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        UserDAO dao = new UserDAO();
+
+        // Tạo OTP và thời gian hết hạn 5 phút
+        String otp = generateOtp();
+        Timestamp otpExpiry = new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000);
+
+        // Kiểm tra email đã có trong database chưa
+        User existingUser = dao.findByEmail(email.trim());
+
+        if (existingUser != null) {
+
+            // Nếu email đã xác thực rồi thì không cho đăng ký lại
+            if (existingUser.isVerified()) {
+                request.setAttribute("error", "Email này đã được đăng ký. Vui lòng đăng nhập.");
+                request.setAttribute("fullName", fullName);
+                request.setAttribute("email", email);
+                request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+                return;
+            }
+
+            // Nếu email có rồi nhưng chưa xác thực OTP
+            // thì cập nhật lại thông tin và gửi OTP mới
+            User pendingUser = new User();
+            pendingUser.setFullName(fullName.trim());
+            pendingUser.setEmail(email.trim());
+            pendingUser.setPassword(password);
+            pendingUser.setPhone(null);
+            pendingUser.setOtpCode(otp);
+            pendingUser.setOtpExpiry(otpExpiry);
+
+            dao.updateUnverifiedRegisterByEmail(pendingUser);
+
+            // Lưu thông tin OTP vào session để trang OTP dùng
+            request.getSession().setAttribute("otpEmail", email.trim());
+            request.getSession().setAttribute("otpType", "register");
+            request.getSession().setAttribute("otpExpireAtMillis", otpExpiry.getTime());
+
+            // Tạm thời in OTP ra console để test
+            System.out.println("OTP đăng ký mới cho " + email + " là: " + otp);
+
+            request.setAttribute("otpType", "register");
+            request.setAttribute("message", "Email này chưa xác thực. Mã OTP mới đã được gửi lại.");
+            request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+            return;
+        }
+
+        // Nếu email chưa tồn tại thì tạo user mới
+        User user = new User();
+        user.setFullName(fullName.trim());
+        user.setEmail(email.trim());
+        user.setPassword(password);
+        user.setPhone(null);
+        user.setRoleId("CUS");
+        user.setVerified(false);
+        user.setOtpCode(otp);
+        user.setOtpExpiry(otpExpiry);
+        user.setProvider("LOCAL");
+        user.setProviderId(null);
+        user.setAccountStatus("Active");
+        user.setActiveStaff(false);
+
+        dao.createLocalUserForRegister(user);
+
+        // Lưu session để VerifyOtpServlet biết email nào đang xác thực
+        request.getSession().setAttribute("otpEmail", email.trim());
+        request.getSession().setAttribute("otpType", "register");
+        request.getSession().setAttribute("otpExpireAtMillis", otpExpiry.getTime());
+
+        // Tạm thời in OTP ra console để test
+        System.out.println("OTP đăng ký cho " + email + " là: " + otp);
+
+        request.setAttribute("otpType", "register");
+        request.setAttribute("message", "Mã OTP đã được gửi đến email của bạn.");
+        request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+    }
 }

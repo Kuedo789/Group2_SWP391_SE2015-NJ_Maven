@@ -1,40 +1,22 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package com.bakeryzone.admin.controller;
 
 import com.bakeryzone.dao.UserDAO;
 import com.bakeryzone.model.User;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-/**
- *
- * @author Asus
- */
-@WebServlet(name = "UserDetailServlet", urlPatterns = {"/userDetail"})
 public class UserDetailServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         response.setContentType("text/html;charset=UTF-8");
+
         try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
@@ -47,59 +29,50 @@ public class UserDetailServlet extends HttpServlet {
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         try {
+            // Lấy action: delete, edit hoặc null
             String action = request.getParameter("action");
-            String idStr = request.getParameter("id");
+
+            // User_ID là String nên không parseInt
+            String userId = request.getParameter("id");
 
             UserDAO dao = new UserDAO();
 
-            if (action != null && action.equals("delete")) {
-                int id = Integer.parseInt(idStr);
-                dao.deleteUser(id);
+            // Nếu action là delete thì xóa theo userId dạng String
+            if ("delete".equals(action)) {
+                dao.deleteUser(userId);
                 response.sendRedirect("userList");
                 return;
             }
 
-            if (action != null && action.equals("edit")) {
-                int id = Integer.parseInt(idStr);
-                User existingUser = dao.getUserById(id);
+            // Nếu action là edit thì tìm user theo userId dạng String
+            if ("edit".equals(action)) {
+                User existingUser = dao.getUserById(userId);
                 request.setAttribute("USER_DATA", existingUser);
             }
+
+            // Chuyển sang trang userDetail.jsp
             request.getRequestDispatcher("admin/userDetail.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendRedirect("userList");
         }
-
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
+            // Đảm bảo đọc tiếng Việt đúng
+            request.setCharacterEncoding("UTF-8");
+
+            // Lấy dữ liệu từ form
             String action = request.getParameter("action");
-            String idStr = request.getParameter("userId");
+            String userId = request.getParameter("userId");
             String fullName = request.getParameter("fullName");
             String email = request.getParameter("email");
             String password = request.getParameter("password");
@@ -108,6 +81,7 @@ public class UserDetailServlet extends HttpServlet {
 
             UserDAO dao = new UserDAO();
 
+            // Tạo object User để truyền xuống DAO
             User u = new User();
             u.setFullName(fullName);
             u.setEmail(email);
@@ -115,27 +89,40 @@ public class UserDetailServlet extends HttpServlet {
             u.setPhone(phone);
             u.setRoleId(roleId);
 
-            if (action != null && action.equals("edit")) {
-                u.setUserId(Integer.parseInt(idStr));
+            // Set mặc định cho các cột mới trong database
+            u.setProvider("LOCAL");
+            u.setProviderId(null);
+            u.setAccountStatus("Active");
+
+            // Nếu là admin/staff/shipper thì activeStaff = true
+            boolean activeStaff = "ADMIN".equalsIgnoreCase(roleId)
+                    || "STAFF".equalsIgnoreCase(roleId)
+                    || "SHIPPER".equalsIgnoreCase(roleId);
+
+            u.setActiveStaff(activeStaff);
+
+            // User tạo từ admin nên cho verified luôn
+            u.setVerified(true);
+
+            // Nếu đang sửa user thì set userId dạng String rồi update
+            if ("edit".equals(action)) {
+                u.setUserId(userId);
                 dao.updateUser(u);
             } else {
+                // Nếu thêm mới thì insertUser sẽ tự generate userId nếu userId null
                 dao.insertUser(u);
-
             }
+
             response.sendRedirect("userList");
+
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendRedirect("userList");
         }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
         return "Short description";
-    }// </editor-fold>
-
+    }
 }
