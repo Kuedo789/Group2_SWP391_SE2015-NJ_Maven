@@ -821,12 +821,12 @@
                 <!-- Page Title Area -->
                 <div class="page-title-area">
                     <div>
-                        <h1 class="page-title">Product Detail </h1>
-                        <p class="page-subtitle">View and manage cake product information, pricing, and estimated labor hours.</p>
+                        <h1 class="page-title">Chi Tiết Bánh Kem</h1>
+                        <p class="page-subtitle">Xem và quản lý thông tin chi tiết, giá bán gốc và số giờ làm việc ước tính.</p>
                     </div>
                     <div class="action-button-group">
-                        <button type="submit" class="btn-cz-primary"><i class="fa-regular fa-floppy-disk me-1"></i> Save</button>
-                        <button type="button" class="btn-cz-danger" onclick="if(confirm('Are you sure you want to delete this product?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=delete&id=${product.id}'; }">Delete</button>
+                        <button type="submit" class="btn-cz-primary"><i class="fa-regular fa-floppy-disk me-1"></i> Lưu Lại</button>
+                        <button type="button" class="btn-cz-danger" onclick="if(confirm('Bạn có chắc chắn muốn xóa bánh kem này không?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=delete&id=${product.id}'; }">Xóa Bánh</button>
                     </div>
                 </div>
 
@@ -836,12 +836,12 @@
                         
                         <!-- Product Images Card -->
                         <div class="detail-card">
-                            <h5 class="card-header-title">Product Images</h5>
-                            <p class="card-header-desc">Upload high quality images of the cake. Click on any thumbnail below to set it as the primary cover image.</p>
+                            <h5 class="card-header-title">Hình Ảnh Bánh Kem</h5>
+                            <p class="card-header-desc">Nhập liên kết hình ảnh bánh chất lượng cao. Bấm chọn ảnh nhỏ bên dưới để chọn làm hình đại diện (ảnh bìa chính) hiển thị trên cửa hàng.</p>
                             
                             <div class="main-cover-wrapper">
                                 <img id="mainCoverImage" src="${not empty product.imageUrl ? product.imageUrl : 'https://images.unsplash.com/photo-1578985545062-69928b1d9587'}" alt="${product.name}" class="main-cover-img">
-                                <span class="cover-badge">Cover</span>
+                                <span class="cover-badge">Ảnh Bìa</span>
                                 <div class="image-controls">
                                     <button type="button" class="img-control-btn" onclick="editMainImageUrl()"><i class="fa-regular fa-pen-to-square"></i></button>
                                     <button type="button" class="img-control-btn delete" onclick="deleteMainImage()"><i class="fa-regular fa-trash-can"></i></button>
@@ -866,9 +866,9 @@
                                 </c:forEach>
                                 <div class="upload-placeholder-box" onclick="addNewImagePrompt()">
                                     <i class="fa-solid fa-plus"></i>
-                                    <span>Add Image</span>
+                                    <span>Thêm Ảnh</span>
                                 </div>
-                                <div class="upload-info-text">Click 'Add Image' to enter an image URL. Click a thumbnail to set as main cover.</div>
+                                <div class="upload-info-text">Bấm 'Thêm Ảnh' để dán link ảnh mới từ internet. Bấm ảnh nhỏ để chọn làm ảnh đại diện chính.</div>
                             </div>
                         </div>
                     </div>
@@ -878,92 +878,77 @@
                         
                         <!-- Product Information Card -->
                         <div class="detail-card">
-                            <h5 class="card-header-title">Product Information</h5>
+                            <h5 class="card-header-title">Thông Tin Bánh Kem</h5>
                             
                             <div class="row g-3">
-                                <div class="col-md-8">
-                                    <label class="form-label-cz">Cake Name <span>*</span></label>
-                                    <input type="text" class="form-control-cz" name="name" value="${product.name}" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label-cz">SKU <span>*</span></label>
-                                    <input type="text" class="form-control-cz" name="sku" value="${product.sku}" required>
-                                </div>
+                                 <div class="col-md-12">
+                                     <label class="form-label-cz">Tên Bánh Kem <span>*</span></label>
+                                     <input type="text" class="form-control-cz" name="name" value="${product.name}" required>
+                                 </div>
 
-                                <div class="col-md-6">
-                                    <label class="form-label-cz">Category <span>*</span></label>
-                                    <select class="form-select-cz" name="categoryId">
-                                        <c:forEach var="cat" items="${productCategories}">
-                                            <option value="${cat.id}" ${product.categoryId eq cat.id ? 'selected' : ''}>${cat.name}</option>
-                                        </c:forEach>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label-cz">Recipe Formula <span>*</span></label>
-                                    <select class="form-select-cz" name="recipeId">
-                                        <option value="">-- Select Recipe Formula --</option>
-                                        <c:forEach var="rec" items="${recipeMasters}">
-                                            <option value="${rec.id}" ${product.recipeId eq rec.id ? 'selected' : ''}>${rec.name}</option>
-                                        </c:forEach>
-                                    </select>
-                                </div>
+                                 <div class="col-md-6">
+                                     <label class="form-label-cz">Danh mục <span>*</span></label>
+                                     <select class="form-select-cz" name="categoryId">
+                                         <c:forEach var="cat" items="${productCategories}">
+                                             <option value="${cat.id}" ${product.categoryId eq cat.id ? 'selected' : ''}>${cat.name}</option>
+                                         </c:forEach>
+                                     </select>
+                                 </div>
+                                 <div class="col-md-6">
+                                     <label class="form-label-cz">Giá Bán Gốc ($) <span>*</span></label>
+                                     <input type="number" step="0.01" class="form-control-cz" name="basePrice" value="${product.basePrice}" required>
+                                 </div>
 
-                                <div class="col-md-6">
-                                    <label class="form-label-cz">Profit Margin (%) <span>*</span></label>
-                                    <input type="number" step="0.1" class="form-control-cz" name="marginPercent" value="${product.marginPercent}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label-cz">Service Fee (%) <span>*</span></label>
-                                    <input type="number" step="0.1" class="form-control-cz" name="servicePercent" value="${product.servicePercent}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label-cz">Estimated Labor Hours (hours) <span>*</span></label>
-                                    <input type="number" step="0.01" class="form-control-cz" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required>
-                                </div>
+                                 <div class="col-md-6">
+                                     <label class="form-label-cz">Thời Gian Làm Việc Ước Tính (giờ) <span>*</span></label>
+                                     <input type="number" step="0.01" class="form-control-cz" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required>
+                                 </div>
+                                 <div class="col-md-6">
+                                     <label class="form-label-cz">Cho Phép Ghi Chữ</label>
+                                     <div class="switch-container">
+                                         <span class="switch-label-text">Cho phép khách ghi chữ chúc mừng lên mặt bánh</span>
+                                         <input type="checkbox" class="switch-input" name="allowsGreeting" value="true" ${product.allowsGreeting ? 'checked' : ''}>
+                                     </div>
+                                 </div>
 
-                                <div class="col-md-6">
-                                    <label class="form-label-cz">Status <span>*</span></label>
-                                    <div class="status-radio-group">
-                                        <label class="status-radio-label">
-                                            <input type="radio" name="status" class="status-radio-input" value="Active" ${product.status eq 'Active' ? 'checked' : ''}>
-                                            Active
-                                        </label>
-                                        <label class="status-radio-label">
-                                            <input type="radio" name="status" class="status-radio-input" value="Inactive" ${product.status eq 'Inactive' ? 'checked' : ''}>
-                                            Inactive
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label-cz">Featured</label>
-                                    <div class="switch-container">
-                                        <span class="switch-label-text">Show on homepage & featured section</span>
-                                        <input type="checkbox" class="switch-input" name="isFeatured" value="true" ${product.featured ? 'checked' : ''}>
-                                    </div>
-                                </div>
+                                 <div class="col-md-6">
+                                     <label class="form-label-cz">Trạng Thái Kinh Doanh <span>*</span></label>
+                                     <div class="status-radio-group">
+                                         <label class="status-radio-label">
+                                             <input type="radio" name="status" class="status-radio-input" value="Active" ${product.status eq 'Active' ? 'checked' : ''}>
+                                             Đang hoạt động
+                                         </label>
+                                         <label class="status-radio-label">
+                                             <input type="radio" name="status" class="status-radio-input" value="Inactive" ${product.status eq 'Inactive' ? 'checked' : ''}>
+                                             Tạm ngưng bán
+                                         </label>
+                                     </div>
+                                 </div>
+                                 <div class="col-md-6">
+                                     <label class="form-label-cz">Nổi Bật / Khuyên Dùng</label>
+                                     <div class="switch-container">
+                                         <span class="switch-label-text">Hiển thị nổi bật trên trang chủ & danh mục nổi bật</span>
+                                         <input type="checkbox" class="switch-input" name="isFeatured" value="true" ${product.featured ? 'checked' : ''}>
+                                     </div>
+                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label-cz">Short Description <span>*</span></label>
-                                    <textarea class="form-control-cz" name="shortDescription" rows="2" required>${product.shortDescription}</textarea>
-                                </div>
-
-                                <div class="col-md-12">
-                                    <label class="form-label-cz">Full Description</label>
+                                    <label class="form-label-cz">Mô Tả Chi Tiết</label>
                                     <div class="editor-toolbar">
-                                        <i class="fa-solid fa-bold" title="Bold"></i>
-                                        <i class="fa-solid fa-italic" title="Italic"></i>
-                                        <i class="fa-solid fa-underline" title="Underline"></i>
-                                        <i class="fa-solid fa-strikethrough" title="Strikethrough"></i>
+                                        <i class="fa-solid fa-bold" title="In đậm"></i>
+                                        <i class="fa-solid fa-italic" title="In nghiêng"></i>
+                                        <i class="fa-solid fa-underline" title="Gạch chân"></i>
+                                        <i class="fa-solid fa-strikethrough" title="Gạch ngang"></i>
                                         <span style="border-right: 1px solid #ddd; margin: 0 5px;"></span>
-                                        <i class="fa-solid fa-align-left" title="Align Left"></i>
-                                        <i class="fa-solid fa-align-center" title="Align Center"></i>
-                                        <i class="fa-solid fa-align-right" title="Align Right"></i>
+                                        <i class="fa-solid fa-align-left" title="Căn lề trái"></i>
+                                        <i class="fa-solid fa-align-center" title="Căn giữa"></i>
+                                        <i class="fa-solid fa-align-right" title="Căn lề phải"></i>
                                         <span style="border-right: 1px solid #ddd; margin: 0 5px;"></span>
-                                        <i class="fa-solid fa-list-ul" title="Unordered List"></i>
-                                        <i class="fa-solid fa-list-ol" title="Ordered List"></i>
+                                        <i class="fa-solid fa-list-ul" title="Danh sách không thứ tự"></i>
+                                        <i class="fa-solid fa-list-ol" title="Danh sách có thứ tự"></i>
                                         <span style="border-right: 1px solid #ddd; margin: 0 5px;"></span>
-                                        <i class="fa-solid fa-link" title="Insert Link"></i>
-                                        <i class="fa-solid fa-image" title="Insert Image"></i>
+                                        <i class="fa-solid fa-link" title="Thêm liên kết"></i>
+                                        <i class="fa-solid fa-image" title="Thêm ảnh"></i>
                                     </div>
                                     <textarea class="editor-textarea" name="fullDescription" rows="5">${product.fullDescription}</textarea>
                                 </div>

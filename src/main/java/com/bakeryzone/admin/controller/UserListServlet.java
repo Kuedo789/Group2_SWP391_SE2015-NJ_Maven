@@ -64,9 +64,14 @@ public class UserListServlet extends HttpServlet {
 
             String keyword = request.getParameter("searchKeyword");
             String roleId = request.getParameter("filterRoleId");
+            String status = request.getParameter("filterStatus");
 
-            UserDAO dao = new UserDAO();
-            List<User> userList;
+            String pageParam = request.getParameter("page");
+            int pageIndex = 1;
+            if (pageParam != null && !pageParam.trim().isEmpty()) {
+                pageIndex = Integer.parseInt(pageParam);
+            }
+            int pageSize = 5;
 
             if (keyword != null && keyword.trim().isEmpty()) {
                 keyword = null;
@@ -74,15 +79,21 @@ public class UserListServlet extends HttpServlet {
             if (roleId != null && roleId.trim().isEmpty()) {
                 roleId = null;
             }
-            if (keyword != null || roleId != null) {
-
-                userList = dao.searchAndFilterUsers(keyword, roleId);
-            } else {
-                userList = dao.getAllUsers();
+            if (status != null && status.trim().isEmpty()) {
+                status = null;
             }
+            UserDAO dao = new UserDAO();
 
+            int totalRecords = dao.getTotalUsers(keyword, roleId, status);
+            int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+            if (totalPages == 0) {
+                totalPages = 1;
+            }
+            List<User> userList = dao.searchAndFilterUsers(keyword, roleId, status, pageIndex, pageSize);
+            
             request.setAttribute("USERS", userList);
-
+            request.setAttribute("currentPage", pageIndex);
+            request.setAttribute("endPage", totalPages);
             request.getRequestDispatcher("admin/userList.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();

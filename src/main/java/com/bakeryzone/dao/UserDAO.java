@@ -2,18 +2,16 @@ package com.bakeryzone.dao;
 
 import com.bakeryzone.model.User;
 import com.bakeryzone.utils.DBContext;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.sql.Timestamp;
 
 public class UserDAO {
 
-    // Tạo User_ID nếu chưa có
     private String generateUserId(String roleId) {
         String prefix = "U";
 
@@ -30,8 +28,9 @@ public class UserDAO {
         return prefix + "_" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
-    // Hàm lấy toàn bộ danh sách user kèm role tương ứng
+// Hàm lấy toàn bộ danh sách user kèm role tương ứng
     public List<User> getAllUsers() {
+
         List<User> list = new ArrayList<>();
 
         Connection conn = null;
@@ -54,7 +53,6 @@ public class UserDAO {
 
             while (rs.next()) {
                 User u = new User();
-
                 u.setUserId(rs.getString("User_ID"));
                 u.setFullName(rs.getString("Full_Name"));
                 u.setEmail(rs.getString("Email"));
@@ -62,7 +60,6 @@ public class UserDAO {
                 u.setPhone(rs.getString("Phone"));
                 u.setRoleId(rs.getString("Role_ID"));
                 u.setRoleName(rs.getString("Role_Name"));
-
                 u.setVerified(rs.getBoolean("Is_Verified"));
                 u.setOtpCode(rs.getString("OTP_Code"));
                 u.setOtpExpiry(rs.getTimestamp("OTP_Expiry"));
@@ -70,7 +67,6 @@ public class UserDAO {
                 u.setProviderId(rs.getString("Provider_ID"));
                 u.setAccountStatus(rs.getString("Account_Status"));
                 u.setActiveStaff(rs.getBoolean("Is_Active_Staff"));
-
                 list.add(u);
             }
 
@@ -83,24 +79,32 @@ public class UserDAO {
         return list;
     }
 
-    // Hàm thêm mới 1 tài khoản
+// Hàm thêm mới 1 tài khoản từ trang admin
     public void insertUser(User user) {
         Connection conn = null;
         PreparedStatement ps = null;
 
         try {
+            // Nếu User_ID chưa có thì tự tạo theo role
             if (user.getUserId() == null || user.getUserId().trim().isEmpty()) {
                 user.setUserId(generateUserId(user.getRoleId()));
             }
-
+            // Nếu provider chưa có thì mặc định là LOCAL
+            // LOCAL = tài khoản đăng ký/đăng nhập bằng email + password
             if (user.getProvider() == null || user.getProvider().trim().isEmpty()) {
                 user.setProvider("LOCAL");
             }
 
+            // Nếu trạng thái tài khoản chưa có thì mặc định là Active
             if (user.getAccountStatus() == null || user.getAccountStatus().trim().isEmpty()) {
                 user.setAccountStatus("Active");
             }
 
+            // Nếu user được tạo từ admin thì nên cho xác thực sẵn
+            // Tránh trường hợp admin tạo user xong nhưng user không đăng nhập được vì Is_Verified = false
+            user.setVerified(true);
+
+            // Nếu role là ADMIN / STAFF / SHIPPER thì đánh dấu là nhân viên đang hoạt động
             boolean activeStaff = "ADMIN".equalsIgnoreCase(user.getRoleId())
                     || "STAFF".equalsIgnoreCase(user.getRoleId())
                     || "SHIPPER".equalsIgnoreCase(user.getRoleId());
@@ -120,9 +124,14 @@ public class UserDAO {
             ps.setString(4, user.getPassword());
             ps.setString(5, user.getPhone());
             ps.setString(6, user.getRoleId());
+
+            // User tạo từ admin thì verified = true
             ps.setBoolean(7, user.isVerified());
+
+            // Tạo từ admin thì không cần OTP
             ps.setString(8, user.getOtpCode());
             ps.setTimestamp(9, user.getOtpExpiry());
+
             ps.setString(10, user.getProvider());
             ps.setString(11, user.getProviderId());
             ps.setString(12, user.getAccountStatus());
@@ -137,16 +146,18 @@ public class UserDAO {
         }
     }
 
-    // Hàm xóa tài khoản theo id
+    // Hàm xóa tài khoản theo User_ID
     public void deleteUser(String id) {
         Connection conn = null;
         PreparedStatement ps = null;
 
         try {
+
             String sql = "DELETE FROM `user` WHERE User_ID = ?";
 
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
+
             ps.setString(1, id);
 
             ps.executeUpdate();
@@ -154,11 +165,12 @@ public class UserDAO {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            // Đóng kết nối
             close(conn, ps, null);
         }
     }
 
-    // Hàm tìm user theo id
+    // Hàm tìm user theo User_ID
     public User getUserById(String id) {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -179,7 +191,6 @@ public class UserDAO {
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, id);
-
             rs = ps.executeQuery();
 
             if (rs.next()) {
@@ -192,7 +203,6 @@ public class UserDAO {
                 u.setPhone(rs.getString("Phone"));
                 u.setRoleId(rs.getString("Role_ID"));
                 u.setRoleName(rs.getString("Role_Name"));
-
                 u.setVerified(rs.getBoolean("Is_Verified"));
                 u.setOtpCode(rs.getString("OTP_Code"));
                 u.setOtpExpiry(rs.getTimestamp("OTP_Expiry"));
@@ -201,6 +211,7 @@ public class UserDAO {
                 u.setAccountStatus(rs.getString("Account_Status"));
                 u.setActiveStaff(rs.getBoolean("Is_Active_Staff"));
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -216,6 +227,21 @@ public class UserDAO {
         PreparedStatement ps = null;
 
         try {
+            // Nếu provider chưa có thì mặc định là LOCAL
+            if (user.getProvider() == null || user.getProvider().trim().isEmpty()) {
+                user.setProvider("LOCAL");
+            }
+
+            // Nếu trạng thái tài khoản chưa có thì mặc định là Active
+            if (user.getAccountStatus() == null || user.getAccountStatus().trim().isEmpty()) {
+                user.setAccountStatus("Active");
+            }
+
+            // Nếu role là ADMIN / STAFF / SHIPPER thì đánh dấu là nhân viên đang hoạt động
+            boolean activeStaff = "ADMIN".equalsIgnoreCase(user.getRoleId())
+                    || "STAFF".equalsIgnoreCase(user.getRoleId())
+                    || "SHIPPER".equalsIgnoreCase(user.getRoleId());
+
             String sql = "UPDATE `user` SET "
                     + "Full_Name = ?, "
                     + "Email = ?, "
@@ -241,7 +267,8 @@ public class UserDAO {
             ps.setString(7, user.getProvider());
             ps.setString(8, user.getProviderId());
             ps.setString(9, user.getAccountStatus());
-            ps.setBoolean(10, user.isActiveStaff());
+            ps.setBoolean(10, activeStaff);
+
             ps.setString(11, user.getUserId());
 
             ps.executeUpdate();
@@ -253,8 +280,8 @@ public class UserDAO {
         }
     }
 
-    // Tìm kiếm và lọc user
-    public List<User> searchAndFilterUsers(String keyword, String roleId) {
+    // Tìm kiếm, lọc user theo tên/email, role, trạng thái và phân trang
+    public List<User> searchAndFilterUsers(String keyword, String roleId, String status, int pageIndex, int pageSize) {
         List<User> list = new ArrayList<>();
 
         Connection conn = null;
@@ -262,6 +289,7 @@ public class UserDAO {
         ResultSet rs = null;
 
         try {
+            // Select đủ cột vì bên dưới cần map OTP, Provider, ActiveStaff
             String sql = "SELECT "
                     + "u.User_ID, u.Full_Name, u.Email, u.Password, u.Phone, "
                     + "u.Role_ID, r.Role_Name, "
@@ -270,7 +298,7 @@ public class UserDAO {
                     + "u.Account_Status, u.Is_Active_Staff "
                     + "FROM `user` u "
                     + "JOIN `role` r ON u.Role_ID = r.Role_ID "
-                    + "WHERE 1 = 1";
+                    + "WHERE 1=1";
 
             if (keyword != null && !keyword.trim().isEmpty()) {
                 sql += " AND (u.Full_Name LIKE ? OR u.Email LIKE ?)";
@@ -279,6 +307,12 @@ public class UserDAO {
             if (roleId != null && !roleId.trim().isEmpty()) {
                 sql += " AND u.Role_ID = ?";
             }
+
+            if (status != null && !status.trim().isEmpty()) {
+                sql += " AND u.Account_Status = ?";
+            }
+
+            sql += " LIMIT ? OFFSET ?";
 
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
@@ -293,6 +327,13 @@ public class UserDAO {
             if (roleId != null && !roleId.trim().isEmpty()) {
                 ps.setString(paramIndex++, roleId);
             }
+
+            if (status != null && !status.trim().isEmpty()) {
+                ps.setString(paramIndex++, status);
+            }
+
+            ps.setInt(paramIndex++, pageSize);
+            ps.setInt(paramIndex++, (pageIndex - 1) * pageSize);
 
             rs = ps.executeQuery();
 
@@ -325,6 +366,11 @@ public class UserDAO {
         }
 
         return list;
+    }
+
+    // Tìm kiếm và lọc user
+    public List<User> searchAndFilterUsers(String keyword, String roleId) {
+        return searchAndFilterUsers(keyword, roleId, null, 1, 1000);
     }
 
     private void close(Connection conn, PreparedStatement ps, ResultSet rs) {
@@ -717,4 +763,78 @@ public class UserDAO {
             e.printStackTrace();
         }
     }
+
+// Kiểm tra email đã tồn tại chưa
+// currentUserId dùng khi edit: bỏ qua chính user đang sửa
+    public boolean checkEmailExist(String email, String currentUserId) {
+        DBContext db = new DBContext();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            // Neu la Edit thi bo qua chinh Email cua minh, neu la Add thi kiem tra toan bo
+            String sql = "SELECT * FROM user WHERE Email = ?";
+            if (currentUserId != null && !currentUserId.isEmpty()) {
+                sql += " AND User_ID != ?";
+            }
+            conn = db.getJDBCConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, email.trim());
+            if (currentUserId != null && !currentUserId.isEmpty()) {
+                ps.setString(2, currentUserId);
+            }
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return true; // Email da ton tai
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            /* close resources */ }
+        return false;
+    }
+// Đếm tổng số user sau khi lọc để phục vụ phân trang
+
+    public int getTotalUsers(String keyword, String roleId, String status) {
+        DBContext db = new DBContext();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            String sql = "SELECT COUNT(*) FROM user WHERE 1=1";
+            if (keyword != null) {
+                sql += " AND (Full_Name LIKE ? OR Email LIKE ?)";
+            }
+            if (roleId != null) {
+                sql += " AND Role_ID = ?";
+            }
+            if (status != null) {
+                sql += " AND Account_Status = ?";
+            }
+
+            conn = db.getJDBCConnection();
+            ps = conn.prepareStatement(sql);
+            int paramIndex = 1;
+            if (keyword != null) {
+                ps.setString(paramIndex++, "%" + keyword.trim() + "%");
+                ps.setString(paramIndex++, "%" + keyword.trim() + "%");
+            }
+            if (roleId != null) {
+                ps.setString(paramIndex++, roleId);
+            }
+            if (status != null) {
+                ps.setString(paramIndex++, status);
+            }
+
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+        }
+        return 0;
+    }
+
 }// end class
