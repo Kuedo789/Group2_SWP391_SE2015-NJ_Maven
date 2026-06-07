@@ -1,219 +1,782 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%-- Khai báo cả 2 phiên bản URI để đảm bảo NetBeans không bao giờ bị báo đỏ sọc --%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+<%-- Khai báo cả 2 phiên bản URI để đảm bảo NetBeans/Tomcat không bao giờ bị báo đỏ sọc --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="c_old" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CakeZone Admin - User Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    
+    <style>
+        :root {
+            --cz-primary: #F28123;
+            --cz-primary-hover: #e06f14;
+            --cz-dark-bg: #111010;
+            --cz-sidebar-active: #232222;
+            --cz-text-muted: #888888;
+            --cz-border-color: #f1ede8;
+            --cz-light-bg: #f8f6f4;
+            --cz-card-bg: #ffffff;
+        }
 
-    <head>
-        <meta charset="utf-8">
-        <title>CakeZone - Admin User Management</title>
-        <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--cz-light-bg);
+            color: #333;
+            overflow-x: hidden;
+        }
 
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.1/font/bootstrap-icons.css" rel="stylesheet">
+        /* Sidebar Styling */
+        .sidebar {
+            width: 260px;
+            background-color: var(--cz-dark-bg);
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+            z-index: 100;
+        }
 
-        <style>
-            body {
-                background-color: #fdfbf7;
-                color: #333;
-            }
-            .bg-cake-dark {
-                background-color: #2b2b2b !important;
-            }
-            .text-cake-orange {
-                color: #F15B22 !important;
-            }
-            .border-cake {
-                border: 2px solid #F15B22 !important;
-            }
-            .btn-cake-primary {
-                background-color: #F15B22 !important;
-                color: white !important;
-                border: none;
-            }
-            .btn-cake-primary:hover {
-                background-color: #d44917 !important;
-            }
-        </style>
-    </head>
+        .sidebar-brand {
+            padding: 0 25px 25px 25px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #2d2b2b;
+        }
 
-    <body>
+        .sidebar-brand i {
+            color: var(--cz-primary);
+            font-size: 24px;
+            margin-right: 10px;
+        }
 
-        <div class="container-fluid bg-cake-dark p-5 mb-5 text-center">
-            <h1 class="display-4 text-uppercase text-white m-0">User Management</h1>
+        .sidebar-brand span {
+            color: #fff;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-brand span span {
+            color: var(--cz-primary);
+        }
+
+        .nav-section-title {
+            color: var(--cz-text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 20px 25px 8px 25px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item a {
+            display: flex;
+            align-items: center;
+            padding: 11px 25px;
+            color: #b5b5b5;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item a:hover {
+            color: #fff;
+            background-color: var(--cz-sidebar-active);
+        }
+
+        .menu-item.active a {
+            color: var(--cz-primary);
+            background-color: var(--cz-sidebar-active);
+            border-left-color: var(--cz-primary);
+            font-weight: 600;
+        }
+
+        .menu-item a i {
+            width: 20px;
+            font-size: 16px;
+            margin-right: 12px;
+        }
+
+        .menu-item .arrow {
+            margin-left: auto;
+            font-size: 12px;
+        }
+
+        /* Sidebar Banner */
+        .sidebar-banner {
+            margin: auto 20px 20px 20px;
+            background: linear-gradient(135deg, #232222, #181717);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px dashed var(--cz-primary);
+            text-align: center;
+            position: relative;
+        }
+
+        .sidebar-banner i.cake-icon {
+            font-size: 40px;
+            color: var(--cz-primary);
+            margin-bottom: 10px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .sidebar-banner h6 {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .sidebar-banner p {
+            color: #999;
+            font-size: 11px;
+            margin-bottom: 0;
+            line-height: 1.4;
+        }
+
+        /* Main Content Panel */
+        .main-panel {
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Header */
+        .top-header {
+            height: 70px;
+            background-color: #fff;
+            border-bottom: 1px solid var(--cz-border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 35px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .breadcrumbs {
+            font-size: 13px;
+            color: var(--cz-text-muted);
+            margin-bottom: 0;
+        }
+
+        .breadcrumbs a {
+            color: var(--cz-text-muted);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumbs a:hover {
+            color: var(--cz-primary);
+        }
+
+        .breadcrumbs span {
+            margin: 0 6px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-icon-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #555;
+            position: relative;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .header-icon-btn:hover {
+            color: var(--cz-primary);
+        }
+
+        .header-icon-btn .badge-dot {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background-color: var(--cz-primary);
+            border-radius: 50%;
+            border: 1px solid #fff;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 1px solid var(--cz-border-color);
+            padding-left: 20px;
+        }
+
+        .profile-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--cz-border-color);
+        }
+
+        .profile-info {
+            line-height: 1.2;
+        }
+
+        .profile-name {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .profile-role {
+            font-size: 10.5px;
+            color: var(--cz-text-muted);
+            font-weight: 500;
+        }
+
+        /* Container & Elements */
+        .content-container {
+            padding: 35px;
+            flex: 1;
+        }
+
+        .page-title-area {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+
+        .page-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 4px;
+        }
+
+        .page-subtitle {
+            font-size: 13.5px;
+            color: var(--cz-text-muted);
+            margin-bottom: 0;
+        }
+
+        .btn-cz-primary {
+            background-color: var(--cz-primary);
+            color: #fff;
+            font-weight: 600;
+            font-size: 14.5px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-cz-primary:hover {
+            background-color: var(--cz-primary-hover);
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(242, 129, 35, 0.25);
+        }
+
+        .filter-card {
+            background-color: var(--cz-card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--cz-border-color);
+            margin-bottom: 25px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .filter-form {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-select {
+            min-width: 160px;
+            padding: 10px 15px;
+            font-size: 13.5px;
+            font-weight: 500;
+            border-radius: 8px;
+            border: 1px solid var(--cz-border-color);
+            background-color: #fff;
+            color: #444;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .filter-select:focus {
+            border-color: var(--cz-primary);
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            font-size: 13.5px;
+            border-radius: 8px;
+            border: 1px solid var(--cz-border-color);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--cz-primary);
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .btn-filter-action {
+            padding: 10px 20px;
+            font-size: 13.5px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid var(--cz-border-color);
+            background-color: #fff;
+            color: #444;
+            transition: all 0.2s;
+        }
+
+        .btn-filter-action:hover {
+            background-color: #fdfdfd;
+            border-color: #ccc;
+        }
+
+        .btn-clear-filter {
+            padding: 10px 15px;
+            font-size: 13.5px;
+            font-weight: 500;
+            border-radius: 8px;
+            background-color: #555;
+            color: #fff;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .btn-clear-filter:hover {
+            background-color: #333;
+            color: #fff;
+        }
+
+        /* Table Design */
+        .table-card {
+            background-color: var(--cz-card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--cz-border-color);
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            margin-bottom: 25px;
+        }
+
+        .cz-table {
+            width: 100%;
+            margin-bottom: 0;
+            border-collapse: collapse;
+        }
+
+        .cz-table th {
+            background-color: #fffaf5;
+            color: #666;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 16px 20px;
+            border-bottom: 2px solid var(--cz-border-color);
+        }
+
+        .cz-table td {
+            padding: 16px 20px;
+            vertical-align: middle;
+            font-size: 14px;
+            border-bottom: 1px solid var(--cz-border-color);
+        }
+
+        .cz-table tr:hover td {
+            background-color: #fdfbf9;
+        }
+
+        /* Badges Custom */
+        .badge-admin { background-color: #dc3545 !important; color: white; font-weight: 600; padding: 5px 10px; border-radius: 6px; }
+        .badge-staff { background-color: #ffc107 !important; color: #212529; font-weight: 600; padding: 5px 10px; border-radius: 6px; }
+        .badge-shipper { background-color: #0dcaf0 !important; color: #212529; font-weight: 600; padding: 5px 10px; border-radius: 6px; }
+        .badge-customer { background-color: #6c757d !important; color: white; font-weight: 600; padding: 5px 10px; border-radius: 6px; }
+
+        .status-badge-active {
+            background-color: #e6f6eb; color: #28a745; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 30px; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .status-badge-active::before { content: ''; width: 6px; height: 6px; background-color: #28a745; border-radius: 50%; }
+
+        .status-badge-inactive {
+            background-color: #fcebeb; color: #dc3545; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 30px; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .status-badge-inactive::before { content: ''; width: 6px; height: 6px; background-color: #dc3545; border-radius: 50%; }
+
+        .actions-cell { display: flex; gap: 12px; }
+        .btn-action-edit, .btn-action-delete {
+            width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--cz-border-color); background-color: #fff; color: #666; cursor: pointer; transition: all 0.2s; text-decoration: none;
+        }
+        .btn-action-edit:hover { color: var(--cz-primary); border-color: var(--cz-primary); background-color: #fef8f4; }
+        .btn-action-delete:hover { color: #dc3545; border-color: #dc3545; background-color: #fdf3f4; }
+
+        /* Pagination Design */
+        .pagination-area {
+            display: flex; align-items: center; justify-content: space-between; padding: 20px 25px; border-top: 1px solid var(--cz-border-color); background-color: #fff;
+        }
+        .pagination-text { font-size: 13px; color: var(--cz-text-muted); }
+        .pagination-nav { display: flex; gap: 5px; margin: 0; padding: 0; list-style: none; }
+        
+        .page-num-item a {
+            display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--cz-border-color); font-size: 13px; font-weight: 600; color: #555; text-decoration: none; transition: all 0.2s;
+        }
+        .page-num-item a:hover { background-color: #fafafa; border-color: #ccc; }
+        .page-num-item.active a { background-color: var(--cz-primary); border-color: var(--cz-primary); color: #fff; }
+        .page-num-item.disabled a { opacity: 0.5; pointer-events: none; background-color: #f8f6f4; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-cake-candles"></i>
+            <span>Cake<span>Zone</span> Admin</span>
         </div>
+        
+        <div class="nav-section-title">Core</div>
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+            </li>
+        </ul>
 
-        <div class="container-fluid contact position-relative px-5" style="margin-top: 50px;">
-            <div class="container">
+        <div class="nav-section-title">Management</div>
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-receipt"></i> Orders <i class="fa-solid fa-chevron-down arrow"></i></a>
+            </li>
+            <li class="menu-item">
+                <a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Products <i class="fa-solid fa-chevron-down arrow"></i></a>
+            </li>
+            <li class="menu-item" style="padding-left: 20px;">
+                <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Categories</a>
+            </li>
+            <li class="menu-item" style="padding-left: 20px;">
+                <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Attributes</a>
+            </li>
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-users"></i> Customers</a>
+            </li>
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-percent"></i> Promotions <i class="fa-solid fa-chevron-down arrow"></i></a>
+            </li>
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-warehouse"></i> Inventory <i class="fa-solid fa-chevron-down arrow"></i></a>
+            </li>
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Delivery <i class="fa-solid fa-chevron-down arrow"></i></a>
+            </li>
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-star-half-stroke"></i> Reviews</a>
+            </li>
+        </ul>
 
-                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-                    <div>
-                        <h1 class="text-uppercase mb-0 font-weight-bold">Danh sách người dùng</h1>
-                        <p class="text-muted mb-0">Hệ thống quản lý Admin, Staff, Shipper và Customer</p>
-                    </div>
-                    <a href="${pageContext.request.contextPath}/userDetail?action=add" class="btn btn-cake-primary py-3 px-4 text-uppercase font-weight-bold">
-                        <i class="fa fa-plus me-2"></i>Thêm tài khoản mới
-                    </a>
+        <div class="nav-section-title">System</div>
+        <ul class="sidebar-menu">
+            <li class="menu-item active">
+                <a href="${pageContext.request.contextPath}/userList"><i class="fa-solid fa-user-gear"></i> Users</a>
+            </li>
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-shield-halved"></i> Roles & Permissions</a>
+            </li>
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-sliders"></i> Settings</a>
+            </li>
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Activity Logs</a>
+            </li>
+        </ul>
+
+        <div class="sidebar-banner">
+            <i class="fa-solid fa-cake-candles cake-icon"></i>
+            <h6>Grow Your Bakery</h6>
+            <p>Create beautiful cakes and deliver happiness!</p>
+        </div>
+    </div>
+
+    <div class="main-panel">
+        
+        <div class="top-header">
+            <div class="header-left">
+                <button class="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
+                <div class="breadcrumbs">
+                    <a href="#">Dashboard</a>
+                    <span>&gt;</span>
+                    <a href="#">System</a>
+                    <span>&gt;</span>
+                    <a href="#" class="active text-dark font-weight-bold">User Management</a>
                 </div>
-
-                <div class="bg-cake-dark p-4 mb-5" style="border-radius: 8px;">
-                    <form action="${pageContext.request.contextPath}/userList" method="GET">
-                        <div class="row g-3 align-items-end">
-                            <div class="col-md-4">
-                                <label class="form-label text-white font-weight-bold">Từ khóa tìm kiếm:</label>
-                                <input type="text" name="searchKeyword" value="${param.searchKeyword}" class="form-control bg-light border-0 px-4" placeholder="Nhập tên hoặc email..." style="height: 45px;">
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label text-white font-weight-bold">Chức vụ (Role):</label>
-                                <select name="filterRoleId" class="form-select bg-light border-0 px-3" style="height: 45px; width: 100%;">
-                                    <option value="">-- Tất cả chức vụ --</option>
-                                    <option value="ADMIN" ${param.filterRoleId == 'ADMIN' ? 'selected' : ''}>Admin</option>
-                                    <option value="STAFF" ${param.filterRoleId == 'STAFF' ? 'selected' : ''}>Staff</option>
-                                    <option value="SHIPPER" ${param.filterRoleId == 'SHIPPER' ? 'selected' : ''}>Shipper</option>
-                                    <option value="CUSTOMER" ${param.filterRoleId == 'CUSTOMER' ? 'selected' : ''}>Customer</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label text-white font-weight-bold">Trạng thái:</label>
-                                <select name="filterStatus" class="form-select bg-light border-0 px-3" style="height: 45px; width: 100%;">
-                                    <option value="">-- Tất cả --</option>
-                                    <option value="Active" ${param.filterStatus == 'Active' ? 'selected' : ''}>Active</option>
-                                    <option value="Deactive" ${param.filterStatus == 'Deactive' ? 'selected' : ''}>Deactive</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 d-flex gap-2">
-                                <button type="submit" class="btn btn-cake-primary flex-grow-1 font-weight-bold text-uppercase" style="height: 45px;">Lọc kết quả</button>
-                                <a href="${pageContext.request.contextPath}/userList" class="btn btn-secondary flex-grow-1 font-weight-bold text-uppercase d-flex align-items-center justify-content-center text-white" style="height: 45px; background: #555; border: none; text-decoration: none;">Xóa bộ lọc</a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <div class="row justify-content-center">
-                    <div class="col-12">
-                        <div class="table-responsive shadow-sm border-cake" style="border-radius: 8px; overflow: hidden;">
-                            <table class="table table-striped table-hover mb-0" style="background-color: #FFF; font-size: 16px;">
-                                <thead class="bg-cake-dark text-white text-uppercase text-center">
-                                    <tr>
-                                        <th style="padding: 15px; width: 80px;">STT</th>
-                                        <th style="padding: 15px; text-align: left;">Họ và Tên</th>
-                                        <th style="padding: 15px; text-align: left;">Email đăng nhập</th>
-                                        <th style="padding: 15px; padding-left: 30px; width: 180px; text-align: left;">Số điện thoại</th>
-                                        <th style="padding: 15px; width: 160px;">Chức vụ</th>
-                                        <th style="padding: 15px; width: 140px;">Trạng thái</th>
-                                        <th style="padding: 15px; width: 180px;">Hành động</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="text-dark">
-                                    <c:catch var="ex">
-                                        <c:forEach var="u" items="${USERS}" varStatus="loop">
-                                            <tr class="align-middle">
-                                                <td class="text-center font-weight-bold text-muted" style="padding: 15px;">
-                                                    ${(currentPage - 1) * 5 + loop.index + 1}
-                                                </td>
-                                                <td class="font-weight-bold text-dark" style="padding: 15px;">${u.fullName}</td>
-                                                <td style="padding: 15px;">${u.email}</td>
-                                                <td class="text-primary font-weight-bold" style="padding: 15px; padding-left: 30px; text-align: left;">${u.phone}</td>
-                                                <td class="text-center" style="padding: 15px;">
-                                                    <span class="badge ${u.roleId == 'ADMIN' ? 'bg-danger' : 'bg-warning text-dark'} px-2 py-2 text-uppercase">
-                                                        ${u.roleId}
-                                                    </span>
-                                                </td>
-                                                <td class="text-center" style="padding: 15px;">
-                                                    <span class="badge ${u.accountStatus == 'Active' ? 'bg-success' : 'bg-secondary'} px-2 py-2 text-uppercase">
-                                                        ${u.accountStatus}
-                                                    </span>
-                                                </td>
-                                                <td class="text-center" style="padding: 15px;">
-                                                    <div class="d-inline-flex gap-2">
-                                                        <a href="${pageContext.request.contextPath}/userDetail?action=edit&id=${u.userId}" class="btn btn-sm btn-outline-warning font-weight-bold px-3 py-2 text-dark" style="border-width: 2px;">Sửa</a>
-                                                        <a href="${pageContext.request.contextPath}/userDetail?action=delete&id=${u.userId}" class="btn btn-sm btn-outline-danger font-weight-bold px-3 py-2" style="border-width: 2px;" onclick="return confirm('Bạn có chắc muốn xóa tài khoản này không?')">Xóa</a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </c:forEach>
-                                    </c:catch>
-
-                                    <%-- Cơ chế dự phòng nếu môi trường dính cache JSTL cũ --%>
-                                    <c:if test="${ex != null}">
-                                        <c_old:forEach var="u" items="${USERS}" varStatus="loop">
-                                            <tr class="align-middle">
-                                                <td class="text-center font-weight-bold text-muted" style="padding: 15px;">
-                                                    ${(currentPage - 1) * 5 + loop.index + 1}
-                                                </td>                                              
-                                                <td class="font-weight-bold text-dark" style="padding: 15px;">${u.fullName}</td>
-                                                <td style="padding: 15px;">${u.email}</td>
-                                                <td class="text-primary font-weight-bold" style="padding: 15px; padding-left: 30px; text-align: left;">${u.phone}</td>
-                                                <td class="text-center" style="padding: 15px;">
-                                                    <span class="badge ${u.roleId == 'ADMIN' ? 'bg-danger' : 'bg-warning text-dark'} px-2 py-2 text-uppercase">
-                                                        ${u.roleId}
-                                                    </span>
-                                                </td>
-                                                <td class="text-center" style="padding: 15px;">
-                                                    <span class="badge ${u.accountStatus == 'Active' ? 'bg-success' : 'bg-secondary'} px-2 py-2 text-uppercase">
-                                                        ${u.accountStatus}
-                                                    </span>
-                                                </td>
-                                                <td class="text-center" style="padding: 15px;">
-                                                    <div class="d-inline-flex gap-2">
-                                                        <a href="${pageContext.request.contextPath}/userDetail?action=edit&id=${u.userId}" class="btn btn-sm btn-outline-warning font-weight-bold px-3 py-2 text-dark" style="border-width: 2px;">Sửa</a>
-                                                        <a href="${pageContext.request.contextPath}/userDetail?action=delete&id=${u.userId}" class="btn btn-sm btn-outline-danger font-weight-bold px-3 py-2" style="border-width: 2px;" onclick="return confirm('Bạn có chắc muốn xóa tài khoản này không?')">Xóa</a>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </c_old:forEach>
-                                    </c:if>
-
-                                    <c:if test="${empty USERS}">
-                                        <tr>
-                                            <td colspan="7" class="text-center py-5 text-muted font-italic">
-                                                <i class="fa fa-search fs-3 mb-2 d-block"></i>Không tìm thấy dữ liệu!
-                                            </td>
-                                        </tr>
-                                    </c:if>
-                                </tbody>
-
-                            </table>
-                            <div class="d-flex justify-content-center mt-4">
-                                <nav aria-label="Page navigation">
-                                    <ul class="pagination pagination-md m-0">
-
-                                        <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                                            <a class="page-link border-cake" style="color: #2b2b2b;" 
-                                               href="userList?page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
-                                                « Previous
-                                            </a>
-                                        </li>
-
-                                        <c:forEach begin="1" end="${endPage}" var="i">
-                                            <li class="page-item ${currentPage == i ? 'active' : ''}">
-                                                <a class="page-link ${currentPage == i ? 'btn-cake-primary text-white' : 'border-cake'}" 
-                                                   style="display: flex; align-items: center; justify-content: center; height: 38px; line-height: 1; ${currentPage != i ? 'color: #2b2b2b;' : ''}"
-                                                   href="userList?page=${i}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
-                                                    ${i}
-                                                </a>
-                                            </li>
-                                        </c:forEach>
-                                        <li class="page-item ${currentPage == endPage ? 'disabled' : ''}">
-                                            <a class="page-link border-cake" style="color: #2b2b2b;" 
-                                               href="userList?page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
-                                                Next »
-                                            </a>
-                                        </li>
-
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
+            </div>
+            
+            <div class="header-right">
+                <button class="header-icon-btn"><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
+                <button class="header-icon-btn"><i class="fa-regular fa-circle-question"></i></button>
+                
+                <div class="profile-section">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
+                    <div class="profile-info">
+                        <div class="profile-name">Hoàng Anh</div>
+                        <div class="profile-role">PIC</div>
                     </div>
                 </div>
-
             </div>
         </div>
 
-        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
+        <div class="content-container">
+            
+            <div class="page-title-area">
+                <div>
+                    <h1 class="page-title">User Management</h1>
+                    <p class="page-subtitle">Hệ thống quản lý tài khoản Admin, Staff, Shipper và Customer</p>
+                </div>
+                <a href="${pageContext.request.contextPath}/userDetail?action=add" class="btn btn-cz-primary">
+                    <i class="fa-solid fa-circle-plus"></i> Thêm tài khoản mới
+                </a>
+            </div>
+
+            <div class="filter-card">
+                <form class="filter-form" action="${pageContext.request.contextPath}/userList" method="GET">
+                    
+                    <div class="search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" class="search-input" name="searchKeyword" value="${param.searchKeyword}" placeholder="Search users by name, email...">
+                    </div>
+
+                    <select class="filter-select" name="filterRoleId" onchange="this.form.submit()">
+                        <option value="" ${empty param.filterRoleId ? 'selected' : ''}>All Roles</option>
+                        <option value="ADMIN" ${param.filterRoleId eq 'ADMIN' ? 'selected' : ''}>Admin</option>
+                        <option value="STAFF" ${param.filterRoleId eq 'STAFF' ? 'selected' : ''}>Staff</option>
+                        <option value="SHIPPER" ${param.filterRoleId eq 'SHIPPER' ? 'selected' : ''}>Shipper</option>
+                        <option value="CUSTOMER" ${param.filterRoleId eq 'CUSTOMER' ? 'selected' : ''}>Customer</option>
+                    </select>
+
+                    <select class="filter-select" name="filterStatus" onchange="this.form.submit()">
+                        <option value="" ${empty param.filterStatus ? 'selected' : ''}>All Statuses</option>
+                        <option value="Active" ${param.filterStatus eq 'Active' ? 'selected' : ''}>Active</option>
+                        <option value="Deactive" ${param.filterStatus eq 'Deactive' ? 'selected' : ''}>Deactive</option>
+                    </select>
+
+                    <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Filter</button>
+                    <a href="${pageContext.request.contextPath}/userList" class="btn-clear-filter text-center">Clear</a>
+                </form>
+            </div>
+
+            <div class="table-card">
+                <table class="cz-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px; text-align: center;">#</th>
+                            <th>Họ và Tên</th>
+                            <th>Email đăng nhập</th>
+                            <th>Số điện thoại</th>
+                            <th style="width: 150px; text-align: center;">Chức vụ</th>
+                            <th style="width: 150px; text-align: center;">Trạng thái</th>
+                            <th style="width: 130px; text-align: center;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <c:catch var="ex">
+                            <c:forEach var="u" items="${USERS}" varStatus="status">
+                                <tr>
+                                    <td style="text-align: center; font-weight: 600; color: #777;">
+                                        ${(currentPage - 1) * 5 + status.index + 1}
+                                    </td>
+                                    <td style="font-weight: 600; color: #111;">${u.fullName}</td>
+                                    <td>${u.email}</td>
+                                    <td style="font-weight: 500; color: var(--cz-primary);">${u.phone}</td>
+                                    <td style="text-align: center;">
+                                        <span class="badge ${u.roleId == 'ADMIN' ? 'badge-admin' : (u.roleId == 'STAFF' ? 'badge-staff' : (u.roleId == 'SHIPPER' ? 'badge-shipper' : 'badge-customer'))}">
+                                            ${u.roleId}
+                                        </span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span class="${u.accountStatus == 'Active' ? 'status-badge-active' : 'status-badge-inactive'}">
+                                            ${u.accountStatus}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell justify-content-center">
+                                            <a href="${pageContext.request.contextPath}/userDetail?action=edit&id=${u.userId}" class="btn-action-edit" title="Sửa thông tin">
+                                                <i class="fa-regular fa-pen-to-square"></i>
+                                            </a>
+                                            <a href="${pageContext.request.contextPath}/userDetail?action=delete&id=${u.userId}" class="btn-action-delete" title="Xóa tài khoản" onclick="return confirm('Bạn có chắc muốn xóa tài khoản của ${u.fullName} không?')">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </c:catch>
+
+                        <%-- Cơ chế dự phòng vòng lặp cũ phòng khi lỗi cache taglib --%>
+                        <c:if test="${ex != null}">
+                            <c_old:forEach var="u" items="${USERS}" varStatus="status">
+                                <tr>
+                                    <td style="text-align: center; font-weight: 600; color: #777;">
+                                        ${(currentPage - 1) * 5 + status.index + 1}
+                                    </td>
+                                    <td style="font-weight: 600; color: #111;">${u.fullName}</td>
+                                    <td>${u.email}</td>
+                                    <td style="font-weight: 500; color: var(--cz-primary);">${u.phone}</td>
+                                    <td style="text-align: center;">
+                                        <span class="badge ${u.roleId == 'ADMIN' ? 'badge-admin' : (u.roleId == 'STAFF' ? 'badge-staff' : (u.roleId == 'SHIPPER' ? 'badge-shipper' : 'badge-customer'))}">
+                                            ${u.roleId}
+                                        </span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span class="${u.accountStatus == 'Active' ? 'status-badge-active' : 'status-badge-inactive'}">
+                                            ${u.accountStatus}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell justify-content-center">
+                                            <a href="${pageContext.request.contextPath}/userDetail?action=edit&id=${u.userId}" class="btn-action-edit"><i class="fa-regular fa-pen-to-square"></i></a>
+                                            <a href="${pageContext.request.contextPath}/userDetail?action=delete&id=${u.userId}" class="btn-action-delete" onclick="return confirm('Bạn có chắc muốn xóa không?')"><i class="fa-regular fa-trash-can"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </c_old:forEach>
+                        </c:if>
+
+                        <c:if test="${empty USERS}">
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="fa-solid fa-box-open d-block fs-2 mb-3" style="color: #ccc;"></i>
+                                    Không tìm thấy dữ liệu người dùng tương ứng.
+                                </td>
+                            </tr>
+                        </c:if>
+                    </tbody>
+                </table>
+
+                <div class="pagination-area">
+                    <span class="pagination-text">Trang số <b>${currentPage}</b> trên tổng số <b>${endPage}</b> trang</span>
+                    <ul class="pagination-nav">
+                        <li class="page-num-item ${currentPage == 1 ? 'disabled' : ''}">
+                            <a href="userList?page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
+                                <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
+                            </a>
+                        </li>
+                        
+                        <c:forEach begin="1" end="${endPage}" var="i">
+                            <li class="page-num-item ${currentPage == i ? 'active' : ''}">
+                                <a href="userList?page=${i}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">${i}</a>
+                            </li>
+                        </c:forEach>
+                        
+                        <li class="page-num-item ${currentPage == endPage ? 'disabled' : ''}">
+                            <a href="userList?page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
+                                <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <script>
+        <c:if test="${not empty sessionScope.successMessage}">
+            Toastify({
+                text: "${sessionScope.successMessage}",
+                duration: 4000,
+                close: true,
+                gravity: "top", // top or bottom
+                position: "right", // left, center or right
+                backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                stopOnFocus: true
+            }).showToast();
+            <c:remove var="successMessage" scope="session" />
+        </c:if>
+
+        <c:if test="${not empty sessionScope.errorMessage}">
+            Toastify({
+                text: "${sessionScope.errorMessage}",
+                duration: 4000,
+                close: true,
+                gravity: "top",
+                position: "right",
+                backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                stopOnFocus: true
+            }).showToast();
+            <c:remove var="errorMessage" scope="session" />
+        </c:if>
+    </script>
+</body>
 </html>

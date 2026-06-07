@@ -68,7 +68,10 @@ public class UserDetailServlet extends HttpServlet {
             UserDAO dao = new UserDAO();
 
             if (action != null && action.equals("delete")) {
+                User userToDelete = dao.getUserById(id);
+                String name = (userToDelete != null) ? userToDelete.getFullName() : "người dùng";
                 dao.deleteUser(id);
+                request.getSession().setAttribute("successMessage", "Đã xóa tài khoản của " + name + " khỏi hệ thống!");
                 response.sendRedirect("userList");
                 return;
             }
@@ -96,7 +99,9 @@ public class UserDetailServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         try {
+
             String action = request.getParameter("action");
             String userId = request.getParameter("userId");
             String fullName = request.getParameter("fullName");
@@ -105,51 +110,50 @@ public class UserDetailServlet extends HttpServlet {
             String phone = request.getParameter("phone");
             String roleId = request.getParameter("roleId");
             String accountStatus = request.getParameter("accountStatus");
-
-
+            System.out.println(">>> Trạng thái nhận được từ giao diện gửi lên: " + accountStatus);
             UserDAO dao = new UserDAO();
 
             User u = new User();
+            
             u.setFullName(fullName);
             u.setEmail(email);
             u.setPassword(password);
             u.setPhone(phone);
             u.setRoleId(roleId);
             u.setAccountStatus(accountStatus);
-            
+
             String errorMessage = null;
 
-            if(fullName.isEmpty() || email.isEmpty() || phone.isEmpty() || (action == null  && password.isEmpty())){
+            if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty() || (action == null && password.isEmpty())) {
                 errorMessage = "Vui lòng điền đầy đủ các trường thông tin";
-            }
-            else if(!phone.matches("^(0)[3|5|7|9][0-9]{8}$")){
+            } else if (!phone.matches("^(0)[3|5|7|9][0-9]{8}$")) {
                 errorMessage = "Số điện thoại phải là 10 chữ số";
-            }
-            else if((action != null || !action.equals("edit")) && password.length() < 6){
+            } else if ((action != null || !action.equals("edit")) && password.length() < 6) {
                 errorMessage = "Mật khẩu phải từ 6 kí tự trở lên";
-            }
-            else if(dao.checkEmailExist(email, action != null && action.equals("edit") ? userId : null)){
+            } else if (dao.checkEmailExist(email, action != null && action.equals("edit") ? userId : null)) {
                 errorMessage = "Địa chỉ Email này đã được đăng kí bởi một tài khoản khác";
             }
-            if(errorMessage != null){
+            if (errorMessage != null) {
                 request.setAttribute("ERROR_MSG", errorMessage);
                 request.setAttribute("USER_DATA", u);
                 request.getRequestDispatcher("admin/userDetail.jsp").forward(request, response);
                 return;
             }
-            
+
             String hashedPassword = com.bakeryzone.utils.PasswordUtils.hashPassword(password);
             u.setPassword(hashedPassword);
-            
-            
-            
+
+            jakarta.servlet.http.HttpSession session = request.getSession();
+
             if (action != null && action.equals("edit")) {
+                u.setUserId(userId);
                 dao.updateUser(u);
+                session.setAttribute("successMessage", "Cập nhật tài khoản của " + fullName + " thành công!");
             } else {
                 String generatedId = "USR" + (System.currentTimeMillis() % 100000);
                 u.setUserId(generatedId);
                 dao.insertUser(u);
-
+                session.setAttribute("successMessage", "Thêm mới tài khoản " + fullName + " thành công!");
             }
             response.sendRedirect("userList");
         } catch (Exception e) {
