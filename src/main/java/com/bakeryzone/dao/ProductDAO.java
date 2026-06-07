@@ -166,59 +166,45 @@ public class ProductDAO {
 
                 if (exists) {
                     // Update Template
-                    String updateT = "UPDATE cake_template SET Template_Name = ?, SKU = ?, Default_Margin_Percent = ?, "
-                                   + "Default_Service_Percent = ?, Recipe_ID = ?, Image_URL = ?, Status = ?, "
-                                   + "Is_Featured = ?, Short_Description = ?, Full_Description = ?, Category_ID = ?, "
-                                   + "Estimated_Labor_Hours = ? "
+                    String updateT = "UPDATE cake_template SET Template_Name = ?, Base_Price = ?, "
+                                   + "Estimated_Labor_Hours = ?, Allows_Greeting = ?, Image_URL = ?, Status = ?, "
+                                   + "Is_Featured = ?, Full_Description = ?, Category_ID = ? "
                                    + "WHERE Template_ID = ?";
                     try (PreparedStatement ps = conn.prepareStatement(updateT)) {
                         ps.setString(1, product.getName());
-                        ps.setString(2, product.getSku());
-                        ps.setDouble(3, product.getMarginPercent());
-                        ps.setDouble(4, product.getServicePercent());
-                        
-                        String rId = product.getRecipeId();
-                        ps.setString(5, (rId == null || rId.trim().isEmpty()) ? null : rId.trim());
-                        
-                        ps.setString(6, product.getImageUrl());
-                        ps.setString(7, product.getStatus());
-                        ps.setBoolean(8, product.isFeatured());
-                        ps.setString(9, product.getShortDescription());
-                        ps.setString(10, product.getFullDescription());
+                        ps.setDouble(2, product.getBasePrice());
+                        ps.setDouble(3, product.getEstimatedLaborHours());
+                        ps.setBoolean(4, product.isAllowsGreeting());
+                        ps.setString(5, product.getImageUrl());
+                        ps.setString(6, product.getStatus());
+                        ps.setBoolean(7, product.isFeatured());
+                        ps.setString(8, product.getFullDescription());
                         
                         String cId = product.getCategoryId();
-                        ps.setString(11, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
+                        ps.setString(9, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
                         
-                        ps.setDouble(12, product.getEstimatedLaborHours());
-                        ps.setString(13, product.getId());
+                        ps.setString(10, product.getId());
                         success = ps.executeUpdate() > 0;
                     }
                 } else {
                     // Insert Template
-                    String insertT = "INSERT INTO cake_template (Template_ID, Template_Name, SKU, Default_Margin_Percent, "
-                                   + "Default_Service_Percent, Recipe_ID, Image_URL, Status, Is_Featured, "
-                                   + "Short_Description, Full_Description, Category_ID, Estimated_Labor_Hours) "
-                                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    String insertT = "INSERT INTO cake_template (Template_ID, Template_Name, Base_Price, Estimated_Labor_Hours, "
+                                   + "Allows_Greeting, Image_URL, Status, Is_Featured, Full_Description, Category_ID) "
+                                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     try (PreparedStatement ps = conn.prepareStatement(insertT)) {
                         ps.setString(1, product.getId());
                         ps.setString(2, product.getName());
-                        ps.setString(3, product.getSku());
-                        ps.setDouble(4, product.getMarginPercent());
-                        ps.setDouble(5, product.getServicePercent());
-                        
-                        String rId = product.getRecipeId();
-                        ps.setString(6, (rId == null || rId.trim().isEmpty()) ? null : rId.trim());
-                        
-                        ps.setString(7, product.getImageUrl());
-                        ps.setString(8, product.getStatus());
-                        ps.setBoolean(9, product.isFeatured());
-                        ps.setString(10, product.getShortDescription());
-                        ps.setString(11, product.getFullDescription());
+                        ps.setDouble(3, product.getBasePrice());
+                        ps.setDouble(4, product.getEstimatedLaborHours());
+                        ps.setBoolean(5, product.isAllowsGreeting());
+                        ps.setString(6, product.getImageUrl());
+                        ps.setString(7, product.getStatus());
+                        ps.setBoolean(8, product.isFeatured());
+                        ps.setString(9, product.getFullDescription());
                         
                         String cId = product.getCategoryId();
-                        ps.setString(12, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
+                        ps.setString(10, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
                         
-                        ps.setDouble(13, product.getEstimatedLaborHours());
                         success = ps.executeUpdate() > 0;
                     }
                 }
@@ -309,14 +295,11 @@ public class ProductDAO {
         return "SELECT "
              + "    t.Template_ID AS Product_ID, "
              + "    t.Template_Name AS Product_Name, "
-             + "    t.SKU AS SKU, "
-             + "    t.Default_Margin_Percent AS Margin_Percent, "
-             + "    t.Default_Service_Percent AS Service_Percent, "
-             + "    t.Recipe_ID AS Recipe_ID, "
+             + "    t.Base_Price AS Base_Price, "
+             + "    t.Allows_Greeting AS Allows_Greeting, "
              + "    t.Image_URL AS Image_URL, "
              + "    t.Status AS Status, "
              + "    t.Is_Featured AS Is_Featured, "
-             + "    t.Short_Description AS Short_Description, "
              + "    t.Full_Description AS Full_Description, "
              + "    'Cake' AS Product_Type, "
              + "    t.Category_ID AS Category_ID, "
@@ -330,20 +313,17 @@ public class ProductDAO {
         Product p = new Product(
             rs.getString("Product_ID"),
             rs.getString("Product_Name"),
-            rs.getString("SKU"),
             rs.getString("Category_ID"),
             rs.getString("Category_Name"),
-            rs.getDouble("Margin_Percent"),
-            rs.getDouble("Service_Percent"),
-            rs.getString("Recipe_ID"),
+            rs.getDouble("Base_Price"),
+            rs.getDouble("Estimated_Labor_Hours"),
+            rs.getBoolean("Allows_Greeting"),
             rs.getString("Image_URL"),
             rs.getString("Status"),
             rs.getBoolean("Is_Featured"),
-            rs.getString("Short_Description"),
             rs.getString("Full_Description"),
             rs.getString("Product_Type")
         );
-        p.setEstimatedLaborHours(rs.getDouble("Estimated_Labor_Hours"));
         return p;
     }
 
@@ -359,7 +339,7 @@ public class ProductDAO {
             params.add(status);
         }
         if (search != null && !search.trim().isEmpty()) {
-            sb.append(" AND (p.Product_Name LIKE ? OR p.SKU LIKE ?)");
+            sb.append(" AND (p.Product_Name LIKE ? OR p.Product_ID LIKE ?)");
             params.add("%" + search.trim() + "%");
             params.add("%" + search.trim() + "%");
         }
@@ -367,10 +347,10 @@ public class ProductDAO {
     }
 
     private String getOrderByClause(String sortBy) {
-        if ("margin-asc".equalsIgnoreCase(sortBy)) {
-            return " ORDER BY p.Margin_Percent ASC";
-        } else if ("margin-desc".equalsIgnoreCase(sortBy)) {
-            return " ORDER BY p.Margin_Percent DESC";
+        if ("price-asc".equalsIgnoreCase(sortBy)) {
+            return " ORDER BY p.Base_Price ASC";
+        } else if ("price-desc".equalsIgnoreCase(sortBy)) {
+            return " ORDER BY p.Base_Price DESC";
         }
         return " ORDER BY p.Product_ID DESC"; // newest first
     }

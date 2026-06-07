@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class DBContext {
 
     public static Connection getJDBCConnection() {
-        String url = "jdbc:mysql://localhost:3306/bakery";
+        String url = "jdbc:mysql://localhost:3306/BakeryManagement";
         String user = "root"; 
         String password = "1234";
         

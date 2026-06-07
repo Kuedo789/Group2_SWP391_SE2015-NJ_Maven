@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -681,65 +682,65 @@
             <span>Cake<span>Zone</span> Admin</span>
         </div>
         
-        <div class="nav-section-title">Core</div>
+        <div class="nav-section-title">Hệ thống chính</div>
         <ul class="sidebar-menu">
             <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+                <a href="#"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
             </li>
         </ul>
 
-        <div class="nav-section-title">Management</div>
+        <div class="nav-section-title">Quản lý</div>
         <ul class="sidebar-menu">
             <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-receipt"></i> Orders <i class="fa-solid fa-chevron-down arrow"></i></a>
+                <a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
             </li>
             <li class="menu-item active">
-                <a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Products <i class="fa-solid fa-chevron-down arrow"></i></a>
+                <a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm <i class="fa-solid fa-chevron-down arrow"></i></a>
             </li>
             <li class="menu-item" style="padding-left: 20px;">
-                <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Categories</a>
+                <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Danh mục</a>
             </li>
             <li class="menu-item" style="padding-left: 20px;">
-                <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Attributes</a>
+                <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Thuộc tính</a>
             </li>
             <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-users"></i> Customers</a>
+                <a href="#"><i class="fa-solid fa-users"></i> Khách hàng</a>
             </li>
             <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-percent"></i> Promotions <i class="fa-solid fa-chevron-down arrow"></i></a>
+                <a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi <i class="fa-solid fa-chevron-down arrow"></i></a>
             </li>
             <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-warehouse"></i> Inventory <i class="fa-solid fa-chevron-down arrow"></i></a>
+                <a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
             </li>
             <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Delivery <i class="fa-solid fa-chevron-down arrow"></i></a>
+                <a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
             </li>
             <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-star-half-stroke"></i> Reviews</a>
+                <a href="#"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a>
             </li>
         </ul>
 
-        <div class="nav-section-title">System</div>
+        <div class="nav-section-title">Hệ thống</div>
         <ul class="sidebar-menu">
             <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-user-gear"></i> Users</a>
+                <a href="#"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
             </li>
             <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-shield-halved"></i> Roles & Permissions</a>
+                <a href="#"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a>
             </li>
             <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-sliders"></i> Settings</a>
+                <a href="#"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a>
             </li>
             <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Activity Logs</a>
+                <a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hoạt động</a>
             </li>
         </ul>
 
         <!-- Grow Your Bakery card -->
         <div class="sidebar-banner">
             <i class="fa-solid fa-cake-candles cake-icon"></i>
-            <h6>Grow Your Bakery</h6>
-            <p>Create beautiful cakes and deliver happiness!</p>
+            <h6>Phát triển tiệm bánh</h6>
+            <p>Tạo ra những chiếc bánh đẹp và trao gửi hạnh phúc!</p>
         </div>
     </div>
 
@@ -751,11 +752,11 @@
             <div class="header-left">
                 <button class="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
                 <div class="breadcrumbs">
-                    <a href="#">Dashboard</a>
+                    <a href="#">Bảng điều khiển</a>
                     <span>&gt;</span>
-                    <a href="#">Products</a>
+                    <a href="#">Sản phẩm</a>
                     <span>&gt;</span>
-                    <a href="#" class="active text-dark font-weight-bold">Product List</a>
+                    <a href="#" class="active text-dark font-weight-bold">Danh sách bánh kem</a>
                 </div>
             </div>
             
@@ -776,30 +777,41 @@
         <!-- Dashboard Container -->
         <div class="content-container">
             
-            <!-- Flash Message Alerts -->
-            <c:if test="${not empty sessionScope.errorMessage}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="fa-solid fa-triangle-exclamation me-2"></i> ${sessionScope.errorMessage}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <c:remove var="errorMessage" scope="session" />
-            </c:if>
-            <c:if test="${not empty sessionScope.successMessage}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="fa-solid fa-circle-check me-2"></i> ${sessionScope.successMessage}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <c:remove var="successMessage" scope="session" />
-            </c:if>
+             <!-- Flash Message Alerts -->
+             <c:if test="${not empty sessionScope.errorMessage or param.msg eq 'save_error' or param.msg eq 'delete_error'}">
+                  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                      <i class="fa-solid fa-triangle-exclamation me-2"></i> 
+                      <c:choose>
+                          <c:when test="${param.msg eq 'save_error'}">Lưu thông tin bánh kem thất bại. Vui lòng kiểm tra lại!</c:when>
+                          <c:when test="${param.msg eq 'delete_error'}">Không thể xóa bánh kem này vì đang có ràng buộc dữ liệu.</c:when>
+                          <c:otherwise>${sessionScope.errorMessage}</c:otherwise>
+                      </c:choose>
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+                  </div>
+                  <c:remove var="errorMessage" scope="session" />
+             </c:if>
+             <c:if test="${not empty sessionScope.successMessage or param.msg eq 'save_success' or param.msg eq 'add_success' or param.msg eq 'edit_success' or param.msg eq 'delete_success'}">
+                  <div class="alert alert-success alert-dismissible fade show" role="alert">
+                      <i class="fa-solid fa-circle-check me-2"></i> 
+                      <c:choose>
+                          <c:when test="${param.msg eq 'add_success'}">Đã thêm mới bánh kem thành công!</c:when>
+                          <c:when test="${param.msg eq 'edit_success' or param.msg eq 'save_success'}">Đã cập nhật thông tin bánh kem thành công!</c:when>
+                          <c:when test="${param.msg eq 'delete_success'}">Đã xóa bánh kem thành công!</c:when>
+                          <c:otherwise>${sessionScope.successMessage}</c:otherwise>
+                      </c:choose>
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+                  </div>
+                  <c:remove var="successMessage" scope="session" />
+             </c:if>
             
             <!-- Page Title Area -->
             <div class="page-title-area">
                 <div>
-                    <h1 class="page-title">Product List </h1>
-                    <p class="page-subtitle">Manage all cake products, inventory, and availability.</p>
+                    <h1 class="page-title">Danh sách bánh kem</h1>
+                    <p class="page-subtitle">Quản lý tất cả sản phẩm bánh kem, nguyên liệu và trạng thái kinh doanh.</p>
                 </div>
                 <a href="${pageContext.request.contextPath}/admin/product-detail?id=new" class="btn btn-cz-primary">
-                    <i class="fa-solid fa-circle-plus"></i> Add New Cake
+                    <i class="fa-solid fa-circle-plus"></i> Thêm bánh mới
                 </a>
             </div>
 
@@ -810,30 +822,30 @@
                     <input type="hidden" name="pageSize" value="${pageSize}">
                     
                      <select class="filter-select" name="category" onchange="this.form.submit()">
-                        <option value="" ${empty category ? 'selected' : ''}>All Categories</option>
+                        <option value="" ${empty category ? 'selected' : ''}>Tất cả danh mục</option>
                         <c:forEach var="cat" items="${productCategories}">
                             <option value="${cat.id}" ${category eq cat.id or category eq cat.name ? 'selected' : ''}>${cat.name}</option>
                         </c:forEach>
                     </select>
 
                     <select class="filter-select" name="status" onchange="this.form.submit()">
-                        <option value="" ${empty status ? 'selected' : ''}>All Statuses</option>
-                        <option value="Active" ${status eq 'Active' ? 'selected' : ''}>Active</option>
-                        <option value="Inactive" ${status eq 'Inactive' ? 'selected' : ''}>Inactive</option>
+                        <option value="" ${empty status ? 'selected' : ''}>Tất cả trạng thái</option>
+                        <option value="Active" ${status eq 'Active' ? 'selected' : ''}>Hoạt động</option>
+                        <option value="Inactive" ${status eq 'Inactive' ? 'selected' : ''}>Ngưng bán</option>
                     </select>
 
                     <div class="search-wrapper">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" class="search-input" name="search" value="${search}" placeholder="Search cakes by name, SKU...">
+                        <input type="text" class="search-input" name="search" value="${search}" placeholder="Tìm kiếm bánh theo tên, mã...">
                     </div>
 
                     <select class="filter-select" name="sortBy" onchange="this.form.submit()">
-                        <option value="newest" ${sortBy eq 'newest' ? 'selected' : ''}>Sort by: Newest First</option>
-                        <option value="margin-asc" ${sortBy eq 'margin-asc' ? 'selected' : ''}>Sort by: Margin Low to High</option>
-                        <option value="margin-desc" ${sortBy eq 'margin-desc' ? 'selected' : ''}>Sort by: Margin High to Low</option>
+                        <option value="newest" ${sortBy eq 'newest' ? 'selected' : ''}>Sắp xếp: Mới nhất</option>
+                        <option value="price-asc" ${sortBy eq 'price-asc' ? 'selected' : ''}>Giá: Thấp đến Cao</option>
+                        <option value="price-desc" ${sortBy eq 'price-desc' ? 'selected' : ''}>Giá: Cao đến Thấp</option>
                     </select>
 
-                    <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Filter</button>
+                    <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
                 </form>
             </div>
 
@@ -842,13 +854,14 @@
                 <table class="cz-table">
                     <thead>
                         <tr>
-                            <th style="width: 50px;">#</th>
-                            <th>Product</th>
-                            <th>Category</th>
-                            <th style="min-width: 200px;">Pricing & Recipe Formula</th>
-                            <th>Featured</th>
-                            <th>Status</th>
-                            <th style="width: 150px;">Actions</th>
+                            <th style="width: 60px;">STT</th>
+                            <th>Hình ảnh & Tên bánh</th>
+                            <th>Danh mục</th>
+                            <th style="min-width: 180px;">Giá & Giờ công</th>
+                            <th class="text-center" style="width: 160px;">Cho phép ghi chữ</th>
+                            <th class="text-center" style="width: 100px;">Nổi bật</th>
+                            <th class="text-center" style="width: 150px;">Trạng thái</th>
+                            <th style="width: 150px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -869,16 +882,32 @@
                                                 </c:choose>
                                                 <div class="product-meta">
                                                     <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="product-name-link">${p.name}</a>
-                                                    <span class="product-sku">SKU: ${p.sku}</span>
-                                                    <span class="product-desc">${p.shortDescription}</span>
+                                                    <span class="product-sku">Mã: ${p.id}</span>
                                                 </div>
                                             </div>
                                         </td>
                                          <td>${p.categoryName}</td>
                                          <td>
-                                             <span class="badge bg-success text-white mb-1" style="display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 4px;">Margin: ${p.marginPercent}%</span>
-                                             <span class="badge bg-warning text-dark mb-1" style="display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 4px;">Service: ${p.servicePercent}%</span>
-                                             <div class="text-muted mt-1" style="font-size: 11px; font-weight: 500;"><i class="fa-solid fa-receipt me-1"></i> Recipe ID: ${p.recipeId}</div>
+                                             <span style="font-size: 14.5px; font-weight: 700; color: #e06f14; display: block;">
+                                                 <fmt:formatNumber value="${p.basePrice}" type="number" pattern="#,##0"/> đ
+                                             </span>
+                                             <div class="text-muted mt-1" style="font-size: 12px; font-weight: 500;">
+                                                 <i class="fa-regular fa-clock me-1" style="color: #aaa;"></i> Giờ công: ${p.estimatedLaborHours} giờ
+                                             </div>
+                                         </td>
+                                         <td class="text-center">
+                                             <c:choose>
+                                                 <c:when test="${p.allowsGreeting}">
+                                                     <span class="badge" style="background-color: #e3f2fd; color: #0d6efd; border: 1px solid #bbdefb; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                                         <i class="fa-regular fa-pen-to-square"></i> Được ghi chữ
+                                                     </span>
+                                                 </c:when>
+                                                 <c:otherwise>
+                                                     <span class="badge" style="background-color: #f5f5f5; color: #888; border: 1px solid #ddd; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: 4px;">
+                                                         Không hỗ trợ
+                                                     </span>
+                                                 </c:otherwise>
+                                             </c:choose>
                                          </td>
                                         <td class="text-center">
                                             <c:choose>
@@ -890,25 +919,25 @@
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
-                                        <td>
+                                        <td class="text-center">
                                             <c:choose>
                                                 <c:when test="${p.status eq 'Active'}">
-                                                    <span class="status-badge-active">Active</span>
+                                                    <span class="status-badge-active">Hoạt động</span>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <span class="status-badge-inactive">Inactive</span>
+                                                    <span class="status-badge-inactive">Ngưng bán</span>
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>
                                         <td>
                                             <div class="actions-cell">
-                                                <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="btn-action-view" title="View Detail">
+                                                <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="btn-action-view" title="Xem chi tiết">
                                                     <i class="fa-regular fa-eye"></i>
                                                 </a>
-                                                <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="btn-action-edit" title="Edit Product">
+                                                <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="btn-action-edit" title="Chỉnh sửa">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </a>
-                                                <button class="btn-action-delete" title="Delete" onclick="if(confirm('Are you sure you want to delete ${p.name}?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=delete&id=${p.id}'; }">
+                                                <button class="btn-action-delete" title="Xóa" onclick="if(confirm('Bạn có chắc chắn muốn xóa bánh kem ${p.name} không?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=delete&id=${p.id}'; }">
                                                     <i class="fa-regular fa-trash-can"></i>
                                                 </button>
                                             </div>
@@ -920,7 +949,7 @@
                                 <tr>
                                     <td colspan="8" class="text-center py-5 text-muted">
                                         <i class="fa-solid fa-box-open d-block fs-2 mb-3" style="color: #ccc;"></i>
-                                        No products match your filter search criteria.
+                                        Không tìm thấy bánh kem nào phù hợp với bộ lọc.
                                     </td>
                                 </tr>
                             </c:otherwise>
@@ -930,7 +959,7 @@
 
                 <!-- Pagination area -->
                 <div class="pagination-area">
-                    <span class="pagination-text">Showing ${totalCount > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} to ${((currentPage - 1) * pageSize) + productList.size()} of ${totalCount} products</span>
+                    <span class="pagination-text">Hiển thị ${totalCount > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} đến ${((currentPage - 1) * pageSize) + productList.size()} trong tổng số ${totalCount} sản phẩm</span>
                     <div class="d-flex align-items-center gap-3">
                         <ul class="pagination-nav">
                             <!-- Prev page -->
@@ -961,9 +990,9 @@
                             <input type="hidden" name="search" value="${search}">
                             <input type="hidden" name="sortBy" value="${sortBy}">
                             <select class="filter-select" name="pageSize" onchange="this.form.submit()" style="min-width: auto; padding: 5px 25px 5px 10px; font-size: 12.5px;">
-                                <option value="5" ${pageSize == 5 ? 'selected' : ''}>5 / page</option>
-                                <option value="10" ${pageSize == 10 ? 'selected' : ''}>10 / page</option>
-                                <option value="20" ${pageSize == 20 ? 'selected' : ''}>20 / page</option>
+                                <option value="5" ${pageSize == 5 ? 'selected' : ''}>5 / trang</option>
+                                <option value="10" ${pageSize == 10 ? 'selected' : ''}>10 / trang</option>
+                                <option value="20" ${pageSize == 20 ? 'selected' : ''}>20 / trang</option>
                             </select>
                         </form>
                     </div>
