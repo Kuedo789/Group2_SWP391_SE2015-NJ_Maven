@@ -25,7 +25,7 @@ public class LoginServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         // login.jsp dùng name="account" nên phải lấy account
-        String email = request.getParameter("account");
+        String email = request.getParameter("email");
 
         // Lấy password
         String password = request.getParameter("password");

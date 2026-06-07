@@ -89,6 +89,6 @@ public class VerifyForgotOtpServlet extends HttpServlet {
         request.getSession().removeAttribute("otpExpireAtMillis");
 
         // Chuyển sang trang đặt lại mật khẩu
-        response.sendRedirect(request.getContextPath() + "/auth/reset-password.jsp");
+        response.sendRedirect(request.getContextPath() + "/reset-password");
     }
 }

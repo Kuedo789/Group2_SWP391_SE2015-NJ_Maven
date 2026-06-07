@@ -1,86 +1,108 @@
-<%-- 
-    Document   : navbar
-    Created on : Jun 4, 2026, 1:27:02 PM
-    Author     : admin
---%>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="com.bakeryzone.model.User" %>
 
 <%
     String contextPath = request.getContextPath();
-
-    Object user = session.getAttribute("user");
-    boolean loggedIn = user != null;
-
-    Integer cartCount = (Integer) session.getAttribute("cartCount");
-    if (cartCount == null) {
-        cartCount = 0;
-    }
+    User currentUser = (User) session.getAttribute("user");
 %>
 
 <nav class="navbar">
     <div class="navbar-inner">
 
-        <a href="<%= contextPath %>/common/home.jsp" class="logo">
-            Tiệm Bánh Thủ Công
+        <!-- Logo -->
+        <a href="<%= contextPath %>/home" class="logo">
+            BakeryZone
         </a>
 
+        <!-- Menu chính -->
         <div class="nav-menu">
-            <a href="${pageContext.request.contextPath}/common/home.jsp" class="active">Trang chủ</a>
-            <a href="${pageContext.request.contextPath}/customer/productList.jsp">Menu bánh</a>
-            <a href="#">Tự thiết kế</a>
-            <a href="#">Bộ sưu tập</a>
-            <a href="#">Ưu đãi</a>
-            <a href="#">Liên hệ</a>
+            <a href="<%= contextPath %>/home" class="active">Trang chủ</a>
+            <a href="<%= contextPath %>/products">Sản phẩm</a>
+            <a href="<%= contextPath %>/custom-cake">Thiết kế bánh</a>
+            <a href="<%= contextPath %>/about">Về chúng tôi</a>
+            <a href="<%= contextPath %>/contact">Liên hệ</a>
         </div>
 
+        <!-- Icons bên phải -->
         <div class="nav-icons">
 
-            <button type="button" aria-label="Tìm kiếm">
+            <!-- Search -->
+            <button type="button" title="Tìm kiếm">
                 <span class="material-symbols-outlined">search</span>
             </button>
 
-            <button type="button"
-                    class="cart-btn"
-                    aria-label="Giỏ hàng"
-                    onclick="window.location.href='<%= contextPath %>/cart'">
+            <!-- Cart -->
+            <button type="button" title="Giỏ hàng">
                 <span class="material-symbols-outlined">shopping_cart</span>
-
-                <% if (cartCount > 0) { %>
-                    <span class="cart-count"><%= cartCount %></span>
-                <% } %>
+                <span class="cart-count">0</span>
             </button>
 
-            <% if (!loggedIn) { %>
+            <!-- User dropdown -->
+            <div class="user-dropdown">
 
-                <button type="button"
-                        aria-label="Tài khoản"
-                        onclick="window.location.href='<%= contextPath %>/auth/login.jsp'">
-                    <span class="material-symbols-outlined">account_circle</span>
-                </button>
+                <% if (currentUser == null) { %>
 
-            <% } else { %>
+                    <!-- Chưa đăng nhập -->
+                    <a href="<%= contextPath %>/auth/login.jsp" class="nav-user-link" title="Đăng nhập">
+                        <span class="material-symbols-outlined">account_circle</span>
+                    </a>
 
-                <div class="user-dropdown">
+                <% } else { %>
 
-                    <button type="button"
-                            class="user-dropdown-btn"
-                            id="userDropdownBtn"
-                            aria-label="Tài khoản">
+                    <!-- Đã đăng nhập -->
+                    <button type="button" class="user-dropdown-btn" id="userDropdownBtn" title="Tài khoản">
                         <span class="material-symbols-outlined">account_circle</span>
                     </button>
 
                     <div class="user-dropdown-menu" id="userDropdownMenu">
-                        <a href="<%= contextPath %>/profile">Profile</a>
-                        <a href="<%= contextPath %>/orders">Đơn hàng của tôi</a>
-                        <a href="<%= contextPath %>/my-designs">Thiết kế của tôi</a>
-                        <a href="<%= contextPath %>/logout">Đăng xuất</a>
+
+                        <!-- Header user -->
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-avatar">
+                                <span class="material-symbols-outlined">account_circle</span>
+                            </div>
+
+                            <div class="user-dropdown-info">
+                                <div class="user-dropdown-hello">Xin chào,</div>
+                                <div class="user-dropdown-fullname">
+                                    <%= currentUser.getFullName() %>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="user-dropdown-divider"></div>
+
+                        <!-- Profile -->
+                        <a href="<%= contextPath %>/profile" class="user-dropdown-item">
+                            <span class="material-symbols-outlined">person</span>
+                            <span>Hồ sơ cá nhân</span>
+                        </a>
+
+                        <!-- Orders -->
+                        <a href="<%= contextPath %>/orders" class="user-dropdown-item">
+                            <span class="material-symbols-outlined">receipt_long</span>
+                            <span>Xem đơn hàng</span>
+                        </a>
+
+                        <!-- My designs -->
+                        <a href="<%= contextPath %>/my-designs" class="user-dropdown-item">
+                            <span class="material-symbols-outlined">cake</span>
+                            <span>Thiết kế của tôi</span>
+                        </a>
+
+                        <div class="user-dropdown-divider"></div>
+
+                        <!-- Logout -->
+                        <a href="<%= contextPath %>/logout" class="user-dropdown-item logout-item">
+                            <span class="material-symbols-outlined">logout</span>
+                            <span>Đăng xuất</span>
+                        </a>
+
                     </div>
 
-                </div>
+                <% } %>
 
-            <% } %>
-
+            </div>
         </div>
-
     </div>
 </nav>

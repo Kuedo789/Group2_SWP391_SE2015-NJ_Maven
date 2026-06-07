@@ -183,6 +183,7 @@ public class UserDAO {
             rs = ps.executeQuery();
 
             if (rs.next()) {
+                u = new User();
 
                 u.setUserId(rs.getString("User_ID"));
                 u.setFullName(rs.getString("Full_Name"));
@@ -200,7 +201,6 @@ public class UserDAO {
                 u.setAccountStatus(rs.getString("Account_Status"));
                 u.setActiveStaff(rs.getBoolean("Is_Active_Staff"));
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -514,29 +514,28 @@ public class UserDAO {
     }
 
     public boolean verifyOtp(String email, String otpCode) {
-    String sql = "SELECT User_ID FROM `user` "
-            + "WHERE Email = ? "
-            + "AND OTP_Code = ? "
-            + "AND OTP_Expiry > NOW() "
-            + "AND Account_Status = 'Active'";
+        String sql = "SELECT User_ID FROM `user` "
+                + "WHERE Email = ? "
+                + "AND OTP_Code = ? "
+                + "AND OTP_Expiry > NOW() "
+                + "AND Account_Status = 'Active'";
 
-    try (
-            Connection conn = DBContext.getJDBCConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        ps.setString(1, email);
-        ps.setString(2, otpCode);
+            ps.setString(1, email);
+            ps.setString(2, otpCode);
 
-        try (ResultSet rs = ps.executeQuery()) {
-            return rs.next();
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        return false;
     }
-
-    return false;
-}
 
     public void markUserVerified(String email) {
         String sql = "UPDATE `user` "
@@ -693,30 +692,29 @@ public class UserDAO {
             e.printStackTrace();
         }
     }
-    
+
     public void updateUnverifiedRegisterByEmail(User user) {
-    String sql = "UPDATE `user` "
-            + "SET Full_Name = ?, Password = ?, Phone = ?, "
-            + "OTP_Code = ?, OTP_Expiry = ?, "
-            + "Provider = 'LOCAL', Account_Status = 'Active' "
-            + "WHERE Email = ? "
-            + "AND Is_Verified = false";
+        String sql = "UPDATE `user` "
+                + "SET Full_Name = ?, Password = ?, Phone = ?, "
+                + "OTP_Code = ?, OTP_Expiry = ?, "
+                + "Provider = 'LOCAL', Account_Status = 'Active' "
+                + "WHERE Email = ? "
+                + "AND Is_Verified = false";
 
-    try (
-            Connection conn = DBContext.getJDBCConnection();
-            PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
-        ps.setString(1, user.getFullName());
-        ps.setString(2, user.getPassword());
-        ps.setString(3, user.getPhone());
-        ps.setString(4, user.getOtpCode());
-        ps.setTimestamp(5, user.getOtpExpiry());
-        ps.setString(6, user.getEmail());
+            ps.setString(1, user.getFullName());
+            ps.setString(2, user.getPassword());
+            ps.setString(3, user.getPhone());
+            ps.setString(4, user.getOtpCode());
+            ps.setTimestamp(5, user.getOtpExpiry());
+            ps.setString(6, user.getEmail());
 
-        ps.executeUpdate();
+            ps.executeUpdate();
 
-    } catch (Exception e) {
-        e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
-}
 }// end class
