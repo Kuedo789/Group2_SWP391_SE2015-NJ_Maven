@@ -473,28 +473,202 @@ public class UserDAO {
     }
 
     public void updateOtpByEmail(String email, String otpCode, Timestamp otpExpiry) {
+        String sql = "UPDATE `user` "
+                + "SET OTP_Code = ?, OTP_Expiry = ? "
+                + "WHERE Email = ?";
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, otpCode);
+            ps.setTimestamp(2, otpExpiry);
+            ps.setString(3, email);
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     public boolean verifyOtp(String email, String otpCode) {
-        return true;
+        String sql = "SELECT User_ID FROM `user` "
+                + "WHERE Email = ? "
+                + "AND OTP_Code = ? "
+                + "AND OTP_Expiry > NOW() "
+                + "AND Is_Verified = false "
+                + "AND Account_Status = 'Active'";
+
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+            ps.setString(2, otpCode);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 
     public void markUserVerified(String email) {
+        String sql = "UPDATE `user` "
+                + "SET Is_Verified = true "
+                + "WHERE Email = ?";
+
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void clearOtp(String email) {
+        String sql = "UPDATE `user` "
+                + "SET OTP_Code = NULL, OTP_Expiry = NULL "
+                + "WHERE Email = ?";
+
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, email);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void updatePasswordByEmail(String email, String newPassword) {
+        String sql = "UPDATE `user` "
+                + "SET Password = ?, OTP_Code = NULL, OTP_Expiry = NULL "
+                + "WHERE Email = ? "
+                + "AND Provider = 'LOCAL'";
+
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, newPassword);
+            ps.setString(2, email);
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public User findByProvider(String provider, String providerId) {
+        String sql = "SELECT u.User_ID, u.Full_Name, u.Email, u.Password, u.Phone, "
+                + "u.Role_ID, r.Role_Name, "
+                + "u.Is_Verified, u.OTP_Code, u.OTP_Expiry, "
+                + "u.Provider, u.Provider_ID, "
+                + "u.Account_Status, u.Is_Active_Staff "
+                + "FROM `user` u "
+                + "JOIN `role` r ON u.Role_ID = r.Role_ID "
+                + "WHERE u.Provider = ? "
+                + "AND u.Provider_ID = ?";
+
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, provider);
+            ps.setString(2, providerId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User u = new User();
+
+                    u.setUserId(rs.getString("User_ID"));
+                    u.setFullName(rs.getString("Full_Name"));
+                    u.setEmail(rs.getString("Email"));
+                    u.setPassword(rs.getString("Password"));
+                    u.setPhone(rs.getString("Phone"));
+                    u.setRoleId(rs.getString("Role_ID"));
+                    u.setRoleName(rs.getString("Role_Name"));
+
+                    u.setVerified(rs.getBoolean("Is_Verified"));
+                    u.setOtpCode(rs.getString("OTP_Code"));
+                    u.setOtpExpiry(rs.getTimestamp("OTP_Expiry"));
+
+                    u.setProvider(rs.getString("Provider"));
+                    u.setProviderId(rs.getString("Provider_ID"));
+                    u.setAccountStatus(rs.getString("Account_Status"));
+                    u.setActiveStaff(rs.getBoolean("Is_Active_Staff"));
+
+                    return u;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     public void createGoogleUser(User user) {
+        String sql = "INSERT INTO `user` "
+                + "(User_ID, Full_Name, Email, Password, Phone, Role_ID, "
+                + "Is_Verified, OTP_Code, OTP_Expiry, "
+                + "Provider, Provider_ID, Account_Status, Is_Active_Staff) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            String userId = user.getUserId();
+
+            if (userId == null || userId.trim().isEmpty()) {
+                userId = generateUserId("CUS");
+            }
+
+            ps.setString(1, userId);
+            ps.setString(2, user.getFullName());
+            ps.setString(3, user.getEmail());
+            ps.setString(4, null);
+            ps.setString(5, user.getPhone());
+            ps.setString(6, "CUS");
+
+            ps.setBoolean(7, true);
+            ps.setString(8, null);
+            ps.setTimestamp(9, null);
+
+            ps.setString(10, "GOOGLE");
+            ps.setString(11, user.getProviderId());
+            ps.setString(12, "Active");
+            ps.setBoolean(13, false);
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void deleteUnverifiedUsersExpired() {
+        String sql = "DELETE FROM `user` "
+                + "WHERE Is_Verified = false "
+                + "AND Provider = 'LOCAL' "
+                + "AND OTP_Expiry IS NOT NULL "
+                + "AND OTP_Expiry < NOW()";
 
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }// end class
