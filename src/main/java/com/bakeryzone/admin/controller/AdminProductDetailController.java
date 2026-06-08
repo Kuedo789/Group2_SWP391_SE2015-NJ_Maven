@@ -91,6 +91,10 @@ public class AdminProductDetailController extends HttpServlet {
         
         String fullDescription = request.getParameter("fullDescription");
         
+        // Recipe properties
+        String recipeName = request.getParameter("recipeName");
+        String recipeInstructions = request.getParameter("recipeInstructions");
+        
         // 2. Adjust ID and Type
         boolean isNew = false;
         if (id == null || id.trim().isEmpty() || "new".equalsIgnoreCase(id)) {
@@ -109,6 +113,9 @@ public class AdminProductDetailController extends HttpServlet {
             id, name, categoryId, "", basePrice, estimatedLaborHours, allowsGreeting, imageUrl,
             status, isFeatured, fullDescription, productType
         );
+        
+        product.setRecipeName(recipeName);
+        product.setRecipeInstructions(recipeInstructions);
         
         // Retrieve dynamic product images from form
         String[] additionalImagesArr = request.getParameterValues("additionalImages");

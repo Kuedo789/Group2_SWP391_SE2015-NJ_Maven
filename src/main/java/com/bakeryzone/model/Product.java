@@ -22,6 +22,11 @@ public class Product {
     private String fullDescription;
     private String productType; // Always "Cake"
     private List<String> additionalImages = new ArrayList<>(); // Secondary images from product_image
+    
+    // Cake Recipe Fields (1:1 relationship)
+    private String recipeId;
+    private String recipeName;
+    private String recipeInstructions;
 
     // Default constructor
     public Product() {
@@ -154,5 +159,29 @@ public class Product {
 
     public void setAdditionalImages(List<String> additionalImages) {
         this.additionalImages = additionalImages;
+    }
+
+    public String getRecipeId() {
+        return recipeId;
+    }
+
+    public void setRecipeId(String recipeId) {
+        this.recipeId = recipeId;
+    }
+
+    public String getRecipeName() {
+        return recipeName;
+    }
+
+    public void setRecipeName(String recipeName) {
+        this.recipeName = recipeName;
+    }
+
+    public String getRecipeInstructions() {
+        return recipeInstructions;
+    }
+
+    public void setRecipeInstructions(String recipeInstructions) {
+        this.recipeInstructions = recipeInstructions;
     }
 }

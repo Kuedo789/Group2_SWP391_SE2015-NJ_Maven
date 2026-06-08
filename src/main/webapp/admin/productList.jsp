@@ -8,13 +8,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CakeZone Admin - Product List</title>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Custom styling -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductList.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductList.css?v=1.3">
 </head>
 <body>
 
@@ -57,25 +57,29 @@
         <div class="content-container">
             
              <!-- Flash Message Alerts -->
-             <c:if test="${not empty sessionScope.errorMessage or param.msg eq 'save_error' or param.msg eq 'delete_error'}">
+             <c:if test="${not empty sessionScope.errorMessage or param.msg eq 'save_error' or param.msg eq 'delete_error' or param.msg eq 'deactivate_error' or param.msg eq 'activate_error'}">
                   <div class="alert alert-danger alert-dismissible fade show" role="alert">
                       <i class="fa-solid fa-triangle-exclamation me-2"></i> 
                       <c:choose>
                           <c:when test="${param.msg eq 'save_error'}">Lưu thông tin bánh kem thất bại. Vui lòng kiểm tra lại!</c:when>
                           <c:when test="${param.msg eq 'delete_error'}">Không thể xóa bánh kem này vì đang có ràng buộc dữ liệu.</c:when>
+                          <c:when test="${param.msg eq 'deactivate_error'}">Vô hiệu hóa bánh kem thất bại. Vui lòng thử lại!</c:when>
+                          <c:when test="${param.msg eq 'activate_error'}">Kích hoạt bánh kem thất bại. Vui lòng thử lại!</c:when>
                           <c:otherwise>${sessionScope.errorMessage}</c:otherwise>
                       </c:choose>
                       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
                   </div>
                   <c:remove var="errorMessage" scope="session" />
              </c:if>
-             <c:if test="${not empty sessionScope.successMessage or param.msg eq 'save_success' or param.msg eq 'add_success' or param.msg eq 'edit_success' or param.msg eq 'delete_success'}">
+             <c:if test="${not empty sessionScope.successMessage or param.msg eq 'save_success' or param.msg eq 'add_success' or param.msg eq 'edit_success' or param.msg eq 'delete_success' or param.msg eq 'deactivate_success' or param.msg eq 'activate_success'}">
                   <div class="alert alert-success alert-dismissible fade show" role="alert">
                       <i class="fa-solid fa-circle-check me-2"></i> 
                       <c:choose>
                           <c:when test="${param.msg eq 'add_success'}">Đã thêm mới bánh kem thành công!</c:when>
                           <c:when test="${param.msg eq 'edit_success' or param.msg eq 'save_success'}">Đã cập nhật thông tin bánh kem thành công!</c:when>
                           <c:when test="${param.msg eq 'delete_success'}">Đã xóa bánh kem thành công!</c:when>
+                          <c:when test="${param.msg eq 'deactivate_success'}">Đã vô hiệu hóa bánh kem thành công!</c:when>
+                          <c:when test="${param.msg eq 'activate_success'}">Đã kích hoạt bánh kem thành công!</c:when>
                           <c:otherwise>${sessionScope.successMessage}</c:otherwise>
                       </c:choose>
                       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
@@ -138,7 +142,7 @@
                             <th>Danh mục</th>
                             <th style="min-width: 180px;">Giá & Giờ công</th>
                             <th class="text-center" style="width: 160px;">Cho phép ghi chữ</th>
-                            <th class="text-center" style="width: 100px;">Nổi bật</th>
+                            <th style="min-width: 180px;">Công thức làm bánh</th>
                             <th class="text-center" style="width: 150px;">Trạng thái</th>
                             <th style="width: 150px;">Thao tác</th>
                         </tr>
@@ -167,7 +171,7 @@
                                         </td>
                                          <td>${p.categoryName}</td>
                                          <td>
-                                             <span style="font-size: 14.5px; font-weight: 700; color: #e06f14; display: block;">
+                                             <span style="font-size: 14.5px; font-weight: 700; color: var(--cz-primary); display: block;">
                                                  <fmt:formatNumber value="${p.basePrice}" type="number" pattern="#,##0"/> đ
                                              </span>
                                              <div class="text-muted mt-1" style="font-size: 12px; font-weight: 500;">
@@ -188,16 +192,18 @@
                                                  </c:otherwise>
                                              </c:choose>
                                          </td>
-                                        <td class="text-center">
-                                            <c:choose>
-                                                <c:when test="${p.featured}">
-                                                    <i class="fa-solid fa-star featured-star active"></i>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <i class="fa-regular fa-star featured-star"></i>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
+                                         <td>
+                                             <c:choose>
+                                                 <c:when test="${not empty p.recipeName}">
+                                                     <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}#recipe-editor-container" class="product-name-link" style="font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">
+                                                         <i class="fa-solid fa-receipt" style="color: var(--cz-secondary); font-size: 12px;"></i> ${p.recipeName}
+                                                     </a>
+                                                 </c:when>
+                                                 <c:otherwise>
+                                                     <span class="text-muted" style="font-size: 12px; font-style: italic;">Chưa thiết lập</span>
+                                                 </c:otherwise>
+                                             </c:choose>
+                                         </td>
                                         <td class="text-center">
                                             <c:choose>
                                                 <c:when test="${p.status eq 'Active'}">
@@ -216,9 +222,18 @@
                                                 <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="btn-action-edit" title="Chỉnh sửa">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </a>
-                                                <button class="btn-action-delete" title="Xóa" onclick="if(confirm('Bạn có chắc chắn muốn xóa bánh kem ${p.name} không?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=delete&id=${p.id}'; }">
-                                                    <i class="fa-regular fa-trash-can"></i>
-                                                </button>
+                                                 <c:choose>
+                                                     <c:when test="${p.status eq 'Active'}">
+                                                         <button class="btn-action-delete" title="Vô hiệu hóa" onclick="if(confirm('Bạn có chắc chắn muốn vô hiệu hóa bánh kem ${p.name} không?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=deactivate&id=${p.id}'; }">
+                                                             <i class="fa-solid fa-ban"></i>
+                                                         </button>
+                                                     </c:when>
+                                                     <c:otherwise>
+                                                         <button class="btn-action-view" style="color: #3f5f36; border-color: #3f5f36; background-color: #eaf1e6;" title="Kích hoạt" onclick="if(confirm('Bạn có chắc chắn muốn kích hoạt lại bánh kem ${p.name} không?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=activate&id=${p.id}'; }">
+                                                             <i class="fa-solid fa-circle-check"></i>
+                                                         </button>
+                                                     </c:otherwise>
+                                                 </c:choose>
                                             </div>
                                         </td>
                                     </tr>
