@@ -836,5 +836,29 @@ public class UserDAO {
         }
         return 0;
     }
+    
+    public boolean updateProfile(String userId, String fullName, String phone, String address) {
+    String sql = "UPDATE `user` "
+            + "SET Full_Name = ?, Phone = ?, Default_Address = ? "
+            + "WHERE User_ID = ?";
+
+    try (
+            Connection conn = DBContext.getJDBCConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, fullName);
+        ps.setString(2, phone);
+        ps.setString(3, address);
+        ps.setString(4, userId);
+
+        return ps.executeUpdate() > 0;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return false;
+}
 
 }// end class
+

@@ -13,6 +13,7 @@ public class User {
     private String email;
     private String password;
     private String phone;
+    private String defaultAddress;
     private String roleId;
     private String roleName;
     private boolean verified;
@@ -23,16 +24,15 @@ public class User {
     private String accountStatus;
     private boolean activeStaff;
 
-
     public User() {
     }
 
     // Constructor đầy đủ: dùng khi cần khởi tạo User với toàn bộ thông tin
     public User(String userId, String fullName, String email, String password,
-                String phone, String roleId, String roleName,
-                boolean verified, String otpCode, Timestamp otpExpiry,
-                String provider, String providerId,
-                String accountStatus, boolean activeStaff) {
+            String phone, String roleId, String roleName,
+            boolean verified, String otpCode, Timestamp otpExpiry,
+            String provider, String providerId,
+            String accountStatus, boolean activeStaff) {
 
         this.userId = userId;
         this.fullName = fullName;
@@ -63,7 +63,6 @@ public class User {
 //        this.roleName = roleName;
 //        this.accountStatus = accountStatus;
 //    }
-
     public String getUserId() {
         return userId;
     }
@@ -87,7 +86,7 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
-    
+
     public String getPassword() {
         return password;
     }
@@ -95,7 +94,7 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-    
+
     public String getPhone() {
         return phone;
     }
@@ -103,7 +102,15 @@ public class User {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-    
+
+    public String getDefaultAddress() {
+        return defaultAddress;
+    }
+
+    public void setDefaultAddress(String defaultAddress) {
+        this.defaultAddress = defaultAddress;
+    }
+
     public String getRoleId() {
         return roleId;
     }
@@ -111,7 +118,7 @@ public class User {
     public void setRoleId(String roleId) {
         this.roleId = roleId;
     }
-    
+
     public String getRoleName() {
         return roleName;
     }
