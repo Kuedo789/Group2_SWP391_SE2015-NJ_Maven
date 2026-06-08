@@ -16,8 +16,8 @@
 
         <!-- Menu chính -->
         <div class="nav-menu">
-            <a href="#" class="active">Trang chủ</a>
-            <a href="#">Sản phẩm</a>
+            <a href="<%= request.getContextPath() %>/home">Trang Chủ</a>
+            <a href="<%= request.getContextPath() %>/products">Menu bánh</a>
             <a href="#">Thiết kế bánh</a>
             <a href="#">Về chúng tôi</a>
             <a href="#">Liên hệ</a>

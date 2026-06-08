@@ -4,19 +4,54 @@
     Author     : Nguyễn Hùng
 --%>
 
+<%@page import="java.util.List"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="com.bakeryzone.model.Product"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
-<%
-    int productId = 1;
-
-    try {
-        String idParam = request.getParameter("id");
-
-        if (idParam != null) {
-            productId = Integer.parseInt(idParam);
+<%!
+    private String js(String value) {
+        if (value == null) {
+            return "";
         }
-    } catch (Exception e) {
-        productId = 1;
+
+        return value.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("'", "\\'")
+                .replace("\n", " ")
+                .replace("\r", " ");
+    }
+%>
+
+<%
+    Product product = (Product) request.getAttribute("product");
+    List<Product> relatedProducts = (List<Product>) request.getAttribute("relatedProducts");
+
+    if (relatedProducts == null) {
+        relatedProducts = new ArrayList<>();
+    }
+
+    if (product == null) {
+        response.sendRedirect(request.getContextPath() + "/products");
+        return;
+    }
+
+    List<String> imageList = new ArrayList<>();
+
+    if (product.getImageUrl() != null && !product.getImageUrl().trim().isEmpty()) {
+        imageList.add(product.getImageUrl());
+    }
+
+    if (product.getAdditionalImages() != null) {
+        for (String img : product.getAdditionalImages()) {
+            if (img != null && !img.trim().isEmpty() && !imageList.contains(img)) {
+                imageList.add(img);
+            }
+        }
+    }
+
+    if (imageList.isEmpty()) {
+        imageList.add("assets/images/products/basic.png");
     }
 %>
 
@@ -37,7 +72,7 @@
             <div class="breadcrumb">
                 <a href="<%= request.getContextPath() %>/common/home.jsp">Trang chủ</a>
                 <span>›</span>
-                <a href="<%= request.getContextPath() %>/customer/productList.jsp">Menu bánh</a>
+                <a href="<%= request.getContextPath() %>/products">Menu bánh</a>
                 <span>›</span>
                 <span id="breadcrumbName">Chi tiết bánh</span>
             </div>
@@ -122,7 +157,7 @@
             <section class="related-section">
                 <div class="section-top">
                     <h2>Sản phẩm liên quan</h2>
-                    <a href="<%= request.getContextPath() %>/customer/productList.jsp">Xem tất cả</a>
+                    <a href="<%= request.getContextPath() %>/products">Xem tất cả</a>
                 </div>
 
                 <div class="related-grid" id="relatedList"></div>
@@ -135,156 +170,48 @@
 
         <script>
             const contextPath = "<%= request.getContextPath() %>";
-            const currentProductId = <%= productId %>;
 
-            const products = [
-                {
-                    id: 1,
-                    name: "Bánh Matcha Dâu Tây",
-                    category: "Bánh Flan Gato",
-                    price: 450,
-                    desc: "Cốt bánh matcha mềm, kem tươi và dâu tươi chua ngọt.",
-                    image: contextPath + "/img/cake-1.jpg",
-                    featured: true
-                },
-                {
-                    id: 2,
-                    name: "Flan Gato Chocolate",
-                    category: "Bánh Flan Gato",
-                    price: 390,
-                    desc: "Flan mềm mịn kết hợp cốt gato chocolate thơm béo.",
-                    image: contextPath + "/img/cake-2.jpg",
-                    featured: false
-                },
-                {
-                    id: 3,
-                    name: "Flan Gato Dâu",
-                    category: "Bánh Flan Gato",
-                    price: 420,
-                    desc: "Vị dâu nhẹ nhàng, phù hợp cho tiệc sinh nhật nhỏ.",
-                    image: contextPath + "/img/cake-3.jpg",
-                    featured: false
-                },
-                {
-                    id: 4,
-                    name: "Bánh Sinh Nhật Tối Giản",
-                    category: "Bánh Entremet",
-                    price: 380,
-                    desc: "Thiết kế tinh tế, kem bơ ngọt vừa, phù hợp sinh nhật.",
-                    image: contextPath + "/img/cake-1.jpg",
-                    featured: true
-                },
-                {
-                    id: 5,
-                    name: "Entremet Trái Cây",
-                    category: "Bánh Entremet",
-                    price: 520,
-                    desc: "Nhiều lớp bánh mềm, vị trái cây tươi mát.",
-                    image: contextPath + "/img/cake-2.jpg",
-                    featured: false
-                },
-                {
-                    id: 6,
-                    name: "Bánh Kem Bắp Mini",
-                    category: "Bánh Kem Bắp",
-                    price: 320,
-                    desc: "Kem bắp thơm nhẹ, cốt bánh mềm và ít ngọt.",
-                    image: contextPath + "/img/cake-3.jpg",
-                    featured: false
-                },
-                {
-                    id: 7,
-                    name: "Bánh Kem Bắp Phô Mai",
-                    category: "Bánh Kem Bắp",
-                    price: 360,
-                    desc: "Kết hợp kem bắp và lớp phô mai béo nhẹ.",
-                    image: contextPath + "/img/cake-1.jpg",
-                    featured: true
-                },
-                {
-                    id: 8,
-                    name: "Mousse Dâu Tây",
-                    category: "Bánh Mousse",
-                    price: 420,
-                    desc: "Lớp mousse dâu mềm mịn, hương vị nhẹ nhàng.",
-                    image: contextPath + "/img/cake-2.jpg",
-                    featured: false
-                },
-                {
-                    id: 9,
-                    name: "Mousse Xoài",
-                    category: "Bánh Mousse",
-                    price: 410,
-                    desc: "Vị xoài tươi, mềm mịn, phù hợp ngày hè.",
-                    image: contextPath + "/img/cake-3.jpg",
-                    featured: false
-                },
-                {
-                    id: 10,
-                    name: "Mousse Chocolate",
-                    category: "Bánh Mousse",
-                    price: 450,
-                    desc: "Vị chocolate đậm, ít ngọt, thơm béo.",
-                    image: contextPath + "/img/cake-1.jpg",
-                    featured: true
-                },
-                {
-                    id: 11,
-                    name: "Sweetbox Premium Socola",
-                    category: "Sweetbox Premium",
-                    price: 520,
-                    desc: "Phiên bản cao cấp với socola đậm vị.",
-                    image: contextPath + "/img/cake-2.jpg",
-                    featured: false
-                },
-                {
-                    id: 12,
-                    name: "Sweetbox Dâu Mix",
-                    category: "Sweetbox",
-                    price: 260,
-                    desc: "Hộp bánh nhỏ xinh gồm nhiều vị trái cây.",
-                    image: contextPath + "/img/cake-3.jpg",
-                    featured: true
-                },
-                {
-                    id: 13,
-                    name: "Sweetin Croissant",
-                    category: "Sweetin",
-                    price: 45,
-                    desc: "Vỏ bánh giòn, thơm bơ, phù hợp dùng cùng cà phê.",
-                    image: contextPath + "/img/cake-1.jpg",
-                    featured: false
-                },
-                {
-                    id: 14,
-                    name: "Bánh Healthy Yến Mạch",
-                    category: "Bánh Healthy",
-                    price: 280,
-                    desc: "Ít đường, vị nhẹ, phù hợp người thích ăn lành mạnh.",
-                    image: contextPath + "/img/cake-2.jpg",
-                    featured: false
+            const product = {
+                id: "<%= js(product.getId()) %>",
+                name: "<%= js(product.getName()) %>",
+                category: "<%= js(product.getCategoryName()) %>",
+                price: <%= product.getBasePrice() %>,
+                desc: "<%= js(product.getFullDescription()) %>",
+                image: contextPath + "/<%= js(imageList.get(0)) %>"
+            };
+
+            const images = [
+            <%
+                for (String img : imageList) {
+            %>
+                contextPath + "/<%= js(img) %>",
+            <%
                 }
+            %>
             ];
 
-            let product = products.find(function (item) {
-                return item.id === currentProductId;
-            });
-
-            if (!product) {
-                product = products[0];
-            }
+            const relatedProducts = [
+            <%
+                for (Product p : relatedProducts) {
+            %>
+                {
+                    id: "<%= js(p.getId()) %>",
+                            name: "<%= js(p.getName()) %>",
+                    category: "<%= js(p.getCategoryName()) %>",
+                            price: <%= p.getBasePrice() %>,
+                    desc: "<%= js(p.getFullDescription()) %>",
+                            image: contextPath + "/<%= js(p.getImageUrl()) %>"
+                },
+            <%
+                }
+            %>
+            ];
 
             let selectedVariant = 0;
             let selectedImage = 0;
             let quantity = 1;
             let selectedRating = 5;
             let isFavorite = false;
-
-            const images = [
-                product.image,
-                contextPath + "/img/cake-2.jpg",
-                contextPath + "/img/cake-3.jpg"
-            ];
 
             const variants = [
                 {
@@ -296,14 +223,14 @@
                 },
                 {
                     name: product.name + " 20cm",
-                    price: product.price + 80,
+                    price: product.price + 80000,
                     note: "Size bánh dành cho 6 - 8 người dùng.",
                     size: "Size 20cm",
                     people: "6-8 người"
                 },
                 {
                     name: product.name + " 24cm",
-                    price: product.price + 160,
+                    price: product.price + 160000,
                     note: "Size bánh dành cho trên 8 người dùng.",
                     size: "Size 24cm",
                     people: ">8 người"
@@ -311,7 +238,7 @@
             ];
 
             function formatPrice(price) {
-                return price.toLocaleString("vi-VN") + ".000đ";
+                return price.toLocaleString("vi-VN") + " đ";
             }
 
             function renderProductInfo() {
@@ -446,13 +373,8 @@
 
             function renderDescription() {
                 document.getElementById("tabContent").innerHTML =
+                        '<p><strong>Mô tả:</strong> ' + product.desc + '</p>' +
                         '<p><strong>Hương vị:</strong> Ngọt dịu - béo nhẹ - thơm mềm.</p>' +
-                        '<p><strong>Cấu trúc bánh:</strong></p>' +
-                        '<ul>' +
-                        '<li>Cốt bánh mềm, thơm và dễ ăn.</li>' +
-                        '<li>Lớp kem mịn, vị ngọt vừa phải.</li>' +
-                        '<li>Trang trí tinh tế, phù hợp sinh nhật và tiệc nhỏ.</li>' +
-                        '</ul>' +
                         '<p><strong>Bảo quản:</strong> Bánh nên được dùng trong ngày và bảo quản lạnh trước khi thưởng thức.</p>' +
                         '<p><strong>Phụ kiện tặng kèm:</strong></p>' +
                         '<ul>' +
@@ -470,13 +392,9 @@
                         createStars(selectedRating) +
                         '</div>' +
                         '<textarea class="review-textarea" id="reviewContent" placeholder="Viết cảm nhận của bạn về sản phẩm..."></textarea>' +
-                        '<button type="button" class="review-submit" onclick="submitReview()">' +
-                        'Gửi đánh giá' +
-                        '</button>' +
+                        '<button type="button" class="review-submit" onclick="submitReview()">Gửi đánh giá</button>' +
                         '<div class="review-list" id="reviewList">' +
-                        '<div class="review-empty" id="reviewEmpty">' +
-                        'Chưa có đánh giá nào cho sản phẩm này.' +
-                        '</div>' +
+                        '<div class="review-empty" id="reviewEmpty">Chưa có đánh giá nào cho sản phẩm này.</div>' +
                         '</div>' +
                         '</div>';
             }
@@ -485,9 +403,7 @@
                 let html = "";
 
                 for (let i = 1; i <= 5; i++) {
-                    html += '<button type="button" class="star-item ' + (i <= rating ? 'active' : '') + '" onclick="selectRating(' + i + ')">' +
-                            '★' +
-                            '</button>';
+                    html += '<button type="button" class="star-item ' + (i <= rating ? 'active' : '') + '" onclick="selectRating(' + i + ')">★</button>';
                 }
 
                 return html;
@@ -533,26 +449,19 @@
             }
 
             function renderRelatedProducts() {
-                let related = products.filter(function (item) {
-                    return item.category === product.category && item.id !== product.id;
-                });
-
-                if (related.length === 0) {
-                    related = products.filter(function (item) {
-                        return item.id !== product.id;
-                    });
-                }
-
-                related = related.slice(0, 4);
-
                 let html = "";
 
-                for (let i = 0; i < related.length; i++) {
-                    html += '<div class="related-card" onclick="goToProductDetail(' + related[i].id + ')">';
-                    html += '<img src="' + related[i].image + '" alt="' + related[i].name + '">';
+                if (relatedProducts.length === 0) {
+                    document.getElementById("relatedList").innerHTML = "<p>Chưa có sản phẩm liên quan.</p>";
+                    return;
+                }
+
+                for (let i = 0; i < relatedProducts.length; i++) {
+                    html += '<div class="related-card" onclick="goToProductDetail(\'' + relatedProducts[i].id + '\')">';
+                    html += '<img src="' + relatedProducts[i].image + '" alt="' + relatedProducts[i].name + '">';
                     html += '<div class="related-body">';
-                    html += '<div class="related-name">' + related[i].name + '</div>';
-                    html += '<div class="related-price">' + formatPrice(related[i].price) + '</div>';
+                    html += '<div class="related-name">' + relatedProducts[i].name + '</div>';
+                    html += '<div class="related-price">' + formatPrice(relatedProducts[i].price) + '</div>';
                     html += '</div>';
                     html += '</div>';
                 }
@@ -561,11 +470,11 @@
             }
 
             function goToProductDetail(id) {
-                window.location.href = contextPath + "/customer/productDetail.jsp?id=" + id;
+                window.location.href = contextPath + "/product-detail?id=" + id;
             }
 
             renderProductInfo();
-        </script>
+        </script>    
 
     </body>
 </html>
