@@ -83,6 +83,13 @@
                     </div>
                 </div>
 
+                <c:if test="${not empty error}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="background-color: #fdf3f3; border-color: #fcebeb; color: #dc3545; border-radius: 8px; font-weight: 500; font-size: 14px; margin-bottom: 25px;">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i> ${error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </c:if>
+
                 <div class="row">
                     <!-- Left Column -->
                     <div class="col-lg-5">
@@ -136,7 +143,8 @@
                             <div class="row g-3">
                                  <div class="col-md-12">
                                      <label class="form-label-cz">Tên Bánh Kem <span>*</span></label>
-                                     <input type="text" class="form-control-cz" name="name" value="${product.name}" required>
+                                     <input type="text" class="form-control-cz" id="productName" name="name" value="${product.name}" required>
+                                     <div id="error-name" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
 
                                  <div class="col-md-6">
@@ -148,13 +156,15 @@
                                      </select>
                                  </div>
                                  <div class="col-md-6">
-                                     <label class="form-label-cz">Giá Bán Gốc(VND) <span>*</span></label>
-                                     <input type="number" step="0.01" class="form-control-cz" name="basePrice" value="${product.basePrice}" required>
+                                     <label class="form-label-cz">Giá Bán Gốc (VND) <span>*</span></label>
+                                     <input type="number" step="0.01" class="form-control-cz" id="productBasePrice" name="basePrice" value="${product.basePrice}" required>
+                                     <div id="error-basePrice" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
 
                                  <div class="col-md-6">
                                      <label class="form-label-cz">Thời Gian Làm Việc Ước Tính (giờ) <span>*</span></label>
-                                     <input type="number" step="0.01" class="form-control-cz" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required>
+                                     <input type="number" step="0.01" class="form-control-cz" id="productEstimatedLaborHours" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required>
+                                     <div id="error-estimatedLaborHours" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
                                  <div class="col-md-6">
                                      <label class="form-label-cz">Cho Phép Ghi Chữ</label>
@@ -366,6 +376,79 @@
         // Sync Quill HTML contents to hidden inputs on form submit
         const form = document.querySelector('form');
         form.addEventListener('submit', function(e) {
+            // Clear previous errors
+            let hasError = false;
+            
+            const errorName = document.getElementById('error-name');
+            const errorPrice = document.getElementById('error-basePrice');
+            const errorLabor = document.getElementById('error-estimatedLaborHours');
+            
+            errorName.style.display = 'none';
+            errorPrice.style.display = 'none';
+            errorLabor.style.display = 'none';
+            
+            const nameInput = document.getElementById('productName');
+            const priceInput = document.getElementById('productBasePrice');
+            const laborInput = document.getElementById('productEstimatedLaborHours');
+            
+            nameInput.classList.remove('is-invalid');
+            priceInput.classList.remove('is-invalid');
+            laborInput.classList.remove('is-invalid');
+
+            // 1. Validate name
+            const nameVal = nameInput.value.trim();
+            if (nameVal.length === 0) {
+                errorName.textContent = 'Tên bánh kem không được để trống hoặc chỉ chứa khoảng trắng.';
+                errorName.style.display = 'block';
+                nameInput.classList.add('is-invalid');
+                hasError = true;
+            } else if (nameVal.length < 3 || nameVal.length > 100) {
+                errorName.textContent = 'Tên bánh kem phải từ 3 đến 100 ký tự.';
+                errorName.style.display = 'block';
+                nameInput.classList.add('is-invalid');
+                hasError = true;
+            }
+
+            // 2. Validate base price
+            const priceVal = parseFloat(priceInput.value);
+            if (isNaN(priceVal) || priceInput.value.trim() === '') {
+                errorPrice.textContent = 'Vui lòng nhập giá bán gốc.';
+                errorPrice.style.display = 'block';
+                priceInput.classList.add('is-invalid');
+                hasError = true;
+            } else if (priceVal < 0) {
+                errorPrice.textContent = 'Giá bán gốc phải lớn hơn hoặc bằng 0.';
+                errorPrice.style.display = 'block';
+                priceInput.classList.add('is-invalid');
+                hasError = true;
+            }
+
+            // 3. Validate estimated labor hours
+            const laborVal = parseFloat(laborInput.value);
+            if (isNaN(laborVal) || laborInput.value.trim() === '') {
+                errorLabor.textContent = 'Vui lòng nhập thời gian làm việc ước tính.';
+                errorLabor.style.display = 'block';
+                laborInput.classList.add('is-invalid');
+                hasError = true;
+            } else if (laborVal < 0) {
+                errorLabor.textContent = 'Thời gian làm việc ước tính phải lớn hơn hoặc bằng 0.';
+                errorLabor.style.display = 'block';
+                laborInput.classList.add('is-invalid');
+                hasError = true;
+            }
+
+            if (hasError) {
+                e.preventDefault(); // Prevent form submission
+                // Scroll to the first error input
+                const firstError = document.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+                return false;
+            }
+
+            // Sync editors
             const descriptionInput = document.getElementById('fullDescription');
             descriptionInput.value = quill.root.innerHTML;
 
