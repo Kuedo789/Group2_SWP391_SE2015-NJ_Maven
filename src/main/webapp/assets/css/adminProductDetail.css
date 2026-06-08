@@ -683,3 +683,12 @@ body {
 .tag-badge i:hover {
     color: var(--cz-primary);
 }
+
+/* Validation styling */
+.form-control-cz.is-invalid {
+    border-color: #dc3545 !important;
+}
+.form-control-cz.is-invalid:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
+}
