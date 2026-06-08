@@ -7,13 +7,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CakeZone Admin - Product Detail</title>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Quill Rich Text Editor CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
     <!-- Custom styling -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductDetail.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductDetail.css?v=1.4">
 </head>
 <body>
 
@@ -68,7 +70,16 @@
                     </div>
                     <div class="action-button-group">
                         <button type="submit" class="btn-cz-primary"><i class="fa-regular fa-floppy-disk me-1"></i> Lưu Lại</button>
-                        <button type="button" class="btn-cz-danger" onclick="if(confirm('Bạn có chắc chắn muốn xóa bánh kem này không?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=delete&id=${product.id}'; }">Xóa Bánh</button>
+                        <c:if test="${product.id ne 'new' and not empty product.id}">
+                            <c:choose>
+                                <c:when test="${product.status eq 'Active'}">
+                                    <button type="button" class="btn-cz-danger" onclick="if(confirm('Bạn có chắc chắn muốn vô hiệu hóa bánh kem này không?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=deactivate&id=${product.id}'; }">Vô hiệu hóa</button>
+                                </c:when>
+                                <c:otherwise>
+                                    <button type="button" class="btn-cz-primary" style="background-color: #3f5f36; color: #fff;" onclick="if(confirm('Bạn có chắc chắn muốn kích hoạt lại bánh kem này không?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=activate&id=${product.id}'; }">Kích hoạt</button>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:if>
                     </div>
                 </div>
 
@@ -153,7 +164,7 @@
                                      </div>
                                  </div>
 
-                                 <div class="col-md-6">
+                                 <div class="col-md-12">
                                      <label class="form-label-cz">Trạng Thái Kinh Doanh <span>*</span></label>
                                      <div class="status-radio-group">
                                          <label class="status-radio-label">
@@ -166,36 +177,37 @@
                                          </label>
                                      </div>
                                  </div>
-                                 <div class="col-md-6">
-                                     <label class="form-label-cz">Nổi Bật / Khuyên Dùng</label>
-                                     <div class="switch-container">
-                                         <span class="switch-label-text">Hiển thị nổi bật trên trang chủ & danh mục nổi bật</span>
-                                         <input type="checkbox" class="switch-input" name="isFeatured" value="true" ${product.featured ? 'checked' : ''}>
-                                     </div>
-                                 </div>
 
                                 <div class="col-md-12">
-                                    <label class="form-label-cz">Mô Tả Chi Tiết</label>
-                                    <div class="editor-toolbar">
-                                        <i class="fa-solid fa-bold" title="In đậm"></i>
-                                        <i class="fa-solid fa-italic" title="In nghiêng"></i>
-                                        <i class="fa-solid fa-underline" title="Gạch chân"></i>
-                                        <i class="fa-solid fa-strikethrough" title="Gạch ngang"></i>
-                                        <span style="border-right: 1px solid #ddd; margin: 0 5px;"></span>
-                                        <i class="fa-solid fa-align-left" title="Căn lề trái"></i>
-                                        <i class="fa-solid fa-align-center" title="Căn giữa"></i>
-                                        <i class="fa-solid fa-align-right" title="Căn lề phải"></i>
-                                        <span style="border-right: 1px solid #ddd; margin: 0 5px;"></span>
-                                        <i class="fa-solid fa-list-ul" title="Danh sách không thứ tự"></i>
-                                        <i class="fa-solid fa-list-ol" title="Danh sách có thứ tự"></i>
-                                        <span style="border-right: 1px solid #ddd; margin: 0 5px;"></span>
-                                        <i class="fa-solid fa-link" title="Thêm liên kết"></i>
-                                        <i class="fa-solid fa-image" title="Thêm ảnh"></i>
+                                    <label class="form-label-cz" style="display: block; margin-bottom: 8px;">Mô Tả Chi Tiết</label>
+                                    <div id="editor-container" style="height: 220px; font-family: 'Be Vietnam Pro', sans-serif; background-color: #fff;">
+                                        ${product.fullDescription}
                                     </div>
-                                    <textarea class="editor-textarea" name="fullDescription" rows="5">${product.fullDescription}</textarea>
+                                    <input type="hidden" name="fullDescription" id="fullDescription">
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Cake Recipe Card -->
+                        <div class="detail-card mt-4">
+                            <h5 class="card-header-title">Công Thức Chế Biến</h5>
+                            <p class="card-header-desc">Quản lý quy trình làm bánh và các bước thực hành (Tương quan 1:1 với mẫu bánh).</p>
+                            
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label-cz">Tên Công Thức</label>
+                                    <input type="text" class="form-control-cz" name="recipeName" value="${not empty product.recipeName ? product.recipeName : ''}" placeholder="Ví dụ: Công thức làm bánh bông lan bắp">
+                                </div>
+                                <div class="col-md-12">
+                                    <label class="form-label-cz" style="display: block; margin-bottom: 8px;">Các Bước Thực Hiện</label>
+                                    <div id="recipe-editor-container" style="height: 220px; font-family: 'Be Vietnam Pro', sans-serif; background-color: #fff;">
+                                        ${product.recipeInstructions}
+                                    </div>
+                                    <input type="hidden" name="recipeInstructions" id="recipeInstructions">
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </form>
@@ -316,6 +328,50 @@
                 document.querySelector('input[name="imageUrl"]').value = defaultUrl;
             }
         }
+    </script>
+    
+    <!-- Quill Library -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    <script>
+        // Initialize Quill editor for description
+        const quill = new Quill('#editor-container', {
+            theme: 'snow',
+            placeholder: 'Nhập mô tả chi tiết bánh kem...',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'align': [] }],
+                    ['link', 'image'],
+                    ['clean']                                         // remove formatting button
+                ]
+            }
+        });
+
+        // Initialize Quill editor for recipe instructions
+        const recipeQuill = new Quill('#recipe-editor-container', {
+            theme: 'snow',
+            placeholder: 'Nhập các bước thực hiện, nhiệt độ nướng, thời gian làm bánh...',
+            modules: {
+                toolbar: [
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'align': [] }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            }
+        });
+
+        // Sync Quill HTML contents to hidden inputs on form submit
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const descriptionInput = document.getElementById('fullDescription');
+            descriptionInput.value = quill.root.innerHTML;
+
+            const recipeInput = document.getElementById('recipeInstructions');
+            recipeInput.value = recipeQuill.root.innerHTML;
+        });
     </script>
 </body>
 </html>

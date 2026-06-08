@@ -27,19 +27,37 @@ public class AdminProductListController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        // 1. Handle actions (e.g., delete)
+        // 1. Handle actions (e.g., deactivate)
         String action = request.getParameter("action");
-        if ("delete".equalsIgnoreCase(action)) {
-            String deleteId = request.getParameter("id");
-            if (deleteId != null && !deleteId.trim().isEmpty()) {
-                try {
-                    System.out.println("[INFO] Bat dau xoa banh kem co ID: " + deleteId);
-                    productDAO.deleteProduct(deleteId);
-                    System.out.println("[SUCCESS] Xoa banh kem co ID: " + deleteId + " thanh cong!");
-                    response.sendRedirect(request.getContextPath() + "/admin/products?msg=delete_success");
-                } catch (java.sql.SQLException e) {
-                    System.err.println("[ERROR] Loi khi xoa banh kem co ID: " + deleteId + " - " + e.getMessage());
-                    response.sendRedirect(request.getContextPath() + "/admin/products?msg=delete_error");
+        if ("deactivate".equalsIgnoreCase(action)) {
+            String deactivateId = request.getParameter("id");
+            if (deactivateId != null && !deactivateId.trim().isEmpty()) {
+                System.out.println("[INFO] Bat dau vo hieu hoa banh kem co ID: " + deactivateId);
+                boolean success = productDAO.deactivateProduct(deactivateId);
+                if (success) {
+                    System.out.println("[SUCCESS] Vo hieu hoa banh kem co ID: " + deactivateId + " thanh cong!");
+                    response.sendRedirect(request.getContextPath() + "/admin/products?msg=deactivate_success");
+                } else {
+                    System.err.println("[ERROR] Loi khi vo hieu hoa banh kem co ID: " + deactivateId);
+                    response.sendRedirect(request.getContextPath() + "/admin/products?msg=deactivate_error");
+                }
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/products");
+            }
+            return;
+        }
+        
+        if ("activate".equalsIgnoreCase(action)) {
+            String activateId = request.getParameter("id");
+            if (activateId != null && !activateId.trim().isEmpty()) {
+                System.out.println("[INFO] Bat dau kich hoat banh kem co ID: " + activateId);
+                boolean success = productDAO.activateProduct(activateId);
+                if (success) {
+                    System.out.println("[SUCCESS] Kich hoat banh kem co ID: " + activateId + " thanh cong!");
+                    response.sendRedirect(request.getContextPath() + "/admin/products?msg=activate_success");
+                } else {
+                    System.err.println("[ERROR] Loi khi kich hoat banh kem co ID: " + activateId);
+                    response.sendRedirect(request.getContextPath() + "/admin/products?msg=activate_error");
                 }
             } else {
                 response.sendRedirect(request.getContextPath() + "/admin/products");

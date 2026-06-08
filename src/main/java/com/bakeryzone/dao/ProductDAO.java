@@ -55,6 +55,20 @@ public class ProductDAO {
                         }
                     }
                     product.setAdditionalImages(images);
+                    
+                    // Query recipe details (1:1 relationship)
+                    String recSql = "SELECT Recipe_ID, Recipe_Name, Instruction_Steps FROM cake_recipe WHERE Template_ID = ?";
+                    try (PreparedStatement recPs = conn.prepareStatement(recSql)) {
+                        recPs.setString(1, id);
+                        try (ResultSet recRs = recPs.executeQuery()) {
+                            if (recRs.next()) {
+                                product.setRecipeId(recRs.getString("Recipe_ID"));
+                                product.setRecipeName(recRs.getString("Recipe_Name"));
+                                product.setRecipeInstructions(recRs.getString("Instruction_Steps"));
+                            }
+                        }
+                    }
+                    
                     return product;
                 }
             }
@@ -149,6 +163,42 @@ public class ProductDAO {
     }
 
     /**
+     * Deactivates a product by setting its Status to 'Inactive' in the database.
+     */
+    public boolean deactivateProduct(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return false;
+        }
+        String sql = "UPDATE cake_template SET Status = 'Inactive' WHERE Template_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to deactivate product: " + id, e);
+        }
+        return false;
+    }
+
+    /**
+     * Activates a product by setting its Status to 'Active' in the database.
+     */
+    public boolean activateProduct(String id) {
+        if (id == null || id.trim().isEmpty()) {
+            return false;
+        }
+        String sql = "UPDATE cake_template SET Status = 'Active' WHERE Template_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to activate product: " + id, e);
+        }
+        return false;
+    }
+
+    /**
      * Creates or updates a product in the database.
      */
     public boolean saveProduct(Product product) {
@@ -235,6 +285,37 @@ public class ProductDAO {
                             ps.executeBatch();
                         }
                     }
+                    
+                    // 3. Save or update recipe details (1:1 relationship)
+                    boolean recipeExists = false;
+                    try (PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM cake_recipe WHERE Template_ID = ?")) {
+                        ps.setString(1, product.getId());
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next() && rs.getInt(1) > 0) recipeExists = true;
+                        }
+                    }
+
+                    if (recipeExists) {
+                        // Update recipe
+                        String updateRec = "UPDATE cake_recipe SET Recipe_Name = ?, Instruction_Steps = ? WHERE Template_ID = ?";
+                        try (PreparedStatement ps = conn.prepareStatement(updateRec)) {
+                            ps.setString(1, product.getRecipeName() != null && !product.getRecipeName().trim().isEmpty() ? product.getRecipeName() : "Công thức " + product.getName());
+                            ps.setString(2, product.getRecipeInstructions());
+                            ps.setString(3, product.getId());
+                            ps.executeUpdate();
+                        }
+                    } else {
+                        // Insert recipe
+                        String insertRec = "INSERT INTO cake_recipe (Recipe_ID, Template_ID, Recipe_Name, Instruction_Steps) VALUES (?, ?, ?, ?)";
+                        try (PreparedStatement ps = conn.prepareStatement(insertRec)) {
+                            String recipeId = "REC-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                            ps.setString(1, recipeId);
+                            ps.setString(2, product.getId());
+                            ps.setString(3, product.getRecipeName() != null && !product.getRecipeName().trim().isEmpty() ? product.getRecipeName() : "Công thức " + product.getName());
+                            ps.setString(4, product.getRecipeInstructions());
+                            ps.executeUpdate();
+                        }
+                    }
                 }
 
                 conn.commit();
@@ -304,9 +385,13 @@ public class ProductDAO {
              + "    'Cake' AS Product_Type, "
              + "    t.Category_ID AS Category_ID, "
              + "    c.Category_Name AS Category_Name, "
-             + "    t.Estimated_Labor_Hours AS Estimated_Labor_Hours "
+             + "    t.Estimated_Labor_Hours AS Estimated_Labor_Hours, "
+             + "    r.Recipe_ID AS Recipe_ID, "
+             + "    r.Recipe_Name AS Recipe_Name, "
+             + "    r.Instruction_Steps AS Recipe_Instructions "
              + "FROM cake_template t "
-             + "LEFT JOIN product_category c ON t.Category_ID = c.Category_ID";
+             + "LEFT JOIN product_category c ON t.Category_ID = c.Category_ID "
+             + "LEFT JOIN cake_recipe r ON t.Template_ID = r.Template_ID";
     }
 
     public Product mapRowToProduct(ResultSet rs) throws SQLException {
@@ -324,6 +409,9 @@ public class ProductDAO {
             rs.getString("Full_Description"),
             rs.getString("Product_Type")
         );
+        p.setRecipeId(rs.getString("Recipe_ID"));
+        p.setRecipeName(rs.getString("Recipe_Name"));
+        p.setRecipeInstructions(rs.getString("Recipe_Instructions"));
         return p;
     }
 
