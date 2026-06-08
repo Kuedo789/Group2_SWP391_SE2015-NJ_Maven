@@ -1,41 +1,23 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package com.bakeryzone.admin.controller;
 
 import com.bakeryzone.dao.UserDAO;
 import com.bakeryzone.model.User;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Set;
 
-/**
- *
- * @author Asus
- */
-@WebServlet(name = "UserDetailServlet", urlPatterns = {"/userDetail"})
 public class UserDetailServlet extends HttpServlet {
 
-    /**
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
-     * methods.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         response.setContentType("text/html;charset=UTF-8");
+
         try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
@@ -48,60 +30,58 @@ public class UserDetailServlet extends HttpServlet {
         }
     }
 
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /**
-     * Handles the HTTP <code>GET</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         try {
+            // Lấy action: delete, edit hoặc null
             String action = request.getParameter("action");
+
+            // User_ID là String nên không parseInt
             String id = request.getParameter("id");
 
             UserDAO dao = new UserDAO();
 
+            // Nếu action là delete thì xóa theo userId dạng String
             if (action != null && action.equals("delete")) {
                 User userToDelete = dao.getUserById(id);
                 String name = (userToDelete != null) ? userToDelete.getFullName() : "người dùng";
+
                 dao.deleteUser(id);
-                request.getSession().setAttribute("successMessage", "Đã xóa tài khoản của " + name + " khỏi hệ thống!");
+
+                request.getSession().setAttribute(
+                        "successMessage",
+                        "Đã xóa tài khoản của " + name + " khỏi hệ thống!"
+                );
+
                 response.sendRedirect("userList");
                 return;
             }
 
+            // Nếu action là edit thì tìm user theo userId dạng String
             if (action != null && action.equals("edit")) {
                 User existingUser = dao.getUserById(id);
                 request.setAttribute("USER_DATA", existingUser);
             }
+
+            // Chuyển sang trang userDetail.jsp
             request.getRequestDispatcher("admin/userDetail.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendRedirect("userList");
         }
-
     }
 
-    /**
-     * Handles the HTTP <code>POST</code> method.
-     *
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         try {
+            // Đảm bảo đọc tiếng Việt đúng
+            request.setCharacterEncoding("UTF-8");
 
+            // Lấy dữ liệu từ form
             String action = request.getParameter("action");
             String userId = request.getParameter("userId");
             String fullName = request.getParameter("fullName");
@@ -110,29 +90,58 @@ public class UserDetailServlet extends HttpServlet {
             String phone = request.getParameter("phone");
             String roleId = request.getParameter("roleId");
             String accountStatus = request.getParameter("accountStatus");
-            System.out.println(">>> Trạng thái nhận được từ giao diện gửi lên: " + accountStatus);
+
             UserDAO dao = new UserDAO();
 
+            // Tạo object User để truyền xuống DAO
             User u = new User();
-            
+
             u.setFullName(fullName);
             u.setEmail(email);
-            u.setPassword(password);
             u.setPhone(phone);
             u.setRoleId(roleId);
             u.setAccountStatus(accountStatus);
 
+            // Set mặc định cho các cột mới trong database
+            u.setProvider("LOCAL");
+            u.setProviderId(null);
+
+            // User tạo từ admin nên cho verified luôn
+            u.setVerified(true);
+
+            // Nếu là admin/staff/shipper thì activeStaff = true
+            boolean activeStaff = "ADMIN".equalsIgnoreCase(roleId)
+                    || "STAFF".equalsIgnoreCase(roleId)
+                    || "SHIPPER".equalsIgnoreCase(roleId);
+
+            u.setActiveStaff(activeStaff);
+
             String errorMessage = null;
 
-            if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty() || (action == null && password.isEmpty())) {
+            boolean isEdit = action != null && action.equals("edit");
+
+            if (fullName == null || fullName.trim().isEmpty()
+                    || email == null || email.trim().isEmpty()
+                    || phone == null || phone.trim().isEmpty()
+                    || roleId == null || roleId.trim().isEmpty()
+                    || accountStatus == null || accountStatus.trim().isEmpty()
+                    || (!isEdit && (password == null || password.trim().isEmpty()))) {
+
                 errorMessage = "Vui lòng điền đầy đủ các trường thông tin";
-            } else if (!phone.matches("^(0)[3|5|7|9][0-9]{8}$")) {
+
+            } else if (!phone.matches("^(0)[3579][0-9]{8}$")) {
+
                 errorMessage = "Số điện thoại phải là 10 chữ số";
-            } else if ((action != null || !action.equals("edit")) && password.length() < 6) {
+
+            } else if (!isEdit && password.length() < 6) {
+
                 errorMessage = "Mật khẩu phải từ 6 kí tự trở lên";
-            } else if (dao.checkEmailExist(email, action != null && action.equals("edit") ? userId : null)) {
+
+            } else if (dao.checkEmailExist(email, isEdit ? userId : null)) {
+
                 errorMessage = "Địa chỉ Email này đã được đăng kí bởi một tài khoản khác";
             }
+
             if (errorMessage != null) {
                 request.setAttribute("ERROR_MSG", errorMessage);
                 request.setAttribute("USER_DATA", u);
@@ -140,35 +149,50 @@ public class UserDetailServlet extends HttpServlet {
                 return;
             }
 
-            String hashedPassword = com.bakeryzone.utils.PasswordUtils.hashPassword(password);
-            u.setPassword(hashedPassword);
+            HttpSession session = request.getSession();
 
-            jakarta.servlet.http.HttpSession session = request.getSession();
-
-            if (action != null && action.equals("edit")) {
+            // Nếu đang sửa user thì set userId dạng String rồi update
+            if (isEdit) {
                 u.setUserId(userId);
+
+                // Nếu sửa user mà không nhập password mới thì giữ password cũ
+                User oldUser = dao.getUserById(userId);
+
+                if (password == null || password.trim().isEmpty()) {
+                    u.setPassword(oldUser.getPassword());
+                } else {
+                    u.setPassword(password);
+                }
+
                 dao.updateUser(u);
-                session.setAttribute("successMessage", "Cập nhật tài khoản của " + fullName + " thành công!");
+
+                session.setAttribute(
+                        "successMessage",
+                        "Cập nhật tài khoản của " + fullName + " thành công!"
+                );
+
             } else {
-                String generatedId = "USR" + (System.currentTimeMillis() % 100000);
-                u.setUserId(generatedId);
+                // Nếu thêm mới thì insertUser sẽ tự generate userId nếu userId null
+                u.setPassword(password);
+
                 dao.insertUser(u);
-                session.setAttribute("successMessage", "Thêm mới tài khoản " + fullName + " thành công!");
+
+                session.setAttribute(
+                        "successMessage",
+                        "Thêm mới tài khoản " + fullName + " thành công!"
+                );
             }
+
             response.sendRedirect("userList");
+
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendRedirect("userList");
         }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
         return "Short description";
-    }// </editor-fold>
-
+    }
 }

@@ -35,20 +35,22 @@ public class AdminProductDetailController extends HttpServlet {
             product = productDAO.getProductById(id);
         }
         
-        // Fallback default product if ID is invalid or not found (default 35% margin, 30% service)
+        // Fallback default product if ID is invalid or not found
         if (product == null) {
-            product = new Product("new", "", "", "", "", 35.0, 30.0, "", "", "Active", false, "", "", "Cake");
+            product = new Product();
+            product.setId("new");
             product.setEstimatedLaborHours(1.0);
+            product.setBasePrice(100.00);
+            product.setAllowsGreeting(true);
+            product.setStatus("Active");
         }
         
-        // Load categories and recipe masters from DAO
+        // Load categories from DAO (Recipe Formula selection is removed from cake_template)
         List<Map<String, String>> categories = productDAO.getAllProductCategories();
-        List<Map<String, String>> recipes = productDAO.getAllRecipeMasters();
         
         // Expose them to the JSTL detail view
         request.setAttribute("product", product);
         request.setAttribute("productCategories", categories);
-        request.setAttribute("recipeMasters", recipes);
         
         // Forward to the product detail JSP page
         request.getRequestDispatcher("/admin/productDetail.jsp").forward(request, response);
@@ -61,22 +63,13 @@ public class AdminProductDetailController extends HttpServlet {
         // 1. Extract form fields
         String id = request.getParameter("id");
         String name = request.getParameter("name");
-        String sku = request.getParameter("sku");
         String categoryId = request.getParameter("categoryId");
         
-        double marginPercent = 35.0;
+        double basePrice = 0.0;
         try {
-            String marginParam = request.getParameter("marginPercent");
-            if (marginParam != null && !marginParam.trim().isEmpty()) {
-                marginPercent = Double.parseDouble(marginParam);
-            }
-        } catch (NumberFormatException | NullPointerException e) {}
-        
-        double servicePercent = 30.0;
-        try {
-            String serviceParam = request.getParameter("servicePercent");
-            if (serviceParam != null && !serviceParam.trim().isEmpty()) {
-                servicePercent = Double.parseDouble(serviceParam);
+            String priceParam = request.getParameter("basePrice");
+            if (priceParam != null && !priceParam.trim().isEmpty()) {
+                basePrice = Double.parseDouble(priceParam);
             }
         } catch (NumberFormatException | NullPointerException e) {}
         
@@ -88,23 +81,25 @@ public class AdminProductDetailController extends HttpServlet {
             }
         } catch (NumberFormatException | NullPointerException e) {}
         
-        String recipeId = request.getParameter("recipeId");
+        boolean allowsGreeting = request.getParameter("allowsGreeting") != null && "true".equalsIgnoreCase(request.getParameter("allowsGreeting"));
+        
         String imageUrl = request.getParameter("imageUrl");
         String status = request.getParameter("status");
         
         // Checkboxes / Switches are only sent if checked
         boolean isFeatured = request.getParameter("isFeatured") != null && "true".equalsIgnoreCase(request.getParameter("isFeatured"));
         
-        String shortDescription = request.getParameter("shortDescription");
         String fullDescription = request.getParameter("fullDescription");
         
-        // 2. Adjust ID, SKU, and Type
+        // Recipe properties
+        String recipeName = request.getParameter("recipeName");
+        String recipeInstructions = request.getParameter("recipeInstructions");
+        
+        // 2. Adjust ID and Type
+        boolean isNew = false;
         if (id == null || id.trim().isEmpty() || "new".equalsIgnoreCase(id)) {
             id = "CZ-PROD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-        }
-        
-        if (sku == null || sku.trim().isEmpty()) {
-            sku = id;
+            isNew = true;
         }
         
         String productType = "Cake";
@@ -115,10 +110,12 @@ public class AdminProductDetailController extends HttpServlet {
         
         // 3. Construct product JavaBean
         Product product = new Product(
-            id, name, sku, categoryId, "", marginPercent, servicePercent, recipeId, imageUrl,
-            status, isFeatured, shortDescription, fullDescription, productType
+            id, name, categoryId, "", basePrice, estimatedLaborHours, allowsGreeting, imageUrl,
+            status, isFeatured, fullDescription, productType
         );
-        product.setEstimatedLaborHours(estimatedLaborHours);
+        
+        product.setRecipeName(recipeName);
+        product.setRecipeInstructions(recipeInstructions);
         
         // Retrieve dynamic product images from form
         String[] additionalImagesArr = request.getParameterValues("additionalImages");
@@ -133,9 +130,18 @@ public class AdminProductDetailController extends HttpServlet {
         }
         
         // 4. Save via DAO
-        productDAO.saveProduct(product);
-        
-        // 5. Redirect back to list view
-        response.sendRedirect(request.getContextPath() + "/admin/products");
+        System.out.println("[INFO] Bat dau luu banh kem. ID: " + product.getId() + ", Ten: " + product.getName() + " (isNew: " + isNew + ")");
+        boolean saved = productDAO.saveProduct(product);
+        if (saved) {
+            System.out.println("[SUCCESS] Luu banh kem thanh cong. ID: " + product.getId());
+            if (isNew) {
+                response.sendRedirect(request.getContextPath() + "/admin/products?msg=add_success");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/admin/products?msg=edit_success");
+            }
+        } else {
+            System.err.println("[ERROR] Luu banh kem that bai. ID: " + product.getId());
+            response.sendRedirect(request.getContextPath() + "/admin/products?msg=save_error");
+        }
     }
 }

@@ -499,72 +499,9 @@
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="sidebar-brand">
-            <i class="fa-solid fa-cake-candles"></i>
-            <span>Cake<span>Zone</span> Admin</span>
-        </div>
-        
-        <div class="nav-section-title">Core</div>
-        <ul class="sidebar-menu">
-            <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-gauge"></i> Dashboard</a>
-            </li>
-        </ul>
-
-        <div class="nav-section-title">Management</div>
-        <ul class="sidebar-menu">
-            <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-receipt"></i> Orders <i class="fa-solid fa-chevron-down arrow"></i></a>
-            </li>
-            <li class="menu-item">
-                <a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Products <i class="fa-solid fa-chevron-down arrow"></i></a>
-            </li>
-            <li class="menu-item" style="padding-left: 20px;">
-                <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Categories</a>
-            </li>
-            <li class="menu-item" style="padding-left: 20px;">
-                <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Attributes</a>
-            </li>
-            <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-users"></i> Customers</a>
-            </li>
-            <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-percent"></i> Promotions <i class="fa-solid fa-chevron-down arrow"></i></a>
-            </li>
-            <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-warehouse"></i> Inventory <i class="fa-solid fa-chevron-down arrow"></i></a>
-            </li>
-            <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Delivery <i class="fa-solid fa-chevron-down arrow"></i></a>
-            </li>
-            <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-star-half-stroke"></i> Reviews</a>
-            </li>
-        </ul>
-
-        <div class="nav-section-title">System</div>
-        <ul class="sidebar-menu">
-            <li class="menu-item active">
-                <a href="${pageContext.request.contextPath}/userList"><i class="fa-solid fa-user-gear"></i> Users</a>
-            </li>
-            <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-shield-halved"></i> Roles & Permissions</a>
-            </li>
-            <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-sliders"></i> Settings</a>
-            </li>
-            <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Activity Logs</a>
-            </li>
-        </ul>
-
-        <div class="sidebar-banner">
-            <i class="fa-solid fa-cake-candles cake-icon"></i>
-            <h6>Grow Your Bakery</h6>
-            <p>Create beautiful cakes and deliver happiness!</p>
-        </div>
-    </div>
+    <jsp:include page="../common/sidebar.jsp">
+        <jsp:param name="activeMenu" value="users" />
+    </jsp:include>
 
     <div class="main-panel">
         

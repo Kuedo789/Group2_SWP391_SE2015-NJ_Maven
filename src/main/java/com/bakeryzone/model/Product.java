@@ -11,48 +11,49 @@ import java.util.List;
 public class Product {
     private String id;
     private String name;
-    private String sku;
     private String categoryId;
     private String categoryName;
-    private double marginPercent; // Default_Margin_Percent
-    private double servicePercent; // Default_Service_Percent
-    private String recipeId; // References cake_recipe (Recipe_ID)
+    private double basePrice; // Base_Price
+    private double estimatedLaborHours; // Estimated_Labor_Hours
+    private boolean allowsGreeting; // Allows_Greeting
     private String imageUrl;
     private String status;
     private boolean isFeatured;
-    private String shortDescription;
     private String fullDescription;
     private String productType; // Always "Cake"
-    private double estimatedLaborHours;
     private List<String> additionalImages = new ArrayList<>(); // Secondary images from product_image
+    
+    // Cake Recipe Fields (1:1 relationship)
+    private String recipeId;
+    private String recipeName;
+    private String recipeInstructions;
 
     // Default constructor
     public Product() {
         this.productType = "Cake";
         this.estimatedLaborHours = 0.0;
+        this.basePrice = 0.0;
+        this.allowsGreeting = true;
     }
 
     // Parameterized constructor
-    public Product(String id, String name, String sku, String categoryId, String categoryName, 
-                   double marginPercent, double servicePercent, String recipeId, String imageUrl, 
-                   String status, boolean isFeatured, String shortDescription, String fullDescription, 
+    public Product(String id, String name, String categoryId, String categoryName, 
+                   double basePrice, double estimatedLaborHours, boolean allowsGreeting, String imageUrl, 
+                   String status, boolean isFeatured, String fullDescription, 
                    String productType) {
         this.id = id;
         this.name = name;
-        this.sku = sku;
         this.categoryId = categoryId;
         this.categoryName = categoryName;
-        this.marginPercent = marginPercent;
-        this.servicePercent = servicePercent;
-        this.recipeId = recipeId;
+        this.basePrice = basePrice;
+        this.estimatedLaborHours = estimatedLaborHours;
+        this.allowsGreeting = allowsGreeting;
         this.imageUrl = imageUrl;
         this.status = status;
         this.isFeatured = isFeatured;
-        this.shortDescription = shortDescription;
         this.fullDescription = fullDescription;
         this.productType = "Cake";
         this.additionalImages = new ArrayList<>();
-        this.estimatedLaborHours = 0.0;
     }
 
     // Getters and Setters
@@ -80,14 +81,6 @@ public class Product {
         this.name = name;
     }
 
-    public String getSku() {
-        return sku;
-    }
-
-    public void setSku(String sku) {
-        this.sku = sku;
-    }
-
     public String getCategoryId() {
         return categoryId;
     }
@@ -104,28 +97,20 @@ public class Product {
         this.categoryName = categoryName;
     }
 
-    public double getMarginPercent() {
-        return marginPercent;
+    public double getBasePrice() {
+        return basePrice;
     }
 
-    public void setMarginPercent(double marginPercent) {
-        this.marginPercent = marginPercent;
+    public void setBasePrice(double basePrice) {
+        this.basePrice = basePrice;
     }
 
-    public double getServicePercent() {
-        return servicePercent;
+    public boolean isAllowsGreeting() {
+        return allowsGreeting;
     }
 
-    public void setServicePercent(double servicePercent) {
-        this.servicePercent = servicePercent;
-    }
-
-    public String getRecipeId() {
-        return recipeId;
-    }
-
-    public void setRecipeId(String recipeId) {
-        this.recipeId = recipeId;
+    public void setAllowsGreeting(boolean allowsGreeting) {
+        this.allowsGreeting = allowsGreeting;
     }
 
     public String getImageUrl() {
@@ -152,14 +137,6 @@ public class Product {
         isFeatured = featured;
     }
 
-    public String getShortDescription() {
-        return shortDescription;
-    }
-
-    public void setShortDescription(String shortDescription) {
-        this.shortDescription = shortDescription;
-    }
-
     public String getFullDescription() {
         return fullDescription;
     }
@@ -182,5 +159,29 @@ public class Product {
 
     public void setAdditionalImages(List<String> additionalImages) {
         this.additionalImages = additionalImages;
+    }
+
+    public String getRecipeId() {
+        return recipeId;
+    }
+
+    public void setRecipeId(String recipeId) {
+        this.recipeId = recipeId;
+    }
+
+    public String getRecipeName() {
+        return recipeName;
+    }
+
+    public void setRecipeName(String recipeName) {
+        this.recipeName = recipeName;
+    }
+
+    public String getRecipeInstructions() {
+        return recipeInstructions;
+    }
+
+    public void setRecipeInstructions(String recipeInstructions) {
+        this.recipeInstructions = recipeInstructions;
     }
 }

@@ -13,13 +13,13 @@ import java.util.logging.Logger;
 public class DBContext {
 
     public static Connection getJDBCConnection() {
-        String url = "jdbc:mysql://localhost:3306/bakery";
+        String url = "jdbc:mysql://localhost:3306/BakeryManagement";
         String user = "root"; 
         String password = "123456";
         
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            return DriverManager.getConnection(url, user, password); //quan li driver(tao ra 1 ket noi tu netbean sang my sql
+            return DriverManager.getConnection(url, user, password); 
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(DBContext.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
