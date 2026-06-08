@@ -217,4 +217,73 @@ public class CategoryDAO {
         return isSuccess;
     }
     
+    // 1. Fetch a single category by ID (Searches both tables)
+    public CategoryDTO getCategoryById(String categoryId) throws SQLException, ClassNotFoundException {
+        CategoryDTO cat = null;
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        String sql = 
+            "SELECT Category_ID, Category_Name, Description, 'Sản phẩm chính' AS Category_Type FROM product_category WHERE Category_ID = ? " +
+            "UNION ALL " +
+            "SELECT Category_ID, Category_Name, NULL AS Description, 'Nguyên liệu' AS Category_Type FROM ingredient_category WHERE Category_ID = ?";
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, categoryId);
+            ps.setString(2, categoryId);
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                cat = new CategoryDTO(
+                    rs.getString("Category_ID"),
+                    rs.getString("Category_Name"),
+                    rs.getString("Description"),
+                    rs.getString("Category_Type")
+                );
+            }
+        } finally {
+            if (rs != null) rs.close();
+            if (ps != null) ps.close();
+            if (conn != null) conn.close();
+        }
+        return cat;
+    }
+
+    // 2. Update an existing category
+    public boolean updateCategory(CategoryDTO cat) throws SQLException, ClassNotFoundException {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        boolean isSuccess = false;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            
+            // Route the update to the correct table based on the type
+            if ("Sản phẩm chính".equals(cat.getCategoryType())) {
+                String sql = "UPDATE product_category SET Category_Name = ?, Description = ? WHERE Category_ID = ?";
+                ps = conn.prepareStatement(sql);
+                ps.setString(1, cat.getCategoryName());
+                ps.setString(2, cat.getDescription());
+                ps.setString(3, cat.getCategoryId());
+            } 
+            else if ("Nguyên liệu".equals(cat.getCategoryType())) {
+                String sql = "UPDATE ingredient_category SET Category_Name = ? WHERE Category_ID = ?";
+                ps = conn.prepareStatement(sql);
+                ps.setString(1, cat.getCategoryName());
+                ps.setString(2, cat.getCategoryId());
+            }
+
+            if (ps != null) {
+                int rowsAffected = ps.executeUpdate();
+                isSuccess = (rowsAffected > 0);
+            }
+        } finally {
+            if (ps != null) ps.close();
+            if (conn != null) conn.close();
+        }
+        return isSuccess;
+    }
 }
