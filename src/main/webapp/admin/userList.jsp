@@ -513,7 +513,7 @@
                     <span>&gt;</span>
                     <a href="#">System</a>
                     <span>&gt;</span>
-                    <a href="#" class="active text-dark font-weight-bold">User Management</a>
+                    <a href="#" class="active text-dark font-weight-bold">Quản lý người dùng</a>
                 </div>
             </div>
             
@@ -535,8 +535,8 @@
             
             <div class="page-title-area">
                 <div>
-                    <h1 class="page-title">User Management</h1>
-                    <p class="page-subtitle">Hệ thống quản lý tài khoản Admin, Staff, Shipper và Customer</p>
+                    <h1 class="page-title">Quản lý người dùng</h1>
+                    <p class="page-subtitle">Hệ thống quản lý tài khoản Quản lý, Nhân viên, Người giao hàng và Khách hàng</p>
                 </div>
                 <a href="${pageContext.request.contextPath}/userDetail?action=add" class="btn btn-cz-primary">
                     <i class="fa-solid fa-circle-plus"></i> Thêm tài khoản mới
@@ -548,25 +548,25 @@
                     
                     <div class="search-wrapper">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" class="search-input" name="searchKeyword" value="${param.searchKeyword}" placeholder="Search users by name, email...">
+                        <input type="text" class="search-input" name="searchKeyword" value="${param.searchKeyword}" placeholder="Tìm kiếm người dùng theo tên,email...">
                     </div>
 
                     <select class="filter-select" name="filterRoleId" onchange="this.form.submit()">
-                        <option value="" ${empty param.filterRoleId ? 'selected' : ''}>All Roles</option>
-                        <option value="ADMIN" ${param.filterRoleId eq 'ADMIN' ? 'selected' : ''}>Admin</option>
-                        <option value="STAFF" ${param.filterRoleId eq 'STAFF' ? 'selected' : ''}>Staff</option>
-                        <option value="SHIPPER" ${param.filterRoleId eq 'SHIPPER' ? 'selected' : ''}>Shipper</option>
-                        <option value="CUSTOMER" ${param.filterRoleId eq 'CUSTOMER' ? 'selected' : ''}>Customer</option>
+                        <option value="" ${empty param.filterRoleId ? 'selected' : ''}>Tất cả chức vụ</option>
+                        <option value="ADMIN" ${param.filterRoleId eq 'ADMIN' ? 'selected' : ''}>Quản lý</option>
+                        <option value="STAFF" ${param.filterRoleId eq 'STAFF' ? 'selected' : ''}>Nhân viên</option>
+                        <option value="SHIPPER" ${param.filterRoleId eq 'SHIPPER' ? 'selected' : ''}>Người giao hàng</option>
+                        <option value="CUSTOMER" ${param.filterRoleId eq 'CUSTOMER' ? 'selected' : ''}>Khách hàng</option>
                     </select>
 
                     <select class="filter-select" name="filterStatus" onchange="this.form.submit()">
-                        <option value="" ${empty param.filterStatus ? 'selected' : ''}>All Statuses</option>
-                        <option value="Active" ${param.filterStatus eq 'Active' ? 'selected' : ''}>Active</option>
-                        <option value="Deactive" ${param.filterStatus eq 'Deactive' ? 'selected' : ''}>Deactive</option>
+                        <option value="" ${empty param.filterStatus ? 'selected' : ''}>Tất cả trạng thái</option>
+                        <option value="Active" ${param.filterStatus eq 'Active' ? 'selected' : ''}>Đang hoạt động</option>
+                        <option value="Deactive" ${param.filterStatus eq 'Deactive' ? 'selected' : ''}>Đã khóa</option>
                     </select>
 
-                    <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Filter</button>
-                    <a href="${pageContext.request.contextPath}/userList" class="btn-clear-filter text-center">Clear</a>
+                    <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
+                    <a href="${pageContext.request.contextPath}/userList" class="btn-clear-filter text-center">Làm mới</a>
                 </form>
             </div>
 
@@ -574,7 +574,7 @@
                 <table class="cz-table">
                     <thead>
                         <tr>
-                            <th style="width: 60px; text-align: center;">#</th>
+                            <th style="width: 60px; text-align: center;">STT</th>
                             <th>Họ và Tên</th>
                             <th>Email đăng nhập</th>
                             <th>Số điện thoại</th>
