@@ -16,122 +16,122 @@
 <!DOCTYPE html>
 <html lang="vi">
 
-<head>
-    <jsp:include page="../common/header.jsp" />
-</head>
+    <head>
+        <jsp:include page="../common/header.jsp" />
+    </head>
 
-<body>
-    <jsp:include page="../common/navbar.jsp" />
+    <body>
+        <jsp:include page="../common/navbar.jsp" />
 
-    <main class="main auth-main">
+        <main class="main auth-main">
 
-        <section class="auth-section">
+            <section class="auth-section">
 
-            <div class="auth-card forgot-card">
+                <div class="auth-card forgot-card">
 
-                <!-- Left Side -->
-                <div class="auth-visual forgot-visual">
+                    <!-- Left Side -->
+                    <div class="auth-visual forgot-visual">
 
-                    <div class="auth-badge">
-                        <span class="material-symbols-outlined">lock_reset</span>
-                        Khôi phục tài khoản
-                    </div>
-
-                    <h1>Lấy lại quyền truy cập tài khoản của bạn</h1>
-
-                    <p>
-                        Nhập email đã dùng để đăng ký. Chúng tôi sẽ gửi mã xác nhận
-                        để bạn có thể đặt lại mật khẩu mới.
-                    </p>
-
-                    <div class="auth-benefits">
-
-                        <div>
-                            <span class="material-symbols-outlined">mail</span>
-                            Nhận mã xác nhận qua email
+                        <div class="auth-badge">
+                            <span class="material-symbols-outlined">lock_reset</span>
+                            Khôi phục tài khoản
                         </div>
 
-                        <div>
-                            <span class="material-symbols-outlined">shield</span>
-                            Bảo vệ tài khoản an toàn
-                        </div>
+                        <h1>Lấy lại quyền truy cập tài khoản của bạn</h1>
 
-                        <div>
-                            <span class="material-symbols-outlined">key</span>
-                            Đặt lại mật khẩu nhanh chóng
+                        <p>
+                            Nhập email đã dùng để đăng ký. Chúng tôi sẽ gửi mã xác nhận
+                            để bạn có thể đặt lại mật khẩu mới.
+                        </p>
+
+                        <div class="auth-benefits">
+
+                            <div>
+                                <span class="material-symbols-outlined">mail</span>
+                                Nhận mã xác nhận qua email
+                            </div>
+
+                            <div>
+                                <span class="material-symbols-outlined">shield</span>
+                                Bảo vệ tài khoản an toàn
+                            </div>
+
+                            <div>
+                                <span class="material-symbols-outlined">key</span>
+                                Đặt lại mật khẩu nhanh chóng
+                            </div>
+
                         </div>
 
                     </div>
 
-                </div>
+                    <!-- Right Side -->
+                    <div class="auth-form-wrap">
 
-                <!-- Right Side -->
-                <div class="auth-form-wrap">
+                        <div class="auth-form-header">
+                            <span class="auth-label">Quên mật khẩu</span>
 
-                    <div class="auth-form-header">
-                        <span class="auth-label">Quên mật khẩu</span>
+                            <h2>Khôi phục mật khẩu</h2>
+                        </div>
 
-                        <h2>Khôi phục mật khẩu</h2>
-                    </div>
-
-                    <% if (error != null) { %>
+                        <% if (error != null) { %>
                         <div class="auth-message auth-error">
                             <span class="material-symbols-outlined">error</span>
                             <%= error %>
                         </div>
-                    <% } %>
+                        <% } %>
 
-                    <% if (message != null) { %>
+                        <% if (message != null) { %>
                         <div class="auth-message auth-success">
                             <span class="material-symbols-outlined">check_circle</span>
                             <%= message %>
                         </div>
-                    <% } %>
+                        <% } %>
 
-                    <form action="${pageContext.request.contextPath}/forgot-password" method="post" class="auth-form">
+                        <form action="${pageContext.request.contextPath}/forgot-password" method="post" class="auth-form">
 
-                        <div class="form-group">
-                            <label for="email">Email tài khoản</label>
+                            <div class="form-group">
+                                <label for="email">Email tài khoản</label>
 
-                            <div class="input-wrap">
-                                <span class="material-symbols-outlined">alternate_email</span>
+                                <div class="input-wrap">
+                                    <span class="material-symbols-outlined input-icon">alternate_email</span>
 
-                                <input type="email"
-                                       id="email"
-                                       name="email"
-                                       value="<%= email %>"
-                                       placeholder="Nhập email đã đăng ký"
-                                       required>
+                                    <input type="email"
+                                           id="email"
+                                           name="email"
+                                           value="<%= email %>"
+                                           placeholder="Nhập email đã đăng ký"
+                                           required>
+                                </div>
                             </div>
-                        </div>
 
-                        <button type="submit" class="btn btn-primary auth-submit">
-                            Gửi mã xác nhận
-                        </button>
+                            <button type="submit" class="btn btn-primary auth-submit">
+                                Gửi mã xác nhận
+                            </button>
 
-                        <div class="auth-note">
-                            Mã xác nhận sẽ được gửi đến email nếu tài khoản tồn tại trong hệ thống.
-                        </div>
+                            <div class="auth-note">
+                                Mã xác nhận sẽ được gửi đến email nếu tài khoản tồn tại trong hệ thống.
+                            </div>
 
-                        <div class="auth-switch">
-                            Đã nhớ mật khẩu?
-                            <a href="${pageContext.request.contextPath}/auth/login.jsp">
-                                Đăng nhập
-                            </a>
-                        </div>
+                            <div class="auth-switch">
+                                Đã nhớ mật khẩu?
+                                <a href="${pageContext.request.contextPath}/auth/login.jsp">
+                                    Đăng nhập
+                                </a>
+                            </div>
 
-                    </form>
+                        </form>
+
+                    </div>
 
                 </div>
 
-            </div>
+            </section>
 
-        </section>
+        </main>
 
-    </main>
-
-    <jsp:include page="../common/footer.jsp" />
-    <jsp:include page="../common/scripts.jsp" />
-</body>
+        <jsp:include page="../common/footer.jsp" />
+        <jsp:include page="../common/scripts.jsp" />
+    </body>
 
 </html>
