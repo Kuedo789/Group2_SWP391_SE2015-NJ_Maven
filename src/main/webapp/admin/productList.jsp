@@ -123,12 +123,12 @@
                     </div>
 
                     <select class="filter-select" name="sortBy" onchange="this.form.submit()">
-                        <option value="newest" ${sortBy eq 'newest' ? 'selected' : ''}>Sắp xếp: Mới nhất</option>
-                        <option value="price-asc" ${sortBy eq 'price-asc' ? 'selected' : ''}>Giá: Thấp đến Cao</option>
+                        <option value="price-asc" ${sortBy eq 'price-asc' or empty sortBy ? 'selected' : ''}>Giá: Thấp đến Cao</option>
                         <option value="price-desc" ${sortBy eq 'price-desc' ? 'selected' : ''}>Giá: Cao đến Thấp</option>
                     </select>
 
                     <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
+                    <a href="${pageContext.request.contextPath}/admin/products" class="btn-clear-filter"><i class="fa-solid fa-arrow-rotate-left"></i> Làm mới</a>
                 </form>
             </div>
 
