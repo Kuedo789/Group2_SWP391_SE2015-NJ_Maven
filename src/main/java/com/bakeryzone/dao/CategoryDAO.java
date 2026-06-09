@@ -3,11 +3,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.bakeryzone.dao;
+
 import com.bakeryzone.model.CategoryDTO;
 import com.bakeryzone.utils.DBContext;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
 /**
  *
  * @author thais
@@ -22,7 +24,8 @@ public class CategoryDAO {
         ResultSet rs = null;
 
         String sql = 
-            "SELECT Category_ID, Category_Name, Description, 'Sản phẩm chính' AS Category_Type " +
+            "SELECT Category_ID, Category_Name, Description, " +
+            "CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type " +
             "FROM product_category " +
             "UNION ALL " +
             "SELECT Category_ID, Category_Name, NULL AS Description, 'Nguyên liệu' AS Category_Type " +
@@ -30,7 +33,7 @@ public class CategoryDAO {
             "ORDER BY Category_ID";
 
         try {
-            conn = DBContext.getJDBCConnection(); // Use your project's connection method
+            conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
 
@@ -60,8 +63,8 @@ public class CategoryDAO {
         try {
             conn = DBContext.getJDBCConnection();
             
-            // Business Logic: Route to the correct table based on Type
-            if ("Sản phẩm chính".equals(cat.getCategoryType())) {
+            // Route "Sản phẩm chính" and "Phụ kiện" to product_category
+            if ("Sản phẩm chính".equals(cat.getCategoryType()) || "Phụ kiện".equals(cat.getCategoryType())) {
                 String sql = "INSERT INTO product_category (Category_ID, Category_Name, Description) VALUES (?, ?, ?)";
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, cat.getCategoryId());
@@ -73,7 +76,6 @@ public class CategoryDAO {
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, cat.getCategoryId());
                 ps.setString(2, cat.getCategoryName());
-                // Ingredients don't have descriptions in our schema
             }
 
             if (ps != null) {
@@ -87,7 +89,7 @@ public class CategoryDAO {
         return isSuccess;
     }
     
-// 1. Get the total count (Now with Search & Filter support)
+    // 3. Get the total count (Now with Search & Filter support)
     public int getTotalCategoriesCount(String search, String filterType) throws SQLException, ClassNotFoundException {
         int total = 0;
         Connection conn = null;
@@ -98,7 +100,7 @@ public class CategoryDAO {
         
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT COUNT(*) AS TotalCount FROM ( ");
-        sql.append("SELECT Category_ID, Category_Name, 'Sản phẩm chính' AS Category_Type FROM product_category ");
+        sql.append("SELECT Category_ID, Category_Name, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type FROM product_category ");
         sql.append("UNION ALL ");
         sql.append("SELECT Category_ID, Category_Name, 'Nguyên liệu' AS Category_Type FROM ingredient_category ");
         sql.append(") AS combined ");
@@ -130,7 +132,7 @@ public class CategoryDAO {
         return total;
     }
 
-    // 2. Fetch pages (Now with Search & Filter support)
+    // 4. Fetch pages (Now with Search & Filter support)
     public List<CategoryDTO> getAdminCategoriesByPage(int offset, int limit, String search, String filterType) throws SQLException, ClassNotFoundException {
         List<CategoryDTO> list = new ArrayList<>();
         Connection conn = null;
@@ -141,7 +143,7 @@ public class CategoryDAO {
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT Category_ID, Category_Name, Description, Category_Type FROM ( ");
-        sql.append("SELECT Category_ID, Category_Name, Description, 'Sản phẩm chính' AS Category_Type FROM product_category ");
+        sql.append("SELECT Category_ID, Category_Name, Description, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type FROM product_category ");
         sql.append("UNION ALL ");
         sql.append("SELECT Category_ID, Category_Name, NULL AS Description, 'Nguyên liệu' AS Category_Type FROM ingredient_category ");
         sql.append(") AS combined ");
@@ -184,7 +186,7 @@ public class CategoryDAO {
         return list;
     }
     
-    // 3. Delete a category
+    // 5. Delete a category
     public boolean deleteCategory(String categoryId) throws SQLException, ClassNotFoundException {
         Connection conn = null;
         PreparedStatement ps1 = null;
@@ -217,7 +219,7 @@ public class CategoryDAO {
         return isSuccess;
     }
     
-    // 1. Fetch a single category by ID (Searches both tables)
+    // 6. Fetch a single category by ID (Searches both tables)
     public CategoryDTO getCategoryById(String categoryId) throws SQLException, ClassNotFoundException {
         CategoryDTO cat = null;
         Connection conn = null;
@@ -225,7 +227,7 @@ public class CategoryDAO {
         ResultSet rs = null;
 
         String sql = 
-            "SELECT Category_ID, Category_Name, Description, 'Sản phẩm chính' AS Category_Type FROM product_category WHERE Category_ID = ? " +
+            "SELECT Category_ID, Category_Name, Description, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type FROM product_category WHERE Category_ID = ? " +
             "UNION ALL " +
             "SELECT Category_ID, Category_Name, NULL AS Description, 'Nguyên liệu' AS Category_Type FROM ingredient_category WHERE Category_ID = ?";
 
@@ -252,7 +254,7 @@ public class CategoryDAO {
         return cat;
     }
 
-    // 2. Update an existing category
+    // 7. Update an existing category
     public boolean updateCategory(CategoryDTO cat) throws SQLException, ClassNotFoundException {
         Connection conn = null;
         PreparedStatement ps = null;
@@ -261,8 +263,8 @@ public class CategoryDAO {
         try {
             conn = DBContext.getJDBCConnection();
             
-            // Route the update to the correct table based on the type
-            if ("Sản phẩm chính".equals(cat.getCategoryType())) {
+            // Route "Sản phẩm chính" and "Phụ kiện" to product_category
+            if ("Sản phẩm chính".equals(cat.getCategoryType()) || "Phụ kiện".equals(cat.getCategoryType())) {
                 String sql = "UPDATE product_category SET Category_Name = ?, Description = ? WHERE Category_ID = ?";
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, cat.getCategoryName());
