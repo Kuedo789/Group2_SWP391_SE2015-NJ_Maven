@@ -143,24 +143,19 @@
                                 </span>
                             </div>
                             <div class="form-group">
-
                                 <label for="otp">Mã OTP</label>
 
                                 <div class="input-wrap otp-input-wrap">
-                                    <span class="material-symbols-outlined">pin</span>
+                                    <span class="material-symbols-outlined input-icon">pin</span>
 
-                                    <input
-                                        type="text"
-                                        id="otp"
-                                        name="otp"
-                                        class="otp-input"
-                                        placeholder="Nhập mã OTP"
-                                        maxlength="6"
-                                        inputmode="numeric"
-                                        autocomplete="one-time-code"
-                                        required>
+                                    <input type="text"
+                                           id="otp"
+                                           name="otp"
+                                           class="otp-input"
+                                           placeholder="Nhập mã OTP"
+                                           maxlength="6"
+                                           required>
                                 </div>
-
                             </div>
 
                             <button type="submit" class="btn btn-primary auth-submit">

@@ -1193,6 +1193,9 @@ button {
 /* =========================================================
    14. Auth Shared Styles
 ========================================================= */
+/* =========================================================
+   14. Auth Shared Styles
+========================================================= */
 
 .auth-main {
     padding-top: 110px;
@@ -1221,7 +1224,11 @@ button {
     flex-direction: column;
     justify-content: center;
     background:
-        linear-gradient(135deg, rgba(63, 95, 54, 0.92), rgba(47, 71, 40, 0.88)),
+        linear-gradient(
+            135deg,
+            rgba(63, 95, 54, 0.92),
+            rgba(47, 71, 40, 0.88)
+        ),
         url("../images/hero/hero-5.png") center/cover no-repeat;
     color: #fff;
 }
@@ -1310,23 +1317,44 @@ button {
     font-weight: 700;
 }
 
+/* ---------- Input Fields ---------- */
 .input-wrap {
     position: relative;
 }
 
-.input-wrap .material-symbols-outlined {
+.input-wrap .input-icon {
     position: absolute;
     left: 16px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--primary);
     font-size: 21px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.input-wrap .toggle-password {
+    position: absolute;
+    left: auto;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6f777d;
+    font-size: 22px;
+    cursor: pointer;
+    user-select: none;
+    z-index: 5;
+}
+
+.input-wrap .toggle-password:hover {
+    color: var(--primary);
 }
 
 .input-wrap input {
     width: 100%;
     height: 52px;
-    padding: 0 16px 0 48px;
+    padding-left: 48px;
+    padding-right: 52px;
     border: 1px solid var(--border);
     border-radius: 16px;
     background: #fbfaf7;
@@ -1334,15 +1362,11 @@ button {
     font-family: inherit;
     font-size: 14px;
     outline: none;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
 }
-
-.input-wrap input:focus {
-    border-color: var(--primary);
-    background: #fff;
-    box-shadow: 0 0 0 4px rgba(63, 95, 54, 0.10);
-}
-
 .auth-submit {
     width: 100%;
     min-height: 52px;
@@ -1379,7 +1403,10 @@ button {
     color: var(--text);
     font-size: 14px;
     font-weight: 800;
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
 }
 
 .google-auth-btn:hover {
@@ -1489,13 +1516,21 @@ button {
 
 .otp-visual {
     background:
-        linear-gradient(135deg, rgba(63, 95, 54, 0.92), rgba(47, 71, 40, 0.88)),
+        linear-gradient(
+            135deg,
+            rgba(63, 95, 54, 0.92),
+            rgba(47, 71, 40, 0.88)
+        ),
         url("../images/hero/hero-4.jpg") center/cover no-repeat;
 }
 
 .reset-visual {
     background:
-        linear-gradient(135deg, rgba(63, 95, 54, 0.92), rgba(47, 71, 40, 0.88)),
+        linear-gradient(
+            135deg,
+            rgba(63, 95, 54, 0.92),
+            rgba(47, 71, 40, 0.88)
+        ),
         url("../images/hero/hero-5.png") center/cover no-repeat;
 }
 
@@ -1556,6 +1591,7 @@ button {
     font-size: 18px;
     line-height: 1;
 }
+
 .otp-timer-box {
     display: inline-flex;
     align-items: center;

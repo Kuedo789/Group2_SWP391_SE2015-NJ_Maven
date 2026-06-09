@@ -94,7 +94,7 @@
                                 <label for="account">Email</label>
 
                                 <div class="input-wrap">
-                                    <span class="material-symbols-outlined">alternate_email</span>
+                                    <span class="material-symbols-outlined input-icon">alternate_email</span>
 
                                     <input type="email"
                                            id="account"
@@ -109,13 +109,19 @@
                                 <label for="password">Mật khẩu</label>
 
                                 <div class="input-wrap">
-                                    <span class="material-symbols-outlined">lock</span>
+                                    <span class="material-symbols-outlined input-icon">lock</span>
 
-                                    <input type="password"
-                                           id="password"
-                                           name="password"
-                                           placeholder="Nhập mật khẩu"
-                                           required>
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        name="password"
+                                        placeholder="Nhập mật khẩu"
+                                        required
+                                        >
+
+                                    <span class="material-symbols-outlined toggle-password" data-target="password">
+                                        visibility
+                                    </span>
                                 </div>
 
                                 <a href="${pageContext.request.contextPath}/auth/forgot-password.jsp"
@@ -165,6 +171,7 @@
 
         <jsp:include page="../common/footer.jsp" />
         <jsp:include page="../common/scripts.jsp" />
+        <script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
     </body>
 
 </html>
