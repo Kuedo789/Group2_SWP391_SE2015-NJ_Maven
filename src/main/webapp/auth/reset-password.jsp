@@ -85,32 +85,38 @@
                         <form action="<%= contextPath %>/reset-password" method="post" class="auth-form">
 
                             <div class="form-group">
-                                <label for="password">Mật khẩu mới</label>
+                                <label for="newPassword">Mật khẩu mới</label>
 
                                 <div class="input-wrap">
-                                    <span class="material-symbols-outlined">lock</span>
+                                    <span class="material-symbols-outlined input-icon">lock</span>
 
-                                    <input
-                                        type="password"
-                                        id="password"
-                                        name="password"
-                                        placeholder="Nhập mật khẩu mới"
-                                        required>
+                                    <input type="password"
+                                           id="newPassword"
+                                           name="password"
+                                           placeholder="Nhập mật khẩu mới"
+                                           required>
+
+                                    <span class="material-symbols-outlined toggle-password" data-target="newPassword">
+                                        visibility
+                                    </span>
                                 </div>
                             </div>
 
                             <div class="form-group">
-                                <label for="confirmPassword">Xác nhận mật khẩu</label>
+                                <label for="confirmNewPassword">Xác nhận mật khẩu mới</label>
 
                                 <div class="input-wrap">
-                                    <span class="material-symbols-outlined">lock_reset</span>
+                                    <span class="material-symbols-outlined input-icon">lock_reset</span>
 
-                                    <input
-                                        type="password"
-                                        id="confirmPassword"
-                                        name="confirmPassword"
-                                        placeholder="Nhập lại mật khẩu mới"
-                                        required>
+                                    <input type="password"
+                                           id="confirmNewPassword"
+                                           name="confirmPassword"
+                                           placeholder="Nhập lại mật khẩu mới"
+                                           required>
+
+                                    <span class="material-symbols-outlined toggle-password" data-target="confirmNewPassword">
+                                        visibility
+                                    </span>
                                 </div>
                             </div>
 
@@ -142,6 +148,6 @@
 
         <jsp:include page="../common/footer.jsp" />
         <jsp:include page="../common/scripts.jsp" />
-
+        <script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
     </body>
 </html>

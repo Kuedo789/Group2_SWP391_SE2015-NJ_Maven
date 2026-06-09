@@ -151,7 +151,7 @@
             %>
             ];
 
-            let currentCategory = "all";
+            let currentCategory = "<%= request.getParameter("category") != null ? js(request.getParameter("category")) : "all" %>";
             let currentPage = 1;
             const itemsPerPage = 8;
             const itemsPerCategoryHome = 4;

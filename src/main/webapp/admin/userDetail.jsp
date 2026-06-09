@@ -311,8 +311,8 @@
                     <a href="${pageContext.request.contextPath}/userList">System</a>
                     <span>&gt;</span>
                     <a href="#" class="active text-dark font-weight-bold">
-                        <c:if test="${USER_DATA.userId != null}">Update Account</c:if>
-                        <c:if test="${USER_DATA.userId == null}">Create Account</c:if>
+                        <c:if test="${USER_DATA.userId != null}">Cập nhật tài khoản</c:if>
+                        <c:if test="${USER_DATA.userId == null}">Thêm tài khoản mới</c:if>
                     </a>
                 </div>
             </div>
@@ -329,10 +329,10 @@
             <div class="form-card">
                 
                 <h1 class="page-title text-uppercase">
-                    <c:if test="${USER_DATA.userId != null}">Cập Nhật Tài Khoản</c:if>
-                    <c:if test="${USER_DATA.userId == null}">Thêm Tài Khoản Mới</c:if>
+                    <c:if test="${USER_DATA.userId != null}">Cập nhật tài khoản</c:if>
+                    <c:if test="${USER_DATA.userId == null}">Thêm tài khoản mới</c:if>
                 </h1>
-                <p class="page-subtitle">Nhập thông tin chi tiết cấu hình nhân sự và phân quyền hệ thống Bakery</p>
+                <p class="page-subtitle">Nhập thông tin chi tiết cho nhân sự và phân quyền hệ thống Bakery</p>
 
                 <c:if test="${ERROR_MSG != null}">
                     <div class="alert alert-danger font-weight-bold mb-4" style="border-radius: 8px;">
@@ -363,16 +363,16 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
-                            <input type="password" name="password" class="form-control" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Nhập mật khẩu bí mật...'}" ${param.action == 'edit' ? '' : 'required'}>
+                            <input type="password" name="password" class="form-control" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Chức vụ hệ thống (Role_ID) <span class="text-danger">*</span></label>
+                            <label class="form-label">Chức vụ hệ thống <span class="text-danger">*</span></label>
                             <select name="roleId" class="form-select">
-                                <option value="CUSTOMER" ${USER_DATA.roleId == 'CUSTOMER' ? 'selected' : ''}>Customer</option>
-                                <option value="SHIPPER" ${USER_DATA.roleId == 'SHIPPER' ? 'selected' : ''}>Shipper</option>
-                                <option value="STAFF" ${USER_DATA.roleId == 'STAFF' ? 'selected' : ''}>Staff</option>
-                                <option value="ADMIN" ${USER_DATA.roleId == 'ADMIN' ? 'selected' : ''}>Admin</option>
+                                <option value="CUSTOMER" ${USER_DATA.roleId == 'CUSTOMER' ? 'selected' : ''}>Khách hàng</option>
+                                <option value="SHIPPER" ${USER_DATA.roleId == 'SHIPPER' ? 'selected' : ''}>Người giao hàng</option>
+                                <option value="STAFF" ${USER_DATA.roleId == 'STAFF' ? 'selected' : ''}>Nhân viên</option>
+                                <option value="ADMIN" ${USER_DATA.roleId == 'ADMIN' ? 'selected' : ''}>Quản lý</option>
                             </select>
                         </div>
 

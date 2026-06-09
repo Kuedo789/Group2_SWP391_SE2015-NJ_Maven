@@ -1,20 +1,16 @@
 package com.bakeryzone.auth.controller;
 
 import com.bakeryzone.dao.UserDAO;
+import com.bakeryzone.utils.EmailUtils;
+import com.bakeryzone.utils.OtpUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Random;
 
 public class VerifyForgotOtpServlet extends HttpServlet {
-
-    // Tạo OTP 6 chữ số
-    private String generateOtp() {
-        return String.format("%06d", new Random().nextInt(1000000));
-    }
 
     // Xử lý gửi lại OTP quên mật khẩu
     @Override
@@ -26,23 +22,34 @@ public class VerifyForgotOtpServlet extends HttpServlet {
         if ("resend".equalsIgnoreCase(action)) {
             String email = (String) request.getSession().getAttribute("resetEmail");
 
-            if (email == null) {
+            if (email == null || email.trim().isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/auth/forgot-password.jsp");
                 return;
             }
 
-            String newOtp = generateOtp();
-            Timestamp newExpiry = new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000);
+            email = email.trim().toLowerCase();
+
+            String newOtp = OtpUtil.generateOtp();
+            Timestamp newExpiry = OtpUtil.generateExpiryTime();
 
             UserDAO dao = new UserDAO();
             dao.updateOtpByEmail(email, newOtp, newExpiry);
 
+            boolean sent = EmailUtils.sendOtpEmail(email, newOtp);
+
+            if (!sent) {
+                request.setAttribute("otpType", "forgot");
+                request.setAttribute("error", "Không thể gửi lại mã OTP. Vui lòng thử lại sau.");
+                request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+                return;
+            }
+
+            request.getSession().setAttribute("resetEmail", email);
+            request.getSession().setAttribute("otpType", "forgot");
             request.getSession().setAttribute("otpExpireAtMillis", newExpiry.getTime());
 
-            System.out.println("OTP quên mật khẩu mới cho " + email + " là: " + newOtp);
-
             request.setAttribute("otpType", "forgot");
-            request.setAttribute("message", "Mã OTP mới đã được gửi lại.");
+            request.setAttribute("message", "Mã OTP mới đã được gửi đến email của bạn.");
             request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
             return;
         }
@@ -60,10 +67,12 @@ public class VerifyForgotOtpServlet extends HttpServlet {
         String otp = request.getParameter("otp");
         String email = (String) request.getSession().getAttribute("resetEmail");
 
-        if (email == null) {
+        if (email == null || email.trim().isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/auth/forgot-password.jsp");
             return;
         }
+
+        email = email.trim().toLowerCase();
 
         if (otp == null || otp.trim().isEmpty()) {
             request.setAttribute("otpType", "forgot");
@@ -72,10 +81,18 @@ public class VerifyForgotOtpServlet extends HttpServlet {
             return;
         }
 
+        otp = otp.trim();
+
+        if (!otp.matches("\\d{6}")) {
+            request.setAttribute("otpType", "forgot");
+            request.setAttribute("error", "Mã OTP phải gồm đúng 6 chữ số.");
+            request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+            return;
+        }
+
         UserDAO dao = new UserDAO();
 
-        // Kiểm tra OTP đúng/sai
-        boolean validOtp = dao.verifyOtp(email, otp.trim());
+        boolean validOtp = dao.verifyForgotOtp(email, otp);
 
         if (!validOtp) {
             request.setAttribute("otpType", "forgot");
@@ -84,11 +101,9 @@ public class VerifyForgotOtpServlet extends HttpServlet {
             return;
         }
 
-        // Đánh dấu đã xác thực OTP quên mật khẩu
         request.getSession().setAttribute("resetOtpVerified", true);
         request.getSession().removeAttribute("otpExpireAtMillis");
 
-        // Chuyển sang trang đặt lại mật khẩu
         response.sendRedirect(request.getContextPath() + "/reset-password");
     }
 }

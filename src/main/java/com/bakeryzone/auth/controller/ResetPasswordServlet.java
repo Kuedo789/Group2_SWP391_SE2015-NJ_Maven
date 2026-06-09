@@ -1,6 +1,7 @@
 package com.bakeryzone.auth.controller;
 
 import com.bakeryzone.dao.UserDAO;
+import com.bakeryzone.utils.PasswordUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,7 +10,6 @@ import java.io.IOException;
 
 public class ResetPasswordServlet extends HttpServlet {
 
-    // Không cho vào reset trực tiếp nếu chưa xác thực OTP
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -25,7 +25,6 @@ public class ResetPasswordServlet extends HttpServlet {
         request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
     }
 
-    // Xử lý đổi mật khẩu mới
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -35,17 +34,16 @@ public class ResetPasswordServlet extends HttpServlet {
         String email = (String) request.getSession().getAttribute("resetEmail");
         Boolean verified = (Boolean) request.getSession().getAttribute("resetOtpVerified");
 
-        // Nếu chưa qua bước OTP thì không cho reset
         if (email == null || verified == null || !verified) {
             response.sendRedirect(request.getContextPath() + "/auth/forgot-password.jsp");
             return;
         }
 
-        // Lấy mật khẩu mới từ form reset-password.jsp
+        email = email.trim().toLowerCase();
+
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        // Kiểm tra rỗng
         if (password == null || password.trim().isEmpty()
                 || confirmPassword == null || confirmPassword.trim().isEmpty()) {
 
@@ -54,14 +52,21 @@ public class ResetPasswordServlet extends HttpServlet {
             return;
         }
 
-        // Kiểm tra độ dài
+        password = password.trim();
+        confirmPassword = confirmPassword.trim();
+
         if (password.length() < 6) {
             request.setAttribute("error", "Mật khẩu phải có ít nhất 6 ký tự.");
             request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
             return;
         }
 
-        // Kiểm tra nhập lại mật khẩu
+        if (password.length() > 20) {
+            request.setAttribute("error", "Mật khẩu không được vượt quá 20 ký tự.");
+            request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
+            return;
+        }
+
         if (!password.equals(confirmPassword)) {
             request.setAttribute("error", "Mật khẩu xác nhận không khớp.");
             request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
@@ -70,19 +75,21 @@ public class ResetPasswordServlet extends HttpServlet {
 
         UserDAO dao = new UserDAO();
 
-        // Cập nhật mật khẩu mới
-        dao.updatePasswordByEmail(email, password);
+        String hashedPassword = PasswordUtils.hashPassword(password);
 
-        // Xóa OTP trong database
-        dao.clearOtp(email);
+        if (hashedPassword == null) {
+            request.setAttribute("error", "Không thể xử lý mật khẩu. Vui lòng thử lại.");
+            request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
+            return;
+        }
 
-        // Xóa session reset
+        dao.updatePasswordByEmail(email, hashedPassword);
+
         request.getSession().removeAttribute("resetEmail");
         request.getSession().removeAttribute("resetOtpVerified");
         request.getSession().removeAttribute("otpType");
         request.getSession().removeAttribute("otpExpireAtMillis");
 
-        // Quay về login
         request.setAttribute("message", "Đặt lại mật khẩu thành công. Vui lòng đăng nhập.");
         request.getRequestDispatcher("/auth/login.jsp").forward(request, response);
     }

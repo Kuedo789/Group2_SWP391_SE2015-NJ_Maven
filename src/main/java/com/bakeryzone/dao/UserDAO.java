@@ -502,12 +502,12 @@ public class UserDAO {
         return null;
     }
 
-    public void createLocalUserForRegister(User user) {
+    public boolean createLocalUserForRegister(User user) {
         String sql = "INSERT INTO `user` "
                 + "(User_ID, Full_Name, Email, Password, Phone, Role_ID, "
                 + "Is_Verified, OTP_Code, OTP_Expiry, "
-                + "Provider, Provider_ID, Account_Status, Is_Active_Staff) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                + "Provider, Provider_ID, Created_At, Account_Status, Is_Active_Staff) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
 
         try (
                 Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -533,11 +533,13 @@ public class UserDAO {
             ps.setString(12, "Active");
             ps.setBoolean(13, false);
 
-            ps.executeUpdate();
+            return ps.executeUpdate() > 0;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return false;
     }
 
     public void updateOtpByEmail(String email, String otpCode, Timestamp otpExpiry) {
@@ -559,16 +561,42 @@ public class UserDAO {
 
     }
 
-    public boolean verifyOtp(String email, String otpCode) {
+    public boolean verifyForgotOtp(String email, String otpCode) {
         String sql = "SELECT User_ID FROM `user` "
                 + "WHERE Email = ? "
                 + "AND OTP_Code = ? "
                 + "AND OTP_Expiry > NOW() "
+                + "AND Is_Verified = true "
+                + "AND Provider = 'LOCAL' "
                 + "AND Account_Status = 'Active'";
 
         try (
                 Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            ps.setString(2, otpCode);
 
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean verifyRegisterOtp(String email, String otpCode) {
+        String sql = "SELECT User_ID FROM `user` "
+                + "WHERE Email = ? "
+                + "AND OTP_Code = ? "
+                + "AND OTP_Expiry > NOW() "
+                + "AND Is_Verified = false "
+                + "AND Provider = 'LOCAL' "
+                + "AND Account_Status = 'Active'";
+
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             ps.setString(2, otpCode);
 
@@ -607,6 +635,22 @@ public class UserDAO {
         try (
                 Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
+            ps.setString(1, email);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void markUserVerifiedAndClearOtp(String email) {
+        String sql = "UPDATE `user` "
+                + "SET Is_Verified = true, OTP_Code = NULL, OTP_Expiry = NULL "
+                + "WHERE Email = ? "
+                + "AND Provider = 'LOCAL'";
+
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, email);
             ps.executeUpdate();
 
@@ -683,7 +727,7 @@ public class UserDAO {
         return null;
     }
 
-    public void createGoogleUser(User user) {
+    public boolean createGoogleUser(User user) {
         String sql = "INSERT INTO `user` "
                 + "(User_ID, Full_Name, Email, Password, Phone, Role_ID, "
                 + "Is_Verified, OTP_Code, OTP_Expiry, "
@@ -692,7 +736,6 @@ public class UserDAO {
 
         try (
                 Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-
             String userId = user.getUserId();
 
             if (userId == null || userId.trim().isEmpty()) {
@@ -715,11 +758,13 @@ public class UserDAO {
             ps.setString(12, "Active");
             ps.setBoolean(13, false);
 
-            ps.executeUpdate();
+            return ps.executeUpdate() > 0;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return false;
     }
 
     public void deleteUnverifiedUsersExpired() {
@@ -738,6 +783,7 @@ public class UserDAO {
             e.printStackTrace();
         }
     }
+// Cập nhật lại thông tin và OTP mới cho tài khoản đã đăng ký nhưng chưa xác thực
 
     public void updateUnverifiedRegisterByEmail(User user) {
         String sql = "UPDATE `user` "
@@ -836,5 +882,29 @@ public class UserDAO {
         }
         return 0;
     }
+    
+    public boolean updateProfile(String userId, String fullName, String phone, String address) {
+    String sql = "UPDATE `user` "
+            + "SET Full_Name = ?, Phone = ?, Default_Address = ? "
+            + "WHERE User_ID = ?";
+
+    try (
+            Connection conn = DBContext.getJDBCConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, fullName);
+        ps.setString(2, phone);
+        ps.setString(3, address);
+        ps.setString(4, userId);
+
+        return ps.executeUpdate() > 0;
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    return false;
+}
 
 }// end class
+

@@ -123,12 +123,12 @@
                     </div>
 
                     <select class="filter-select" name="sortBy" onchange="this.form.submit()">
-                        <option value="newest" ${sortBy eq 'newest' ? 'selected' : ''}>Sắp xếp: Mới nhất</option>
-                        <option value="price-asc" ${sortBy eq 'price-asc' ? 'selected' : ''}>Giá: Thấp đến Cao</option>
+                        <option value="price-asc" ${sortBy eq 'price-asc' or empty sortBy ? 'selected' : ''}>Giá: Thấp đến Cao</option>
                         <option value="price-desc" ${sortBy eq 'price-desc' ? 'selected' : ''}>Giá: Cao đến Thấp</option>
                     </select>
 
                     <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
+                    <a href="${pageContext.request.contextPath}/admin/products" class="btn-clear-filter"><i class="fa-solid fa-arrow-rotate-left"></i> Làm mới</a>
                 </form>
             </div>
 
@@ -144,7 +144,7 @@
                             <th class="text-center" style="width: 160px;">Cho phép ghi chữ</th>
                             <th style="min-width: 180px;">Công thức làm bánh</th>
                             <th class="text-center" style="width: 150px;">Trạng thái</th>
-                            <th style="width: 150px;">Thao tác</th>
+                            <th style="width: 180px; min-width: 160px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -157,7 +157,11 @@
                                             <div class="product-cell">
                                                 <c:choose>
                                                     <c:when test="${not empty p.imageUrl}">
-                                                        <img src="${p.imageUrl}" alt="${p.name}" class="product-thumb">
+                                                        <c:set var="resolvedListImgUrl" value="${p.imageUrl}" />
+                                                        <c:if test="${not (p.imageUrl.startsWith('http://') or p.imageUrl.startsWith('https://'))}">
+                                                            <c:set var="resolvedListImgUrl" value="${pageContext.request.contextPath}/${p.imageUrl}" />
+                                                        </c:if>
+                                                        <img src="${resolvedListImgUrl}" alt="${p.name}" class="product-thumb">
                                                     </c:when>
                                                     <c:otherwise>
                                                         <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=100" alt="Default Cake" class="product-thumb">
@@ -257,11 +261,13 @@
                     <div class="d-flex align-items-center gap-3">
                         <ul class="pagination-nav">
                             <!-- Prev page -->
-                            <li class="page-num-item ${currentPage <= 1 ? 'disabled' : ''}">
-                                <a href="${pageContext.request.contextPath}/admin/products?page=${currentPage > 1 ? currentPage - 1 : 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
-                                    <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
-                                </a>
-                            </li>
+                            <c:if test="${currentPage > 1}">
+                                <li class="page-num-item">
+                                    <a href="${pageContext.request.contextPath}/admin/products?page=${currentPage - 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
+                                        <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
+                                    </a>
+                                </li>
+                            </c:if>
                             
                             <!-- Page Numbers -->
                             <c:forEach var="i" begin="1" end="${totalPages}">
@@ -271,11 +277,13 @@
                             </c:forEach>
                             
                             <!-- Next page -->
-                            <li class="page-num-item ${currentPage >= totalPages ? 'disabled' : ''}">
-                                <a href="${pageContext.request.contextPath}/admin/products?page=${currentPage < totalPages ? currentPage + 1 : totalPages}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
-                                    <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
-                                </a>
-                            </li>
+                            <c:if test="${currentPage < totalPages}">
+                                <li class="page-num-item">
+                                    <a href="${pageContext.request.contextPath}/admin/products?page=${currentPage + 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
+                                        <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
+                                    </a>
+                                </li>
+                            </c:if>
                         </ul>
                         
                         <form action="${pageContext.request.contextPath}/admin/products" method="get" class="d-inline">

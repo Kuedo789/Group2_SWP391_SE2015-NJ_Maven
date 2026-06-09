@@ -11,6 +11,7 @@ import java.security.MessageDigest;
  * @author Asus
  */
 public class PasswordUtils {
+
     // Ham bam mat khau sang chuoi SHA-256 khong the giai ma nguoc
     public static String hashPassword(String password) {
         if (password == null || password.trim().isEmpty()) {
@@ -23,7 +24,9 @@ public class PasswordUtils {
 
             for (byte b : hash) {
                 String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
                 hexString.append(hex);
             }
             return hexString.toString(); // Tra ve chuoi dai 64 ky tu o dang Hex
@@ -31,5 +34,21 @@ public class PasswordUtils {
             ex.printStackTrace();
             return null;
         }
+    }
+     //check xem mat khau dang nhap co giong voi mat khau da ma hoa khong
+
+    public static boolean checkPassword(String rawPassword, String hashedPassword) {
+        if (rawPassword == null || rawPassword.trim().isEmpty()
+                || hashedPassword == null || hashedPassword.trim().isEmpty()) {
+            return false;
+        }
+
+        String rawHash = hashPassword(rawPassword);
+
+        if (rawHash == null) {
+            return false;
+        }
+
+        return rawHash.equals(hashedPassword);
     }
 }

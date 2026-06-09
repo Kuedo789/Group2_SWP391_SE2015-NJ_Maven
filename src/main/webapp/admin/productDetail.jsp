@@ -83,6 +83,13 @@
                     </div>
                 </div>
 
+                <c:if test="${not empty error}">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="background-color: #fdf3f3; border-color: #fcebeb; color: #dc3545; border-radius: 8px; font-weight: 500; font-size: 14px; margin-bottom: 25px;">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i> ${error}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </c:if>
+
                 <div class="row">
                     <!-- Left Column -->
                     <div class="col-lg-5">
@@ -92,8 +99,20 @@
                             <h5 class="card-header-title">Hình Ảnh Bánh Kem</h5>
                             <p class="card-header-desc">Nhập liên kết hình ảnh bánh chất lượng cao. Bấm chọn ảnh nhỏ bên dưới để chọn làm hình đại diện (ảnh bìa chính) hiển thị trên cửa hàng.</p>
                             
+                            <c:set var="resolvedImageUrl" value="https://images.unsplash.com/photo-1578985545062-69928b1d9587" />
+                            <c:if test="${not empty product.imageUrl}">
+                                <c:choose>
+                                    <c:when test="${product.imageUrl.startsWith('http://') or product.imageUrl.startsWith('https://')}">
+                                        <c:set var="resolvedImageUrl" value="${product.imageUrl}" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:set var="resolvedImageUrl" value="${pageContext.request.contextPath}/${product.imageUrl}" />
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:if>
+                            
                             <div class="main-cover-wrapper">
-                                <img id="mainCoverImage" src="${not empty product.imageUrl ? product.imageUrl : 'https://images.unsplash.com/photo-1578985545062-69928b1d9587'}" alt="${product.name}" class="main-cover-img">
+                                <img id="mainCoverImage" src="${resolvedImageUrl}" alt="${product.name}" class="main-cover-img">
                                 <span class="cover-badge">Ảnh Bìa</span>
                                 <div class="image-controls">
                                     <button type="button" class="img-control-btn" onclick="editMainImageUrl()"><i class="fa-regular fa-pen-to-square"></i></button>
@@ -110,8 +129,12 @@
 
                             <div class="thumbnails-grid" id="thumbnailsGrid">
                                 <c:forEach var="img" items="${product.additionalImages}">
+                                    <c:set var="resolvedThumbUrl" value="${img}" />
+                                    <c:if test="${not empty img and not (img.startsWith('http://') or img.startsWith('https://'))}">
+                                        <c:set var="resolvedThumbUrl" value="${pageContext.request.contextPath}/${img}" />
+                                    </c:if>
                                     <div class="thumb-box" onclick="setAsCover('${img}')" data-url="${img}">
-                                        <img src="${img}" alt="Thumbnail">
+                                        <img src="${resolvedThumbUrl}" alt="Thumbnail">
                                         <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1" style="font-size: 8px; line-height: 1;" onclick="event.stopPropagation(); removeThumbnail('${img}')">
                                             <i class="fa-solid fa-xmark"></i>
                                         </button>
@@ -136,7 +159,8 @@
                             <div class="row g-3">
                                  <div class="col-md-12">
                                      <label class="form-label-cz">Tên Bánh Kem <span>*</span></label>
-                                     <input type="text" class="form-control-cz" name="name" value="${product.name}" required>
+                                     <input type="text" class="form-control-cz" id="productName" name="name" value="${product.name}" required>
+                                     <div id="error-name" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
 
                                  <div class="col-md-6">
@@ -148,13 +172,15 @@
                                      </select>
                                  </div>
                                  <div class="col-md-6">
-                                     <label class="form-label-cz">Giá Bán Gốc(VND) <span>*</span></label>
-                                     <input type="number" step="0.01" class="form-control-cz" name="basePrice" value="${product.basePrice}" required>
+                                     <label class="form-label-cz">Giá Bán Gốc (VND) <span>*</span></label>
+                                     <input type="number" step="0.01" class="form-control-cz" id="productBasePrice" name="basePrice" value="${product.basePrice}" required>
+                                     <div id="error-basePrice" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
 
                                  <div class="col-md-6">
                                      <label class="form-label-cz">Thời Gian Làm Việc Ước Tính (giờ) <span>*</span></label>
-                                     <input type="number" step="0.01" class="form-control-cz" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required>
+                                     <input type="number" step="0.01" class="form-control-cz" id="productEstimatedLaborHours" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required>
+                                     <div id="error-estimatedLaborHours" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
                                  <div class="col-md-6">
                                      <label class="form-label-cz">Cho Phép Ghi Chữ</label>
@@ -219,9 +245,18 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // Helper to resolve relative path
+        function resolveUrl(url) {
+            if (!url) return 'https://images.unsplash.com/photo-1578985545062-69928b1d9587';
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+                return url;
+            }
+            return '${pageContext.request.contextPath}/' + url;
+        }
+
         // Set main cover image when a thumbnail is clicked
         function setAsCover(url) {
-            document.getElementById('mainCoverImage').src = url;
+            document.getElementById('mainCoverImage').src = resolveUrl(url);
             document.querySelector('input[name="imageUrl"]').value = url;
         }
 
@@ -249,7 +284,7 @@
                 thumbBox.onclick = function() { setAsCover(cleanUrl); };
                 
                 thumbBox.innerHTML = 
-                    '<img src="' + cleanUrl + '" alt="Thumbnail">' +
+                    '<img src="' + resolveUrl(cleanUrl) + '" alt="Thumbnail">' +
                     '<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1" style="font-size: 8px; line-height: 1;" onclick="event.stopPropagation(); removeThumbnail(\'' + cleanUrl + '\')">' +
                         '<i class="fa-solid fa-xmark"></i>' +
                     '</button>';
@@ -311,7 +346,7 @@
                     thumbBox.setAttribute('data-url', cleanUrl);
                     thumbBox.onclick = function() { setAsCover(cleanUrl); };
                     thumbBox.innerHTML = 
-                        '<img src="' + cleanUrl + '" alt="Thumbnail">' +
+                        '<img src="' + resolveUrl(cleanUrl) + '" alt="Thumbnail">' +
                         '<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1" style="font-size: 8px; line-height: 1;" onclick="event.stopPropagation(); removeThumbnail(\'' + cleanUrl + '\')">' +
                             '<i class="fa-solid fa-xmark"></i>' +
                         '</button>';
@@ -366,6 +401,79 @@
         // Sync Quill HTML contents to hidden inputs on form submit
         const form = document.querySelector('form');
         form.addEventListener('submit', function(e) {
+            // Clear previous errors
+            let hasError = false;
+            
+            const errorName = document.getElementById('error-name');
+            const errorPrice = document.getElementById('error-basePrice');
+            const errorLabor = document.getElementById('error-estimatedLaborHours');
+            
+            errorName.style.display = 'none';
+            errorPrice.style.display = 'none';
+            errorLabor.style.display = 'none';
+            
+            const nameInput = document.getElementById('productName');
+            const priceInput = document.getElementById('productBasePrice');
+            const laborInput = document.getElementById('productEstimatedLaborHours');
+            
+            nameInput.classList.remove('is-invalid');
+            priceInput.classList.remove('is-invalid');
+            laborInput.classList.remove('is-invalid');
+
+            // 1. Validate name
+            const nameVal = nameInput.value.trim();
+            if (nameVal.length === 0) {
+                errorName.textContent = 'Tên bánh kem không được để trống hoặc chỉ chứa khoảng trắng.';
+                errorName.style.display = 'block';
+                nameInput.classList.add('is-invalid');
+                hasError = true;
+            } else if (nameVal.length < 3 || nameVal.length > 100) {
+                errorName.textContent = 'Tên bánh kem phải từ 3 đến 100 ký tự.';
+                errorName.style.display = 'block';
+                nameInput.classList.add('is-invalid');
+                hasError = true;
+            }
+
+            // 2. Validate base price
+            const priceVal = parseFloat(priceInput.value);
+            if (isNaN(priceVal) || priceInput.value.trim() === '') {
+                errorPrice.textContent = 'Vui lòng nhập giá bán gốc.';
+                errorPrice.style.display = 'block';
+                priceInput.classList.add('is-invalid');
+                hasError = true;
+            } else if (priceVal < 0) {
+                errorPrice.textContent = 'Giá bán gốc phải lớn hơn hoặc bằng 0.';
+                errorPrice.style.display = 'block';
+                priceInput.classList.add('is-invalid');
+                hasError = true;
+            }
+
+            // 3. Validate estimated labor hours
+            const laborVal = parseFloat(laborInput.value);
+            if (isNaN(laborVal) || laborInput.value.trim() === '') {
+                errorLabor.textContent = 'Vui lòng nhập thời gian làm việc ước tính.';
+                errorLabor.style.display = 'block';
+                laborInput.classList.add('is-invalid');
+                hasError = true;
+            } else if (laborVal < 0) {
+                errorLabor.textContent = 'Thời gian làm việc ước tính phải lớn hơn hoặc bằng 0.';
+                errorLabor.style.display = 'block';
+                laborInput.classList.add('is-invalid');
+                hasError = true;
+            }
+
+            if (hasError) {
+                e.preventDefault(); // Prevent form submission
+                // Scroll to the first error input
+                const firstError = document.querySelector('.is-invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+                return false;
+            }
+
+            // Sync editors
             const descriptionInput = document.getElementById('fullDescription');
             descriptionInput.value = quill.root.innerHTML;
 
