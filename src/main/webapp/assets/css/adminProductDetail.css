@@ -1,18 +1,19 @@
 :root {
-    --cz-primary: #F28123;
-    --cz-primary-hover: #e06f14;
-    --cz-dark-bg: #111010;
-    --cz-sidebar-active: #232222;
-    --cz-text-muted: #888888;
-    --cz-border-color: #f1ede8;
-    --cz-light-bg: #f8f6f4;
+    --cz-primary: #3f5f36;
+    --cz-primary-hover: #2f4728;
+    --cz-secondary: #c8a46d;
+    --cz-dark-bg: #1e251b;
+    --cz-sidebar-active: #2f4728;
+    --cz-text-muted: #756d64;
+    --cz-border-color: #eee5d8;
+    --cz-light-bg: #fbf7ef;
     --cz-card-bg: #ffffff;
 }
 
 body {
-    font-family: 'Outfit', sans-serif;
+    font-family: "Be Vietnam Pro", Arial, sans-serif;
     background-color: var(--cz-light-bg);
-    color: #333;
+    color: #241d18;
     overflow-x: hidden;
 }
 
@@ -38,7 +39,7 @@ body {
 }
 
 .sidebar-brand i {
-    color: var(--cz-primary);
+    color: var(--cz-secondary);
     font-size: 24px;
     margin-right: 10px;
 }
@@ -51,7 +52,7 @@ body {
 }
 
 .sidebar-brand span span {
-    color: var(--cz-primary);
+    color: var(--cz-secondary);
 }
 
 .nav-section-title {
@@ -83,14 +84,22 @@ body {
 
 .menu-item a:hover {
     color: #fff;
-    background-color: var(--cz-sidebar-active);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.menu-item a:hover i {
+    color: var(--cz-secondary);
 }
 
 .menu-item.active a {
-    color: var(--cz-primary);
+    color: #ffffff;
     background-color: var(--cz-sidebar-active);
-    border-left-color: var(--cz-primary);
+    border-left-color: var(--cz-secondary);
     font-weight: 600;
+}
+
+.menu-item.active a i {
+    color: var(--cz-secondary);
 }
 
 .menu-item a i {
@@ -236,9 +245,10 @@ body {
 }
 
 .page-title {
+    font-family: "Playfair Display", serif;
     font-size: 26px;
     font-weight: 700;
-    color: #111;
+    color: #241d18;
     margin-bottom: 4px;
     display: flex;
     align-items: center;
@@ -298,7 +308,7 @@ body {
 .btn-cz-primary:hover {
     background-color: var(--cz-primary-hover);
     color: #fff;
-    box-shadow: 0 4px 10px rgba(242, 129, 35, 0.25);
+    box-shadow: 0 4px 10px rgba(63, 95, 54, 0.25);
 }
 
 .btn-cz-danger {
@@ -324,7 +334,7 @@ body {
     border: 1px solid var(--cz-border-color);
     padding: 24px;
     margin-bottom: 25px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.01);
+    box-shadow: 0 12px 32px rgba(64, 52, 38, 0.05);
 }
 
 .card-header-title {
@@ -529,7 +539,7 @@ body {
 
 .form-control-cz:focus {
     border-color: var(--cz-primary);
-    box-shadow: 0 0 0 3px rgba(242, 129, 35, 0.1);
+    box-shadow: 0 0 0 3px rgba(63, 95, 54, 0.1);
 }
 
 .form-select-cz {
@@ -622,43 +632,24 @@ body {
     transform: translateX(20px);
 }
 
-/* Description rich editor mock */
-.editor-toolbar {
-    border: 1px solid var(--cz-border-color);
-    border-bottom: none;
-    background-color: #fcfcfc;
-    padding: 8px 12px;
+/* Description rich editor - Quill styling */
+#editor-container, #recipe-editor-container {
+    color: #241d18;
+    font-size: 13.5px;
+}
+.ql-toolbar.ql-snow {
+    border: 1px solid var(--cz-border-color) !important;
     border-top-left-radius: 8px;
     border-top-right-radius: 8px;
-    display: flex;
-    gap: 15px;
-    color: #666;
-    font-size: 14px;
+    background-color: #fcfcfc;
+    padding: 8px 12px !important;
 }
-
-.editor-toolbar i {
-    cursor: pointer;
-    transition: color 0.15s;
-}
-
-.editor-toolbar i:hover {
-    color: var(--cz-primary);
-}
-
-.editor-textarea {
-    border: 1px solid var(--cz-border-color);
+.ql-container.ql-snow {
+    border: 1px solid var(--cz-border-color) !important;
+    border-top: none !important;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
-    width: 100%;
-    padding: 15px;
-    font-size: 13.5px;
-    outline: none;
-    resize: vertical;
-    min-height: 120px;
-}
-
-.editor-textarea:focus {
-    border-color: var(--cz-primary);
+    font-family: inherit !important;
 }
 
 /* Tags and Badge Info */
@@ -691,4 +682,13 @@ body {
 
 .tag-badge i:hover {
     color: var(--cz-primary);
+}
+
+/* Validation styling */
+.form-control-cz.is-invalid {
+    border-color: #dc3545 !important;
+}
+.form-control-cz.is-invalid:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15) !important;
 }

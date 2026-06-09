@@ -1,13 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.bakeryzone.utils;
 
-/**
- *
- * @author admin
- */
+import java.security.SecureRandom;
+import java.sql.Timestamp;
+
 public class OtpUtil {
-    
+
+    private static final SecureRandom random = new SecureRandom();
+    private static final int OTP_EXPIRE_MINUTES = 5;
+
+    public static String generateOtp() {
+        return String.format("%06d", random.nextInt(1_000_000));
+    }
+
+    public static Timestamp generateExpiryTime() {
+        return new Timestamp(System.currentTimeMillis() + OTP_EXPIRE_MINUTES * 60 * 1000);
+    }
 }

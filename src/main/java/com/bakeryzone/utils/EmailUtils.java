@@ -12,10 +12,10 @@ import java.util.Properties;
 public class EmailUtils {
 
     // Email Gmail dùng để gửi OTP
-    private static final String FROM_EMAIL = "YOUR_GMAIL@gmail.com";
+    private static final String FROM_EMAIL = "tiembanhthucong.swp391@gmail.com";
 
     // App Password của Gmail, không phải mật khẩu đăng nhập Gmail thường
-    private static final String APP_PASSWORD = "YOUR_APP_PASSWORD";
+    private static final String APP_PASSWORD = "qunz nqme rkgz zlno";
 
     // Hàm gửi OTP
     public static boolean sendOtpEmail(String toEmail, String otpCode) {

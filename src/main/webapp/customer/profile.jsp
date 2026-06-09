@@ -176,6 +176,10 @@
                     width: 100%;
                 }
             }
+
+            .alert {
+                margin-bottom: 28px;
+            }
         </style>
     </head>
 
@@ -191,29 +195,55 @@
                     <h1>Thông tin cá nhân</h1>
                 </div>
 
-                <form class="profile-form" action="#" method="post">
+                <% if (request.getAttribute("successMessage") != null) { %>
+                <div class="alert alert-success">
+                     ✓ <%= request.getAttribute("successMessage") %>
+                </div>
+                <% } %>
+
+                <% if (request.getAttribute("errorMessage") != null) { %>
+                <div class="alert alert-danger">
+                    <%= request.getAttribute("errorMessage") %>
+                </div>
+                <% } %>
+
+                <form class="profile-form" action="${pageContext.request.contextPath}/profile" method="post">
 
                     <div class="form-row">
                         <div class="form-group">
                             <label>Họ và tên <span class="required">*</span></label>
-                            <input type="text" name="fullName" class="form-control" placeholder="Nhập họ và tên của bạn">
+                            <input type="text"
+                                   name="fullName"
+                                   class="form-control"
+                                   value="${sessionScope.user.fullName}"
+                                   placeholder="Nhập họ và tên của bạn">
                         </div>
 
                         <div class="form-group">
                             <label>Số điện thoại <span class="required">*</span></label>
-                            <input type="text" name="phone" class="form-control" placeholder="Nhập số điện thoại">
+                            <input type="text"
+                                   name="phone"
+                                   class="form-control"
+                                   value="${sessionScope.user.phone}"
+                                   placeholder="Nhập số điện thoại">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label>Email</label>
-                        <input type="email" name="email" class="form-control" value="" readonly>
+                        <input type="email"
+                               name="email"
+                               class="form-control"
+                               value="${sessionScope.user.email}"
+                               readonly>
                         <div class="form-note">Email dùng để đăng nhập và không thể thay đổi tại đây.</div>
                     </div>
 
                     <div class="form-group">
                         <label>Địa chỉ giao hàng <span class="required">*</span></label>
-                        <textarea name="address" class="form-control address-area" placeholder="Nhập địa chỉ giao hàng"></textarea>
+                        <textarea name="address"
+                                  class="form-control address-area"
+                                  placeholder="Nhập địa chỉ giao hàng">${sessionScope.user.defaultAddress}</textarea>
                     </div>
 
                     <div class="profile-actions">

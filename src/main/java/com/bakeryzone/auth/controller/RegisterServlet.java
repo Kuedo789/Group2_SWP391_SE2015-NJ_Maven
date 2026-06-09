@@ -2,19 +2,21 @@ package com.bakeryzone.auth.controller;
 
 import com.bakeryzone.dao.UserDAO;
 import com.bakeryzone.model.User;
+import com.bakeryzone.utils.EmailUtils;
+import com.bakeryzone.utils.OtpUtil;
+import com.bakeryzone.utils.PasswordUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.Random;
 
 public class RegisterServlet extends HttpServlet {
 
-    private String generateOtp() {
-        return String.format("%06d", new Random().nextInt(1000000));
-    }
+    private static final int name_max_length = 25;
+    private static final int email_max_length = 100;
+    private static final int password_max_length = 20;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -28,17 +30,20 @@ public class RegisterServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        // Lấy dữ liệu từ form register.jsp
         String fullName = request.getParameter("fullName");
         String email = request.getParameter("email");
         String password = request.getParameter("password");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        // Kiểm tra rỗng
-        if (fullName == null || fullName.trim().isEmpty()
-                || email == null || email.trim().isEmpty()
-                || password == null || password.trim().isEmpty()
-                || confirmPassword == null || confirmPassword.trim().isEmpty()) {
+        fullName = fullName == null ? null : fullName.trim();
+        email = email == null ? null : email.trim().toLowerCase();
+        password = password == null ? null : password.trim();
+        confirmPassword = confirmPassword == null ? null : confirmPassword.trim();
+
+        if (fullName == null || fullName.isEmpty()
+                || email == null || email.isEmpty()
+                || password == null || password.isEmpty()
+                || confirmPassword == null || confirmPassword.isEmpty()) {
 
             request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin.");
             request.setAttribute("fullName", fullName);
@@ -47,7 +52,38 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
-        // Kiểm tra mật khẩu nhập lại
+        if (fullName.length() > name_max_length) {
+            request.setAttribute("error", "Họ tên không được vượt quá " + name_max_length + " ký tự.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        if (email.length() > email_max_length) {
+            request.setAttribute("error", "Email không được vượt quá " + email_max_length + " ký tự.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            request.setAttribute("error", "Email không đúng định dạng.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        if (password.length() > password_max_length) {
+            request.setAttribute("error", "Mật khẩu không được vượt quá " + password_max_length + " ký tự.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
         if (!password.equals(confirmPassword)) {
             request.setAttribute("error", "Mật khẩu xác nhận không khớp.");
             request.setAttribute("fullName", fullName);
@@ -56,7 +92,6 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
-        // Kiểm tra độ dài mật khẩu
         if (password.length() < 6) {
             request.setAttribute("error", "Mật khẩu phải có ít nhất 6 ký tự.");
             request.setAttribute("fullName", fullName);
@@ -65,18 +100,25 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
+        String hashedPassword = PasswordUtils.hashPassword(password);
+
+        if (hashedPassword == null) {
+            request.setAttribute("error", "Không thể xử lý mật khẩu. Vui lòng thử lại.");
+            request.setAttribute("fullName", fullName);
+            request.setAttribute("email", email);
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
         UserDAO dao = new UserDAO();
 
-        // Tạo OTP và thời gian hết hạn 5 phút
-        String otp = generateOtp();
-        Timestamp otpExpiry = new Timestamp(System.currentTimeMillis() + 5 * 60 * 1000);
+        String otp = OtpUtil.generateOtp();
+        Timestamp otpExpiry = OtpUtil.generateExpiryTime();
 
-        // Kiểm tra email đã có trong database chưa
-        User existingUser = dao.findByEmail(email.trim());
+        User existingUser = dao.findByEmail(email);
 
         if (existingUser != null) {
 
-            // Nếu email đã xác thực rồi thì không cho đăng ký lại
             if (existingUser.isVerified()) {
                 request.setAttribute("error", "Email này đã được đăng ký. Vui lòng đăng nhập.");
                 request.setAttribute("fullName", fullName);
@@ -85,59 +127,76 @@ public class RegisterServlet extends HttpServlet {
                 return;
             }
 
-            // Nếu email có rồi nhưng chưa xác thực OTP
-            // thì cập nhật lại thông tin và gửi OTP mới
             User pendingUser = new User();
-            pendingUser.setFullName(fullName.trim());
-            pendingUser.setEmail(email.trim());
-            pendingUser.setPassword(password);
+            pendingUser.setFullName(fullName);
+            pendingUser.setEmail(email);
+            pendingUser.setPassword(hashedPassword);
             pendingUser.setPhone(null);
             pendingUser.setOtpCode(otp);
             pendingUser.setOtpExpiry(otpExpiry);
 
             dao.updateUnverifiedRegisterByEmail(pendingUser);
 
-            // Lưu thông tin OTP vào session để trang OTP dùng
-            request.getSession().setAttribute("otpEmail", email.trim());
-            request.getSession().setAttribute("otpType", "register");
-            request.getSession().setAttribute("otpExpireAtMillis", otpExpiry.getTime());
+            boolean sent = EmailUtils.sendOtpEmail(email, otp);
 
-            // Tạm thời in OTP ra console để test
-            System.out.println("OTP đăng ký mới cho " + email + " là: " + otp);
+            if (!sent) {
+                request.setAttribute("error", "Không thể gửi mã OTP. Vui lòng kiểm tra email hoặc thử lại sau.");
+                request.setAttribute("fullName", fullName);
+                request.setAttribute("email", email);
+                request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+                return;
+            }
 
-            request.setAttribute("otpType", "register");
-            request.setAttribute("message", "Email này chưa xác thực. Mã OTP mới đã được gửi lại.");
-            request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
-            return;
+            request.setAttribute("message", "Email này chưa xác thực. Mã OTP mới đã được gửi đến email của bạn.");
+
+        } else {
+
+            User user = new User();
+            user.setFullName(fullName);
+            user.setEmail(email);
+            user.setPassword(hashedPassword);
+            user.setPhone(null);
+            user.setRoleId("CUS");
+            user.setVerified(false);
+            user.setOtpCode(otp);
+            user.setOtpExpiry(otpExpiry);
+            user.setProvider("LOCAL");
+            user.setProviderId(null);
+            user.setAccountStatus("Active");
+            user.setActiveStaff(false);
+
+            boolean created = dao.createLocalUserForRegister(user);
+
+            if (!created) {
+                request.setAttribute("error", "Không thể tạo tài khoản. Vui lòng thử lại.");
+                request.setAttribute("fullName", fullName);
+                request.setAttribute("email", email);
+                request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+                return;
+            }
+
+            boolean sent = EmailUtils.sendOtpEmail(email, otp);
+
+            if (!sent) {
+                request.setAttribute("error", "Tạo tài khoản thành công nhưng không thể gửi mã OTP. Vui lòng bấm gửi lại OTP hoặc thử lại sau.");
+
+                request.getSession().setAttribute("otpEmail", email);
+                request.getSession().setAttribute("otpType", "register");
+                request.getSession().setAttribute("otpExpireAtMillis", otpExpiry.getTime());
+
+                request.setAttribute("otpType", "register");
+                request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+                return;
+            }
+
+            request.setAttribute("message", "Mã OTP đã được gửi đến email của bạn.");
         }
 
-        // Nếu email chưa tồn tại thì tạo user mới
-        User user = new User();
-        user.setFullName(fullName.trim());
-        user.setEmail(email.trim());
-        user.setPassword(password);
-        user.setPhone(null);
-        user.setRoleId("CUS");
-        user.setVerified(false);
-        user.setOtpCode(otp);
-        user.setOtpExpiry(otpExpiry);
-        user.setProvider("LOCAL");
-        user.setProviderId(null);
-        user.setAccountStatus("Active");
-        user.setActiveStaff(false);
-
-        dao.createLocalUserForRegister(user);
-
-        // Lưu session để VerifyOtpServlet biết email nào đang xác thực
-        request.getSession().setAttribute("otpEmail", email.trim());
+        request.getSession().setAttribute("otpEmail", email);
         request.getSession().setAttribute("otpType", "register");
         request.getSession().setAttribute("otpExpireAtMillis", otpExpiry.getTime());
 
-        // Tạm thời in OTP ra console để test
-        System.out.println("OTP đăng ký cho " + email + " là: " + otp);
-
         request.setAttribute("otpType", "register");
-        request.setAttribute("message", "Mã OTP đã được gửi đến email của bạn.");
         request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
     }
 }

@@ -40,6 +40,14 @@
         <servlet-name>HomeServlet</servlet-name>
         <servlet-class>com.bakeryzone.auth.controller.HomeServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>GoogleLoginServlet</servlet-name>
+        <servlet-class>com.bakeryzone.auth.controller.GoogleLoginServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>GoogleCallbackServlet</servlet-name>
+        <servlet-class>com.bakeryzone.auth.controller.GoogleCallbackServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UserDetailServlet</servlet-name>
         <url-pattern>/userDetail</url-pattern>
@@ -64,7 +72,6 @@
         <servlet-name>ForgotPasswordServlet</servlet-name>
         <url-pattern>/forgot-password</url-pattern>
     </servlet-mapping>
-
     <servlet-mapping>
         <servlet-name>VerifyForgotOtpServlet</servlet-name>
         <url-pattern>/verify-forgot-otp</url-pattern>
@@ -80,6 +87,14 @@
     <servlet-mapping>
         <servlet-name>HomeServlet</servlet-name>
         <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GoogleLoginServlet</servlet-name>
+        <url-pattern>/goole-login</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>GoogleCallbackServlet</servlet-name>
+        <url-pattern>/google-callback</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

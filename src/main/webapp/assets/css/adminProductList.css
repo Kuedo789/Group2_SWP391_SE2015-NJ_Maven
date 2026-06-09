@@ -1,18 +1,19 @@
 :root {
-    --cz-primary: #F28123;
-    --cz-primary-hover: #e06f14;
-    --cz-dark-bg: #111010;
-    --cz-sidebar-active: #232222;
-    --cz-text-muted: #888888;
-    --cz-border-color: #f1ede8;
-    --cz-light-bg: #f8f6f4;
+    --cz-primary: #3f5f36;
+    --cz-primary-hover: #2f4728;
+    --cz-secondary: #c8a46d;
+    --cz-dark-bg: #1e251b;
+    --cz-sidebar-active: #2f4728;
+    --cz-text-muted: #756d64;
+    --cz-border-color: #eee5d8;
+    --cz-light-bg: #fbf7ef;
     --cz-card-bg: #ffffff;
 }
 
 body {
-    font-family: 'Outfit', sans-serif;
+    font-family: "Be Vietnam Pro", Arial, sans-serif;
     background-color: var(--cz-light-bg);
-    color: #333;
+    color: #241d18;
     overflow-x: hidden;
 }
 
@@ -38,7 +39,7 @@ body {
 }
 
 .sidebar-brand i {
-    color: var(--cz-primary);
+    color: var(--cz-secondary);
     font-size: 24px;
     margin-right: 10px;
 }
@@ -51,7 +52,7 @@ body {
 }
 
 .sidebar-brand span span {
-    color: var(--cz-primary);
+    color: var(--cz-secondary);
 }
 
 .nav-section-title {
@@ -83,14 +84,22 @@ body {
 
 .menu-item a:hover {
     color: #fff;
-    background-color: var(--cz-sidebar-active);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.menu-item a:hover i {
+    color: var(--cz-secondary);
 }
 
 .menu-item.active a {
-    color: var(--cz-primary);
+    color: #ffffff;
     background-color: var(--cz-sidebar-active);
-    border-left-color: var(--cz-primary);
+    border-left-color: var(--cz-secondary);
     font-weight: 600;
+}
+
+.menu-item.active a i {
+    color: var(--cz-secondary);
 }
 
 .menu-item a i {
@@ -276,9 +285,10 @@ body {
 }
 
 .page-title {
+    font-family: "Playfair Display", serif;
     font-size: 26px;
     font-weight: 700;
-    color: #111;
+    color: #241d18;
     margin-bottom: 4px;
     display: flex;
     align-items: center;
@@ -320,7 +330,7 @@ body {
     background-color: var(--cz-primary-hover);
     color: #fff;
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(242, 129, 35, 0.25);
+    box-shadow: 0 4px 10px rgba(63, 95, 54, 0.25);
 }
 
 /* Filters Card */
@@ -330,7 +340,7 @@ body {
     padding: 20px;
     border: 1px solid var(--cz-border-color);
     margin-bottom: 25px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 10px 30px rgba(64, 52, 38, 0.05);
 }
 
 .filter-form {
@@ -369,7 +379,7 @@ body {
     padding: 10px 15px 10px 40px;
     font-size: 13.5px;
     border-radius: 8px;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--cz-border-color);
     outline: none;
     transition: border-color 0.2s;
 }
@@ -413,7 +423,7 @@ body {
     border-radius: 12px;
     border: 1px solid var(--cz-border-color);
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 12px 32px rgba(64, 52, 38, 0.05);
     margin-bottom: 25px;
 }
 
@@ -424,8 +434,8 @@ body {
 }
 
 .cz-table th {
-    background-color: #fffaf5;
-    color: #666;
+    background-color: #eaf1e6;
+    color: #241d18;
     font-size: 11.5px;
     font-weight: 700;
     text-transform: uppercase;
@@ -442,7 +452,7 @@ body {
 }
 
 .cz-table tr:hover td {
-    background-color: #fdfbf9;
+    background-color: #fdfcf9;
 }
 
 /* Product cell design */
@@ -521,8 +531,8 @@ body {
 }
 
 .status-badge-active {
-    background-color: #e6f6eb;
-    color: #28a745;
+    background-color: #eaf1e6;
+    color: #3f5f36;
     font-size: 12px;
     font-weight: 600;
     padding: 5px 12px;
@@ -536,13 +546,13 @@ body {
     content: '';
     width: 6px;
     height: 6px;
-    background-color: #28a745;
+    background-color: #3f5f36;
     border-radius: 50%;
 }
 
 .status-badge-inactive {
-    background-color: #fcebeb;
-    color: #dc3545;
+    background-color: #fdf3f4;
+    color: #d95f4c;
     font-size: 12px;
     font-weight: 600;
     padding: 5px 12px;
@@ -556,7 +566,7 @@ body {
     content: '';
     width: 6px;
     height: 6px;
-    background-color: #dc3545;
+    background-color: #d95f4c;
     border-radius: 50%;
 }
 

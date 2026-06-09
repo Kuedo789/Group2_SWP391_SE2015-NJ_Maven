@@ -75,75 +75,77 @@
                     <div>
                         <h2>Danh mục</h2>
                     </div>
-                    <a href="#" class="view-more">Xem thêm <i class="fa-solid fa-chevron-right"></i></a>
+                    <a href="${pageContext.request.contextPath}/products" class="view-more">
+                        Xem thêm <i class="fa-solid fa-chevron-right"></i>
+                    </a>
                 </div>
 
                 <div class="category-grid">
 
-                    <a href="#" class="category-item">
+                    <a href="${pageContext.request.contextPath}/products?category=Bánh Flan Gato" class="category-item">
                         <div class="category-icon">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/icons/flan-gato.png" alt="Bánh Flan Gato">
                         </div>
                         <span>Bánh Flan Gato</span>
                     </a>
 
-                    <a href="#" class="category-item">
+                    <a href="${pageContext.request.contextPath}/products?category=Bánh Entremet" class="category-item">
                         <div class="category-icon">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/icons/entremet.png" alt="Bánh Entremet">
                         </div>
                         <span>Bánh Entremet</span>
                     </a>
 
-                    <a href="#" class="category-item">
+                    <a href="${pageContext.request.contextPath}/products?category=Bánh Kem Bắp" class="category-item">
                         <div class="category-icon">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/icons/kem-bap.png" alt="Bánh Kem Bắp">
                         </div>
                         <span>Bánh Kem Bắp</span>
                     </a>
 
-                    <a href="#" class="category-item">
+                    <a href="${pageContext.request.contextPath}/products?category=Bánh Mousse" class="category-item">
                         <div class="category-icon">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/icons/banh-mousse.png" alt="Bánh Mousse">
                         </div>
                         <span>Bánh Mousse</span>
                     </a>
 
-                    <a href="#" class="category-item">
+                    <a href="${pageContext.request.contextPath}/products?category=Sweetbox Premium" class="category-item">
                         <div class="category-icon">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/icons/sweetbox-premium.png" alt="Sweetbox Premium">
                         </div>
                         <span>Sweetbox Premium</span>
                     </a>
 
-                    <a href="#" class="category-item">
+                    <a href="${pageContext.request.contextPath}/products?category=Sweetbox" class="category-item">
                         <div class="category-icon">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/icons/sweetbox.png" alt="Sweetbox">
                         </div>
                         <span>Sweetbox</span>
                     </a>
 
-                    <a href="#" class="category-item">
+                    <a href="${pageContext.request.contextPath}/products?category=Sweetin" class="category-item">
                         <div class="category-icon">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/icons/sweetin.png" alt="Sweetin">
                         </div>
                         <span>Sweetin</span>
                     </a>
 
-                    <a href="#" class="category-item">
+                    <a href="${pageContext.request.contextPath}/products?category=Bánh Healthy" class="category-item">
                         <div class="category-icon">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/icons/healthy.png" alt="Bánh Healthy">
                         </div>
                         <span>Bánh Healthy</span>
                     </a>
 
-                    <a href="#" class="category-item">
+                    <a href="${pageContext.request.contextPath}/products?category=Bánh nướng %26 Bánh mì" class="category-item">
                         <div class="category-icon">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/icons/banh-my.png" alt="Bánh nướng và Bánh mì">
                         </div>
                         <span>Bánh nướng & Bánh mì</span>
                     </a>
 
-                    <a href="#" class="category-item">
+                    <a href="${pageContext.request.contextPath}/products?category=Combo" class="category-item">
                         <div class="category-icon">
                             <img src="${pageContext.request.contextPath}/assets/images/categories/icons/combo.png" alt="Combo">
                         </div>

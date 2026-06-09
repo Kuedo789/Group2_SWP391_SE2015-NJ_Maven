@@ -99,12 +99,12 @@
                                 <label for="fullName">Họ và tên</label>
 
                                 <div class="input-wrap">
-                                    <span class="material-symbols-outlined">person</span>
+                                    <span class="material-symbols-outlined input-icon">person</span>
 
                                     <input type="text"
                                            id="fullName"
                                            name="fullName"
-                                           value="<%= fullName %>"
+                                           value="${fullName}"
                                            placeholder="Nhập họ và tên"
                                            required>
                                 </div>
@@ -114,12 +114,12 @@
                                 <label for="email">Email</label>
 
                                 <div class="input-wrap">
-                                    <span class="material-symbols-outlined">alternate_email</span>
+                                    <span class="material-symbols-outlined input-icon">alternate_email</span>
 
                                     <input type="email"
                                            id="email"
                                            name="email"
-                                           value="<%= email %>"
+                                           value="${email}"
                                            placeholder="Nhập email của bạn"
                                            required>
                                 </div>
@@ -129,13 +129,17 @@
                                 <label for="password">Mật khẩu</label>
 
                                 <div class="input-wrap">
-                                    <span class="material-symbols-outlined">lock</span>
+                                    <span class="material-symbols-outlined input-icon">lock</span>
 
                                     <input type="password"
                                            id="password"
                                            name="password"
                                            placeholder="Nhập mật khẩu"
                                            required>
+
+                                    <span class="material-symbols-outlined toggle-password" data-target="password">
+                                        visibility
+                                    </span>
                                 </div>
                             </div>
 
@@ -143,13 +147,17 @@
                                 <label for="confirmPassword">Xác nhận mật khẩu</label>
 
                                 <div class="input-wrap">
-                                    <span class="material-symbols-outlined">lock_reset</span>
+                                    <span class="material-symbols-outlined input-icon">lock_reset</span>
 
                                     <input type="password"
                                            id="confirmPassword"
                                            name="confirmPassword"
                                            placeholder="Nhập lại mật khẩu"
                                            required>
+
+                                    <span class="material-symbols-outlined toggle-password" data-target="confirmPassword">
+                                        visibility
+                                    </span>
                                 </div>
                             </div>
 
@@ -193,6 +201,7 @@
 
         <jsp:include page="../common/footer.jsp" />
         <jsp:include page="../common/scripts.jsp" />
+        <script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
     </body>
 
 </html>

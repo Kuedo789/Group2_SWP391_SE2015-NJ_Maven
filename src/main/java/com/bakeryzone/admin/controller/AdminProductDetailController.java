@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -65,33 +66,98 @@ public class AdminProductDetailController extends HttpServlet {
         String name = request.getParameter("name");
         String categoryId = request.getParameter("categoryId");
         
+        // 2. Validate price
+        boolean priceValid = true;
         double basePrice = 0.0;
+        String priceParam = request.getParameter("basePrice");
         try {
-            String priceParam = request.getParameter("basePrice");
             if (priceParam != null && !priceParam.trim().isEmpty()) {
                 basePrice = Double.parseDouble(priceParam);
+                if (basePrice < 0) {
+                    priceValid = false;
+                }
+            } else {
+                priceValid = false;
             }
-        } catch (NumberFormatException | NullPointerException e) {}
+        } catch (NumberFormatException e) {
+            priceValid = false;
+        }
         
-        double estimatedLaborHours = 1.0;
+        // 3. Validate labor hours
+        boolean laborValid = true;
+        double estimatedLaborHours = 0.0;
+        String laborParam = request.getParameter("estimatedLaborHours");
         try {
-            String laborParam = request.getParameter("estimatedLaborHours");
             if (laborParam != null && !laborParam.trim().isEmpty()) {
                 estimatedLaborHours = Double.parseDouble(laborParam);
+                if (estimatedLaborHours < 0) {
+                    laborValid = false;
+                }
+            } else {
+                laborValid = false;
             }
-        } catch (NumberFormatException | NullPointerException e) {}
+        } catch (NumberFormatException e) {
+            laborValid = false;
+        }
+        
+        // 4. Validate name
+        boolean nameValid = name != null && !name.trim().isEmpty() && name.trim().length() >= 3 && name.trim().length() <= 100;
+        
+        // 5. If validation fails, return with errors and preserve input values
+        if (!nameValid || !priceValid || !laborValid) {
+            Product product = new Product();
+            product.setId(id);
+            product.setName(name);
+            product.setCategoryId(categoryId);
+            product.setBasePrice(basePrice);
+            product.setEstimatedLaborHours(estimatedLaborHours);
+            product.setAllowsGreeting(request.getParameter("allowsGreeting") != null && "true".equalsIgnoreCase(request.getParameter("allowsGreeting")));
+            product.setImageUrl(request.getParameter("imageUrl"));
+            product.setStatus(request.getParameter("status"));
+            product.setFullDescription(request.getParameter("fullDescription"));
+            product.setRecipeName(request.getParameter("recipeName"));
+            product.setRecipeInstructions(request.getParameter("recipeInstructions"));
+            
+            // Retrieve additional images
+            String[] additionalImagesArr = request.getParameterValues("additionalImages");
+            if (additionalImagesArr != null) {
+                List<String> additionalImages = new ArrayList<>();
+                for (String img : additionalImagesArr) {
+                    if (img != null && !img.trim().isEmpty()) {
+                        additionalImages.add(img.trim());
+                    }
+                }
+                product.setAdditionalImages(additionalImages);
+            }
+            
+            StringBuilder errorMsg = new StringBuilder("Dữ liệu nhập vào không hợp lệ: ");
+            if (!nameValid) {
+                errorMsg.append("Tên bánh phải từ 3 đến 100 ký tự. ");
+            }
+            if (!priceValid) {
+                errorMsg.append("Giá bán gốc phải là số lớn hơn hoặc bằng 0. ");
+            }
+            if (!laborValid) {
+                errorMsg.append("Thời gian làm việc phải là số lớn hơn hoặc bằng 0. ");
+            }
+            
+            request.setAttribute("product", product);
+            request.setAttribute("productCategories", productDAO.getAllProductCategories());
+            request.setAttribute("error", errorMsg.toString().trim());
+            
+            request.getRequestDispatcher("/admin/productDetail.jsp").forward(request, response);
+            return;
+        }
         
         boolean allowsGreeting = request.getParameter("allowsGreeting") != null && "true".equalsIgnoreCase(request.getParameter("allowsGreeting"));
-        
         String imageUrl = request.getParameter("imageUrl");
         String status = request.getParameter("status");
-        
-        // Checkboxes / Switches are only sent if checked
         boolean isFeatured = request.getParameter("isFeatured") != null && "true".equalsIgnoreCase(request.getParameter("isFeatured"));
-        
         String fullDescription = request.getParameter("fullDescription");
+        String recipeName = request.getParameter("recipeName");
+        String recipeInstructions = request.getParameter("recipeInstructions");
         
-        // 2. Adjust ID and Type
+        // 6. Adjust ID and Type for new products
         boolean isNew = false;
         if (id == null || id.trim().isEmpty() || "new".equalsIgnoreCase(id)) {
             id = "CZ-PROD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
@@ -104,11 +170,14 @@ public class AdminProductDetailController extends HttpServlet {
             imageUrl = "https://images.unsplash.com/photo-1578985545062-69928b1d9587"; 
         }
         
-        // 3. Construct product JavaBean
+        // 7. Construct product JavaBean
         Product product = new Product(
             id, name, categoryId, "", basePrice, estimatedLaborHours, allowsGreeting, imageUrl,
             status, isFeatured, fullDescription, productType
         );
+        
+        product.setRecipeName(recipeName);
+        product.setRecipeInstructions(recipeInstructions);
         
         // Retrieve dynamic product images from form
         String[] additionalImagesArr = request.getParameterValues("additionalImages");
@@ -122,7 +191,7 @@ public class AdminProductDetailController extends HttpServlet {
             product.setAdditionalImages(additionalImages);
         }
         
-        // 4. Save via DAO
+        // 8. Save via DAO
         System.out.println("[INFO] Bat dau luu banh kem. ID: " + product.getId() + ", Ten: " + product.getName() + " (isNew: " + isNew + ")");
         boolean saved = productDAO.saveProduct(product);
         if (saved) {
