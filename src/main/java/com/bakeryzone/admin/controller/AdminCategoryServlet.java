@@ -89,6 +89,18 @@ public class AdminCategoryServlet extends HttpServlet {
                 return; // Stop execution here
             }
 
+            if ("edit".equals(action)) {
+                String id = request.getParameter("id");
+                CategoryDTO cat = dao.getCategoryById(id);
+                if (cat != null) {
+                    request.setAttribute("category", cat);
+                    request.getRequestDispatcher("/admin/category-edit.jsp").forward(request, response);
+                } else {
+                    response.sendRedirect(request.getContextPath() + "/admin/categories?error=not_found");
+                }
+                return; // Stop execution here
+            }
+
             // --- NORMAL TABLE LOAD (Pagination & Filters) ---
             // Catch redirect messages
             String msg = request.getParameter("msg");
@@ -152,25 +164,29 @@ public class AdminCategoryServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.setCharacterEncoding("UTF-8"); // Prevent Vietnamese font corruption
+        request.setCharacterEncoding("UTF-8");
 
-        // Grab inputs from the category-add.jsp form
+        String formAction = request.getParameter("formAction"); // Distinguish Add vs Update
         String id = request.getParameter("categoryId");
         String name = request.getParameter("categoryName");
         String description = request.getParameter("description");
         String type = request.getParameter("categoryType");
 
         try {
-            CategoryDTO newCat = new CategoryDTO(id, name, description, type);
+            CategoryDTO cat = new CategoryDTO(id, name, description, type);
             CategoryDAO dao = new CategoryDAO();
+            boolean success = false;
 
-            boolean success = dao.addCategory(newCat);
+            if ("update".equals(formAction)) {
+                success = dao.updateCategory(cat);
+            } else {
+                success = dao.addCategory(cat);
+            }
 
             if (success) {
-                // If saved successfully, send them back to the table with a success flag
                 response.sendRedirect(request.getContextPath() + "/admin/categories?success=true");
             } else {
-                response.sendRedirect(request.getContextPath() + "/admin/categories?error=add_failed");
+                response.sendRedirect(request.getContextPath() + "/admin/categories?error=failed");
             }
 
         } catch (Exception e) {
@@ -179,14 +195,13 @@ public class AdminCategoryServlet extends HttpServlet {
         }
     }
 
-
-/**
- * Returns a short description of the servlet.
- *
- * @return a String containing servlet description
- */
-@Override
-public String getServletInfo() {
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
 
