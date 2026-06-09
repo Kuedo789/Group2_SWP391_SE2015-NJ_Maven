@@ -257,11 +257,13 @@
                     <div class="d-flex align-items-center gap-3">
                         <ul class="pagination-nav">
                             <!-- Prev page -->
-                            <li class="page-num-item ${currentPage <= 1 ? 'disabled' : ''}">
-                                <a href="${pageContext.request.contextPath}/admin/products?page=${currentPage > 1 ? currentPage - 1 : 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
-                                    <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
-                                </a>
-                            </li>
+                            <c:if test="${currentPage > 1}">
+                                <li class="page-num-item">
+                                    <a href="${pageContext.request.contextPath}/admin/products?page=${currentPage - 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
+                                        <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
+                                    </a>
+                                </li>
+                            </c:if>
                             
                             <!-- Page Numbers -->
                             <c:forEach var="i" begin="1" end="${totalPages}">
@@ -271,11 +273,13 @@
                             </c:forEach>
                             
                             <!-- Next page -->
-                            <li class="page-num-item ${currentPage >= totalPages ? 'disabled' : ''}">
-                                <a href="${pageContext.request.contextPath}/admin/products?page=${currentPage < totalPages ? currentPage + 1 : totalPages}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
-                                    <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
-                                </a>
-                            </li>
+                            <c:if test="${currentPage < totalPages}">
+                                <li class="page-num-item">
+                                    <a href="${pageContext.request.contextPath}/admin/products?page=${currentPage + 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
+                                        <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
+                                    </a>
+                                </li>
+                            </c:if>
                         </ul>
                         
                         <form action="${pageContext.request.contextPath}/admin/products" method="get" class="d-inline">
