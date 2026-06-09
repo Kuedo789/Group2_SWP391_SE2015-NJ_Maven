@@ -660,25 +660,32 @@
 
                 <div class="pagination-area">
                     <span class="pagination-text">Trang số <b>${currentPage}</b> trên tổng số <b>${endPage}</b> trang</span>
-                    <ul class="pagination-nav">
-                        <li class="page-num-item ${currentPage == 1 ? 'disabled' : ''}">
-                            <a href="userList?page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
-                                <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
-                            </a>
-                        </li>
-                        
-                        <c:forEach begin="1" end="${endPage}" var="i">
-                            <li class="page-num-item ${currentPage == i ? 'active' : ''}">
-                                <a href="userList?page=${i}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">${i}</a>
-                            </li>
-                        </c:forEach>
-                        
-                        <li class="page-num-item ${currentPage == endPage ? 'disabled' : ''}">
-                            <a href="userList?page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
-                                <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
-                            </a>
-                        </li>
-                    </ul>
+                        <ul class="pagination-nav">
+                            <!-- Prev page -->
+                            <c:if test="${currentPage > 1}">
+                                <li class="page-num-item">
+                                    <a href="userList?page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
+                                        <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
+                                    </a>
+                                </li>
+                            </c:if>
+                            
+                            <!-- Page Numbers -->
+                            <c:forEach begin="1" end="${endPage}" var="i">
+                                <li class="page-num-item ${currentPage == i ? 'active' : ''}">
+                                    <a href="userList?page=${i}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">${i}</a>
+                                </li>
+                            </c:forEach>
+                            
+                            <!-- Next page -->
+                            <c:if test="${currentPage < endPage}">
+                                <li class="page-num-item">
+                                    <a href="userList?page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
+                                        <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
+                                    </a>
+                                </li>
+                            </c:if>
+                        </ul>
                 </div>
             </div>
 
