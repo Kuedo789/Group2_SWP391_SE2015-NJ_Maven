@@ -144,7 +144,7 @@
                             <th class="text-center" style="width: 160px;">Cho phép ghi chữ</th>
                             <th style="min-width: 180px;">Công thức làm bánh</th>
                             <th class="text-center" style="width: 150px;">Trạng thái</th>
-                            <th style="width: 150px;">Thao tác</th>
+                            <th style="width: 180px; min-width: 160px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -157,7 +157,11 @@
                                             <div class="product-cell">
                                                 <c:choose>
                                                     <c:when test="${not empty p.imageUrl}">
-                                                        <img src="${p.imageUrl}" alt="${p.name}" class="product-thumb">
+                                                        <c:set var="resolvedListImgUrl" value="${p.imageUrl}" />
+                                                        <c:if test="${not (p.imageUrl.startsWith('http://') or p.imageUrl.startsWith('https://'))}">
+                                                            <c:set var="resolvedListImgUrl" value="${pageContext.request.contextPath}/${p.imageUrl}" />
+                                                        </c:if>
+                                                        <img src="${resolvedListImgUrl}" alt="${p.name}" class="product-thumb">
                                                     </c:when>
                                                     <c:otherwise>
                                                         <img src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=100" alt="Default Cake" class="product-thumb">
