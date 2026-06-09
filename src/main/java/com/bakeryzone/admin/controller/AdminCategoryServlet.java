@@ -166,11 +166,21 @@ public class AdminCategoryServlet extends HttpServlet {
 
         request.setCharacterEncoding("UTF-8");
 
-        String formAction = request.getParameter("formAction"); // Distinguish Add vs Update
-        String id = request.getParameter("categoryId");
+        String formAction = request.getParameter("formAction");
+
+        // 1. Force uppercase and trim accidental whitespaces
+        String rawId = request.getParameter("categoryId");
+        String id = (rawId != null) ? rawId.toUpperCase().trim() : "";
+
         String name = request.getParameter("categoryName");
         String description = request.getParameter("description");
         String type = request.getParameter("categoryType");
+
+        // 2. BACKEND VALIDATION: Enforce ID Format Security
+        if (!id.matches("^CAT-[A-Z0-9\\-]+$")) {
+            response.sendRedirect(request.getContextPath() + "/admin/categories?error=invalid_id_format");
+            return; // Stops the process immediately
+        }
 
         try {
             CategoryDTO cat = new CategoryDTO(id, name, description, type);
