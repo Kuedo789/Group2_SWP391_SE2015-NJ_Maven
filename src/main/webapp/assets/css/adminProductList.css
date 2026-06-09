@@ -417,6 +417,26 @@ body {
     margin-right: 6px;
 }
 
+.btn-clear-filter {
+    padding: 10px 15px;
+    font-size: 13.5px;
+    font-weight: 500;
+    border-radius: 8px;
+    background-color: #756d64;
+    color: #fff !important;
+    text-decoration: none;
+    transition: background 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-clear-filter:hover {
+    background-color: #5b544d;
+    color: #fff;
+}
+
 /* Table Card */
 .table-card {
     background-color: var(--cz-card-bg);
