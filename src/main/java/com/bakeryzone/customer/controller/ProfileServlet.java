@@ -2,7 +2,6 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
-
 package com.bakeryzone.customer.controller;
 
 import com.bakeryzone.dao.UserDAO;
@@ -57,6 +56,10 @@ public class ProfileServlet extends HttpServlet {
         String phone = request.getParameter("phone");
         String address = request.getParameter("address");
 
+        String currentPassword = request.getParameter("currentPassword");
+        String newPassword = request.getParameter("newPassword");
+        String confirmPassword = request.getParameter("confirmPassword");
+
         boolean updated = userDAO.updateProfile(
                 user.getUserId(),
                 fullName,
@@ -68,8 +71,53 @@ public class ProfileServlet extends HttpServlet {
             user.setFullName(fullName);
             user.setPhone(phone);
             user.setDefaultAddress(address);
-
             session.setAttribute("user", user);
+        }
+
+        boolean wantChangePassword
+                = (currentPassword != null && !currentPassword.trim().isEmpty())
+                || (newPassword != null && !newPassword.trim().isEmpty())
+                || (confirmPassword != null && !confirmPassword.trim().isEmpty());
+
+        if (wantChangePassword) {
+
+            if (currentPassword == null || currentPassword.trim().isEmpty()) {
+                request.setAttribute("errorMessage", "Vui lòng nhập mật khẩu hiện tại.");
+                request.getRequestDispatcher("/common/profile.jsp").forward(request, response);
+                return;
+            }
+
+            if (!currentPassword.equals(user.getPassword())) {
+                request.setAttribute("errorMessage", "Mật khẩu hiện tại không đúng.");
+                request.getRequestDispatcher("/common/profile.jsp").forward(request, response);
+                return;
+            }
+
+            if (newPassword == null || newPassword.trim().isEmpty()) {
+                request.setAttribute("errorMessage", "Vui lòng nhập mật khẩu mới.");
+                request.getRequestDispatcher("/common/profile.jsp").forward(request, response);
+                return;
+            }
+
+            if (confirmPassword == null || confirmPassword.trim().isEmpty()) {
+                request.setAttribute("errorMessage", "Vui lòng xác nhận mật khẩu mới.");
+                request.getRequestDispatcher("/common/profile.jsp").forward(request, response);
+                return;
+            }
+
+            if (!newPassword.equals(confirmPassword)) {
+                request.setAttribute("errorMessage", "Xác nhận mật khẩu mới không khớp.");
+                request.getRequestDispatcher("/common/profile.jsp").forward(request, response);
+                return;
+            }
+
+            userDAO.updatePasswordByEmail(user.getEmail(), newPassword);
+
+            user.setPassword(newPassword);
+            session.setAttribute("user", user);
+        }
+
+        if (updated || wantChangePassword) {
             request.setAttribute("successMessage", "Cập nhật thông tin thành công.");
         } else {
             request.setAttribute("errorMessage", "Cập nhật thất bại. Vui lòng thử lại.");

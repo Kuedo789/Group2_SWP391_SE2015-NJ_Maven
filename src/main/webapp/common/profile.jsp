@@ -174,25 +174,27 @@
                 margin-bottom: 28px;
             }
 
-            .password-change-box {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 14px 16px;
-                border: 1px solid #e5d6c8;
-                border-radius: 12px;
-                background-color: #fffaf5;
-                font-size: 15px;
-            }
-
-            .change-password-link {
-                color: var(--primary);
+            .change-password-toggle {
+                width: fit-content;
+                padding: 10px 18px;
+                border: none;
+                border-radius: 10px;
+                background-color: var(--primary);
+                color: white;
                 font-weight: 600;
-                text-decoration: none;
+                cursor: pointer;
             }
 
-            .change-password-link:hover {
-                text-decoration: underline;
+            .change-password-toggle:hover {
+                opacity: 0.9;
+            }
+
+            .password-box {
+                margin-top: 18px;
+                padding: 18px;
+                border: 1px solid #ead8c7;
+                border-radius: 14px;
+                background-color: #fffaf5;
             }
 
         </style>
@@ -257,13 +259,34 @@
                     <div class="form-group full-width">
                         <label>Mật khẩu</label>
 
-                        <div class="password-change-box">
-                            <span>Muốn thay đổi mật khẩu?</span>
+                        <button type="button" class="change-password-toggle" onclick="togglePasswordBox()">
+                            Đổi mật khẩu
+                        </button>
 
-                            <a href="${pageContext.request.contextPath}/auth/forgotPassword.jsp"
-                               class="change-password-link">
-                                Đổi mật khẩu
-                            </a>
+                        <div id="passwordBox" class="password-box" style="display: none;">
+                            <div class="form-group">
+                                <label>Mật khẩu hiện tại</label>
+                                <input type="password"
+                                       name="currentPassword"
+                                       class="form-control"
+                                       placeholder="Nhập mật khẩu hiện tại">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Mật khẩu mới</label>
+                                <input type="password"
+                                       name="newPassword"
+                                       class="form-control"
+                                       placeholder="Nhập mật khẩu mới">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Xác nhận mật khẩu mới</label>
+                                <input type="password"
+                                       name="confirmPassword"
+                                       class="form-control"
+                                       placeholder="Nhập lại mật khẩu mới">
+                            </div>
                         </div>
                     </div>
 
@@ -283,6 +306,18 @@
 
         <jsp:include page="../common/footer.jsp" />
         <jsp:include page="../common/scripts.jsp" />
+
+        <script>
+            function togglePasswordBox() {
+                const passwordBox = document.getElementById("passwordBox");
+
+                if (passwordBox.style.display === "none") {
+                    passwordBox.style.display = "block";
+                } else {
+                    passwordBox.style.display = "none";
+                }
+            }
+        </script>
 
     </body>
 </html>
