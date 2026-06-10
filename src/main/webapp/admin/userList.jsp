@@ -11,12 +11,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/v4-shims.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     
     <style>
         :root {
-            --cz-primary: #F28123;
-            --cz-primary-hover: #e06f14;
+            --cz-primary: #3f5f36;
+            --cz-primary-hover: #2f4728;
             --cz-dark-bg: #111010;
             --cz-sidebar-active: #232222;
             --cz-text-muted: #888888;
@@ -30,16 +31,18 @@
             background-color: var(--cz-light-bg);
             color: #333;
             overflow-x: hidden;
+            margin: 0;
         }
 
-        /* Sidebar Styling */
+        /* ---------------------------------------------------- */
+        /* CSS SIDEBAR */
+        /* ---------------------------------------------------- */
         .sidebar {
             width: 260px;
             background-color: var(--cz-dark-bg);
             min-height: 100vh;
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             display: flex;
             flex-direction: column;
             padding: 20px 0;
@@ -94,7 +97,6 @@
             font-size: 14px;
             font-weight: 500;
             transition: all 0.2s ease;
-            border-left: 3px solid transparent;
         }
 
         .menu-item a:hover {
@@ -105,22 +107,18 @@
         .menu-item.active a {
             color: var(--cz-primary);
             background-color: var(--cz-sidebar-active);
-            border-left-color: var(--cz-primary);
+            border-left: 3px solid var(--cz-primary);
             font-weight: 600;
         }
 
         .menu-item a i {
+            display: inline-block;
             width: 20px;
             font-size: 16px;
             margin-right: 12px;
+            text-align: center;
         }
 
-        .menu-item .arrow {
-            margin-left: auto;
-            font-size: 12px;
-        }
-
-        /* Sidebar Banner */
         .sidebar-banner {
             margin: auto 20px 20px 20px;
             background: linear-gradient(135deg, #232222, #181717);
@@ -128,7 +126,6 @@
             padding: 20px;
             border: 1px dashed var(--cz-primary);
             text-align: center;
-            position: relative;
         }
 
         .sidebar-banner i.cake-icon {
@@ -136,28 +133,10 @@
             color: var(--cz-primary);
             margin-bottom: 10px;
             display: inline-block;
-            animation: float 3s ease-in-out infinite;
         }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
-        }
-
-        .sidebar-banner h6 {
-            color: #fff;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .sidebar-banner p {
-            color: #999;
-            font-size: 11px;
-            margin-bottom: 0;
-            line-height: 1.4;
-        }
+        .sidebar-banner h6 { color: #fff; font-size: 14px; margin-bottom: 6px; }
+        .sidebar-banner p { color: #999; font-size: 11px; margin-bottom: 0; }
 
         /* Main Content Panel */
         .main-panel {
@@ -323,7 +302,7 @@
             background-color: var(--cz-primary-hover);
             color: #fff;
             transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(242, 129, 35, 0.25);
+            box-shadow: 0 4px 10px rgba(63, 95, 54, 0.25);
         }
 
         .filter-card {
@@ -465,15 +444,8 @@
         .badge-shipper { background-color: #0dcaf0 !important; color: #212529; font-weight: 600; padding: 5px 10px; border-radius: 6px; }
         .badge-customer { background-color: #6c757d !important; color: white; font-weight: 600; padding: 5px 10px; border-radius: 6px; }
 
-        .status-badge-active {
-            background-color: #e6f6eb; color: #28a745; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 30px; display: inline-flex; align-items: center; gap: 6px;
-        }
-        .status-badge-active::before { content: ''; width: 6px; height: 6px; background-color: #28a745; border-radius: 50%; }
-
-        .status-badge-inactive {
-            background-color: #fcebeb; color: #dc3545; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 30px; display: inline-flex; align-items: center; gap: 6px;
-        }
-        .status-badge-inactive::before { content: ''; width: 6px; height: 6px; background-color: #dc3545; border-radius: 50%; }
+        .badge-success { background-color: #e6f6eb !important; color: #28a745 !important; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 30px; }
+        .badge-secondary { background-color: #fcebeb !important; color: #dc3545 !important; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 30px; }
 
         .actions-cell { display: flex; gap: 12px; }
         .btn-action-edit, .btn-action-delete {
@@ -499,9 +471,50 @@
 </head>
 <body>
 
-    <jsp:include page="../common/sidebar.jsp">
-        <jsp:param name="activeMenu" value="users" />
-    </jsp:include>
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-cake-candles"></i>
+            <span>Cake<span>Zone</span> Admin</span>
+        </div>
+        
+        <div class="nav-section-title">Hệ thống chính</div>
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
+            </li>
+        </ul>
+
+        <div class="nav-section-title">Quản lý</div>
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
+            </li>
+            <li class="menu-item">
+                <a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm</a>
+            </li>
+            <li class="menu-item"><a href="#"><i class="fa-solid fa-users"></i> Khách hàng</a></li>
+            <li class="menu-item"><a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi</a></li>
+            <li class="menu-item"><a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng</a></li>
+            <li class="menu-item"><a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng</a></li>
+            <li class="menu-item"><a href="#"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a></li>
+        </ul>
+
+        <div class="nav-section-title">Hệ thống</div>
+        <ul class="sidebar-menu">
+            <li class="menu-item active">
+                <a href="${pageContext.request.contextPath}/userList"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
+            </li>
+            <li class="menu-item"><a href="#"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a></li>
+            <li class="menu-item"><a href="#"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a></li>
+            <li class="menu-item"><a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hoạt động</a></li>
+        </ul>
+
+        <div class="sidebar-banner">
+            <i class="fa-solid fa-cake-candles cake-icon"></i>
+            <h6>Phát triển tiệm bánh</h6>
+            <p>Tạo ra những chiếc bánh đẹp và trao gửi hạnh phúc!</p>
+        </div>
+    </div>
 
     <div class="main-panel">
         
@@ -594,7 +607,6 @@
                                 <td class="text-warning">${u.phone}</td>
                                 
                                 <td style="text-align: center;">
-                                    <%-- Giải pháp an toàn: Đọc linh hoạt thuộc tính camelCase và snake_case --%>
                                     <c:set var="roleKey" value="${not empty u.roleId ? u.roleId : u.role_ID}" />
                                     <span class="badge ${roleKey eq 'ADMIN' ? 'badge-admin' : (roleKey eq 'STAFF' ? 'badge-staff' : 'badge-shipper')}">
                                         ${roleKey}
@@ -611,10 +623,10 @@
                                 <td>
                                     <div class="d-flex align-items-center justify-content-center">
                                         <c:set var="staffIdKey" value="${not empty u.staffId ? u.staffId : u.staff_ID}" />
-                                        <a href="userDetail?action=edit&id=${staffIdKey}" class="text-primary mr-3" title="Chỉnh sửa">
+                                        <a href="userDetail?action=edit&id=${staffIdKey}" class="text-primary me-3" style="text-decoration:none;" title="Chỉnh sửa">
                                             <i class="fas fa-edit"></i> Sửa
                                         </a>
-                                        <a href="userDetail?action=delete&id=${staffIdKey}" class="text-danger" 
+                                        <a href="userDetail?action=delete&id=${staffIdKey}" class="text-danger" style="text-decoration:none;"
                                            onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản của ${u.fullName} không?')" title="Xóa">
                                             <i class="fas fa-trash-alt"></i> Xóa
                                         </a>
