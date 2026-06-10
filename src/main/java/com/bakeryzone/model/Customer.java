@@ -15,22 +15,18 @@ public class Customer {
     private String password;
     private String phone;
     private String accountStatus;
-    private String provider;
-    private String providerId;
     private boolean isVerified;
 
     public Customer() {
     }
 
-    public Customer(String customerId, String fullName, String email, String password, String phone, String accountStatus, String provider, String providerId, boolean isVerified) {
+    public Customer(String customerId, String fullName, String email, String password, String phone, String accountStatus, boolean isVerified) {
         this.customerId = customerId;
         this.fullName = fullName;
         this.email = email;
         this.password = password;
         this.phone = phone;
         this.accountStatus = accountStatus;
-        this.provider = provider;
-        this.providerId = providerId;
         this.isVerified = isVerified;
     }
 
@@ -82,21 +78,6 @@ public class Customer {
         this.accountStatus = accountStatus;
     }
 
-    public String getProvider() {
-        return provider;
-    }
-
-    public void setProvider(String provider) {
-        this.provider = provider;
-    }
-
-    public String getProviderId() {
-        return providerId;
-    }
-
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
 
     public boolean isIsVerified() {
         return isVerified;
