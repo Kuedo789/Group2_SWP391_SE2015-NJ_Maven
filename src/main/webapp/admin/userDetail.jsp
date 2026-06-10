@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+<%-- Khai báo cả 2 phiên bản URI để đảm bảo NetBeans/Tomcat không bao giờ bị báo đỏ sọc --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="c_old" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
@@ -170,7 +171,7 @@
             padding: 35px;
             border: 1px solid var(--cz-border-color);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-            width: 100%; /* Ép chiếm trọn chiều rộng vùng chứa */
+            width: 100%;
         }
 
         .page-title {
@@ -229,6 +230,7 @@
             background-color: var(--cz-primary-hover);
             color: #fff;
             transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(242, 129, 35, 0.25);
             box-shadow: 0 4px 10px rgba(242, 129, 35, 0.25);
         }
 
@@ -311,8 +313,8 @@
                     <a href="${pageContext.request.contextPath}/userList">System</a>
                     <span>&gt;</span>
                     <a href="#" class="active text-dark font-weight-bold">
-                        <c:if test="${USER_DATA.userId != null}">Cập nhật tài khoản</c:if>
-                        <c:if test="${USER_DATA.userId == null}">Thêm tài khoản mới</c:if>
+                        <c:if test="${USER_DATA.staffId != null}">Cập nhật tài khoản</c:if>
+                        <c:if test="${USER_DATA.staffId == null}">Thêm tài khoản mới</c:if>
                     </a>
                 </div>
             </div>
@@ -329,8 +331,8 @@
             <div class="form-card">
                 
                 <h1 class="page-title text-uppercase">
-                    <c:if test="${USER_DATA.userId != null}">Cập nhật tài khoản</c:if>
-                    <c:if test="${USER_DATA.userId == null}">Thêm tài khoản mới</c:if>
+                    <c:if test="${USER_DATA.staffId != null}">Cập nhật tài khoản</c:if>
+                    <c:if test="${USER_DATA.staffId == null}">Thêm tài khoản mới</c:if>
                 </h1>
                 <p class="page-subtitle">Nhập thông tin chi tiết cho nhân sự và phân quyền hệ thống Bakery</p>
 
@@ -342,7 +344,7 @@
 
                 <form action="${pageContext.request.contextPath}/userDetail" method="POST">
                     <input type="hidden" name="action" value="${param.action}">
-                    <input type="hidden" name="userId" value="${USER_DATA.userId}">
+                    <input type="hidden" name="userId" value="${USER_DATA.staffId}">
 
                     <div class="row g-4">
                         <div class="col-md-6">
@@ -369,7 +371,6 @@
                         <div class="col-md-6">
                             <label class="form-label">Chức vụ hệ thống <span class="text-danger">*</span></label>
                             <select name="roleId" class="form-select">
-                                <option value="CUSTOMER" ${USER_DATA.roleId == 'CUSTOMER' ? 'selected' : ''}>Khách hàng</option>
                                 <option value="SHIPPER" ${USER_DATA.roleId == 'SHIPPER' ? 'selected' : ''}>Người giao hàng</option>
                                 <option value="STAFF" ${USER_DATA.roleId == 'STAFF' ? 'selected' : ''}>Nhân viên</option>
                                 <option value="ADMIN" ${USER_DATA.roleId == 'ADMIN' ? 'selected' : ''}>Quản lý</option>

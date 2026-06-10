@@ -4,8 +4,8 @@
  */
 package com.bakeryzone.admin.controller;
 
-import com.bakeryzone.dao.UserDAO;
-import com.bakeryzone.model.User;
+import com.bakeryzone.dao.StaffDAO;
+import com.bakeryzone.model.Staff;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -82,18 +82,19 @@ public class UserListServlet extends HttpServlet {
             if (status != null && status.trim().isEmpty()) {
                 status = null;
             }
-            UserDAO dao = new UserDAO();
+            StaffDAO dao = new StaffDAO();
 
-            int totalRecords = dao.getTotalUsers(keyword, roleId, status);
+            int totalRecords = dao.getTotalStaffs(keyword, roleId, status);
             int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
             if (totalPages == 0) {
                 totalPages = 1;
             }
-            List<User> userList = dao.searchAndFilterUsers(keyword, roleId, status, pageIndex, pageSize);
+            List<Staff> staffList = dao.searchAndFilterStaffs(keyword, roleId, status, pageIndex, pageSize);
             
-            request.setAttribute("USERS", userList);
+            request.setAttribute("USERS", staffList);
             request.setAttribute("currentPage", pageIndex);
             request.setAttribute("endPage", totalPages);
+            
             request.getRequestDispatcher("admin/userList.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
