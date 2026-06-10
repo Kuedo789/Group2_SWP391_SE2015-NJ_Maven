@@ -133,7 +133,7 @@
                     category: "<%= js(p.getCategoryName()) %>",
                             price: <%= price %>,
                     desc: "<%= js(p.getFullDescription()) %>",
-                            image: contextPath + "/<%= js(p.getImageUrl()) %>",
+                            image: "<%= js(p.getImageUrl()) %>".startsWith("http") ? "<%= js(p.getImageUrl()) %>" : contextPath + "/<%= js(p.getImageUrl()) %>",
                     featured: <%= p.isFeatured() %>
                 },
             <%

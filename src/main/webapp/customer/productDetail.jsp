@@ -177,14 +177,14 @@
                 category: "<%= js(product.getCategoryName()) %>",
                 price: <%= product.getBasePrice() %>,
                 desc: "<%= js(product.getFullDescription()) %>",
-                image: contextPath + "/<%= js(imageList.get(0)) %>"
+                image: "<%= js(imageList.get(0)) %>".startsWith("http") ? "<%= js(imageList.get(0)) %>" : contextPath + "/<%= js(imageList.get(0)) %>"
             };
 
             const images = [
             <%
                 for (String img : imageList) {
             %>
-                contextPath + "/<%= js(img) %>",
+                "<%= js(img) %>".startsWith("http") ? "<%= js(img) %>" : contextPath + "/<%= js(img) %>",
             <%
                 }
             %>
@@ -200,7 +200,7 @@
                     category: "<%= js(p.getCategoryName()) %>",
                             price: <%= p.getBasePrice() %>,
                     desc: "<%= js(p.getFullDescription()) %>",
-                            image: contextPath + "/<%= js(p.getImageUrl()) %>"
+                            image: "<%= js(p.getImageUrl()) %>".startsWith("http") ? "<%= js(p.getImageUrl()) %>" : contextPath + "/<%= js(p.getImageUrl()) %>"
                 },
             <%
                 }
