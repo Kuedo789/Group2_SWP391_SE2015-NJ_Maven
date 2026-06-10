@@ -35,7 +35,7 @@ public class ProfileServlet extends HttpServlet {
             return;
         }
 
-        request.getRequestDispatcher("/customer/profile.jsp").forward(request, response);
+        request.getRequestDispatcher("/common/profile.jsp").forward(request, response);
     }
 
     @Override
@@ -75,6 +75,6 @@ public class ProfileServlet extends HttpServlet {
             request.setAttribute("errorMessage", "Cập nhật thất bại. Vui lòng thử lại.");
         }
 
-        request.getRequestDispatcher("/customer/profile.jsp").forward(request, response);
+        request.getRequestDispatcher("/common/profile.jsp").forward(request, response);
     }
 }
