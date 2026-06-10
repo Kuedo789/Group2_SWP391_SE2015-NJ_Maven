@@ -15,8 +15,8 @@
     
     <style>
         :root {
-            --cz-primary: #F28123;
-            --cz-primary-hover: #e06f14;
+            --cz-primary: #3f5f36;
+            --cz-primary-hover: #2f4728;
             --cz-dark-bg: #111010;
             --cz-sidebar-active: #232222;
             --cz-text-muted: #888888;
@@ -438,7 +438,7 @@
         }
 
         .cz-table th {
-            background-color: #fffaf5;
+            background-color: #f4f7f2;
             color: #666;
             font-size: 11.5px;
             font-weight: 700;
@@ -456,7 +456,7 @@
         }
 
         .cz-table tr:hover td {
-            background-color: #fdfbf9;
+            background-color: #f9fbf8;
         }
 
         /* Badges Custom */
@@ -479,7 +479,7 @@
         .btn-action-edit, .btn-action-delete {
             width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--cz-border-color); background-color: #fff; color: #666; cursor: pointer; transition: all 0.2s; text-decoration: none;
         }
-        .btn-action-edit:hover { color: var(--cz-primary); border-color: var(--cz-primary); background-color: #fef8f4; }
+        .btn-action-edit:hover { color: var(--cz-primary); border-color: var(--cz-primary); background-color: #f5f8f4; }
         .btn-action-delete:hover { color: #dc3545; border-color: #dc3545; background-color: #fdf3f4; }
 
         /* Pagination Design */
