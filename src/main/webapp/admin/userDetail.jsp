@@ -16,8 +16,8 @@
 
     <style>
         :root {
-            --cz-primary: #F28123;
-            --cz-primary-hover: #e06f14;
+            --cz-primary: #3f5f36;
+            --cz-primary-hover: #2f4728;
             --cz-dark-bg: #111010;
             --cz-sidebar-active: #232222;
             --cz-text-muted: #888888;
@@ -207,7 +207,7 @@
 
         .form-control:focus, .form-select:focus {
             border-color: var(--cz-primary);
-            box-shadow: 0 0 0 3px rgba(242, 129, 35, 0.1);
+            box-shadow: 0 0 0 3px rgba(63, 95, 54, 0.15);
             background-color: #fff;
         }
 
