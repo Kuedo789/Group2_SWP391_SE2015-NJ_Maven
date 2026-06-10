@@ -48,6 +48,14 @@
         <servlet-name>GoogleCallbackServlet</servlet-name>
         <servlet-class>com.bakeryzone.auth.controller.GoogleCallbackServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>CustomerListServlet</servlet-name>
+        <servlet-class>com.bakeryzone.admin.controller.CustomerListServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CustomerDetailServlet</servlet-name>
+        <servlet-class>com.bakeryzone.admin.controller.CustomerDetailServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UserDetailServlet</servlet-name>
         <url-pattern>/userDetail</url-pattern>
@@ -95,6 +103,14 @@
     <servlet-mapping>
         <servlet-name>GoogleCallbackServlet</servlet-name>
         <url-pattern>/google-callback</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CustomerListServlet</servlet-name>
+        <url-pattern>/customerList</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CustomerDetailServlet</servlet-name>
+        <url-pattern>/customerDetail</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
