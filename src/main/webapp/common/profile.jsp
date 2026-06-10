@@ -103,13 +103,6 @@
                 font-size: 14px;
             }
 
-            .address-area {
-                min-height: 145px;
-                padding-top: 14px;
-                resize: vertical;
-                font-family: inherit;
-            }
-
             .profile-actions {
                 display: flex;
                 justify-content: flex-end;
@@ -180,6 +173,28 @@
             .alert {
                 margin-bottom: 28px;
             }
+
+            .password-change-box {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 14px 16px;
+                border: 1px solid #e5d6c8;
+                border-radius: 12px;
+                background-color: #fffaf5;
+                font-size: 15px;
+            }
+
+            .change-password-link {
+                color: var(--primary);
+                font-weight: 600;
+                text-decoration: none;
+            }
+
+            .change-password-link:hover {
+                text-decoration: underline;
+            }
+
         </style>
     </head>
 
@@ -197,7 +212,7 @@
 
                 <% if (request.getAttribute("successMessage") != null) { %>
                 <div class="alert alert-success">
-                     ✓ <%= request.getAttribute("successMessage") %>
+                    ✓ <%= request.getAttribute("successMessage") %>
                 </div>
                 <% } %>
 
@@ -239,11 +254,17 @@
                         <div class="form-note">Email dùng để đăng nhập và không thể thay đổi tại đây.</div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Địa chỉ giao hàng <span class="required">*</span></label>
-                        <textarea name="address"
-                                  class="form-control address-area"
-                                  placeholder="Nhập địa chỉ giao hàng">${sessionScope.user.defaultAddress}</textarea>
+                    <div class="form-group full-width">
+                        <label>Mật khẩu</label>
+
+                        <div class="password-change-box">
+                            <span>Muốn thay đổi mật khẩu?</span>
+
+                            <a href="${pageContext.request.contextPath}/auth/forgotPassword.jsp"
+                               class="change-password-link">
+                                Đổi mật khẩu
+                            </a>
+                        </div>
                     </div>
 
                     <div class="profile-actions">
