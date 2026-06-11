@@ -1,3 +1,9 @@
+<%-- 
+    Document   : customerDetail
+    Created on : Jun 11, 2026, 12:04:53 AM
+    Author     : Asus
+--%>
+
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%-- Khai báo cả 2 phiên bản URI để đảm bảo NetBeans/Tomcat không bao giờ bị báo đỏ sọc --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
@@ -7,7 +13,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>CakeZone - Account Manager Form</title>
+    <title>CakeZone - Customer Manager Form</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -34,7 +40,7 @@
             margin: 0;
         }
 
-        /* Sidebar Styling giống hệt trang danh sách */
+        /* Sidebar Styling */
         .sidebar {
             width: 260px;
             background-color: var(--cz-dark-bg);
@@ -54,205 +60,44 @@
             border-bottom: 1px solid #2d2b2b;
         }
 
-        .sidebar-brand i {
-            color: var(--cz-primary);
-            font-size: 24px;
-            margin-right: 10px;
-        }
+        .sidebar-brand i { color: var(--cz-primary); font-size: 24px; margin-right: 10px; }
+        .sidebar-brand span { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+        .sidebar-brand span span { color: var(--cz-primary); }
+        .nav-section-title { color: var(--cz-text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 20px 25px 8px 25px; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        
+        .menu-item a { display: flex; align-items: center; padding: 11px 25px; color: #b5b5b5; text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.2s ease; }
+        .menu-item a:hover { color: #fff; background-color: var(--cz-sidebar-active); }
+        .menu-item.active a { color: var(--cz-primary); background-color: var(--cz-sidebar-active); border-left: 3px solid var(--cz-primary); font-weight: 600; }
+        .menu-item a i { width: 20px; font-size: 16px; margin-right: 12px; }
 
-        .sidebar-brand span {
-            color: #fff;
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .sidebar-brand span span {
-            color: var(--cz-primary);
-        }
-
-        .nav-section-title {
-            color: var(--cz-text-muted);
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 20px 25px 8px 25px;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .menu-item a {
-            display: flex;
-            align-items: center;
-            padding: 11px 25px;
-            color: #b5b5b5;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-
-        .menu-item a:hover {
-            color: #fff;
-            background-color: var(--cz-sidebar-active);
-        }
-
-        .menu-item.active a {
-            color: var(--cz-primary);
-            background-color: var(--cz-sidebar-active);
-            border-left: 3px solid var(--cz-primary);
-            font-weight: 600;
-        }
-
-        .menu-item a i {
-            width: 20px;
-            font-size: 16px;
-            margin-right: 12px;
-        }
-
-        .sidebar-banner {
-            margin: auto 20px 20px 20px;
-            background: linear-gradient(135deg, #232222, #181717);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px dashed var(--cz-primary);
-            text-align: center;
-        }
-
-        .sidebar-banner i.cake-icon {
-            font-size: 40px;
-            color: var(--cz-primary);
-            margin-bottom: 10px;
-            display: inline-block;
-        }
-
+        .sidebar-banner { margin: auto 20px 20px 20px; background: linear-gradient(135deg, #232222, #181717); border-radius: 12px; padding: 20px; border: 1px dashed var(--cz-primary); text-align: center; }
+        .sidebar-banner i.cake-icon { font-size: 40px; color: var(--cz-primary); margin-bottom: 10px; display: inline-block; }
         .sidebar-banner h6 { color: #fff; font-size: 14px; margin-bottom: 6px; }
         .sidebar-banner p { color: #999; font-size: 11px; margin-bottom: 0; }
 
         /* Main Panel & Container trải rộng */
-        .main-panel {
-            margin-left: 260px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .top-header {
-            height: 70px;
-            background-color: #fff;
-            border-bottom: 1px solid var(--cz-border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 35px;
-            position: sticky;
-            top: 0;
-            z-index: 90;
-        }
-
+        .main-panel { margin-left: 260px; min-height: 100vh; display: flex; flex-direction: column; }
+        .top-header { height: 70px; background-color: #fff; border-bottom: 1px solid var(--cz-border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 35px; position: sticky; top: 0; z-index: 90; }
         .breadcrumbs { font-size: 13px; color: var(--cz-text-muted); }
         .breadcrumbs a { color: var(--cz-text-muted); text-decoration: none; }
         .breadcrumbs span { margin: 0 6px; }
-
-        .content-container {
-            padding: 35px;
-            flex: 1;
-        }
+        .content-container { padding: 35px; flex: 1; }
 
         /* Form Card Trải Rộng Toàn Bộ Màn Hình */
-        .form-card {
-            background-color: var(--cz-card-bg);
-            border-radius: 12px;
-            padding: 35px;
-            border: 1px solid var(--cz-border-color);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-            width: 100%;
-        }
-
-        .page-title {
-            font-size: 26px;
-            font-weight: 700;
-            color: #111;
-            margin-bottom: 4px;
-        }
-
-        .page-subtitle {
-            font-size: 13.5px;
-            color: var(--cz-text-muted);
-            margin-bottom: 25px;
-        }
-
-        .form-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-        }
+        .form-card { background-color: var(--cz-card-bg); border-radius: 12px; padding: 35px; border: 1px solid var(--cz-border-color); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02); width: 100%; }
+        .page-title { font-size: 26px; font-weight: 700; color: #111; margin-bottom: 4px; }
+        .page-subtitle { font-size: 13.5px; color: var(--cz-text-muted); margin-bottom: 25px; }
+        .form-label { font-size: 14px; font-weight: 600; color: #333; margin-bottom: 8px; }
 
         /* Custom Input & Select đồng bộ phong cách mượt mà */
-        .form-control, .form-select {
-            height: 48px;
-            border-radius: 8px;
-            border: 1px solid var(--cz-border-color);
-            font-size: 14px;
-            padding: 10px 15px;
-            background-color: #fff;
-            transition: all 0.2s;
-        }
+        .form-control, .form-select { height: 48px; border-radius: 8px; border: 1px solid var(--cz-border-color); font-size: 14px; padding: 10px 15px; background-color: #fff; transition: all 0.2s; }
+        .form-control:focus, .form-select:focus { border-color: var(--cz-primary); box-shadow: 0 0 0 3px rgba(63, 95, 54, 0.15); background-color: #fff; }
 
-        .form-control:focus, .form-select:focus {
-            border-color: var(--cz-primary);
-            box-shadow: 0 0 0 3px rgba(63, 95, 54, 0.15);
-            background-color: #fff;
-        }
-
-        .btn-cz-primary {
-            background-color: var(--cz-primary);
-            color: #fff;
-            font-weight: 600;
-            font-size: 14.5px;
-            padding: 12px 25px;
-            border-radius: 8px;
-            border: none;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-        }
-
-        .btn-cz-primary:hover {
-            background-color: var(--cz-primary-hover);
-            color: #fff;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(242, 129, 35, 0.25);
-            box-shadow: 0 4px 10px rgba(242, 129, 35, 0.25);
-        }
-
-        .btn-cz-secondary {
-            background-color: #f5f5f5;
-            color: #555;
-            font-weight: 600;
-            font-size: 14.5px;
-            padding: 12px 25px;
-            border-radius: 8px;
-            border: 1px solid var(--cz-border-color);
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-cz-secondary:hover {
-            background-color: #e5e5e5;
-            color: #333;
-        }
+        .btn-cz-primary { background-color: var(--cz-primary); color: #fff; font-weight: 600; font-size: 14.5px; padding: 12px 25px; border-radius: 8px; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+        .btn-cz-primary:hover { background-color: var(--cz-primary-hover); color: #fff; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(63, 95, 54, 0.25); }
+        .btn-cz-secondary { background-color: #f5f5f5; color: #555; font-weight: 600; font-size: 14.5px; padding: 12px 25px; border-radius: 8px; border: 1px solid var(--cz-border-color); transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-cz-secondary:hover { background-color: #e5e5e5; color: #333; }
     </style>
 </head>
 
@@ -273,13 +118,9 @@
 
         <div class="nav-section-title">Quản lý</div>
         <ul class="sidebar-menu">
-            <li class="menu-item">
-                <a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
-            </li>
-            <li class="menu-item">
-                <a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm</a>
-            </li>
-            <li class="menu-item"><a href="#"><i class="fa-solid fa-users"></i> Khách hàng</a></li>
+            <li class="menu-item"><a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng</a></li>
+            <li class="menu-item"><a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm</a></li>
+            <li class="menu-item active"><a href="${pageContext.request.contextPath}/customerList"><i class="fa-solid fa-users"></i> Khách hàng</a></li>
             <li class="menu-item"><a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi</a></li>
             <li class="menu-item"><a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng</a></li>
             <li class="menu-item"><a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng</a></li>
@@ -288,7 +129,7 @@
 
         <div class="nav-section-title">Hệ thống</div>
         <ul class="sidebar-menu">
-            <li class="menu-item active">
+            <li class="menu-item">
                 <a href="${pageContext.request.contextPath}/userList"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
             </li>
             <li class="menu-item"><a href="#"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a></li>
@@ -304,17 +145,17 @@
     </div>
 
     <div class="main-panel">
-        
         <div class="top-header">
             <div class="header-left">
                 <div class="breadcrumbs">
                     <a href="#">Dashboard</a>
                     <span>&gt;</span>
-                    <a href="${pageContext.request.contextPath}/userList">System</a>
+                    <a href="${pageContext.request.contextPath}/customerList">Customer System</a>
                     <span>&gt;</span>
                     <a href="#" class="active text-dark font-weight-bold">
-                        <c:if test="${USER_DATA.staffId != null}">Cập nhật tài khoản</c:if>
-                        <c:if test="${USER_DATA.staffId == null}">Thêm tài khoản mới</c:if>
+                        <c:set var="cusId" value="${not empty CUSTOMER_DATA.customerId ? CUSTOMER_DATA.customerId : CUSTOMER_DATA.customer_ID}" />
+                        <c:if test="${cusId != null}">Cập nhật thông tin khách hàng</c:if>
+                        <c:if test="${cusId == null}">Thêm khách hàng mới</c:if>
                     </a>
                 </div>
             </div>
@@ -331,10 +172,10 @@
             <div class="form-card">
                 
                 <h1 class="page-title text-uppercase">
-                    <c:if test="${USER_DATA.staffId != null}">Cập nhật tài khoản</c:if>
-                    <c:if test="${USER_DATA.staffId == null}">Thêm tài khoản mới</c:if>
+                    <c:if test="${cusId != null}">Cập nhật thông tin khách hàng</c:if>
+                    <c:if test="${cusId == null}">Thêm khách hàng mới</c:if>
                 </h1>
-                <p class="page-subtitle">Nhập thông tin chi tiết cho nhân sự và phân quyền hệ thống Bakery</p>
+                <p class="page-subtitle">Nhập thông tin chi tiết cho tài khoản khách hàng hệ thống Bakery</p>
 
                 <c:if test="${ERROR_MSG != null}">
                     <div class="alert alert-danger font-weight-bold mb-4" style="border-radius: 8px;">
@@ -342,24 +183,24 @@
                     </div>
                 </c:if>
 
-                <form action="${pageContext.request.contextPath}/userDetail" method="POST">
+                <form action="${pageContext.request.contextPath}/customerDetail" method="POST">
                     <input type="hidden" name="action" value="${param.action}">
-                    <input type="hidden" name="userId" value="${USER_DATA.staffId}">
+                    <input type="hidden" name="customerId" value="${cusId}">
 
                     <div class="row g-4">
                         <div class="col-md-6">
-                            <label class="form-label">Họ và Tên người dùng <span class="text-danger">*</span></label>
-                            <input type="text" name="fullName" value="${USER_DATA.fullName}" class="form-control" placeholder="Nhập đầy đủ họ và tên..." required>
+                            <label class="form-label">Họ và Tên khách hàng <span class="text-danger">*</span></label>
+                            <input type="text" name="fullName" value="${CUSTOMER_DATA.fullName}" class="form-control" placeholder="Nhập đầy đủ họ và tên khách hàng..." required>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Số điện thoại liên lạc <span class="text-danger">*</span></label>
-                            <input type="text" name="phone" value="${USER_DATA.phone}" class="form-control" placeholder="Nhập số điện thoại..." required>
+                            <input type="text" name="phone" value="${CUSTOMER_DATA.phone}" class="form-control" placeholder="Nhập số điện thoại..." required>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Email đăng nhập hệ thống <span class="text-danger">*</span></label>
-                            <input type="email" name="email" value="${USER_DATA.email}" class="form-control" placeholder="username@gmail.com" required
+                            <label class="form-label">Email đăng nhập <span class="text-danger">*</span></label>
+                            <input type="email" name="email" value="${CUSTOMER_DATA.email}" class="form-control" placeholder="username@gmail.com" required
                                    ${param.action == 'edit' ? 'readonly style="background-color: #f1ede8; cursor: not-allowed;"' : ''}>
                         </div>
 
@@ -369,24 +210,16 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Chức vụ hệ thống <span class="text-danger">*</span></label>
-                            <select name="roleId" class="form-select">
-                                <option value="SHIPPER" ${USER_DATA.roleId == 'SHIPPER' ? 'selected' : ''}>Người giao hàng</option>
-                                <option value="STAFF" ${USER_DATA.roleId == 'STAFF' ? 'selected' : ''}>Nhân viên</option>
-                                <option value="ADMIN" ${USER_DATA.roleId == 'ADMIN' ? 'selected' : ''}>Quản lý</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
                             <label class="form-label">Trạng thái tài khoản <span class="text-danger">*</span></label>
+                            <c:set var="statusKey" value="${not empty CUSTOMER_DATA.accountStatus ? CUSTOMER_DATA.accountStatus : CUSTOMER_DATA.account_Status}" />
                             <select name="accountStatus" class="form-select">
-                                <option value="Active" ${USER_DATA.accountStatus == 'Active' ? 'selected' : ''}>Active (Đang hoạt động)</option>
-                                <option value="Deactive" ${USER_DATA.accountStatus == 'Deactive' ? 'selected' : ''}>Deactive (Vô hiệu hóa)</option>
+                                <option value="Active" ${statusKey == 'Active' ? 'selected' : ''}>Active (Đang hoạt động)</option>
+                                <option value="Deactive" ${statusKey == 'Deactive' ? 'selected' : ''}>Deactive (Vô hiệu hóa)</option>
                             </select>
                         </div>
 
                         <div class="col-12 d-flex justify-content-end gap-3 mt-5">
-                            <a href="${pageContext.request.contextPath}/userList" class="btn-cz-secondary">
+                            <a href="${pageContext.request.contextPath}/customerList" class="btn-cz-secondary">
                                 <i class="fa-solid fa-arrow-left"></i> Trở về danh sách
                             </a>
                             <button class="btn-cz-primary" type="submit">
@@ -409,7 +242,7 @@
             let action = document.getElementsByName("action")[0].value;
 
             if (fullName.length < 2) {
-                alert("Họ và tên phải có ít nhất 2 ký tự!");
+                alert("Họ và tên khách hàng phải có ít nhất 2 ký tự!");
                 return false;
             }
 

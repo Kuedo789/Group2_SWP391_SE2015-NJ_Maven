@@ -36,6 +36,18 @@
                     </a>
                 </div>
 
+                <c:if test="${not empty message or not empty success}">
+                    <div style="background-color: #dcfce7; color: #166534; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bbf7d0;">
+                        <i class="fa-solid fa-circle-check"></i> Thao tác thành công!
+                    </div>
+                </c:if>
+
+                <c:if test="${not empty error}">
+                    <div style="background-color: #fee2e2; color: #991b1b; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fecaca;">
+                        <i class="fa-solid fa-circle-exclamation"></i> Đã xảy ra lỗi, vui lòng thử lại!
+                    </div>
+                </c:if>
+
                 <div class="table-card">
 
                     <div class="table-controls">
@@ -85,8 +97,8 @@
                                     </td>
 
                                     <td class="action-btns">
-                                        <a href="${pageContext.request.contextPath}/admin/categories/view?id=${cat.categoryId}" class="btn-icon" title="View" style="text-decoration: none;"><i class="fa-regular fa-eye"></i></a>
-                                        <a href="${pageContext.request.contextPath}/admin/categories/edit?id=${cat.categoryId}" class="btn-icon" title="Edit" style="text-decoration: none;"><i class="fa-regular fa-pen-to-square"></i></a>
+                                        <a href="${pageContext.request.contextPath}/admin/categories?action=view&id=${cat.categoryId}" class="btn-icon" title="View" style="text-decoration: none;"><i class="fa-regular fa-eye"></i></a>
+                                        <a href="${pageContext.request.contextPath}/admin/categories?action=edit&id=${cat.categoryId}" class="btn-icon" title="Edit" style="text-decoration: none;"><i class="fa-regular fa-pen-to-square"></i></a>
                                         <a href="${pageContext.request.contextPath}/admin/categories?action=delete&id=${cat.categoryId}" class="btn-icon" title="Delete" style="text-decoration: none; color: #ef4444;" onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này?');"><i class="fa-regular fa-trash-can"></i></a>
                                     </td>
                                 </tr>

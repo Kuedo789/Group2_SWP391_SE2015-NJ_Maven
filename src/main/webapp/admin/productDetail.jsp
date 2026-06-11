@@ -99,8 +99,20 @@
                             <h5 class="card-header-title">Hình Ảnh Bánh Kem</h5>
                             <p class="card-header-desc">Nhập liên kết hình ảnh bánh chất lượng cao. Bấm chọn ảnh nhỏ bên dưới để chọn làm hình đại diện (ảnh bìa chính) hiển thị trên cửa hàng.</p>
                             
+                            <c:set var="resolvedImageUrl" value="https://images.unsplash.com/photo-1578985545062-69928b1d9587" />
+                            <c:if test="${not empty product.imageUrl}">
+                                <c:choose>
+                                    <c:when test="${product.imageUrl.startsWith('http://') or product.imageUrl.startsWith('https://')}">
+                                        <c:set var="resolvedImageUrl" value="${product.imageUrl}" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:set var="resolvedImageUrl" value="${pageContext.request.contextPath}/${product.imageUrl}" />
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:if>
+                            
                             <div class="main-cover-wrapper">
-                                <img id="mainCoverImage" src="${not empty product.imageUrl ? product.imageUrl : 'https://images.unsplash.com/photo-1578985545062-69928b1d9587'}" alt="${product.name}" class="main-cover-img">
+                                <img id="mainCoverImage" src="${resolvedImageUrl}" alt="${product.name}" class="main-cover-img">
                                 <span class="cover-badge">Ảnh Bìa</span>
                                 <div class="image-controls">
                                     <button type="button" class="img-control-btn" onclick="editMainImageUrl()"><i class="fa-regular fa-pen-to-square"></i></button>
@@ -117,8 +129,12 @@
 
                             <div class="thumbnails-grid" id="thumbnailsGrid">
                                 <c:forEach var="img" items="${product.additionalImages}">
+                                    <c:set var="resolvedThumbUrl" value="${img}" />
+                                    <c:if test="${not empty img and not (img.startsWith('http://') or img.startsWith('https://'))}">
+                                        <c:set var="resolvedThumbUrl" value="${pageContext.request.contextPath}/${img}" />
+                                    </c:if>
                                     <div class="thumb-box" onclick="setAsCover('${img}')" data-url="${img}">
-                                        <img src="${img}" alt="Thumbnail">
+                                        <img src="${resolvedThumbUrl}" alt="Thumbnail">
                                         <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1" style="font-size: 8px; line-height: 1;" onclick="event.stopPropagation(); removeThumbnail('${img}')">
                                             <i class="fa-solid fa-xmark"></i>
                                         </button>
@@ -229,9 +245,18 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // Helper to resolve relative path
+        function resolveUrl(url) {
+            if (!url) return 'https://images.unsplash.com/photo-1578985545062-69928b1d9587';
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+                return url;
+            }
+            return '${pageContext.request.contextPath}/' + url;
+        }
+
         // Set main cover image when a thumbnail is clicked
         function setAsCover(url) {
-            document.getElementById('mainCoverImage').src = url;
+            document.getElementById('mainCoverImage').src = resolveUrl(url);
             document.querySelector('input[name="imageUrl"]').value = url;
         }
 
@@ -259,7 +284,7 @@
                 thumbBox.onclick = function() { setAsCover(cleanUrl); };
                 
                 thumbBox.innerHTML = 
-                    '<img src="' + cleanUrl + '" alt="Thumbnail">' +
+                    '<img src="' + resolveUrl(cleanUrl) + '" alt="Thumbnail">' +
                     '<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1" style="font-size: 8px; line-height: 1;" onclick="event.stopPropagation(); removeThumbnail(\'' + cleanUrl + '\')">' +
                         '<i class="fa-solid fa-xmark"></i>' +
                     '</button>';
@@ -321,7 +346,7 @@
                     thumbBox.setAttribute('data-url', cleanUrl);
                     thumbBox.onclick = function() { setAsCover(cleanUrl); };
                     thumbBox.innerHTML = 
-                        '<img src="' + cleanUrl + '" alt="Thumbnail">' +
+                        '<img src="' + resolveUrl(cleanUrl) + '" alt="Thumbnail">' +
                         '<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 p-1" style="font-size: 8px; line-height: 1;" onclick="event.stopPropagation(); removeThumbnail(\'' + cleanUrl + '\')">' +
                             '<i class="fa-solid fa-xmark"></i>' +
                         '</button>';

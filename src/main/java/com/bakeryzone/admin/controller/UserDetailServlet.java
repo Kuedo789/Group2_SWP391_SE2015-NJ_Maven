@@ -1,6 +1,7 @@
 package com.bakeryzone.admin.controller;
 
-import com.bakeryzone.dao.UserDAO;
+import com.bakeryzone.dao.StaffDAO;
+import com.bakeryzone.model.Staff;
 import com.bakeryzone.model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -37,17 +38,16 @@ public class UserDetailServlet extends HttpServlet {
             // Lấy action: delete, edit hoặc null
             String action = request.getParameter("action");
 
-            // User_ID là String nên không parseInt
             String id = request.getParameter("id");
 
-            UserDAO dao = new UserDAO();
+            StaffDAO dao = new StaffDAO();
 
             // Nếu action là delete thì xóa theo userId dạng String
             if (action != null && action.equals("delete")) {
-                User userToDelete = dao.getUserById(id);
-                String name = (userToDelete != null) ? userToDelete.getFullName() : "người dùng";
+                Staff staffToDelete = dao.getStaffById(id);
+                String name = (staffToDelete != null) ? staffToDelete.getFullName() : "nhân viên";
 
-                dao.deleteUser(id);
+                dao.deleteStaff(id);
 
                 request.getSession().setAttribute(
                         "successMessage",
@@ -60,8 +60,8 @@ public class UserDetailServlet extends HttpServlet {
 
             // Nếu action là edit thì tìm user theo userId dạng String
             if (action != null && action.equals("edit")) {
-                User existingUser = dao.getUserById(id);
-                request.setAttribute("USER_DATA", existingUser);
+                Staff existingStaff = dao.getStaffById(id);
+                request.setAttribute("USER_DATA", existingStaff);
             }
 
             // Chuyển sang trang userDetail.jsp
@@ -91,30 +91,17 @@ public class UserDetailServlet extends HttpServlet {
             String roleId = request.getParameter("roleId");
             String accountStatus = request.getParameter("accountStatus");
 
-            UserDAO dao = new UserDAO();
+            StaffDAO dao = new StaffDAO();
 
             // Tạo object User để truyền xuống DAO
-            User u = new User();
+            Staff s = new Staff();
 
-            u.setFullName(fullName);
-            u.setEmail(email);
-            u.setPhone(phone);
-            u.setRoleId(roleId);
-            u.setAccountStatus(accountStatus);
-
-            // Set mặc định cho các cột mới trong database
-            u.setProvider("LOCAL");
-            u.setProviderId(null);
-
-            // User tạo từ admin nên cho verified luôn
-            u.setVerified(true);
-
-            // Nếu là admin/staff/shipper thì activeStaff = true
-            boolean activeStaff = "ADMIN".equalsIgnoreCase(roleId)
-                    || "STAFF".equalsIgnoreCase(roleId)
-                    || "SHIPPER".equalsIgnoreCase(roleId);
-
-            u.setActiveStaff(activeStaff);
+            s.setFullName(fullName);
+            s.setEmail(email);
+            s.setPhone(phone);
+            s.setRoleId(roleId);
+            s.setAccountStatus(accountStatus);
+            s.setIsActiveStaff(true);
 
             String errorMessage = null;
 
@@ -139,12 +126,12 @@ public class UserDetailServlet extends HttpServlet {
 
             } else if (dao.checkEmailExist(email, isEdit ? userId : null)) {
 
-                errorMessage = "Địa chỉ Email này đã được đăng kí bởi một tài khoản khác";
+                errorMessage = "Địa chỉ Email này đã được đăng kí bởi một nhân viên khác";
             }
 
             if (errorMessage != null) {
                 request.setAttribute("ERROR_MSG", errorMessage);
-                request.setAttribute("USER_DATA", u);
+                request.setAttribute("USER_DATA", s);
                 request.getRequestDispatcher("admin/userDetail.jsp").forward(request, response);
                 return;
             }
@@ -153,18 +140,18 @@ public class UserDetailServlet extends HttpServlet {
 
             // Nếu đang sửa user thì set userId dạng String rồi update
             if (isEdit) {
-                u.setUserId(userId);
+                s.setStaffId(userId);
 
                 // Nếu sửa user mà không nhập password mới thì giữ password cũ
-                User oldUser = dao.getUserById(userId);
-
+                Staff oldStaff = dao.getStaffById(userId);
+                s.setIsActiveStaff(oldStaff.isIsActiveStaff());
                 if (password == null || password.trim().isEmpty()) {
-                    u.setPassword(oldUser.getPassword());
+                    s.setPassword(oldStaff.getPassword());
                 } else {
-                    u.setPassword(password);
+                    s.setPassword(password);
                 }
 
-                dao.updateUser(u);
+                dao.updateStaff(s);
 
                 session.setAttribute(
                         "successMessage",
@@ -172,10 +159,9 @@ public class UserDetailServlet extends HttpServlet {
                 );
 
             } else {
-                // Nếu thêm mới thì insertUser sẽ tự generate userId nếu userId null
-                u.setPassword(password);
+                s.setPassword(password);
 
-                dao.insertUser(u);
+                dao.insertStaff(s);
 
                 session.setAttribute(
                         "successMessage",

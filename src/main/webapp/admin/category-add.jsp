@@ -24,7 +24,7 @@
                 border: 1px solid var(--border-soft);
                 padding: 40px;
                 max-width: 800px;
-                margin: 0 auto; /* <--- ADD THIS LINE */
+                margin: 0 auto; 
             }
 
             .form-group {
@@ -102,31 +102,45 @@
                 <div class="page-header">
                     <div class="page-title">
                         <h2>Thêm danh mục mới</h2>
-                        <p>Create a new category for products or ingredients.</p>
+                        <p>Create a new category for products, ingredients, or accessories.</p>
                     </div>
                 </div>
 
                 <div class="form-card">
                     <form action="${pageContext.request.contextPath}/admin/categories" method="POST">
-
-                        <div class="form-group">
-                            <label class="form-label" for="categoryId">Mã Danh Mục (Category ID) <span style="color: #ef4444;">*</span></label>
-                            <input type="text" id="categoryId" name="categoryId" class="form-control" placeholder="VD: CAT-PROD-NEW" required maxlength="50">
-                            <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">Mã danh mục viết hoa, không dấu, không khoảng trắng.</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="categoryName">Tên Danh Mục (Category Name) <span style="color: #ef4444;">*</span></label>
-                            <input type="text" id="categoryName" name="categoryName" class="form-control" placeholder="Nhập tên danh mục..." required maxlength="100">
-                        </div>
+                        
+                        <input type="hidden" name="formAction" value="add">
 
                         <div class="form-group">
                             <label class="form-label" for="categoryType">Phân Loại (Type) <span style="color: #ef4444;">*</span></label>
                             <select id="categoryType" name="categoryType" class="form-control" required>
                                 <option value="" disabled selected>-- Chọn phân loại --</option>
-                                <option value="Sản phẩm chính">Sản phẩm chính (Dành cho Bánh, Nước...)</option>
-                                <option value="Nguyên liệu">Nguyên liệu (Dành cho Kem phủ, Cốt bánh...)</option>
+                                <option value="Sản phẩm chính">Sản phẩm chính (Bánh kem, Sweetbox...)</option>
+                                <option value="Nguyên liệu">Nguyên liệu (Cốt bánh, Kem phủ...)</option>
+                                <option value="Phụ kiện">Phụ kiện & Bao bì (Nến, Hộp, Pháo bông...)</option>
                             </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="categoryId">Mã Danh Mục (Category ID) <span style="color: #ef4444;">*</span></label>
+                            <input 
+                                type="text" 
+                                id="categoryId" 
+                                name="categoryId" 
+                                class="form-control" 
+                                placeholder="Chọn phân loại trước..." 
+                                required 
+                                maxlength="50"
+                                pattern="^CAT-[A-Z0-9\-]+$"
+                                title="Mã danh mục phải bắt đầu bằng 'CAT-' và chỉ chứa chữ in hoa, số, hoặc dấu gạch ngang."
+                                style="text-transform: uppercase;"
+                            >
+                            <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">Mã sẽ tự động tạo tiền tố dựa trên Phân loại. Chỉ chứa chữ in hoa, số và gạch ngang.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="categoryName">Tên Danh Mục (Category Name) <span style="color: #ef4444;">*</span></label>
+                            <input type="text" id="categoryName" name="categoryName" class="form-control" placeholder="Nhập tên danh mục..." required maxlength="100">
                         </div>
 
                         <div class="form-group">
@@ -143,6 +157,24 @@
                                 Hủy Bỏ
                             </a>
                         </div>
+
+                        <script>
+                            document.getElementById('categoryType').addEventListener('change', function() {
+                                const type = this.value;
+                                const idInput = document.getElementById('categoryId');
+                                
+                                if (type === 'Sản phẩm chính') {
+                                    idInput.value = 'CAT-PROD-';
+                                } else if (type === 'Nguyên liệu') {
+                                    idInput.value = 'CAT-ING-';
+                                } else if (type === 'Phụ kiện') {
+                                    idInput.value = 'CAT-ACC-';
+                                }
+                                
+                                idInput.focus(); // Snap the cursor to the input box so they can finish typing
+                            });
+                        </script>
+
                     </form>
                 </div>
             </div>

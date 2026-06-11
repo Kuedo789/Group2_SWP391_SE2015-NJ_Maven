@@ -4,8 +4,8 @@
  */
 package com.bakeryzone.admin.controller;
 
-import com.bakeryzone.dao.StaffDAO;
-import com.bakeryzone.model.Staff;
+import com.bakeryzone.dao.CustomerDAO;
+import com.bakeryzone.model.Customer;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -19,8 +19,8 @@ import java.util.List;
  *
  * @author Asus
  */
-@WebServlet(name = "UserListServlet", urlPatterns = {"/userList"})
-public class UserListServlet extends HttpServlet {
+@WebServlet(name = "CustomerListServlet", urlPatterns = {"/customerList"})
+public class CustomerListServlet extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -39,10 +39,10 @@ public class UserListServlet extends HttpServlet {
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
-            out.println("<title>Servlet UserListServlet</title>");
+            out.println("<title>Servlet CustomerListServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>Servlet UserListServlet at " + request.getContextPath() + "</h1>");
+            out.println("<h1>Servlet CustomerListServlet at " + request.getContextPath() + "</h1>");
             out.println("</body>");
             out.println("</html>");
         }
@@ -61,9 +61,7 @@ public class UserListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-
             String keyword = request.getParameter("searchKeyword");
-            String roleId = request.getParameter("filterRoleId");
             String status = request.getParameter("filterStatus");
 
             String pageParam = request.getParameter("page");
@@ -76,29 +74,31 @@ public class UserListServlet extends HttpServlet {
             if (keyword != null && keyword.trim().isEmpty()) {
                 keyword = null;
             }
-            if (roleId != null && roleId.trim().isEmpty()) {
-                roleId = null;
-            }
             if (status != null && status.trim().isEmpty()) {
                 status = null;
             }
-            StaffDAO dao = new StaffDAO();
 
-            int totalRecords = dao.getTotalStaffs(keyword, roleId, status);
+            CustomerDAO dao = new CustomerDAO();
+
+            int totalRecords = dao.getTotalCustomers(keyword, status);
             int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
             if (totalPages == 0) {
                 totalPages = 1;
             }
-            List<Staff> staffList = dao.searchAndFilterStaffs(keyword, roleId, status, pageIndex, pageSize);
-            
-            request.setAttribute("USERS", staffList);
+
+            List<Customer> customerList = dao.searchAndFilterCustomers(keyword, status, pageIndex, pageSize);
+
+            request.setAttribute("CUSTOMERS", customerList);
             request.setAttribute("currentPage", pageIndex);
             request.setAttribute("endPage", totalPages);
-            
-            request.getRequestDispatcher("admin/userList.jsp").forward(request, response);
+
+            request.getRequestDispatcher("admin/customerList.jsp").forward(request, response);
+
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendRedirect("userList");
         }
+
     }
 
     /**

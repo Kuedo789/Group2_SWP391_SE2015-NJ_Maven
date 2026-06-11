@@ -342,7 +342,7 @@ public class ProductDAO {
         String sql = """
                  SELECT Category_ID, Category_Name
                  FROM product_category
-                 ORDER BY Sort_Order ASC, Category_Name ASC
+                 ORDER BY Category_Name ASC
                  """;
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
