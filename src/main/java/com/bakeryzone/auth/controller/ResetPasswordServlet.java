@@ -10,6 +10,7 @@ import java.io.IOException;
 
 public class ResetPasswordServlet extends HttpServlet {
 
+    private static final int PASSWORD_MIN_LENGTH = 6;
     private static final int PASSWORD_MAX_LENGTH = 20;
 
     @Override
@@ -19,7 +20,7 @@ public class ResetPasswordServlet extends HttpServlet {
         Boolean resetVerified = (Boolean) request.getSession().getAttribute("resetVerified");
 
         if (resetVerified == null || !resetVerified) {
-            response.sendRedirect(request.getContextPath() + "/auth/forgot-password.jsp");
+            response.sendRedirect(request.getContextPath() + "/forgot-password");
             return;
         }
 
@@ -44,8 +45,9 @@ public class ResetPasswordServlet extends HttpServlet {
         String newPassword = request.getParameter("newPassword");
         String confirmPassword = request.getParameter("confirmPassword");
 
-        newPassword = newPassword == null ? "" : newPassword.trim();
-        confirmPassword = confirmPassword == null ? "" : confirmPassword.trim();
+        // Không trim password để bắt lỗi space đúng yêu cầu
+        newPassword = newPassword == null ? "" : newPassword;
+        confirmPassword = confirmPassword == null ? "" : confirmPassword;
 
         if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
             request.setAttribute("error", "Vui lòng nhập đầy đủ mật khẩu.");
@@ -53,8 +55,14 @@ public class ResetPasswordServlet extends HttpServlet {
             return;
         }
 
-        if (newPassword.length() < 6) {
-            request.setAttribute("error", "Mật khẩu phải có ít nhất 6 ký tự.");
+        if (newPassword.matches(".*\\s.*") || confirmPassword.matches(".*\\s.*")) {
+            request.setAttribute("error", "Mật khẩu không được chứa khoảng trắng.");
+            request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
+            return;
+        }
+
+        if (newPassword.length() < PASSWORD_MIN_LENGTH) {
+            request.setAttribute("error", "Mật khẩu phải có ít nhất " + PASSWORD_MIN_LENGTH + " ký tự.");
             request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
             return;
         }

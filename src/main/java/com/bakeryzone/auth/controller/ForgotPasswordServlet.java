@@ -13,6 +13,8 @@ import java.sql.Timestamp;
 
 public class ForgotPasswordServlet extends HttpServlet {
 
+    private static final int EMAIL_MAX_LENGTH = 100;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -32,6 +34,12 @@ public class ForgotPasswordServlet extends HttpServlet {
 
         if (email.isEmpty()) {
             request.setAttribute("error", "Vui lòng nhập email.");
+            request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
+            return;
+        }
+
+        if (email.length() > EMAIL_MAX_LENGTH) {
+            request.setAttribute("error", "Email không được vượt quá " + EMAIL_MAX_LENGTH + " ký tự.");
             request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
             return;
         }
@@ -84,6 +92,7 @@ public class ForgotPasswordServlet extends HttpServlet {
         }
 
         request.getSession().setAttribute("resetEmail", email);
+        request.getSession().setAttribute("resetVerified", false);
         request.getSession().setAttribute("otpExpireAtMillis", otpExpiry.getTime());
 
         request.setAttribute("message", "Mã OTP đặt lại mật khẩu đã được gửi đến email của bạn.");

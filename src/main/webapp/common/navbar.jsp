@@ -66,7 +66,7 @@
                         <div class="user-dropdown-info">
                             <div class="user-dropdown-hello">Xin chào,</div>
                             <div class="user-dropdown-fullname">
-                                <%= currentUser.getFullName() %>
+                                <%= currentUser.getFullName() %>                         
                             </div>
                         </div>
                     </div>

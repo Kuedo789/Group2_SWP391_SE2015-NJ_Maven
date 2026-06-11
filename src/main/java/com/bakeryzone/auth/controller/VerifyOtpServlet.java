@@ -1,17 +1,29 @@
 package com.bakeryzone.auth.controller;
 
 import com.bakeryzone.dao.UserDAO;
+import com.bakeryzone.model.User;
+import com.bakeryzone.utils.EmailUtils;
+import com.bakeryzone.utils.OtpUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Timestamp;
 
 public class VerifyOtpServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        String action = request.getParameter("action");
+
+        if ("resend".equalsIgnoreCase(action)) {
+            resendRegisterOtp(request, response);
+            return;
+        }
+
         request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
     }
 
@@ -39,7 +51,7 @@ public class VerifyOtpServlet extends HttpServlet {
         otp = otp.trim();
 
         if (!otp.matches("\\d{6}")) {
-            request.setAttribute("error", "Mã OTP phải gồm 6 chữ số.");
+            request.setAttribute("error", "Mã OTP phải gồm đúng 6 chữ số.");
             request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
             return;
         }
@@ -49,7 +61,16 @@ public class VerifyOtpServlet extends HttpServlet {
         boolean validOtp = dao.verifyRegisterOtp(email, otp);
 
         if (!validOtp) {
-            request.setAttribute("error", "Mã OTP không đúng hoặc đã hết hạn.");
+            User user = dao.findByEmail(email);
+
+            if (user == null) {
+                request.setAttribute("error", "Không tìm thấy tài khoản cần xác thực. Vui lòng đăng ký lại.");
+            } else if (user.getOtpExpiry() == null || user.getOtpExpiry().before(new Timestamp(System.currentTimeMillis()))) {
+                request.setAttribute("error", "Mã OTP đã hết hạn. Vui lòng bấm gửi lại mã.");
+            } else {
+                request.setAttribute("error", "Mã OTP không đúng. Vui lòng kiểm tra lại.");
+            }
+
             request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
             return;
         }
@@ -67,5 +88,59 @@ public class VerifyOtpServlet extends HttpServlet {
 
         request.setAttribute("message", "Xác thực tài khoản thành công. Vui lòng đăng nhập.");
         request.getRequestDispatcher("/auth/login.jsp").forward(request, response);
+    }
+
+    private void resendRegisterOtp(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String email = (String) request.getSession().getAttribute("otpEmail");
+
+        if (email == null || email.trim().isEmpty()) {
+            request.setAttribute("error", "Phiên xác thực đã hết hạn. Vui lòng đăng ký lại.");
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        UserDAO dao = new UserDAO();
+        User user = dao.findByEmail(email);
+
+        if (user == null) {
+            request.setAttribute("error", "Không tìm thấy tài khoản cần xác thực. Vui lòng đăng ký lại.");
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        if (user.isVerified()) {
+            request.getSession().removeAttribute("otpEmail");
+            request.getSession().removeAttribute("otpExpireAtMillis");
+
+            request.setAttribute("message", "Tài khoản đã được xác thực. Vui lòng đăng nhập.");
+            request.getRequestDispatcher("/auth/login.jsp").forward(request, response);
+            return;
+        }
+
+        String newOtp = OtpUtil.generateOtp();
+        Timestamp newExpiry = OtpUtil.generateExpiryTime();
+
+        boolean updated = dao.updateOtpByEmail(email, newOtp, newExpiry);
+
+        if (!updated) {
+            request.setAttribute("error", "Không thể tạo mã OTP mới. Vui lòng thử lại.");
+            request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+            return;
+        }
+
+        boolean sent = EmailUtils.sendRegisterOtpEmail(email, newOtp);
+
+        if (!sent) {
+            request.setAttribute("error", "Không thể gửi lại mã OTP. Vui lòng thử lại sau.");
+            request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+            return;
+        }
+
+        request.getSession().setAttribute("otpExpireAtMillis", newExpiry.getTime());
+        request.setAttribute("message", "Mã OTP mới đã được gửi đến email của bạn.");
+
+        request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
     }
 }

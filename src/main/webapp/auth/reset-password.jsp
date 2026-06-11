@@ -87,16 +87,22 @@
                         <label for="newPassword">Mật khẩu mới</label>
 
                         <div class="input-wrap">
-                            <span class="material-symbols-outlined">lock</span>
+                            <span class="material-symbols-outlined input-icon">lock</span>
 
                             <input type="password"
                                    id="newPassword"
                                    name="newPassword"
                                    placeholder="Nhập mật khẩu mới"
+                                   minlength="6"
+                                   maxlength="20"
+                                   pattern="^\S+$"
+                                   title="Mật khẩu phải từ 6 đến 20 ký tự và không được chứa khoảng trắng"
                                    required>
 
                             <span class="material-symbols-outlined toggle-password"
-                                  data-target="newPassword">visibility</span>
+                                  data-target="newPassword">
+                                visibility
+                            </span>
                         </div>
                     </div>
 
@@ -104,16 +110,22 @@
                         <label for="confirmPassword">Xác nhận mật khẩu</label>
 
                         <div class="input-wrap">
-                            <span class="material-symbols-outlined">lock_reset</span>
+                            <span class="material-symbols-outlined input-icon">lock_reset</span>
 
                             <input type="password"
                                    id="confirmPassword"
                                    name="confirmPassword"
                                    placeholder="Nhập lại mật khẩu mới"
+                                   minlength="6"
+                                   maxlength="20"
+                                   pattern="^\S+$"
+                                   title="Mật khẩu xác nhận không được chứa khoảng trắng"
                                    required>
 
                             <span class="material-symbols-outlined toggle-password"
-                                  data-target="confirmPassword">visibility</span>
+                                  data-target="confirmPassword">
+                                visibility
+                            </span>
                         </div>
                     </div>
 
@@ -123,7 +135,7 @@
 
                     <div class="auth-switch">
                         Đã nhớ mật khẩu?
-                        <a href="<%= contextPath %>/auth/login.jsp">Đăng nhập</a>
+                        <a href="<%= contextPath %>/login">Đăng nhập</a>
                     </div>
 
                 </form>

@@ -14,8 +14,9 @@ import java.sql.Timestamp;
 
 public class RegisterServlet extends HttpServlet {
 
-    private static final int NAME_MAX_LENGTH = 100;
+    private static final int NAME_MAX_LENGTH = 30;
     private static final int EMAIL_MAX_LENGTH = 100;
+    private static final int PASSWORD_MIN_LENGTH = 6;
     private static final int PASSWORD_MAX_LENGTH = 20;
 
     @Override
@@ -39,22 +40,34 @@ public class RegisterServlet extends HttpServlet {
         fullName = fullName == null ? "" : fullName.trim();
         email = email == null ? "" : email.trim().toLowerCase();
         phone = phone == null ? "" : phone.trim();
-        password = password == null ? "" : password.trim();
-        confirmPassword = confirmPassword == null ? "" : confirmPassword.trim();
 
+        // Không trim password, vì yêu cầu là mật khẩu không được chứa space.
+        // Nếu trim thì user nhập "abc123 " vẫn bị tự xóa space và có thể qua validate sai ý.
+        password = password == null ? "" : password;
+        confirmPassword = confirmPassword == null ? "" : confirmPassword;
+
+        // Giữ lại dữ liệu khi validate lỗi
         request.setAttribute("fullName", fullName);
         request.setAttribute("email", email);
         request.setAttribute("phone", phone);
 
         if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty()
                 || password.isEmpty() || confirmPassword.isEmpty()) {
-            request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin.");
+            request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin đăng ký.");
             request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
             return;
         }
 
         if (fullName.length() > NAME_MAX_LENGTH) {
             request.setAttribute("error", "Họ tên không được vượt quá " + NAME_MAX_LENGTH + " ký tự.");
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        // Chỉ cho chữ cái tiếng Việt và khoảng trắng đơn giữa các từ.
+        // Không cho số, ký tự đặc biệt, nhiều hơn 1 space liên tiếp.
+        if (!fullName.matches("^[\\p{L}]+(?: [\\p{L}]+)*$")) {
+            request.setAttribute("error", "Họ tên chỉ được chứa chữ cái và không được có nhiều hơn 1 khoảng trắng liên tiếp.");
             request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
             return;
         }
@@ -71,14 +84,29 @@ public class RegisterServlet extends HttpServlet {
             return;
         }
 
-        if (!phone.matches("^(0|\\+84)[0-9]{9,10}$")) {
-            request.setAttribute("error", "Số điện thoại không đúng định dạng.");
+        // Số điện thoại bắt đầu bằng 0 và đúng 10 chữ số
+        if (!phone.matches("^0\\d{9}$")) {
+            request.setAttribute("error", "Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số.");
             request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
             return;
         }
 
-        if (password.length() < 6) {
-            request.setAttribute("error", "Mật khẩu phải có ít nhất 6 ký tự.");
+        // Chặn 0000000000, 1111111111, ...
+        if (phone.matches("^(\\d)\\1{9}$")) {
+            request.setAttribute("error", "Số điện thoại không hợp lệ.");
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        // Mật khẩu không được chứa bất kỳ khoảng trắng nào
+        if (password.matches(".*\\s.*") || confirmPassword.matches(".*\\s.*")) {
+            request.setAttribute("error", "Mật khẩu không được chứa khoảng trắng.");
+            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+            return;
+        }
+
+        if (password.length() < PASSWORD_MIN_LENGTH) {
+            request.setAttribute("error", "Mật khẩu phải có ít nhất " + PASSWORD_MIN_LENGTH + " ký tự.");
             request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
             return;
         }
@@ -111,7 +139,6 @@ public class RegisterServlet extends HttpServlet {
         User existingUser = dao.findByEmail(email);
 
         if (existingUser != null) {
-
             if (existingUser.isVerified()) {
                 request.setAttribute("error", "Email này đã được đăng ký. Vui lòng đăng nhập.");
                 request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
@@ -136,7 +163,6 @@ public class RegisterServlet extends HttpServlet {
             }
 
         } else {
-
             User user = new User();
             user.setFullName(fullName);
             user.setEmail(email);

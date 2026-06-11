@@ -8,16 +8,12 @@ import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
-
+import jakarta.mail.internet.MimeUtility;
 public class EmailUtils {
 
-    // Email Gmail dùng để gửi OTP
     private static final String FROM_EMAIL = "doduyhung0901@gmail.com";
-
-    // App Password của Gmail, không phải mật khẩu đăng nhập Gmail thường
     private static final String APP_PASSWORD = "erqx uoeu fsdv nwlk";
 
-    // Hàm gửi OTP mặc định, giữ lại để code cũ không bị lỗi
     public static boolean sendOtpEmail(String toEmail, String otpCode) {
         return sendEmail(
                 toEmail,
@@ -31,7 +27,6 @@ public class EmailUtils {
         );
     }
 
-    // Hàm gửi OTP đăng ký tài khoản
     public static boolean sendRegisterOtpEmail(String toEmail, String otpCode) {
         return sendEmail(
                 toEmail,
@@ -45,7 +40,6 @@ public class EmailUtils {
         );
     }
 
-    // Hàm gửi OTP quên mật khẩu
     public static boolean sendForgotPasswordOtpEmail(String toEmail, String otpCode) {
         return sendEmail(
                 toEmail,
@@ -59,69 +53,48 @@ public class EmailUtils {
         );
     }
 
-    // Hàm gửi email dùng chung
     private static boolean sendEmail(String toEmail, String subject, String htmlContent) {
-
         try {
-            // Cấu hình SMTP của Gmail
             Properties props = new Properties();
 
-            // Máy chủ SMTP Gmail
             props.put("mail.smtp.host", "smtp.gmail.com");
-
-            // Cổng TLS của Gmail
             props.put("mail.smtp.port", "587");
-
-            // Bật xác thực tài khoản
             props.put("mail.smtp.auth", "true");
-
-            // Bật STARTTLS để gửi mail an toàn
             props.put("mail.smtp.starttls.enable", "true");
 
-            // Tạo session đăng nhập SMTP
             Session session = Session.getInstance(props, new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
-
-                    // Đăng nhập bằng Gmail + App Password
                     return new PasswordAuthentication(FROM_EMAIL, APP_PASSWORD);
                 }
             });
 
-            // Tạo nội dung email
             Message message = new MimeMessage(session);
 
-            // Email người gửi
-            message.setFrom(new InternetAddress(FROM_EMAIL, "BakeryZone"));
+            
+            message.setFrom(new InternetAddress(FROM_EMAIL, "BakeryZone", "UTF-8"));
 
-            // Email người nhận
             message.setRecipients(
                     Message.RecipientType.TO,
-                    InternetAddress.parse(toEmail)
+                    InternetAddress.parse(toEmail, false)
             );
 
-            // Tiêu đề email
-            message.setSubject(subject);
+            // Có UTF-8 để title mail không bị lỗi dấu ? ? ?
+            message.setSubject(MimeUtility.encodeText(subject, "UTF-8", "B"));
 
-            // Set nội dung email là HTML, UTF-8 để không lỗi tiếng Việt
+            // Có charset UTF-8 để nội dung email không lỗi tiếng Việt
             message.setContent(htmlContent, "text/html; charset=UTF-8");
 
-            // Gửi email
             Transport.send(message);
 
-            // Gửi thành công
             return true;
 
         } catch (Exception e) {
-            // In lỗi ra console để debug
             e.printStackTrace();
-
-            // Gửi thất bại
             return false;
         }
     }
 
-    // Hàm tạo nội dung email OTP dạng HTML
     private static String buildOtpContent(String title, String message, String otpCode, String note) {
         return ""
                 + "<div style='font-family: Arial, sans-serif; padding: 20px;'>"

@@ -27,7 +27,10 @@ public class LoginServlet extends HttpServlet {
         String password = request.getParameter("password");
 
         email = email == null ? "" : email.trim().toLowerCase();
-        password = password == null ? "" : password.trim();
+
+        // Không trim password để tránh sai logic khi password có khoảng trắng.
+        // Dù hiện tại register/reset đã cấm space, login vẫn nên giữ nguyên input.
+        password = password == null ? "" : password;
 
         request.setAttribute("accountInput", email);
 
@@ -62,7 +65,9 @@ public class LoginServlet extends HttpServlet {
 
         String roleId = user.getRoleId();
 
-        if ("ADMIN".equalsIgnoreCase(roleId) || "STAFF".equalsIgnoreCase(roleId)) {
+        if ("ADMIN".equalsIgnoreCase(roleId)) {
+            response.sendRedirect(request.getContextPath() + "/userList");
+        } else if ("STAFF".equalsIgnoreCase(roleId)) {
             response.sendRedirect(request.getContextPath() + "/userList");
         } else if ("SHIPPER".equalsIgnoreCase(roleId)) {
             response.sendRedirect(request.getContextPath() + "/home");

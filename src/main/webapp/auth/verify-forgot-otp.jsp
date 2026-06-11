@@ -4,6 +4,9 @@
     String error = (String) request.getAttribute("error");
     String message = (String) request.getAttribute("message");
     String contextPath = request.getContextPath();
+
+    Long otpExpireAtMillis = (Long) session.getAttribute("otpExpireAtMillis");
+    long expireAtMillis = otpExpireAtMillis != null ? otpExpireAtMillis : 0L;
 %>
 
 <!DOCTYPE html>
@@ -92,29 +95,37 @@
                         <label for="otp">Mã OTP</label>
 
                         <div class="input-wrap">
-                            <span class="material-symbols-outlined">pin</span>
+                            <span class="material-symbols-outlined input-icon">pin</span>
 
                             <input type="text"
                                    id="otp"
                                    name="otp"
                                    placeholder="Nhập mã OTP"
                                    maxlength="6"
+                                   pattern="[0-9]{6}"
+                                   inputmode="numeric"
+                                   title="Mã OTP phải gồm đúng 6 chữ số"
                                    required>
                         </div>
                     </div>
 
-                    <button type="submit" class="btn btn-primary auth-submit">
+                    <div class="otp-timer-box">
+                        <span class="material-symbols-outlined">timer</span>
+                        <span>Mã OTP hết hạn sau <strong id="otpTimer">--:--</strong></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary auth-submit" id="submitOtpBtn">
                         Xác nhận OTP
                     </button>
 
                     <div class="auth-switch">
                         Chưa nhận được mã?
-                        <a href="<%= contextPath %>/auth/forgot-password.jsp">Gửi lại mã</a>
+                        <a href="<%= contextPath %>/verify-forgot-otp?action=resend">Gửi lại mã</a>
                     </div>
 
                     <div class="auth-switch">
                         Đã nhớ mật khẩu?
-                        <a href="<%= contextPath %>/auth/login.jsp">Đăng nhập</a>
+                        <a href="<%= contextPath %>/login">Đăng nhập</a>
                     </div>
 
                 </form>
@@ -129,6 +140,47 @@
 
 <jsp:include page="../common/footer.jsp" />
 <jsp:include page="../common/scripts.jsp" />
+
+<script>
+    const expireAtMillis = <%= expireAtMillis %>;
+    const timerEl = document.getElementById("otpTimer");
+    const submitBtn = document.getElementById("submitOtpBtn");
+    const otpInput = document.getElementById("otp");
+
+    function renderOtpTimer() {
+        if (!timerEl) {
+            return;
+        }
+
+        const remaining = expireAtMillis - Date.now();
+
+        if (!expireAtMillis || remaining <= 0) {
+            timerEl.textContent = "00:00";
+            timerEl.classList.add("expired");
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "OTP đã hết hạn";
+            }
+
+            if (otpInput) {
+                otpInput.disabled = true;
+            }
+
+            return;
+        }
+
+        const totalSeconds = Math.floor(remaining / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+
+        timerEl.textContent =
+            String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+    }
+
+    renderOtpTimer();
+    setInterval(renderOtpTimer, 1000);
+</script>
 
 </body>
 </html>
