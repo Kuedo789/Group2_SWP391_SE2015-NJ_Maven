@@ -3,151 +3,143 @@
 <%
     String error = (String) request.getAttribute("error");
     String message = (String) request.getAttribute("message");
-
     String contextPath = request.getContextPath();
 %>
 
 <!DOCTYPE html>
 <html lang="vi">
 
-    <head>
-        <jsp:include page="../common/header.jsp" />
-    </head>
+<head>
+    <jsp:include page="../common/header.jsp" />
+</head>
 
-    <body>
+<body>
 
-        <jsp:include page="../common/navbar.jsp" />
+<jsp:include page="../common/navbar.jsp" />
 
-        <main class="main auth-main">
+<main class="main auth-main">
 
-            <section class="auth-section">
+    <section class="auth-section">
 
-                <div class="auth-card reset-card">
+        <div class="auth-card reset-card">
 
-                    <!-- LEFT -->
-                    <div class="auth-visual reset-visual">
+            <!-- LEFT -->
+            <div class="auth-visual reset-visual">
 
-                        <div class="auth-badge">
-                            <span class="material-symbols-outlined">lock_reset</span>
-                            ĐẶT LẠI MẬT KHẨU
-                        </div>
+                <div class="auth-badge">
+                    <span class="material-symbols-outlined">password</span>
+                    ĐẶT LẠI MẬT KHẨU
+                </div>
 
-                        <h1>Tạo mật khẩu mới cho tài khoản của bạn</h1>
+                <h1>Tạo mật khẩu mới cho tài khoản của bạn</h1>
 
-                        <p>
-                            Mật khẩu mới sẽ được dùng cho những lần đăng nhập tiếp theo.
-                            Hãy chọn mật khẩu dễ nhớ với bạn nhưng khó đoán với người khác.
-                        </p>
+                <p>
+                    Vui lòng nhập mật khẩu mới. Sau khi đổi mật khẩu thành công,
+                    bạn có thể đăng nhập lại bằng mật khẩu mới.
+                </p>
 
-                        <div class="auth-benefits">
+                <div class="auth-benefits">
 
-                            <div>
-                                <span class="material-symbols-outlined">verified_user</span>
-                                Tài khoản đã được xác thực OTP
-                            </div>
-
-                            <div>
-                                <span class="material-symbols-outlined">lock</span>
-                                Bảo vệ thông tin đăng nhập
-                            </div>
-
-                            <div>
-                                <span class="material-symbols-outlined">key</span>
-                                Sử dụng mật khẩu mới sau khi hoàn tất
-                            </div>
-
-                        </div>
-
+                    <div>
+                        <span class="material-symbols-outlined">lock</span>
+                        Mật khẩu mới giúp bảo vệ tài khoản
                     </div>
 
-                    <!-- RIGHT -->
-                    <div class="auth-form-wrap">
+                    <div>
+                        <span class="material-symbols-outlined">verified</span>
+                        Chỉ đổi mật khẩu sau khi xác thực OTP
+                    </div>
 
-                        <div class="auth-form-header">
-                            <span class="auth-label">Khôi phục mật khẩu</span>
-                            <h2>Đặt lại mật khẩu</h2>
-                        </div>
-
-                        <% if (error != null) { %>
-                        <div class="auth-message auth-error">
-                            <span class="material-symbols-outlined">error</span>
-                            <%= error %>
-                        </div>
-                        <% } %>
-
-                        <% if (message != null) { %>
-                        <div class="auth-message auth-success">
-                            <span class="material-symbols-outlined">check_circle</span>
-                            <%= message %>
-                        </div>
-                        <% } %>
-
-                        <form action="<%= contextPath %>/reset-password" method="post" class="auth-form">
-
-                            <div class="form-group">
-                                <label for="newPassword">Mật khẩu mới</label>
-
-                                <div class="input-wrap">
-                                    <span class="material-symbols-outlined input-icon">lock</span>
-
-                                    <input type="password"
-                                           id="newPassword"
-                                           name="password"
-                                           placeholder="Nhập mật khẩu mới"
-                                           required>
-
-                                    <span class="material-symbols-outlined toggle-password" data-target="newPassword">
-                                        visibility
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="confirmNewPassword">Xác nhận mật khẩu mới</label>
-
-                                <div class="input-wrap">
-                                    <span class="material-symbols-outlined input-icon">lock_reset</span>
-
-                                    <input type="password"
-                                           id="confirmNewPassword"
-                                           name="confirmPassword"
-                                           placeholder="Nhập lại mật khẩu mới"
-                                           required>
-
-                                    <span class="material-symbols-outlined toggle-password" data-target="confirmNewPassword">
-                                        visibility
-                                    </span>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary auth-submit">
-                                Đặt lại mật khẩu
-                            </button>
-
-                            <div class="auth-switch reset-back-wrap">
-                                <a href="<%= contextPath %>/auth/forgot-password.jsp">
-                                    <span class="material-symbols-outlined reset-back-icon">arrow_back</span>
-                                    <span>Quay lại quên mật khẩu</span>
-                                </a>
-                            </div>
-
-                            <div class="auth-switch">
-                                Nhớ mật khẩu?
-                                <a href="<%= contextPath %>/auth/login.jsp">Đăng nhập</a>
-                            </div>
-
-                        </form>
-
+                    <div>
+                        <span class="material-symbols-outlined">login</span>
+                        Đăng nhập lại sau khi đặt lại mật khẩu
                     </div>
 
                 </div>
 
-            </section>
+            </div>
 
-        </main>
+            <!-- RIGHT -->
+            <div class="auth-form-wrap">
 
-        <jsp:include page="../common/footer.jsp" />
-        <jsp:include page="../common/scripts.jsp" />
-        <script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
-    </body>
+                <div class="auth-form-header">
+                    <span class="auth-label">Mật khẩu mới</span>
+                    <h2>Đặt lại mật khẩu</h2>
+                </div>
+
+                <% if (error != null) { %>
+                    <div class="auth-message auth-error">
+                        <span class="material-symbols-outlined">error</span>
+                        <%= error %>
+                    </div>
+                <% } %>
+
+                <% if (message != null) { %>
+                    <div class="auth-message auth-success">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        <%= message %>
+                    </div>
+                <% } %>
+
+                <form action="<%= contextPath %>/reset-password" method="post" class="auth-form">
+
+                    <div class="form-group">
+                        <label for="newPassword">Mật khẩu mới</label>
+
+                        <div class="input-wrap">
+                            <span class="material-symbols-outlined">lock</span>
+
+                            <input type="password"
+                                   id="newPassword"
+                                   name="newPassword"
+                                   placeholder="Nhập mật khẩu mới"
+                                   required>
+
+                            <span class="material-symbols-outlined toggle-password"
+                                  data-target="newPassword">visibility</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Xác nhận mật khẩu</label>
+
+                        <div class="input-wrap">
+                            <span class="material-symbols-outlined">lock_reset</span>
+
+                            <input type="password"
+                                   id="confirmPassword"
+                                   name="confirmPassword"
+                                   placeholder="Nhập lại mật khẩu mới"
+                                   required>
+
+                            <span class="material-symbols-outlined toggle-password"
+                                  data-target="confirmPassword">visibility</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary auth-submit">
+                        Đặt lại mật khẩu
+                    </button>
+
+                    <div class="auth-switch">
+                        Đã nhớ mật khẩu?
+                        <a href="<%= contextPath %>/auth/login.jsp">Đăng nhập</a>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<jsp:include page="../common/footer.jsp" />
+<jsp:include page="../common/scripts.jsp" />
+
+<script src="<%= contextPath %>/assets/js/password-toggle.js"></script>
+
+</body>
 </html>
