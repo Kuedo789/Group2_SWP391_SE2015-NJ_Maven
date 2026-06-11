@@ -43,12 +43,12 @@ public class PasswordUtils {
             return false;
         }
 
-        String rawHash = hashPassword(rawPassword);
+        String rawHash = hashPassword(rawPassword.trim());
 
         if (rawHash == null) {
             return false;
         }
 
-        return rawHash.equals(hashedPassword);
+        return rawHash.equals(hashedPassword.trim());
     }
 }

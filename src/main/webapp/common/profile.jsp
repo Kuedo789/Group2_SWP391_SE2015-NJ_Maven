@@ -103,6 +103,48 @@
                 font-size: 14px;
             }
 
+            .alert {
+                margin-bottom: 28px;
+                padding: 12px 16px;
+                border-radius: 10px;
+                font-weight: 600;
+            }
+
+            .profile-error {
+                color: #d62828;
+                background-color: #fff0f0;
+                border: 1px solid #f5b5b5;
+            }
+
+            .profile-success {
+                color: #155c2e;
+                background-color: #eefaf1;
+                border: 1px solid #b8e6c4;
+            }
+
+            .change-password-toggle {
+                width: fit-content;
+                padding: 10px 18px;
+                border: none;
+                border-radius: 10px;
+                background-color: var(--primary);
+                color: white;
+                font-weight: 600;
+                cursor: pointer;
+            }
+
+            .change-password-toggle:hover {
+                opacity: 0.9;
+            }
+
+            .password-box {
+                margin-top: 18px;
+                padding: 18px;
+                border: 1px solid #ead8c7;
+                border-radius: 14px;
+                background-color: #fffaf5;
+            }
+
             .profile-actions {
                 display: flex;
                 justify-content: flex-end;
@@ -169,34 +211,6 @@
                     width: 100%;
                 }
             }
-
-            .alert {
-                margin-bottom: 28px;
-            }
-
-            .change-password-toggle {
-                width: fit-content;
-                padding: 10px 18px;
-                border: none;
-                border-radius: 10px;
-                background-color: var(--primary);
-                color: white;
-                font-weight: 600;
-                cursor: pointer;
-            }
-
-            .change-password-toggle:hover {
-                opacity: 0.9;
-            }
-
-            .password-box {
-                margin-top: 18px;
-                padding: 18px;
-                border: 1px solid #ead8c7;
-                border-radius: 14px;
-                background-color: #fffaf5;
-            }
-
         </style>
     </head>
 
@@ -213,18 +227,28 @@
                 </div>
 
                 <% if (request.getAttribute("successMessage") != null) { %>
-                <div class="alert alert-success">
+                <div class="alert profile-success">
                     ✓ <%= request.getAttribute("successMessage") %>
                 </div>
                 <% } %>
 
                 <% if (request.getAttribute("errorMessage") != null) { %>
-                <div class="alert alert-danger">
+                <div class="alert profile-error">
                     <%= request.getAttribute("errorMessage") %>
                 </div>
                 <% } %>
 
-                <form class="profile-form" action="${pageContext.request.contextPath}/profile" method="post">
+                <form id="profileForm"
+                      class="profile-form"
+                      action="${pageContext.request.contextPath}/profile"
+                      method="post">
+
+                    <!-- Dùng để reset về thông tin gốc khi bấm Hủy -->
+                    <input type="hidden" id="originalFullName" value="${sessionScope.user.fullName}">
+                    <input type="hidden" id="originalPhone" value="${sessionScope.user.phone}">
+
+                    <!-- Giữ address cũ để servlet không update address thành null -->
+                    <input type="hidden" name="address" value="${sessionScope.user.defaultAddress}">
 
                     <div class="form-row">
                         <div class="form-group">
@@ -232,7 +256,8 @@
                             <input type="text"
                                    name="fullName"
                                    class="form-control"
-                                   value="${sessionScope.user.fullName}"
+                                   value="${requestScope.inputFullName != null ? requestScope.inputFullName : sessionScope.user.fullName}"
+                                   maxlength="30"
                                    placeholder="Nhập họ và tên của bạn">
                         </div>
 
@@ -241,7 +266,8 @@
                             <input type="text"
                                    name="phone"
                                    class="form-control"
-                                   value="${sessionScope.user.phone}"
+                                   value="${requestScope.inputPhone != null ? requestScope.inputPhone : sessionScope.user.phone}"
+                                   maxlength="10"
                                    placeholder="Nhập số điện thoại">
                         </div>
                     </div>
@@ -256,19 +282,25 @@
                         <div class="form-note">Email dùng để đăng nhập và không thể thay đổi tại đây.</div>
                     </div>
 
-                    <div class="form-group full-width">
+                    <div class="form-group">
                         <label>Mật khẩu</label>
 
-                        <button type="button" class="change-password-toggle" onclick="togglePasswordBox()">
+                        <button type="button"
+                                class="change-password-toggle"
+                                onclick="togglePasswordBox()">
                             Đổi mật khẩu
                         </button>
 
-                        <div id="passwordBox" class="password-box" style="display: none;">
+                        <div id="passwordBox"
+                             class="password-box"
+                             style="display: <%= request.getAttribute("showPasswordBox") != null ? "block" : "none" %>;">
+
                             <div class="form-group">
                                 <label>Mật khẩu hiện tại</label>
                                 <input type="password"
                                        name="currentPassword"
                                        class="form-control"
+                                       value="${requestScope.inputCurrentPassword != null ? requestScope.inputCurrentPassword : ''}"
                                        placeholder="Nhập mật khẩu hiện tại">
                             </div>
 
@@ -277,6 +309,8 @@
                                 <input type="password"
                                        name="newPassword"
                                        class="form-control"
+                                       maxlength="20"
+                                       value="${requestScope.inputNewPassword != null ? requestScope.inputNewPassword : ''}"
                                        placeholder="Nhập mật khẩu mới">
                             </div>
 
@@ -285,13 +319,20 @@
                                 <input type="password"
                                        name="confirmPassword"
                                        class="form-control"
+                                       maxlength="20"
+                                       value="${requestScope.inputConfirmPassword != null ? requestScope.inputConfirmPassword : ''}"
                                        placeholder="Nhập lại mật khẩu mới">
                             </div>
+
                         </div>
                     </div>
 
                     <div class="profile-actions">
-                        <button type="button" class="btn-cancel" onclick="history.back()">Hủy</button>
+                        <button type="button"
+                                class="btn-cancel"
+                                onclick="resetProfileForm()">
+                            Hủy
+                        </button>
 
                         <button type="submit" class="btn-update">
                             <i class="fa fa-save"></i>
@@ -316,6 +357,20 @@
                 } else {
                     passwordBox.style.display = "none";
                 }
+            }
+
+            function resetProfileForm() {
+                document.querySelector('input[name="fullName"]').value =
+                        document.getElementById("originalFullName").value;
+
+                document.querySelector('input[name="phone"]').value =
+                        document.getElementById("originalPhone").value;
+
+                document.querySelector('input[name="currentPassword"]').value = "";
+                document.querySelector('input[name="newPassword"]').value = "";
+                document.querySelector('input[name="confirmPassword"]').value = "";
+
+                document.getElementById("passwordBox").style.display = "none";
             }
         </script>
 
