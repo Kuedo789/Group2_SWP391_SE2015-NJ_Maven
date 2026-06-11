@@ -14,7 +14,8 @@ public class CustomerDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT * FROM `customer` WHERE `Customer_ID` = ?";
+            String sql = "SELECT Customer_ID, User_ID, Full_Name, Phone, Default_Address, Created_At "
+                    + "FROM `customer` WHERE `Customer_ID` = ?";
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, id);
@@ -22,12 +23,11 @@ public class CustomerDAO {
             if (rs.next()) {
                 Customer c = new Customer();
                 c.setCustomerId(rs.getString("Customer_ID"));
+                c.setUserId(rs.getString("User_ID"));
                 c.setFullName(rs.getString("Full_Name"));
-                c.setEmail(rs.getString("Email"));
-                c.setPassword(rs.getString("Password"));
                 c.setPhone(rs.getString("Phone"));
-                c.setAccountStatus(rs.getString("Account_Status"));
-                c.setIsVerified(rs.getBoolean("Is_Verified"));
+                c.setDefaultAddress(rs.getString("Default_Address"));
+                c.setCreatedAt(rs.getTimestamp("Created_At"));
                 return c;
             }
         } catch (Exception e) {
@@ -43,22 +43,25 @@ public class CustomerDAO {
         Connection conn = null;
         PreparedStatement ps = null;
         try {
-            String sql = "INSERT INTO `customer` (Customer_ID, Full_Name, Email, Password, Phone, Account_Status, Is_Verified) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO `customer` "
+                    + "(Customer_ID, User_ID, Full_Name, Phone, Default_Address) "
+                    + "VALUES (?, ?, ?, ?, ?)";
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
 
             String generatedId = (c.getCustomerId() == null || c.getCustomerId().trim().isEmpty())
-                    ? "CUS" + System.currentTimeMillis()
+                    ? "CUS_" + System.currentTimeMillis()
                     : c.getCustomerId();
 
+            String userId = (c.getUserId() == null || c.getUserId().trim().isEmpty())
+                    ? generatedId
+                    : c.getUserId();
+
             ps.setString(1, generatedId);
-            ps.setString(2, c.getFullName());
-            ps.setString(3, c.getEmail());
-            ps.setString(4, c.getPassword());
-            ps.setString(5, c.getPhone());
-            ps.setString(6, c.getAccountStatus());
-            ps.setBoolean(7, c.isIsVerified());
+            ps.setString(2, userId);
+            ps.setString(3, c.getFullName());
+            ps.setString(4, c.getPhone());
+            ps.setString(5, c.getDefaultAddress());
 
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -74,15 +77,15 @@ public class CustomerDAO {
         Connection conn = null;
         PreparedStatement ps = null;
         try {
-            String sql = "UPDATE `customer` SET Full_Name = ?, Email = ?, Password = ?, Phone = ?, Account_Status = ? WHERE Customer_ID = ?";
+            String sql = "UPDATE `customer` "
+                    + "SET Full_Name = ?, Phone = ?, Default_Address = ? "
+                    + "WHERE Customer_ID = ?";
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, c.getFullName());
-            ps.setString(2, c.getEmail());
-            ps.setString(3, c.getPassword());
-            ps.setString(4, c.getPhone());
-            ps.setString(5, c.getAccountStatus());
-            ps.setString(6, c.getCustomerId());
+            ps.setString(2, c.getPhone());
+            ps.setString(3, c.getDefaultAddress());
+            ps.setString(4, c.getCustomerId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -97,7 +100,10 @@ public class CustomerDAO {
         Connection conn = null;
         PreparedStatement ps = null;
         try {
-            String sql = "UPDATE `customer` SET `Is_Verified` = 0 WHERE `Customer_ID` = ?";
+            String sql = "UPDATE `user` u "
+                    + "JOIN `customer` c ON u.User_ID = c.User_ID "
+                    + "SET u.Account_Status = 'Inactive' "
+                    + "WHERE c.Customer_ID = ?";
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, id);
@@ -116,15 +122,18 @@ public class CustomerDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT * FROM `customer` WHERE Email = ?";
-            if (customerId != null) {
-                sql += " AND Customer_ID != ?";
+            String sql = "SELECT u.User_ID "
+                    + "FROM `user` u "
+                    + "JOIN `customer` c ON u.User_ID = c.User_ID "
+                    + "WHERE u.Email = ?";
+            if (customerId != null && !customerId.trim().isEmpty()) {
+                sql += " AND c.Customer_ID != ?";
             }
 
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, email);
-            if (customerId != null) {
+            if (customerId != null && !customerId.trim().isEmpty()) {
                 ps.setString(2, customerId);
             }
 
@@ -144,12 +153,16 @@ public class CustomerDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT COUNT(*) FROM `customer` WHERE `Is_Verified` = 1";
+            String sql = "SELECT COUNT(*) "
+                    + "FROM `customer` c "
+                    + "JOIN `user` u ON c.User_ID = u.User_ID "
+                    + "WHERE u.Role_ID = 'CUSTOMER'";
+
             if (keyword != null && !keyword.trim().isEmpty()) {
-                sql += " AND (Full_Name LIKE ? OR Email LIKE ?)";
+                sql += " AND (c.Full_Name LIKE ? OR u.Email LIKE ? OR c.Phone LIKE ?)";
             }
             if (status != null && !status.trim().isEmpty()) {
-                sql += " AND Account_Status = ?";
+                sql += " AND u.Account_Status = ?";
             }
 
             conn = DBContext.getJDBCConnection();
@@ -157,8 +170,10 @@ public class CustomerDAO {
             int paramIndex = 1;
 
             if (keyword != null && !keyword.trim().isEmpty()) {
-                ps.setString(paramIndex++, "%" + keyword.trim() + "%");
-                ps.setString(paramIndex++, "%" + keyword.trim() + "%");
+                String kw = "%" + keyword.trim() + "%";
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
             }
             if (status != null && !status.trim().isEmpty()) {
                 ps.setString(paramIndex++, status);
@@ -183,23 +198,29 @@ public class CustomerDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT * FROM `customer` WHERE `Is_Verified` = 1";
+            String sql = "SELECT c.Customer_ID, c.User_ID, c.Full_Name, c.Phone, c.Default_Address, c.Created_At "
+                    + "FROM `customer` c "
+                    + "JOIN `user` u ON c.User_ID = u.User_ID "
+                    + "WHERE u.Role_ID = 'CUSTOMER'";
+
             if (keyword != null && !keyword.trim().isEmpty()) {
-                sql += " AND (Full_Name LIKE ? OR Email LIKE ?)";
+                sql += " AND (c.Full_Name LIKE ? OR u.Email LIKE ? OR c.Phone LIKE ?)";
             }
             if (status != null && !status.trim().isEmpty()) {
-                sql += " AND Account_Status = ?";
+                sql += " AND u.Account_Status = ?";
             }
 
-            sql += " LIMIT ? OFFSET ?";
+            sql += " ORDER BY c.Created_At DESC LIMIT ? OFFSET ?";
 
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             int paramIndex = 1;
 
             if (keyword != null && !keyword.trim().isEmpty()) {
-                ps.setString(paramIndex++, "%" + keyword.trim() + "%");
-                ps.setString(paramIndex++, "%" + keyword.trim() + "%");
+                String kw = "%" + keyword.trim() + "%";
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
+                ps.setString(paramIndex++, kw);
             }
             if (status != null && !status.trim().isEmpty()) {
                 ps.setString(paramIndex++, status);
@@ -212,12 +233,11 @@ public class CustomerDAO {
             while (rs.next()) {
                 Customer c = new Customer();
                 c.setCustomerId(rs.getString("Customer_ID"));
+                c.setUserId(rs.getString("User_ID"));
                 c.setFullName(rs.getString("Full_Name"));
-                c.setEmail(rs.getString("Email"));
-                c.setPassword(rs.getString("Password"));
                 c.setPhone(rs.getString("Phone"));
-                c.setAccountStatus(rs.getString("Account_Status"));
-                c.setIsVerified(rs.getBoolean("Is_Verified"));
+                c.setDefaultAddress(rs.getString("Default_Address"));
+                c.setCreatedAt(rs.getTimestamp("Created_At"));
                 list.add(c);
             }
         } catch (Exception e) {
