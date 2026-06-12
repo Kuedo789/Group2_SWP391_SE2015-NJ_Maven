@@ -211,6 +211,22 @@
                     width: 100%;
                 }
             }
+
+            .show-password-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-top: -6px;
+                color: var(--text);
+                font-size: 15px;
+                font-weight: 500;
+                cursor: pointer;
+            }
+
+            .show-password-row input {
+                cursor: pointer;
+            }
+
         </style>
     </head>
 
@@ -298,6 +314,7 @@
                             <div class="form-group">
                                 <label>Mật khẩu hiện tại</label>
                                 <input type="password"
+                                       id="currentPassword"
                                        name="currentPassword"
                                        class="form-control"
                                        value="${requestScope.inputCurrentPassword != null ? requestScope.inputCurrentPassword : ''}"
@@ -307,6 +324,7 @@
                             <div class="form-group">
                                 <label>Mật khẩu mới</label>
                                 <input type="password"
+                                       id="newPassword"
                                        name="newPassword"
                                        class="form-control"
                                        maxlength="20"
@@ -317,12 +335,18 @@
                             <div class="form-group">
                                 <label>Xác nhận mật khẩu mới</label>
                                 <input type="password"
+                                       id="confirmPassword"
                                        name="confirmPassword"
                                        class="form-control"
                                        maxlength="20"
                                        value="${requestScope.inputConfirmPassword != null ? requestScope.inputConfirmPassword : ''}"
                                        placeholder="Nhập lại mật khẩu mới">
                             </div>
+
+                            <label class="show-password-row">
+                                <input type="checkbox" id="showPassword" onchange="toggleAllPasswords()">
+                                Hiển thị mật khẩu
+                            </label>           
 
                         </div>
                     </div>
@@ -350,13 +374,16 @@
 
         <script>
             function togglePasswordBox() {
-                const passwordBox = document.getElementById("passwordBox");
+                const box = document.getElementById("passwordBox");
+                box.style.display = box.style.display === "none" ? "block" : "none";
+            }
 
-                if (passwordBox.style.display === "none") {
-                    passwordBox.style.display = "block";
-                } else {
-                    passwordBox.style.display = "none";
-                }
+            function toggleAllPasswords() {
+                const type = document.getElementById("showPassword").checked ? "text" : "password";
+
+                document.getElementById("currentPassword").type = type;
+                document.getElementById("newPassword").type = type;
+                document.getElementById("confirmPassword").type = type;
             }
 
             function resetProfileForm() {
@@ -366,10 +393,15 @@
                 document.querySelector('input[name="phone"]').value =
                         document.getElementById("originalPhone").value;
 
-                document.querySelector('input[name="currentPassword"]').value = "";
-                document.querySelector('input[name="newPassword"]').value = "";
-                document.querySelector('input[name="confirmPassword"]').value = "";
+                document.getElementById("currentPassword").value = "";
+                document.getElementById("newPassword").value = "";
+                document.getElementById("confirmPassword").value = "";
 
+                document.getElementById("currentPassword").type = "password";
+                document.getElementById("newPassword").type = "password";
+                document.getElementById("confirmPassword").type = "password";
+
+                document.getElementById("showPassword").checked = false;
                 document.getElementById("passwordBox").style.display = "none";
             }
         </script>
