@@ -27,9 +27,17 @@
         <div class="nav-icons">
 
             <!-- Search -->
-            <button type="button" title="Tìm kiếm">
-                <span class="material-symbols-outlined">search</span>
-            </button>
+            <form action="<%= contextPath %>/products" method="get" class="nav-search-form">
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Tìm bánh..."
+                    class="nav-search-input">
+
+                <button type="submit" class="nav-search-button" title="Tìm kiếm">
+                    <span class="material-symbols-outlined">search</span>
+                </button>
+            </form>
 
             <!-- Cart -->
             <button type="button" title="Giỏ hàng">
@@ -70,7 +78,12 @@
                             </div>
                         </div>
                     </div>
-
+                    <div class="user-dropdown-item">
+                        <span class="material-symbols-outlined">
+                            leaderboard
+                        </span>
+                        <%= currentUser.getRoleName() != null ? currentUser.getRoleName() : currentUser.getRoleId() %>
+                    </div>
                     <div class="user-dropdown-divider"></div>
 
                     <!-- Profile -->
@@ -107,3 +120,24 @@
         </div>
     </div>
 </nav>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const navSearchForm = document.getElementById("navSearchForm");
+
+        if (!navSearchForm) {
+            return;
+        }
+
+        navSearchForm.addEventListener("submit", function (event) {
+            const input = navSearchForm.querySelector("input[name='search']");
+            const keyword = input ? input.value.trim() : "";
+
+            if (keyword.length === 0) {
+                event.preventDefault();
+                if (input) {
+                    input.focus();
+                }
+            }
+        });
+    });
+</script>

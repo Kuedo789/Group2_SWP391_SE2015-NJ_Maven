@@ -9,11 +9,11 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Properties;
 import jakarta.mail.internet.MimeUtility;
+
 public class EmailUtils {
 
     private static final String FROM_EMAIL = "doduyhung0901@gmail.com";
     private static final String APP_PASSWORD = "erqx uoeu fsdv nwlk";
-
     public static boolean sendOtpEmail(String toEmail, String otpCode) {
         return sendEmail(
                 toEmail,
@@ -22,7 +22,7 @@ public class EmailUtils {
                         "Xác thực tài khoản BakeryZone",
                         "Mã OTP của bạn là:",
                         otpCode,
-                        "Mã này có hiệu lực trong 5 phút."
+                        "Mã này có hiệu lực trong "+OtpUtil.getOtpExpireText()+"."
                 )
         );
     }
@@ -35,7 +35,7 @@ public class EmailUtils {
                         "Xác thực tài khoản BakeryZone",
                         "Cảm ơn bạn đã đăng ký tài khoản tại BakeryZone. Mã OTP của bạn là:",
                         otpCode,
-                        "Mã này có hiệu lực trong 5 phút. Vui lòng không chia sẻ mã này cho người khác."
+                        "Mã này có hiệu lực trong "+OtpUtil.getOtpExpireText()+" phút. Vui lòng không chia sẻ mã này cho người khác."
                 )
         );
     }
@@ -48,7 +48,7 @@ public class EmailUtils {
                         "Đặt lại mật khẩu BakeryZone",
                         "Bạn đã yêu cầu đặt lại mật khẩu. Mã OTP của bạn là:",
                         otpCode,
-                        "Mã này có hiệu lực trong 5 phút. Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này."
+                        "Mã này có hiệu lực trong  "+OtpUtil.getOtpExpireText()+"  phút. Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này."
                 )
         );
     }

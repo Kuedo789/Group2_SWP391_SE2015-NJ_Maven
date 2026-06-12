@@ -37,7 +37,7 @@ public class VerifyForgotOtpServlet extends HttpServlet {
         String otp = request.getParameter("otp");
 
         if (email == null || email.trim().isEmpty()) {
-            request.setAttribute("error", "Phiên đặt lại mật khẩu đã hết hạn. Vui lòng thử lại.");
+            request.setAttribute("error", "Phiên đặt lại mật khẩu đã hết hạn.Vui lòng nhập lại email.");
             request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
             return;
         }
@@ -118,7 +118,7 @@ public class VerifyForgotOtpServlet extends HttpServlet {
         boolean updated = dao.updateOtpByEmail(email, newOtp, newExpiry);
 
         if (!updated) {
-            request.setAttribute("error", "Không thể tạo mã OTP mới. Vui lòng thử lại.");
+            request.setAttribute("error", "Không thể tạo mã OTP mới.Vui lòng nhập lại email.");
             request.getRequestDispatcher("/auth/verify-forgot-otp.jsp").forward(request, response);
             return;
         }
