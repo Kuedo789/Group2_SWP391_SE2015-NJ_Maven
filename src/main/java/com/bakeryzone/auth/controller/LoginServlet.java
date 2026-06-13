@@ -2,18 +2,23 @@ package com.bakeryzone.auth.controller;
 
 import com.bakeryzone.dao.UserDAO;
 import com.bakeryzone.model.User;
+import com.bakeryzone.utils.EmailUtils;
+import com.bakeryzone.utils.OtpUtil;
 import com.bakeryzone.utils.PasswordUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Timestamp;
 
 public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+
         request.getRequestDispatcher("/auth/login.jsp").forward(request, response);
     }
 
@@ -50,7 +55,11 @@ public class LoginServlet extends HttpServlet {
         }
 
         if (!user.isVerified()) {
-            request.setAttribute("error", "Tài khoản chưa xác thực OTP. Vui lòng xác thực trước khi đăng nhập.");
+            request.getSession().setAttribute("otpEmail", email);
+            request.getSession().removeAttribute("otpExpireAtMillis");
+
+            request.setAttribute("unverifiedAccount", true);
+            request.setAttribute("error", "Tài khoản chưa xác thực OTP.");
             request.getRequestDispatcher("/auth/login.jsp").forward(request, response);
             return;
         }

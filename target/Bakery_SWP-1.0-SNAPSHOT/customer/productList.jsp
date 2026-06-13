@@ -56,7 +56,8 @@
                 <div class="filter-row">
                     <div class="product-search-box">
                         <i class="fa fa-search"></i>
-                        <input type="text" id="searchInput" placeholder="Tìm bánh, đồ uống...">
+                        <input type="text" id="searchInput" placeholder="Tìm bánh, đồ uống..."
+                         value="<%= request.getParameter("search") != null ? request.getParameter("search") : "" %>">
                     </div>
 
                     <select id="sortSelect" class="sort-select">
