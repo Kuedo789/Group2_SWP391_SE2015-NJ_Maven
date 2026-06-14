@@ -15,10 +15,18 @@
         <title>CakeZone Admin - Categories</title>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
         <link href="${pageContext.request.contextPath}/assets/css/admin-global.css" rel="stylesheet">
+        <!-- Google Fonts -->
+        <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+        <!-- Bootstrap 5 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <!-- FontAwesome Icons -->
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <!-- Custom styling -->
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductList.css?v=1.3">
     </head>
     <body>
 
-        <jsp:include page="/common/admin-sidebar.jsp" />
+        <jsp:include page="/common/sidebar.jsp" />
 
         <main class="main-wrapper">
 
@@ -44,7 +52,28 @@
 
                 <c:if test="${not empty error}">
                     <div style="background-color: #fee2e2; color: #991b1b; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fecaca;">
-                        <i class="fa-solid fa-circle-exclamation"></i> Đã xảy ra lỗi, vui lòng thử lại!
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <strong>Thất bại:</strong> 
+                        <c:choose>
+                            <c:when test="${error == 'duplicate_id'}">
+                                Mã danh mục này đã tồn tại trong hệ thống! Vui lòng chọn mã khác.
+                            </c:when>
+                            <c:when test="${error == 'invalid_id_format'}">
+                                Mã danh mục không hợp lệ. Vui lòng chỉ sử dụng chữ in hoa, số và dấu gạch ngang (VD: CAT-ABC).
+                            </c:when>
+                            <c:when test="${error == 'desc_too_long'}">
+                                Mô tả quá dài! Vui lòng nhập dưới 255 ký tự.
+                            </c:when>
+                            <c:when test="${error == 'delete_failed'}">
+                                Không thể xóa danh mục này! Có thể danh mục đang chứa sản phẩm hoặc nguyên liệu bên trong.
+                            </c:when>
+                            <c:when test="${error == 'not_found'}">
+                                Không tìm thấy danh mục bạn yêu cầu.
+                            </c:when>
+                            <c:otherwise>
+                                Đã xảy ra lỗi cơ sở dữ liệu. Vui lòng thử lại sau.
+                            </c:otherwise>
+                        </c:choose>
                     </div>
                 </c:if>
 
@@ -80,8 +109,13 @@
                         </thead>
                         <tbody>
                             <c:forEach var="cat" items="${categoryList}">
-                                <tr>
-                                    <td class="cat-id">${cat.categoryId}</td>
+                                <tr style="${!cat.enable ? 'opacity: 0.6; background-color: #f8fafc;' : ''}">
+                                    <td class="cat-id">
+                                        ${cat.categoryId}
+                                        <c:if test="${!cat.enable}">
+                                            <br><span class="badge" style="background: #fee2e2; color: #991b1b; font-size: 10px; margin-top: 4px; padding: 2px 6px;">Đã vô hiệu hóa</span>
+                                        </c:if>
+                                    </td>
                                     <td class="cat-name">${cat.categoryName}</td>
                                     <td class="cat-desc">${cat.description != null ? cat.description : 'Không có mô tả'}</td>
 
@@ -97,9 +131,16 @@
                                     </td>
 
                                     <td class="action-btns">
-                                        <a href="${pageContext.request.contextPath}/admin/categories?action=view&id=${cat.categoryId}" class="btn-icon" title="View" style="text-decoration: none;"><i class="fa-regular fa-eye"></i></a>
-                                        <a href="${pageContext.request.contextPath}/admin/categories?action=edit&id=${cat.categoryId}" class="btn-icon" title="Edit" style="text-decoration: none;"><i class="fa-regular fa-pen-to-square"></i></a>
-                                        <a href="${pageContext.request.contextPath}/admin/categories?action=delete&id=${cat.categoryId}" class="btn-icon" title="Delete" style="text-decoration: none; color: #ef4444;" onclick="return confirm('Bạn có chắc chắn muốn xóa danh mục này?');"><i class="fa-regular fa-trash-can"></i></a>
+                                        <a href="${pageContext.request.contextPath}/admin/categories?action=edit&id=${cat.categoryId}" class="btn-icon" title="Chỉnh sửa" style="text-decoration: none;"><i class="fa-regular fa-pen-to-square"></i></a>
+
+                                        <c:choose>
+                                            <c:when test="${cat.enable}">
+                                                <a href="${pageContext.request.contextPath}/admin/categories?action=delete&id=${cat.categoryId}" class="btn-icon" title="Vô hiệu hóa" style="text-decoration: none; color: #ef4444;" onclick="return confirm('Bạn có chắc chắn muốn vô hiệu hóa danh mục này?');"><i class="fa-regular fa-trash-can"></i></a>
+                                                </c:when>
+                                                <c:otherwise>
+                                                <a href="${pageContext.request.contextPath}/admin/categories?action=restore&id=${cat.categoryId}" class="btn-icon" title="Khôi phục" style="text-decoration: none; color: #10b981;" onclick="return confirm('Bạn có muốn khôi phục danh mục này không?');"><i class="fa-solid fa-rotate-left"></i></a>
+                                                </c:otherwise>
+                                            </c:choose>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -107,7 +148,12 @@
                     </table>
 
                     <div class="pagination">
-                        <span>Tổng cộng <strong>${totalRecords != null ? totalRecords : 0}</strong> danh mục</span>
+                        <span>
+                            Tổng cộng <strong>${totalRecords != null ? totalRecords : 0}</strong> danh mục 
+                            <span style="color: #64748b; font-size: 13px; font-weight: normal; margin-left: 5px;">
+                                (${totalActive != null ? totalActive : 0} đang hoạt động / <span style="color: #ef4444;">${totalDisabled != null ? totalDisabled : 0} đã vô hiệu hóa</span>)
+                            </span>
+                        </span>
 
                         <c:set var="queryStr" value="&search=${searchQuery}&filterType=${filterType}" />
 
