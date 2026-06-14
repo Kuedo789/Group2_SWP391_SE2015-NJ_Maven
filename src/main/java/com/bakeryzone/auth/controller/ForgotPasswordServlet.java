@@ -13,10 +13,12 @@ import java.sql.Timestamp;
 
 public class ForgotPasswordServlet extends HttpServlet {
 
+    private static final int EMAIL_MAX_LENGTH = 100;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.sendRedirect(request.getContextPath() + "/auth/forgot-password.jsp");
+        request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
     }
 
     @Override
@@ -26,17 +28,29 @@ public class ForgotPasswordServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
 
         String email = request.getParameter("email");
+        email = email == null ? "" : email.trim().toLowerCase();
 
-        if (email == null || email.trim().isEmpty()) {
+        request.setAttribute("email", email);
+
+        if (email.isEmpty()) {
             request.setAttribute("error", "Vui lòng nhập email.");
             request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
             return;
         }
 
-        email = email.trim().toLowerCase();
+        if (email.length() > EMAIL_MAX_LENGTH) {
+            request.setAttribute("error", "Email không được vượt quá " + EMAIL_MAX_LENGTH + " ký tự.");
+            request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
+            return;
+        }
+
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            request.setAttribute("error", "Email không đúng định dạng.");
+            request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
+            return;
+        }
 
         UserDAO dao = new UserDAO();
-
         User user = dao.findByEmail(email);
 
         if (user == null) {
@@ -45,20 +59,14 @@ public class ForgotPasswordServlet extends HttpServlet {
             return;
         }
 
-        if (!"LOCAL".equalsIgnoreCase(user.getProvider())) {
-            request.setAttribute("error", "Tài khoản này đăng nhập bằng Google, không thể đặt lại mật khẩu tại đây.");
-            request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
-            return;
-        }
-
         if (!user.isVerified()) {
-            request.setAttribute("error", "Tài khoản này chưa xác thực OTP đăng ký.");
+            request.setAttribute("error", "Tài khoản chưa xác thực OTP đăng ký.");
             request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
             return;
         }
 
         if (!"Active".equalsIgnoreCase(user.getAccountStatus())) {
-            request.setAttribute("error", "Tài khoản của bạn đang bị khóa hoặc không hoạt động.");
+            request.setAttribute("error", "Tài khoản đang bị khóa hoặc không hoạt động.");
             request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
             return;
         }
@@ -66,9 +74,15 @@ public class ForgotPasswordServlet extends HttpServlet {
         String otp = OtpUtil.generateOtp();
         Timestamp otpExpiry = OtpUtil.generateExpiryTime();
 
-        dao.updateOtpByEmail(email, otp, otpExpiry);
+        boolean updated = dao.updateOtpByEmail(email, otp, otpExpiry);
 
-        boolean sent = EmailUtils.sendOtpEmail(email, otp);
+        if (!updated) {
+            request.setAttribute("error", "Không thể tạo mã OTP. Vui lòng thử lại.");
+            request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
+            return;
+        }
+
+        boolean sent = EmailUtils.sendForgotPasswordOtpEmail(email, otp);
 
         if (!sent) {
             dao.clearOtp(email);
@@ -78,11 +92,10 @@ public class ForgotPasswordServlet extends HttpServlet {
         }
 
         request.getSession().setAttribute("resetEmail", email);
-        request.getSession().setAttribute("otpType", "forgot");
+        request.getSession().setAttribute("resetVerified", false);
         request.getSession().setAttribute("otpExpireAtMillis", otpExpiry.getTime());
 
-        request.setAttribute("otpType", "forgot");
-        request.setAttribute("message", "Mã OTP đặt lại mật khẩu đã được gửi đến email.");
-        request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+        request.setAttribute("message", "Mã OTP đặt lại mật khẩu đã được gửi đến email của bạn.");
+        request.getRequestDispatcher("/auth/verify-forgot-otp.jsp").forward(request, response);
     }
 }

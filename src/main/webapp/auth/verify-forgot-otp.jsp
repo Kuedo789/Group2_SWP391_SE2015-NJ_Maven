@@ -30,15 +30,15 @@
             <div class="auth-visual otp-visual">
 
                 <div class="auth-badge">
-                    <span class="material-symbols-outlined">verified_user</span>
-                    XÁC THỰC TÀI KHOẢN
+                    <span class="material-symbols-outlined">lock_reset</span>
+                    KHÔI PHỤC MẬT KHẨU
                 </div>
 
-                <h1>Xác thực email đăng ký</h1>
+                <h1>Xác thực email để đặt lại mật khẩu</h1>
 
                 <p>
                     Nhập mã OTP đã được gửi đến email của bạn.
-                    Sau khi xác thực thành công, bạn có thể đăng nhập vào hệ thống.
+                    Sau khi xác thực thành công, bạn có thể tạo mật khẩu mới.
                 </p>
 
                 <div class="auth-benefits">
@@ -54,8 +54,8 @@
                     </div>
 
                     <div>
-                        <span class="material-symbols-outlined">login</span>
-                        Hoàn tất đăng ký và đăng nhập
+                        <span class="material-symbols-outlined">key</span>
+                        Cho phép đặt lại mật khẩu mới
                     </div>
 
                 </div>
@@ -66,7 +66,7 @@
             <div class="auth-form-wrap">
 
                 <div class="auth-form-header">
-                    <span class="auth-label">Đăng ký tài khoản</span>
+                    <span class="auth-label">Quên mật khẩu</span>
                     <h2>Xác nhận mã OTP</h2>
                 </div>
 
@@ -84,11 +84,11 @@
                     </div>
                 <% } %>
 
-                <form action="<%= contextPath %>/verify-otp" method="post" class="auth-form">
+                <form action="<%= contextPath %>/verify-forgot-otp" method="post" class="auth-form">
 
                     <div class="otp-intro">
                         <span class="material-symbols-outlined">mark_email_read</span>
-                        <p>Nhập mã OTP đã được gửi đến email của bạn để hoàn tất đăng ký tài khoản.</p>
+                        <p>Nhập mã OTP đã được gửi đến email của bạn để tiếp tục đặt lại mật khẩu.</p>
                     </div>
 
                     <div class="form-group">
@@ -120,11 +120,11 @@
 
                     <div class="auth-switch">
                         Chưa nhận được mã?
-                        <a href="<%= contextPath %>/verify-otp?action=resend">Gửi lại mã</a>
+                        <a href="<%= contextPath %>/verify-forgot-otp?action=resend">Gửi lại mã</a>
                     </div>
 
                     <div class="auth-switch">
-                        Đã có tài khoản?
+                        Đã nhớ mật khẩu?
                         <a href="<%= contextPath %>/login">Đăng nhập</a>
                     </div>
 
