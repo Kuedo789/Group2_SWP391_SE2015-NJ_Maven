@@ -650,11 +650,15 @@ button {
 /* =========================================================
    08. Products
 ========================================================= */
+/* =========================================================
+   08. Products
+========================================================= */
 
 .product-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 24px;
+    align-items: stretch;
 }
 
 .product-card {
@@ -663,6 +667,10 @@ button {
     background: var(--card);
     box-shadow: var(--shadow-soft);
     transition: transform 0.28s ease, box-shadow 0.28s ease;
+
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .product-card:hover {
@@ -675,6 +683,7 @@ button {
     height: 210px;
     overflow: hidden;
     background: #f1eadf;
+    flex-shrink: 0;
 }
 
 .product-image img {
@@ -717,22 +726,35 @@ button {
     margin: 18px 18px 6px;
     font-family: "Playfair Display", serif;
     font-size: 20px;
+    line-height: 1.25;
     color: var(--text);
+
+    height: 50px;
+    overflow: hidden;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .product-card p {
-    min-height: 44px;
+    height: 42px;
     margin: 0 18px 18px;
     color: var(--muted);
     font-size: 13px;
     line-height: 1.6;
+    overflow: hidden;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .product-bottom {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin: 0 18px 18px;
+    margin: auto 18px 18px;
 }
 
 .product-bottom strong {
@@ -755,7 +777,6 @@ button {
     color: #fff;
     transform: translateY(-2px);
 }
-
 /* =========================================================
    09. Designer Cake
 ========================================================= */

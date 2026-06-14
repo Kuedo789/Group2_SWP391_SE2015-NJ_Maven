@@ -51,7 +51,7 @@
                 <% if (currentUser == null) { %>
 
                 <!-- Chưa đăng nhập -->
-                <a href="<%= contextPath %>/auth/login.jsp"
+                <a href="<%= contextPath %>/login"
                    class="btn btn-primary">
                     Đăng nhập
                 </a>
