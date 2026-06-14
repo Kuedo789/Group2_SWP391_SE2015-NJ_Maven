@@ -145,7 +145,7 @@
 
                         <div class="form-group">
                             <label class="form-label" for="description">Mô Tả (Description)</label>
-                            <textarea id="description" name="description" class="form-control" placeholder="Mô tả ngắn gọn về danh mục này..."></textarea>
+                            <textarea id="description" name="description" class="form-control" placeholder="Mô tả ngắn gọn về danh mục này..." maxlength="255"></textarea>
                             <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">Lưu ý: Nhóm Nguyên liệu không hiển thị mô tả.</small>
                         </div>
 
