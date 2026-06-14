@@ -227,6 +227,64 @@
                 cursor: pointer;
             }
 
+            .address-profile-box {
+                margin-top: 10px;
+                margin-bottom: 24px;
+                padding: 18px;
+                border: 1px solid #ead8c7;
+                border-radius: 14px;
+                background-color: #fffaf5;
+            }
+
+            .address-profile-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .address-profile-title h3 {
+                margin: 0 0 6px;
+                color: var(--text);
+                font-size: 20px;
+                font-weight: 800;
+            }
+
+            .address-profile-title p {
+                margin: 0;
+                color: var(--text-muted);
+                font-size: 15px;
+            }
+
+            .btn-address-manage {
+                min-width: 170px;
+                height: 46px;
+                border-radius: 9px;
+                background-color: var(--primary);
+                color: white;
+                text-decoration: none;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .btn-address-manage:hover {
+                color: white;
+                opacity: 0.9;
+            }
+
+            @media (max-width: 768px) {
+                .address-profile-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .btn-address-manage {
+                    width: 100%;
+                }
+            }
+
         </style>
     </head>
 
@@ -297,6 +355,20 @@
                                readonly>
                         <div class="form-note">Email dùng để đăng nhập và không thể thay đổi tại đây.</div>
                     </div>
+
+                    <div class="address-profile-box">
+                        <div class="address-profile-header">
+                            <div class="address-profile-title">
+                                <h3>Địa chỉ giao hàng</h3>
+                                <p>Quản lý địa chỉ nhận bánh, ghi chú giao hàng và vị trí giao hàng trên bản đồ.</p>
+                            </div>
+
+                            <a href="${pageContext.request.contextPath}/delivery-address"
+                               class="btn-address-manage">
+                                Quản lý địa chỉ
+                            </a>
+                        </div>
+                    </div>           
 
                     <div class="form-group">
                         <label>Mật khẩu</label>
