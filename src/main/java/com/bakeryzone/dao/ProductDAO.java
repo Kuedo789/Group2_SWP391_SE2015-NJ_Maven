@@ -451,4 +451,31 @@ public class ProductDAO {
         }
         return " ORDER BY p.Product_ID DESC"; // newest first
     }
+public List<Product> getHomepageBestSellerProducts(int limit) {
+    List<Product> products = new ArrayList<>();
+
+    String sql = "SELECT * FROM (" + getBaseUnionQuery() + ") AS p "
+            + "WHERE p.Status = ? AND p.Is_Featured = ? "
+            + "ORDER BY p.Product_ID DESC "
+            + "LIMIT ?";
+
+    try (Connection conn = DBContext.getJDBCConnection();
+         PreparedStatement ps = conn.prepareStatement(sql)) {
+
+        ps.setString(1, "Active");
+        ps.setBoolean(2, true);
+        ps.setInt(3, limit);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                products.add(mapRowToProduct(rs));
+            }
+        }
+
+    } catch (Exception e) {
+        LOGGER.log(Level.SEVERE, "Failed to get homepage best seller products.", e);
+    }
+
+    return products;
+}
 }

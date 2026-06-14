@@ -106,7 +106,7 @@
 
                             <p class="auth-switch">
                                 Chưa có tài khoản?
-                                <a href="${pageContext.request.contextPath}/auth/register.jsp">
+                                <a href="${pageContext.request.contextPath}/register">
                                     Đăng ký ngay
                                 </a>
                             </p>

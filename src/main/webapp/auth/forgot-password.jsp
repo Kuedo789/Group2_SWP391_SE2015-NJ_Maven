@@ -115,7 +115,7 @@
 
                             <div class="auth-switch">
                                 Đã nhớ mật khẩu?
-                                <a href="${pageContext.request.contextPath}/auth/login.jsp">
+                                <a href="${pageContext.request.contextPath}/login">
                                     Đăng nhập
                                 </a>
                             </div>
