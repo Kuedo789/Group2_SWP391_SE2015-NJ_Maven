@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet(name = "DeliveryAddressServlet", urlPatterns = {"/delivery-address"})
 public class DeliveryAddressServlet extends HttpServlet {
@@ -31,7 +32,15 @@ public class DeliveryAddressServlet extends HttpServlet {
             return;
         }
 
-        request.getRequestDispatcher("/customer/deliveryAddress.jsp").forward(request, response);
+        User user = (User) session.getAttribute("user");
+
+        List<DeliveryAddress> addresses
+                = addressDAO.getAddressesByUserId(user.getUserId());
+
+        request.setAttribute("addresses", addresses);
+
+        request.getRequestDispatcher("/customer/deliveryAddress.jsp")
+                .forward(request, response);
     }
 
     @Override
