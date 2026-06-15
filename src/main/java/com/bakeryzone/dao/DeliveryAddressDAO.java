@@ -9,6 +9,9 @@ import com.bakeryzone.utils.DBContext;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.sql.ResultSet;
 
 public class DeliveryAddressDAO {
 
@@ -36,5 +39,46 @@ public class DeliveryAddressDAO {
         }
 
         return false;
+    }
+
+    public List<DeliveryAddress> getAddressesByUserId(String userId) {
+
+        List<DeliveryAddress> list = new ArrayList<>();
+
+        String sql = """
+        SELECT *
+        FROM delivery_address
+        WHERE User_ID = ?
+        ORDER BY Address_ID DESC
+    """;
+
+        try (
+                Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, userId);
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+
+                DeliveryAddress a = new DeliveryAddress();
+
+                a.setAddressId(rs.getInt("Address_ID"));
+                a.setUserId(rs.getString("User_ID"));
+                a.setReceiverName(rs.getString("Receiver_Name"));
+                a.setReceiverPhone(rs.getString("Receiver_Phone"));
+                a.setAddressDetail(rs.getString("Address_Detail"));
+                a.setLatitude(rs.getDouble("Latitude"));
+                a.setLongitude(rs.getDouble("Longitude"));
+                a.setDefault(rs.getBoolean("Is_Default"));
+
+                list.add(a);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 }
