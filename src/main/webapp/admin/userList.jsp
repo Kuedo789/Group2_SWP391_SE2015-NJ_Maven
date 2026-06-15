@@ -604,7 +604,7 @@
                     <a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
                 </li>
                 <li class="menu-item">
-                    <a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm</a>
+                    <a href="${pageContext.request.contextPath}/admin/product?action=list"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm</a>
                 </li>
                 <li class="menu-item"><a href="#"><i class="fa-solid fa-users"></i> Khách hàng</a></li>
                 <li class="menu-item"><a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi</a></li>

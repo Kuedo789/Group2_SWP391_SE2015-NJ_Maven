@@ -1,19 +1,16 @@
 package com.bakeryzone.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Model class representing a Product (Cake Template).
  * Synchronized with the updated database schema where static pricing, stock,
- * and accessory tables are removed.
+ * and accessory tables are removed, and pricing is computed dynamically.
  */
 public class Product {
     private String id;
     private String name;
     private String categoryId;
     private String categoryName;
-    private double basePrice; // Base_Price
+    private double basePrice; // Computed dynamically
     private double estimatedLaborHours; // Estimated_Labor_Hours
     private boolean allowsGreeting; // Allows_Greeting
     private String imageUrl;
@@ -21,12 +18,11 @@ public class Product {
     private boolean isFeatured;
     private String fullDescription;
     private String productType; // Always "Cake"
-    private List<String> additionalImages = new ArrayList<>(); // Secondary images from product_image
     
-    // Cake Recipe Fields (1:1 relationship)
-    private String recipeId;
-    private String recipeName;
-    private String recipeInstructions;
+    // New dynamic financial fields and chef instructions
+    private double defaultMarginPercent;
+    private double defaultServicePercent;
+    private String instructionSteps;
 
     // Default constructor
     public Product() {
@@ -34,18 +30,20 @@ public class Product {
         this.estimatedLaborHours = 0.0;
         this.basePrice = 0.0;
         this.allowsGreeting = true;
+        this.defaultMarginPercent = 30.00;
+        this.defaultServicePercent = 30.00;
     }
 
     // Parameterized constructor
     public Product(String id, String name, String categoryId, String categoryName, 
-                   double basePrice, double estimatedLaborHours, boolean allowsGreeting, String imageUrl, 
+                   double estimatedLaborHours, boolean allowsGreeting, String imageUrl, 
                    String status, boolean isFeatured, String fullDescription, 
-                   String productType) {
+                   String productType, double defaultMarginPercent, double defaultServicePercent, 
+                   String instructionSteps) {
         this.id = id;
         this.name = name;
         this.categoryId = categoryId;
         this.categoryName = categoryName;
-        this.basePrice = basePrice;
         this.estimatedLaborHours = estimatedLaborHours;
         this.allowsGreeting = allowsGreeting;
         this.imageUrl = imageUrl;
@@ -53,7 +51,9 @@ public class Product {
         this.isFeatured = isFeatured;
         this.fullDescription = fullDescription;
         this.productType = "Cake";
-        this.additionalImages = new ArrayList<>();
+        this.defaultMarginPercent = defaultMarginPercent;
+        this.defaultServicePercent = defaultServicePercent;
+        this.instructionSteps = instructionSteps;
     }
 
     // Getters and Setters
@@ -153,35 +153,27 @@ public class Product {
         this.productType = "Cake";
     }
 
-    public List<String> getAdditionalImages() {
-        return additionalImages;
+    public double getDefaultMarginPercent() {
+        return defaultMarginPercent;
     }
 
-    public void setAdditionalImages(List<String> additionalImages) {
-        this.additionalImages = additionalImages;
+    public void setDefaultMarginPercent(double defaultMarginPercent) {
+        this.defaultMarginPercent = defaultMarginPercent;
     }
 
-    public String getRecipeId() {
-        return recipeId;
+    public double getDefaultServicePercent() {
+        return defaultServicePercent;
     }
 
-    public void setRecipeId(String recipeId) {
-        this.recipeId = recipeId;
+    public void setDefaultServicePercent(double defaultServicePercent) {
+        this.defaultServicePercent = defaultServicePercent;
     }
 
-    public String getRecipeName() {
-        return recipeName;
+    public String getInstructionSteps() {
+        return instructionSteps;
     }
 
-    public void setRecipeName(String recipeName) {
-        this.recipeName = recipeName;
-    }
-
-    public String getRecipeInstructions() {
-        return recipeInstructions;
-    }
-
-    public void setRecipeInstructions(String recipeInstructions) {
-        this.recipeInstructions = recipeInstructions;
+    public void setInstructionSteps(String instructionSteps) {
+        this.instructionSteps = instructionSteps;
     }
 }
