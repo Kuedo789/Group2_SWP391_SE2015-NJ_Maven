@@ -24,7 +24,7 @@
             <i class="fa-solid fa-chevron-up" style="font-size: 12px;"></i>
         </div>
         <div class="sub-menu">
-            <a href="${pageContext.request.contextPath}/admin/products" class="sub-menu-item">Products</a>
+            <a href="${pageContext.request.contextPath}/admin/product?action=list" class="sub-menu-item">Products</a>
             <a href="${pageContext.request.contextPath}/admin/categories" class="sub-menu-item active">Categories</a>
             <a href="${pageContext.request.contextPath}/admin/accessories" class="sub-menu-item">Accessories</a>
         </div>
