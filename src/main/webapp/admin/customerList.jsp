@@ -5,9 +5,7 @@
 --%>
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
-<%-- Khai báo cả 2 phiên bản URI để đảm bảo NetBeans/Tomcat không bao giờ bị báo đỏ sọc --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%@ taglib prefix="c_old" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -17,10 +15,7 @@
         <title>CakeZone Admin - Customer Management</title>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/v4-shims.min.css" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
         <style>
@@ -43,10 +38,10 @@
                 margin: 0;
             }
 
-            /* CSS SIDEBAR */
+            /* 🌟 ĐÃ BỔ SUNG: Khối CSS Sidebar nội tại giống userList để khóa chết giao diện đen tuyền */
             .sidebar {
                 width: 260px;
-                background-color: var(--cz-dark-bg);
+                background-color: var(--cz-dark-bg) !important;
                 min-height: 100vh;
                 position: fixed;
                 top: 0; left: 0;
@@ -55,27 +50,20 @@
                 padding: 20px 0;
                 z-index: 100;
             }
-
             .sidebar-brand {
                 padding: 0 25px 25px 25px;
-                display: flex;
-                align-items: center;
+                display: flex; align-items: center;
                 border-bottom: 1px solid #2d2b2b;
             }
-
             .sidebar-brand i { color: var(--cz-primary); font-size: 24px; margin-right: 10px; }
             .sidebar-brand span { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
             .sidebar-brand span span { color: var(--cz-primary); }
             .nav-section-title { color: var(--cz-text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 20px 25px 8px 25px; }
             .sidebar-menu { list-style: none; padding: 0; margin: 0; }
-
-            .menu-item a {
-                display: flex; align-items: center; padding: 11px 25px; color: #b5b5b5; text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.2s ease;
-            }
+            .menu-item a { display: flex; align-items: center; padding: 11px 25px; color: #b5b5b5; text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.2s ease; }
             .menu-item a:hover { color: #fff; background-color: var(--cz-sidebar-active); }
-            .menu-item.active a { color: var(--cz-primary); background-color: var(--cz-sidebar-active); border-left: 3px solid var(--cz-primary); font-weight: 600; }
+            .menu-item.active a { color: var(--cz-primary) !important; background-color: var(--cz-sidebar-active); border-left: 3px solid var(--cz-primary); font-weight: 600; }
             .menu-item a i { display: inline-block; width: 20px; font-size: 16px; margin-right: 12px; text-align: center; }
-
             .sidebar-banner { margin: auto 20px 20px 20px; background: linear-gradient(135deg, #232222, #181717); border-radius: 12px; padding: 20px; border: 1px dashed var(--cz-primary); text-align: center; }
             .sidebar-banner i.cake-icon { font-size: 40px; color: var(--cz-primary); margin-bottom: 10px; display: inline-block; }
             .sidebar-banner h6 { color: #fff; font-size: 14px; margin-bottom: 6px; }
@@ -159,7 +147,6 @@
             .badge-success { background-color: #e6f6eb !important; color: #28a745 !important; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 30px; }
             .badge-secondary { background-color: #fcebeb !important; color: #dc3545 !important; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 30px; }
 
-            /* ĐỒNG BỘ CSS NÚT SỬA XOÁ ĐỂ HIỆN ICON CHUẨN MẪU */
             .btn-action-edit, .btn-action-delete {
                 width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--cz-border-color); background-color: #fff; color: #666; cursor: pointer; transition: all 0.2s; text-decoration: none;
             }
@@ -181,46 +168,9 @@
     </head>
     <body>
 
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fa-solid fa-cake-candles"></i>
-                <span>Cake<span>Zone</span> Admin</span>
-            </div>
-
-            <div class="nav-section-title">Hệ thống chính</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item">
-                    <a href="#"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
-                </li>
-            </ul>
-
-            <div class="nav-section-title">Quản lý</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng</a></li>
-                <li class="menu-item"><a href="${pageContext.request.contextPath}/admin/product?action=list"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm</a></li>
-                <li class="menu-item active"><a href="${pageContext.request.contextPath}/customerList"><i class="fa-solid fa-users"></i> Khách hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a></li>
-            </ul>
-
-            <div class="nav-section-title">Hệ thống</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item">
-                    <a href="${pageContext.request.contextPath}/userList"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
-                </li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hoạt động</a></li>
-            </ul>
-
-            <div class="sidebar-banner">
-                <i class="fa-solid fa-cake-candles cake-icon"></i>
-                <h6>Phát triển tiệm bánh</h6>
-                <p>Tạo ra những chiếc bánh đẹp và trao gửi hạnh phúc!</p>
-            </div>
-        </div>
+        <jsp:include page="/common/sidebar.jsp">
+            <jsp:param name="activeMenu" value="customers" />
+        </jsp:include>
 
         <div class="main-panel">
 
@@ -232,7 +182,7 @@
                         <span>&gt;</span>
                         <a href="#">System</a>
                         <span>&gt;</span>
-                        <a href="#" class="active text-dark font-weight-bold">Quản lý khách hàng</a>
+                        <a href="${pageContext.request.contextPath}/customerList" class="active text-dark font-weight-bold">Quản lý khách hàng</a>
                     </div>
                 </div>
 
@@ -312,10 +262,10 @@
                                     <td>
                                         <div class="d-flex align-items-center justify-content-center gap-2">
                                             <c:set var="cusIdKey" value="${not empty c.customerId ? c.customerId : c.customer_ID}" />
-                                            <a href="customerDetail?action=edit&id=${cusIdKey}" class="btn-action-edit" title="Chỉnh sửa">
+                                            <a href="${pageContext.request.contextPath}/customerDetail?action=edit&id=${cusIdKey}" class="btn-action-edit" title="Chỉnh sửa">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
-                                            <a href="customerDetail?action=delete&id=${cusIdKey}" class="btn-action-delete"
+                                            <a href="${pageContext.request.contextPath}/customerDetail?action=delete&id=${cusIdKey}" class="btn-action-delete"
                                                onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản của ${c.fullName} không?')" title="Xóa">
                                                 <i class="fa-regular fa-trash-can"></i>
                                             </a>
@@ -331,7 +281,7 @@
                         <ul class="pagination-nav">
                             <c:if test="${currentPage > 1}">
                                 <li class="page-num-item">
-                                    <a href="customerList?page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
+                                    <a href="${pageContext.request.contextPath}/customerList?page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
                                         <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -339,13 +289,13 @@
 
                             <c:forEach begin="1" end="${endPage}" var="i">
                                 <li class="page-num-item ${currentPage == i ? 'active' : ''}">
-                                    <a href="customerList?page=${i}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">${i}</a>
+                                    <a href="${pageContext.request.contextPath}/customerList?page=${i}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">${i}</a>
                                 </li>
                             </c:forEach>
 
                             <c:if test="${currentPage < endPage}">
                                 <li class="page-num-item">
-                                    <a href="customerList?page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
+                                    <a href="${pageContext.request.contextPath}/customerList?page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
                                         <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -359,33 +309,5 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-
-        <script>
-            <c:if test="${not empty sessionScope.successMessage}">
-                Toastify({
-                    text: "${sessionScope.successMessage}",
-                    duration: 4000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                    stopOnFocus: true
-                }).showToast();
-                <c:remove var="successMessage" scope="session" />
-            </c:if>
-
-            <c:if test="${not empty sessionScope.errorMessage}">
-                Toastify({
-                    text: "${sessionScope.errorMessage}",
-                    duration: 4000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                    stopOnFocus: true
-                }).showToast();
-                <c:remove var="errorMessage" scope="session" />
-            </c:if>
-        </script>
     </body>
 </html>

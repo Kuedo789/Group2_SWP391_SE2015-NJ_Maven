@@ -206,7 +206,7 @@ public class CustomerDetailServlet extends HttpServlet {
                 u.setUserId(oldCus.getUserId());
                 u.setEmail(email.trim().toLowerCase());
                 u.setPassword(finalPassword);
-                u.setRoleId("CUSTOMER");
+                u.setRoleId("CUS");
                 u.setVerified(true);
                 u.setAccountStatus(accountStatus);
                 u.setFullName(fullName);
@@ -234,11 +234,12 @@ public class CustomerDetailServlet extends HttpServlet {
                 u.setPassword(hashedPassword);
                 u.setPhone(phone);
                 u.setDefaultAddress(defaultAddress);
-                u.setRoleId("CUSTOMER");
+                u.setRoleId("CUS");
                 u.setVerified(true);
                 u.setAccountStatus(accountStatus);
 
                 userDAO.insertUser(u);
+                System.out.println("Đã insert thành công vào Database!");
 
                 session.setAttribute("successMessage", "Thêm mới khách hàng thành công!");
             }

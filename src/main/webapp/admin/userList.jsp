@@ -584,51 +584,9 @@
         </style>
     </head>
     <body>
-
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fa-solid fa-cake-candles"></i>
-                <span>Cake<span>Zone</span> Admin</span>
-            </div>
-
-            <div class="nav-section-title">Hệ thống chính</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item">
-                    <a href="#"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
-                </li>
-            </ul>
-
-            <div class="nav-section-title">Quản lý</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item">
-                    <a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
-                </li>
-                <li class="menu-item">
-                    <a href="${pageContext.request.contextPath}/admin/product?action=list"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm</a>
-                </li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-users"></i> Khách hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a></li>
-            </ul>
-
-            <div class="nav-section-title">Hệ thống</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item active">
-                    <a href="${pageContext.request.contextPath}/userList"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
-                </li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hoạt động</a></li>
-            </ul>
-
-            <div class="sidebar-banner">
-                <i class="fa-solid fa-cake-candles cake-icon"></i>
-                <h6>Phát triển tiệm bánh</h6>
-                <p>Tạo ra những chiếc bánh đẹp và trao gửi hạnh phúc!</p>
-            </div>
-        </div>
+        <jsp:include page="/common/sidebar.jsp">
+            <jsp:param name="activeMenu" value="users" />
+        </jsp:include>
 
         <div class="main-panel">
 
@@ -789,28 +747,28 @@
 
         <script>
             <c:if test="${not empty sessionScope.successMessage}">
-               Toastify({
-                   text: "${sessionScope.successMessage}",
-                   duration: 4000,
-                   close: true,
-                   gravity: "top",
-                   position: "right",
-                   backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                   stopOnFocus: true
-               }).showToast();
+                                                   Toastify({
+                                                       text: "${sessionScope.successMessage}",
+                                                       duration: 4000,
+                                                       close: true,
+                                                       gravity: "top",
+                                                       position: "right",
+                                                       backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                                                       stopOnFocus: true
+                                                   }).showToast();
                 <c:remove var="successMessage" scope="session" />
             </c:if>
 
             <c:if test="${not empty sessionScope.errorMessage}">
-               Toastify({
-                   text: "${sessionScope.errorMessage}",
-                   duration: 4000,
-                   close: true,
-                   gravity: "top",
-                   position: "right",
-                   backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                   stopOnFocus: true
-               }).showToast();
+                                                   Toastify({
+                                                       text: "${sessionScope.errorMessage}",
+                                                       duration: 4000,
+                                                       close: true,
+                                                       gravity: "top",
+                                                       position: "right",
+                                                       backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                                                       stopOnFocus: true
+                                                   }).showToast();
                 <c:remove var="errorMessage" scope="session" />
             </c:if>
         </script>
