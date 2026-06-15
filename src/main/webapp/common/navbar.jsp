@@ -93,7 +93,7 @@
                     </a>
 
                     <!-- Orders -->
-                    <a href="<%= contextPath %>/orders" class="user-dropdown-item">
+                    <a href="<%= contextPath %>/OrderList" class="user-dropdown-item">
                         <span class="material-symbols-outlined">receipt_long</span>
                         <span>Xem đơn hàng</span>
                     </a>
