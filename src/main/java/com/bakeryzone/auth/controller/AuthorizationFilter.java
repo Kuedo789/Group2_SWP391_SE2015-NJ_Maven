@@ -27,14 +27,14 @@ public class AuthorizationFilter implements Filter {
         User user = (User) request.getSession().getAttribute("user");
 
         if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/auth/login.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
         String uri = request.getRequestURI();
         String roleId = user.getRoleId();
 
-        if (uri.contains("/admin/")) {
+        if (uri.contains("/admin/") || uri.contains("/userList") || uri.contains("/userDetail") || uri.contains("/customerList") || uri.contains("/customerDetail")) {
             if (!"ADMIN".equalsIgnoreCase(roleId) && !"STAFF".equalsIgnoreCase(roleId)) {
                 response.sendRedirect(request.getContextPath() + "/home");
                 return;
