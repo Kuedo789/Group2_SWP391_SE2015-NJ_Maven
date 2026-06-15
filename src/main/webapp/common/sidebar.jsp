@@ -20,10 +20,14 @@
             <a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
         <li class="menu-item ${param.activeMenu == 'products' ? 'active' : ''}">
-            <a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm <i class="fa-solid fa-chevron-down arrow"></i></a>
+            <a href="${pageContext.request.contextPath}/admin/product?action=list"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
         <li class="menu-item ${param.activeMenu == 'categories' ? 'active' : ''}" style="padding-left: 20px;">
             <a href="${pageContext.request.contextPath}/admin/categories" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Danh mục</a>
+        </li>
+
+        <li class="menu-item ${param.activeMenu == 'ingredients' ? 'active' : ''}" style="padding-left: 20px;">
+            <a href="${pageContext.request.contextPath}/admin/ingredient?action=list" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Nguyên liệu</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'attributes' ? 'active' : ''}" style="padding-left: 20px;">
             <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Thuộc tính</a>
