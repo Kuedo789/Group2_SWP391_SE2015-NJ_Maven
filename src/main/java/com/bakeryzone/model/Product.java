@@ -176,4 +176,8 @@ public class Product {
     public void setInstructionSteps(String instructionSteps) {
         this.instructionSteps = instructionSteps;
     }
+
+    public java.util.List<String> getAdditionalImages() {
+        return java.util.Collections.emptyList();
+    }
 }
