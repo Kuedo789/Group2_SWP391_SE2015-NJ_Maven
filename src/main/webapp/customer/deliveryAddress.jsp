@@ -5,6 +5,18 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="java.util.List"%>
+<%@page import="com.bakeryzone.model.DeliveryAddress"%>
+
+<%
+    String view = (String) request.getAttribute("view");
+    if (view == null) {
+        view = "list";
+    }
+    DeliveryAddress addressToEdit = (DeliveryAddress) request.getAttribute("addressToEdit");
+    boolean isEditMode = addressToEdit != null;
+    List<DeliveryAddress> addressList = (List<DeliveryAddress>) request.getAttribute("addressList");
+%>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -18,34 +30,246 @@
 
         <style>
             .address-page {
-                max-width: 1180px;
+                max-width: 1200px;
                 margin: 0 auto;
-                padding: 110px 32px 90px;
+                padding: 110px 24px 90px;
             }
 
+            /* Common Card Design */
             .address-card {
                 background-color: var(--white);
                 border-radius: 22px;
-                padding: 40px;
+                padding: 35px;
                 box-shadow: var(--shadow);
             }
 
-            .address-title {
+            /* Header Section */
+            .address-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
                 margin-bottom: 24px;
+                border-bottom: 1px solid #f0edf8;
+                padding-bottom: 16px;
             }
 
-            .address-title h1 {
+            .address-header h2 {
                 margin: 0;
-                font-size: 32px;
+                font-size: 26px;
                 font-weight: 800;
                 color: var(--text);
             }
 
-            .address-form {
-                display: grid;
-                grid-template-columns: 1fr;
+            /* Buttons */
+            .btn-add-new {
+                background-color: var(--primary);
+                color: white;
+                text-decoration: none;
+                padding: 10px 20px;
+                border-radius: 10px;
+                font-weight: 700;
+                font-size: 14px;
+                transition: all 0.2s;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .btn-add-new:hover {
+                opacity: 0.9;
+                color: white;
+            }
+
+            .btn-back {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-decoration: none;
+                border: 1px solid #ccc;
+                border-radius: 10px;
+                color: var(--text);
+                font-weight: 700;
+                padding: 0 20px;
+                height: 52px;
+                background-color: white;
+                transition: all 0.2s;
+            }
+
+            .btn-back:hover {
+                background-color: #f5f5f5;
+                color: var(--text);
+            }
+
+            /* View 1: Address List Layout */
+            .address-list-container {
+                max-width: 850px;
+                margin: 0 auto;
+            }
+
+            .address-items-container {
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .address-item {
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 24px;
+                background-color: #faf9f6;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                transition: all 0.2s;
+            }
+
+            .address-item:hover {
+                border-color: var(--primary);
+                box-shadow: 0 4px 12px rgba(21, 92, 46, 0.05);
+            }
+
+            .address-item.default-item {
+                border-left: 4px solid var(--primary);
+                background-color: #fffdf5;
+            }
+
+            .address-item-left {
+                flex: 1;
+                padding-right: 16px;
+            }
+
+            .address-item-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+
+            .receiver-name {
+                font-weight: 700;
+                font-size: 17px;
+                color: var(--text);
+            }
+
+            .divider-pipe {
+                color: #ccc;
+            }
+
+            .receiver-phone {
+                color: var(--text-muted);
+                font-size: 15px;
+            }
+
+            .address-item-detail {
+                font-size: 15px;
+                color: var(--text);
+                line-height: 1.5;
+                margin-bottom: 12px;
+            }
+
+            .badge-default {
+                background-color: #eefaf1;
+                color: var(--primary);
+                border: 1px solid #b8e6c4;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                font-weight: 700;
+                display: inline-block;
+            }
+
+            .address-item-right {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 18px;
+            }
+
+            .address-actions {
+                display: flex;
                 gap: 12px;
-                margin-bottom: 20px;
+            }
+
+            .action-link {
+                text-decoration: none;
+                font-size: 14px;
+                font-weight: 700;
+                color: #0d6efd;
+            }
+
+            .action-link:hover {
+                text-decoration: underline;
+            }
+
+            .action-link.delete-link {
+                color: #dc3545;
+            }
+
+            .btn-set-default {
+                background-color: white;
+                border: 1px solid #ccc;
+                color: var(--text);
+                padding: 6px 14px;
+                border-radius: 6px;
+                font-size: 13px;
+                font-weight: 700;
+                cursor: pointer;
+                text-decoration: none;
+                transition: all 0.2s;
+            }
+
+            .btn-set-default:hover {
+                background-color: #f5f5f5;
+                border-color: #999;
+                color: var(--text);
+            }
+
+            .no-address-state {
+                text-align: center;
+                padding: 60px 20px;
+                color: var(--text-muted);
+            }
+
+            .no-address-state i {
+                font-size: 56px;
+                margin-bottom: 16px;
+                color: #ddd;
+            }
+
+            .no-address-state p {
+                margin: 0;
+                font-size: 17px;
+                font-weight: 600;
+            }
+
+            /* View 2: Form & Map Layout */
+            .address-form-container {
+                display: grid;
+                grid-template-columns: 1.2fr 1fr;
+                gap: 32px;
+            }
+
+            .address-form {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .form-field-group {
+                margin-bottom: 8px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .form-field-label {
+                font-size: 14px;
+                font-weight: 700;
+                color: var(--text);
+            }
+
+            .required {
+                color: #d62828;
             }
 
             .address-input {
@@ -99,8 +323,7 @@
             }
 
             .button-row {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
+                display: flex;
                 gap: 12px;
             }
 
@@ -113,14 +336,17 @@
                 color: white;
                 font-weight: 700;
                 cursor: pointer;
+                transition: all 0.2s;
             }
 
             .btn-search {
                 background-color: #6c757d;
+                min-width: 110px;
             }
 
             .btn-save {
                 background-color: var(--primary);
+                flex: 1;
             }
 
             .btn-search:hover,
@@ -130,7 +356,7 @@
 
             #map {
                 width: 100%;
-                height: 480px;
+                height: 420px;
                 border-radius: 16px;
                 overflow: hidden;
                 margin-top: 20px;
@@ -168,21 +394,29 @@
                 border: 1px solid #f5b5b5;
             }
 
-            @media (max-width: 768px) {
-                .address-page {
-                    padding: 32px 18px 70px;
-                }
+            .checkbox-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 14px;
+                font-weight: 700;
+                color: var(--text);
+                cursor: pointer;
+                margin: 8px 0 16px;
+            }
 
-                .address-card {
-                    padding: 28px 22px;
-                }
+            .checkbox-row input {
+                width: 18px;
+                height: 18px;
+                cursor: pointer;
+            }
 
-                .button-row {
+            @media (max-width: 992px) {
+                .address-form-container {
                     grid-template-columns: 1fr;
                 }
-
-                #map {
-                    height: 380px;
+                .address-page {
+                    padding: 32px 18px 70px;
                 }
             }
         </style>
@@ -193,85 +427,192 @@
         <jsp:include page="../common/navbar.jsp" />
 
         <main class="address-page">
-            <div class="address-card">
 
-                <div class="address-title">
-                    <h1>Địa chỉ giao hàng</h1>
+            <% if (view.equals("list")) { %>
+                <!-- View 1: Address List Screen -->
+                <div class="address-list-container">
+                    <div class="address-card">
+                        <div class="address-header">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <a href="${pageContext.request.contextPath}/profile" class="btn-back" title="Quay lại trang cá nhân">
+                                    <i class="fa fa-arrow-left" style="margin-right:6px;"></i> Quay lại
+                                </a>
+                                <h2 style="margin:0;">Địa chỉ của tôi</h2>
+                            </div>
+                            <a href="${pageContext.request.contextPath}/delivery-address?action=add" class="btn-add-new">
+                                <i class="fa fa-plus"></i> Thêm địa chỉ mới
+                            </a>
+                        </div>
+
+                        <% if (request.getAttribute("successMessage") != null) { %>
+                        <div class="alert alert-success">
+                            ✓ <%= request.getAttribute("successMessage") %>
+                        </div>
+                        <% } %>
+
+                        <% if (request.getAttribute("errorMessage") != null) { %>
+                        <div class="alert alert-danger">
+                            <%= request.getAttribute("errorMessage") %>
+                        </div>
+                        <% } %>
+
+                        <div class="address-items-container">
+                            <% 
+                                if (addressList == null || addressList.isEmpty()) {
+                            %>
+                                <div class="no-address-state">
+                                    <i class="fa fa-map-marker-alt"></i>
+                                    <p>Bạn chưa lưu địa chỉ giao hàng nào.</p>
+                                </div>
+                            <% 
+                                } else {
+                                    for (DeliveryAddress addr : addressList) {
+                            %>
+                                <div class="address-item <%= addr.isDefault() ? "default-item" : "" %>">
+                                    <div class="address-item-left">
+                                        <div class="address-item-header">
+                                            <span class="receiver-name"><%= addr.getReceiverName() %></span>
+                                            <span class="divider-pipe">|</span>
+                                            <span class="receiver-phone"><%= addr.getReceiverPhone() %></span>
+                                        </div>
+                                        <div class="address-item-detail">
+                                            <%= addr.getAddressDetail() %>
+                                        </div>
+                                        <% if (addr.isDefault()) { %>
+                                            <span class="badge-default">Mặc định</span>
+                                        <% } %>
+                                    </div>
+                                    <div class="address-item-right">
+                                        <div class="address-actions">
+                                            <a href="${pageContext.request.contextPath}/delivery-address?action=edit&id=<%= addr.getAddressId() %>" class="action-link">Cập nhật</a>
+                                            <a href="${pageContext.request.contextPath}/delivery-address?action=delete&id=<%= addr.getAddressId() %>" class="action-link delete-link" onclick="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')">Xóa</a>
+                                        </div>
+                                        <% if (!addr.isDefault()) { %>
+                                            <a href="${pageContext.request.contextPath}/delivery-address?action=set-default&id=<%= addr.getAddressId() %>" class="btn-set-default">Thiết lập mặc định</a>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            <% 
+                                    }
+                                }
+                            %>
+                        </div>
+                    </div>
                 </div>
 
-                <% if (request.getAttribute("successMessage") != null) { %>
-                <div class="alert alert-success">
-                    ✓ <%= request.getAttribute("successMessage") %>
-                </div>
-                <% } %>
+            <% } else if (view.equals("form")) { %>
+                <!-- View 2: Add/Edit Address Form & Map Screen -->
+                <div class="address-form-container">
+                    <div class="address-card">
+                        <div class="address-header">
+                            <h2><%= isEditMode ? "Cập nhật địa chỉ" : "Địa chỉ mới" %></h2>
+                        </div>
 
-                <% if (request.getAttribute("errorMessage") != null) { %>
-                <div class="alert alert-danger">
-                    <%= request.getAttribute("errorMessage") %>
-                </div>
-                <% } %>
+                        <% if (request.getAttribute("errorMessage") != null) { %>
+                        <div class="alert alert-danger">
+                            <%= request.getAttribute("errorMessage") %>
+                        </div>
+                        <% } %>
 
-                <form class="address-form"
-                      action="${pageContext.request.contextPath}/delivery-address"
-                      method="post">
+                        <form class="address-form"
+                              action="${pageContext.request.contextPath}/delivery-address"
+                              method="post">
 
-                    <input type="text"
-                           name="receiverName"
-                           class="address-input"
-                           maxlength="30"
-                           placeholder="Tên người nhận">
+                            <input type="hidden" name="addressId" value="<%= isEditMode ? addressToEdit.getAddressId() : "" %>">
 
-                    <input type="text"
-                           name="receiverPhone"
-                           class="address-input"
-                           maxlength="10"
-                           placeholder="Số điện thoại người nhận">
+                            <div class="form-field-group">
+                                <label class="form-field-label">Tên người nhận <span class="required">*</span></label>
+                                <input type="text"
+                                       name="receiverName"
+                                       class="address-input"
+                                       maxlength="30"
+                                       placeholder="Tên người nhận"
+                                       value="<%= isEditMode ? addressToEdit.getReceiverName() : "" %>">
+                            </div>
 
-                    <div class="address-suggest-box">
-                        <input type="text"
-                               id="addressInput"
-                               class="address-input"
-                               placeholder="Nhập địa chỉ giao hàng"
-                               oninput="suggestAddress()"
-                               autocomplete="off">
+                            <div class="form-field-group">
+                                <label class="form-field-label">Số điện thoại <span class="required">*</span></label>
+                                <input type="text"
+                                       name="receiverPhone"
+                                       class="address-input"
+                                       maxlength="10"
+                                       placeholder="Số điện thoại người nhận"
+                                       value="<%= isEditMode ? addressToEdit.getReceiverPhone() : "" %>">
+                            </div>
 
-                        <div id="suggestionList" class="suggestion-list"></div>
+                            <div class="form-field-group">
+                                <label class="form-field-label">Địa chỉ <span class="required">*</span></label>
+                                <div class="address-suggest-box">
+                                    <input type="text"
+                                           id="addressInput"
+                                           class="address-input"
+                                           placeholder="Nhập và tìm địa chỉ giao hàng"
+                                           oninput="suggestAddress()"
+                                           autocomplete="off"
+                                           value="<%= isEditMode ? addressToEdit.getAddressDetail() : "" %>">
+
+                                    <div id="suggestionList" class="suggestion-list"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-field-group">
+                                <label class="form-field-label">Ghi chú địa chỉ (Tùy chọn)</label>
+                                <input type="text"
+                                       id="addressNote"
+                                       class="address-input"
+                                       maxlength="255"
+                                       placeholder="Ghi chú địa chỉ: số nhà, ngõ, tầng...">
+                            </div>
+
+                            <input type="hidden" id="addressDetail" name="addressDetail" value="<%= isEditMode ? addressToEdit.getAddressDetail() : "" %>">
+                            <input type="hidden" id="latitudeInput" name="latitude" value="<%= isEditMode ? addressToEdit.getLatitude() : "" %>">
+                            <input type="hidden" id="longitudeInput" name="longitude" value="<%= isEditMode ? addressToEdit.getLongitude() : "" %>">
+
+                            <label class="checkbox-row">
+                                <input type="checkbox" name="isDefault" <%= (isEditMode && addressToEdit.isDefault()) ? "checked disabled" : "" %> <%= (!isEditMode && (addressList == null || addressList.isEmpty())) ? "checked disabled" : "" %>>
+                                Đặt làm địa chỉ mặc định
+                            </label>
+
+                            <div class="button-row">
+                                <button type="button"
+                                        class="btn-search"
+                                        onclick="searchAddress()">
+                                    Tìm kiếm
+                                </button>
+
+                                <button type="submit"
+                                        class="btn-save">
+                                    Lưu địa chỉ
+                                </button>
+
+                                <a href="${pageContext.request.contextPath}/delivery-address" class="btn-back">
+                                    Trở lại
+                                </a>
+                            </div>
+
+                        </form>
                     </div>
 
-                    <input type="text"
-                           id="addressNote"
-                           class="address-input"
-                           maxlength="255"
-                           placeholder="Ghi chú địa chỉ: số nhà, ngõ, tầng, ghi chú giao hàng">
+                    <div class="address-card">
+                        <div class="address-header">
+                            <h2>Bản đồ & Tuyến đường</h2>
+                        </div>
 
-                    <input type="hidden" id="addressDetail" name="addressDetail">
-                    <input type="hidden" id="latitudeInput" name="latitude">
-                    <input type="hidden" id="longitudeInput" name="longitude">
+                        <div style="margin-bottom:10px;padding:8px 12px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;font-size:13px;color:#7b5800;">
+                            <i class="fa fa-hand-pointer"></i> <strong>Mẹo:</strong> Nhấp vào bản đồ để ghim vị trí giao hàng bằng tay.
+                        </div>
 
-                    <div class="button-row">
-                        <button type="button"
-                                class="btn-search"
-                                onclick="searchAddress()">
-                            Tìm địa chỉ
-                        </button>
+                        <div id="map"></div>
 
-                        <button type="submit"
-                                class="btn-save">
-                            Lưu địa chỉ
-                        </button>
+                        <div class="address-info">
+                            <div><strong>Địa chỉ:</strong> <span id="selectedAddress"><%= isEditMode ? addressToEdit.getAddressDetail() : "Chưa chọn" %></span></div>
+                            <div><strong>Khoảng cách:</strong> <span id="distance">Chưa tính</span></div>
+                            <div><strong>Thời gian dự kiến:</strong> <span id="duration">Chưa tính</span></div>
+                        </div>
                     </div>
-
-                </form>
-
-                <div id="map"></div>
-
-                <div class="address-info">
-                    <div><strong>Địa chỉ:</strong> <span id="selectedAddress">Chưa chọn</span></div>
-                    <div><strong>Khoảng cách:</strong> <span id="distance">Chưa tính</span></div>
-                    <div><strong>Thời gian dự kiến:</strong> <span id="duration">Chưa tính</span></div>
                 </div>
+            <% } %>
 
-            </div>
         </main>
 
         <jsp:include page="../common/footer.jsp" />
@@ -280,205 +621,264 @@
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
         <script>
-                                    const shopLat = 21.0278;
-                                    const shopLng = 105.8342;
+            const isEditMode = <%= isEditMode %>;
+            const editLat = <%= isEditMode ? addressToEdit.getLatitude() : "null" %>;
+            const editLng = <%= isEditMode ? addressToEdit.getLongitude() : "null" %>;
+            const editAddress = `<%= isEditMode ? addressToEdit.getAddressDetail().replace("`", "\\`").replace("$", "\\$") : "" %>`;
 
-                                    let customerMarker = null;
-                                    let routeLine = null;
-                                    let suggestTimer = null;
+            const shopLat = 21.0278;
+            const shopLng = 105.8342;
 
-                                    const map = L.map("map").setView([shopLat, shopLng], 13);
+            let customerMarker = null;
+            let routeLine = null;
+            let suggestTimer = null;
 
-                                    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                                        maxZoom: 19,
-                                        attribution: "&copy; OpenStreetMap"
-                                    }).addTo(map);
+            // Only initialize map if form view is active
+            const mapContainer = document.getElementById("map");
+            let map = null;
 
-                                    L.marker([shopLat, shopLng])
-                                            .addTo(map)
-                                            .bindPopup("Cửa hàng bánh")
-                                            .openPopup();
+            if (mapContainer) {
+                map = L.map("map").setView([shopLat, shopLng], 13);
 
-                                    async function searchAddress() {
-                                        const address = document.getElementById("addressInput").value.trim();
+                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                    maxZoom: 19,
+                    attribution: "&copy; OpenStreetMap"
+                }).addTo(map);
 
-                                        if (address === "") {
-                                            alert("Vui lòng nhập địa chỉ giao hàng.");
-                                            return;
-                                        }
+                L.marker([shopLat, shopLng])
+                        .addTo(map)
+                        .bindPopup("Cửa hàng bánh")
+                        .openPopup();
+            }
 
-                                        const url = "https://nominatim.openstreetmap.org/search"
-                                                + "?format=json"
-                                                + "&addressdetails=1"
-                                                + "&limit=1"
-                                                + "&countrycodes=vn"
-                                                + "&q=" + encodeURIComponent(address);
+            window.addEventListener("load", function () {
+                if (isEditMode && editLat && editLng && map) {
+                    updateMarker(editLat, editLng);
+                    calculateRoute(editLat, editLng);
+                    document.getElementById("selectedAddress").innerText = editAddress;
+                }
+            });
 
-                                        try {
-                                            const response = await fetch(url);
-                                            const data = await response.json();
+            async function searchAddress() {
+                const address = document.getElementById("addressInput").value.trim();
 
-                                            if (data.length === 0) {
-                                                alert("Không tìm thấy địa chỉ. Vui lòng nhập rõ hơn.");
-                                                return;
-                                            }
+                if (address === "") {
+                    alert("Vui lòng nhập địa chỉ giao hàng.");
+                    return;
+                }
 
-                                            selectAddress(data[0]);
+                const url = "https://nominatim.openstreetmap.org/search"
+                        + "?format=json"
+                        + "&addressdetails=1"
+                        + "&limit=1"
+                        + "&countrycodes=vn"
+                        + "&q=" + encodeURIComponent(address);
 
-                                        } catch (error) {
-                                            alert("Không thể tìm địa chỉ. Vui lòng thử lại.");
-                                        }
-                                    }
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
 
-                                    function suggestAddress() {
-                                        clearTimeout(suggestTimer);
+                    if (data.length === 0) {
+                        alert("Không tìm thấy địa chỉ. Vui lòng nhập rõ hơn.");
+                        return;
+                    }
 
-                                        suggestTimer = setTimeout(async function () {
-                                            const keyword = document.getElementById("addressInput").value.trim();
-                                            const suggestionList = document.getElementById("suggestionList");
+                    selectAddress(data[0]);
 
-                                            if (keyword.length < 3) {
-                                                hideSuggestions();
-                                                return;
-                                            }
+                } catch (error) {
+                    alert("Không thể tìm địa chỉ. Vui lòng thử lại.");
+                }
+            }
 
-                                            const url = "https://nominatim.openstreetmap.org/search"
-                                                    + "?format=json"
-                                                    + "&addressdetails=1"
-                                                    + "&limit=5"
-                                                    + "&countrycodes=vn"
-                                                    + "&q=" + encodeURIComponent(keyword);
+            function suggestAddress() {
+                clearTimeout(suggestTimer);
 
-                                            try {
-                                                const response = await fetch(url);
-                                                const data = await response.json();
+                suggestTimer = setTimeout(async function () {
+                    const keyword = document.getElementById("addressInput").value.trim();
+                    const suggestionList = document.getElementById("suggestionList");
 
-                                                suggestionList.innerHTML = "";
+                    if (keyword.length < 3) {
+                        hideSuggestions();
+                        return;
+                    }
 
-                                                if (data.length === 0) {
-                                                    hideSuggestions();
-                                                    return;
-                                                }
+                    const url = "https://nominatim.openstreetmap.org/search"
+                            + "?format=json"
+                            + "&addressdetails=1"
+                            + "&limit=5"
+                            + "&countrycodes=vn"
+                            + "&q=" + encodeURIComponent(keyword);
 
-                                                data.forEach(function (item) {
-                                                    const div = document.createElement("div");
-                                                    div.className = "suggestion-item";
-                                                    div.innerText = item.display_name;
+                    try {
+                        const response = await fetch(url);
+                        const data = await response.json();
 
-                                                    div.onclick = function () {
-                                                        selectAddress(item);
-                                                    };
+                        suggestionList.innerHTML = "";
 
-                                                    suggestionList.appendChild(div);
-                                                });
+                        if (data.length === 0) {
+                            hideSuggestions();
+                            return;
+                        }
 
-                                                suggestionList.style.display = "block";
+                        data.forEach(function (item) {
+                            const div = document.createElement("div");
+                            div.className = "suggestion-item";
+                            div.innerText = item.display_name;
 
-                                            } catch (error) {
-                                                hideSuggestions();
-                                            }
+                            div.onclick = function () {
+                                selectAddress(item);
+                            };
 
-                                        }, 500);
-                                    }
+                            suggestionList.appendChild(div);
+                        });
 
-                                    function selectAddress(item) {
-                                        const customerLat = parseFloat(item.lat);
-                                        const customerLng = parseFloat(item.lon);
-                                        const address = item.display_name;
+                        suggestionList.style.display = "block";
 
-                                        document.getElementById("addressInput").value = address;
-                                        const note = document.getElementById("addressNote").value.trim();
+                    } catch (error) {
+                        hideSuggestions();
+                    }
 
-                                        document.getElementById("selectedAddress").innerText =
-                                                note === "" ? address : note + ", " + address;
-                                        document.getElementById("addressDetail").value =
-                                                note === "" ? address : note + ", " + address;
-                                        document.getElementById("latitudeInput").value = customerLat;
-                                        document.getElementById("longitudeInput").value = customerLng;
+                }, 500);
+            }
 
-                                        hideSuggestions();
-                                        updateMarker(customerLat, customerLng);
-                                        calculateRoute(customerLat, customerLng);
-                                    }
+            function selectAddress(item) {
+                const customerLat = parseFloat(item.lat);
+                const customerLng = parseFloat(item.lon);
+                const address = item.display_name;
 
-                                    function updateMarker(customerLat, customerLng) {
-                                        if (customerMarker !== null) {
-                                            map.removeLayer(customerMarker);
-                                        }
+                document.getElementById("addressInput").value = address;
+                const note = document.getElementById("addressNote").value.trim();
 
-                                        customerMarker = L.marker([customerLat, customerLng])
-                                                .addTo(map)
-                                                .bindPopup("Địa chỉ giao hàng")
-                                                .openPopup();
+                document.getElementById("selectedAddress").innerText =
+                        note === "" ? address : note + ", " + address;
+                document.getElementById("addressDetail").value =
+                        note === "" ? address : note + ", " + address;
+                document.getElementById("latitudeInput").value = customerLat;
+                document.getElementById("longitudeInput").value = customerLng;
 
-                                        map.setView([customerLat, customerLng], 15);
-                                    }
+                hideSuggestions();
+                updateMarker(customerLat, customerLng);
+                calculateRoute(customerLat, customerLng);
+            }
 
-                                    async function calculateRoute(customerLat, customerLng) {
-                                        const osrmUrl = "https://router.project-osrm.org/route/v1/driving/"
-                                                + shopLng + "," + shopLat + ";"
-                                                + customerLng + "," + customerLat
-                                                + "?overview=full&geometries=geojson";
+            function updateMarker(customerLat, customerLng) {
+                if (!map) return;
 
-                                        try {
-                                            const response = await fetch(osrmUrl);
-                                            const data = await response.json();
+                if (customerMarker !== null) {
+                    map.removeLayer(customerMarker);
+                }
 
-                                            if (data.code !== "Ok") {
-                                                alert("Không tính được đường đi.");
-                                                return;
-                                            }
+                customerMarker = L.marker([customerLat, customerLng])
+                        .addTo(map)
+                        .bindPopup("Địa chỉ giao hàng")
+                        .openPopup();
 
-                                            const route = data.routes[0];
+                map.setView([customerLat, customerLng], 15);
+            }
 
-                                            document.getElementById("distance").innerText =
-                                                    (route.distance / 1000).toFixed(2) + " km";
+            async function calculateRoute(customerLat, customerLng) {
+                if (!map) return;
 
-                                            document.getElementById("duration").innerText =
-                                                    formatDuration(route.duration);
+                const osrmUrl = "https://router.project-osrm.org/route/v1/driving/"
+                        + shopLng + "," + shopLat + ";"
+                        + customerLng + "," + customerLat
+                        + "?overview=full&geometries=geojson";
 
-                                            if (routeLine !== null) {
-                                                map.removeLayer(routeLine);
-                                            }
+                try {
+                    const response = await fetch(osrmUrl);
+                    const data = await response.json();
 
-                                            routeLine = L.geoJSON(route.geometry).addTo(map);
-                                            map.fitBounds(routeLine.getBounds());
+                    if (data.code !== "Ok") {
+                        alert("Không tính được đường đi.");
+                        return;
+                    }
 
-                                        } catch (error) {
-                                            alert("Không thể tính đường đi.");
-                                        }
-                                    }
+                    const route = data.routes[0];
+                    const distanceKm = route.distance / 1000;
 
-                                    function formatDuration(seconds) {
-                                        const totalMinutes = Math.round(seconds / 60);
+                    document.getElementById("distance").innerText =
+                            distanceKm.toFixed(2) + " km";
 
-                                        if (totalMinutes < 60) {
-                                            return totalMinutes + " phút";
-                                        }
+                    // Tính thời gian theo xe máy (~30 km/h trong đô thị)
+                    const motoSpeedKmh = 30;
+                    const motoSeconds = (distanceKm / motoSpeedKmh) * 3600;
+                    document.getElementById("duration").innerText =
+                            formatDuration(motoSeconds);
 
-                                        const hours = Math.floor(totalMinutes / 60);
-                                        const minutes = totalMinutes % 60;
+                    if (routeLine !== null) {
+                        map.removeLayer(routeLine);
+                    }
 
-                                        if (minutes === 0) {
-                                            return hours + " giờ";
-                                        }
+                    routeLine = L.geoJSON(route.geometry).addTo(map);
+                    map.fitBounds(routeLine.getBounds());
 
-                                        return hours + " giờ " + minutes + " phút";
-                                    }
+                } catch (error) {
+                    alert("Không thể tính đường đi.");
+                }
+            }
 
-                                    function hideSuggestions() {
-                                        const suggestionList = document.getElementById("suggestionList");
-                                        suggestionList.style.display = "none";
-                                        suggestionList.innerHTML = "";
-                                    }
+            // Ghim vị trí bằng tay khi click lên bản đồ
+            if (map) {
+                map.on("click", async function (e) {
+                    const lat = e.latlng.lat;
+                    const lng = e.latlng.lng;
 
-                                    document.addEventListener("click", function (event) {
-                                        const box = document.querySelector(".address-suggest-box");
+                    // Reverse geocode để lấy tên địa chỉ
+                    let addressName = "Vị trí đã ghim (" + lat.toFixed(5) + ", " + lng.toFixed(5) + ")";
+                    try {
+                        const revUrl = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lng + "&addressdetails=1";
+                        const revRes = await fetch(revUrl);
+                        const revData = await revRes.json();
+                        if (revData && revData.display_name) {
+                            addressName = revData.display_name;
+                        }
+                    } catch (err) {}
 
-                                        if (box && !box.contains(event.target)) {
-                                            hideSuggestions();
-                                        }
-                                    });
+                    // Cập nhật input và marker
+                    document.getElementById("addressInput").value = addressName;
+                    document.getElementById("addressDetail").value = addressName;
+                    document.getElementById("latitudeInput").value = lat;
+                    document.getElementById("longitudeInput").value = lng;
+                    document.getElementById("selectedAddress").innerText = addressName;
+
+                    hideSuggestions();
+                    updateMarker(lat, lng);
+                    calculateRoute(lat, lng);
+                });
+            }
+
+            function formatDuration(seconds) {
+                const totalMinutes = Math.round(seconds / 60);
+
+                if (totalMinutes < 60) {
+                    return totalMinutes + " phút";
+                }
+
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+
+                if (minutes === 0) {
+                    return hours + " giờ";
+                }
+
+                return hours + " giờ " + minutes + " phút";
+            }
+
+            function hideSuggestions() {
+                const suggestionList = document.getElementById("suggestionList");
+                if (suggestionList) {
+                    suggestionList.style.display = "none";
+                    suggestionList.innerHTML = "";
+                }
+            }
+
+            document.addEventListener("click", function (event) {
+                const box = document.querySelector(".address-suggest-box");
+
+                if (box && !box.contains(event.target)) {
+                    hideSuggestions();
+                }
+            });
         </script>
 
     </body>
