@@ -35,14 +35,12 @@ public class UserDetailServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            // Lấy action: delete, edit hoặc null
             String action = request.getParameter("action");
 
             String id = request.getParameter("id");
 
             StaffDAO dao = new StaffDAO();
 
-            // Nếu action là delete thì xóa theo userId dạng String
             if (action != null && action.equals("delete")) {
                 Staff staffToDelete = dao.getStaffById(id);
                 String name = (staffToDelete != null) ? staffToDelete.getFullName() : "nhân viên";
@@ -58,13 +56,11 @@ public class UserDetailServlet extends HttpServlet {
                 return;
             }
 
-            // Nếu action là edit thì tìm user theo userId dạng String
             if (action != null && action.equals("edit")) {
                 Staff existingStaff = dao.getStaffById(id);
                 request.setAttribute("USER_DATA", existingStaff);
             }
 
-            // Chuyển sang trang userDetail.jsp
             request.getRequestDispatcher("admin/userDetail.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -78,10 +74,8 @@ public class UserDetailServlet extends HttpServlet {
             throws ServletException, IOException {
 
         try {
-            // Đảm bảo đọc tiếng Việt đúng
             request.setCharacterEncoding("UTF-8");
 
-            // Lấy dữ liệu từ form
             String action = request.getParameter("action");
             String userId = request.getParameter("userId");
             String fullName = request.getParameter("fullName");
@@ -93,7 +87,6 @@ public class UserDetailServlet extends HttpServlet {
 
             StaffDAO dao = new StaffDAO();
 
-            // Tạo object User để truyền xuống DAO
             Staff s = new Staff();
 
             s.setFullName(fullName);
@@ -138,11 +131,9 @@ public class UserDetailServlet extends HttpServlet {
 
             HttpSession session = request.getSession();
 
-            // Nếu đang sửa user thì set userId dạng String rồi update
             if (isEdit) {
                 s.setStaffId(userId);
 
-                // Nếu sửa user mà không nhập password mới thì giữ password cũ
                 Staff oldStaff = dao.getStaffById(userId);
                 s.setIsActiveStaff(oldStaff.isIsActiveStaff());
                 if (password == null || password.trim().isEmpty()) {

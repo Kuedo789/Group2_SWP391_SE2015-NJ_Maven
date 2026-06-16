@@ -334,7 +334,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Email đăng nhập hệ thống <span class="text-danger">*</span></label>
                                 <input type="email" name="email" value="${USER_DATA.email}" class="form-control" placeholder="username@gmail.com" required
-                                       ${param.action == 'edit' ? 'readonly style="background-color: #f1ede8; cursor: not-allowed;"' : ''}>
+                                       ${param.action == 'edit' ? ' style=""' : ''}>
                             </div>
 
                             <div class="col-md-6">
@@ -355,7 +355,7 @@
                                 <label class="form-label">Trạng thái tài khoản <span class="text-danger">*</span></label>
                                 <select name="accountStatus" class="form-select">
                                     <option value="Active" ${USER_DATA.accountStatus == 'Active' ? 'selected' : ''}>Active (Đang hoạt động)</option>
-                                    <option value="Deactive" ${USER_DATA.accountStatus == 'Deactive' ? 'selected' : ''}>Deactive (Vô hiệu hóa)</option>
+                                    <option value="Deactive" ${USER_DATA.accountStatus == 'Deactive' ? 'selected' : ''}>Deactive (Đã khóa)</option>
                                 </select>
                             </div>
 
