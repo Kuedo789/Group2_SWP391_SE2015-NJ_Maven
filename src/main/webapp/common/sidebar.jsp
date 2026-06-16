@@ -29,7 +29,7 @@
             <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Thuộc tính</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'customers' ? 'active' : ''}">
-            <a href="#"><i class="fa-solid fa-users"></i> Khách hàng</a>
+            <a href="${pageContext.request.contextPath}/customerList"><i class="fa-solid fa-users"></i> Khách hàng</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'promotions' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi <i class="fa-solid fa-chevron-down arrow"></i></a>
