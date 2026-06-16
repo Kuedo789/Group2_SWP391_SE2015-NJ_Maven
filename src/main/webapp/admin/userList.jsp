@@ -680,16 +680,26 @@
                                     <td class="text-warning">${u.phone}</td>
 
                                     <td style="text-align: center;">
+
                                         <c:set var="roleKey" value="${not empty u.roleId ? u.roleId : u.role_ID}" />
                                         <span class="badge ${roleKey eq 'ADMIN' ? 'badge-admin' : (roleKey eq 'STAFF' ? 'badge-staff' : 'badge-shipper')}">
-                                            ${roleKey}
+                                            <c:choose>
+                                                <c:when test="${roleKey eq 'ADMIN'}">Quản lý</c:when>
+                                                <c:when test="${roleKey eq 'STAFF'}">Nhân viên</c:when>
+                                                <c:when test="${roleKey eq 'SHIPPER'}">Người giao hàng</c:when>
+                                                <c:otherwise>${roleKey}</c:otherwise>
+                                            </c:choose>
                                         </span>
                                     </td>
 
                                     <td style="text-align: center;">
                                         <c:set var="statusKey" value="${not empty u.accountStatus ? u.accountStatus : u.account_Status}" />
                                         <span class="badge ${statusKey eq 'Active' ? 'badge-success' : 'badge-secondary'}">
-                                            ● ${not empty statusKey ? statusKey : 'Unknown'}
+                                            <c:choose>
+                                                <c:when test="${statusKey eq 'Active'}">Đang hoạt động</c:when>
+                                                <c:when test="${statusKey eq 'Deactive'}">Đã khóa</c:when>
+                                                <c:otherwise>${statusKey}</c:otherwise>
+                                            </c:choose>
                                         </span>
                                     </td>
 

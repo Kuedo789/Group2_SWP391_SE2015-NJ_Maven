@@ -5,10 +5,7 @@
 package com.bakeryzone.admin.controller;
 
 import com.bakeryzone.dao.CustomerDAO;
-import com.bakeryzone.dao.UserDAO;
 import com.bakeryzone.model.Customer;
-import com.bakeryzone.model.User;
-import com.bakeryzone.utils.PasswordUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -65,36 +62,23 @@ public class CustomerDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             String action = request.getParameter("action");
-            String id = request.getParameter("id"); // Customer_ID dạng String
+            String id = request.getParameter("id"); 
 
             CustomerDAO dao = new CustomerDAO();
-            UserDAO userDAO = new UserDAO();
 
-            // LOGIC XỬ LÝ XÓA MỀM KHÁCH HÀNG
             if (action != null && action.equals("delete")) {
                 Customer cus = dao.getCustomerById(id);
                 String name = (cus != null) ? cus.getFullName() : "khách hàng";
 
-                dao.deleteCustomer(id); // Gọi hàm xóa mềm tài khoản khách hàng
+                dao.deleteCustomer(id); 
 
-                request.getSession().setAttribute("successMessage", "Đã xóa tài khoản của " + name + " thành công!");
+                request.getSession().setAttribute("successMessage", "xóa tài khoản " + name + " thành công!");
                 response.sendRedirect("customerList");
                 return;
             }
 
-            // LOGIC BỐC DỮ LIỆU CŨ ĐỂ ĐỔ LÊN FORM SỬA
             if (action != null && action.equals("edit")) {
                 Customer existingCustomer = dao.getCustomerById(id);
-
-                if (existingCustomer != null) {
-                    User existingUser = userDAO.getUserById(existingCustomer.getUserId());
-
-                    if (existingUser != null) {
-                        request.setAttribute("FORM_EMAIL", existingUser.getEmail());
-                        request.setAttribute("FORM_STATUS", existingUser.getAccountStatus());
-                    }
-                }
-
                 request.setAttribute("CUSTOMER_DATA", existingCustomer);
             }
 
@@ -128,21 +112,19 @@ public class CustomerDetailServlet extends HttpServlet {
             String password = request.getParameter("password");
             String phone = request.getParameter("phone");
             String accountStatus = request.getParameter("accountStatus");
-            String defaultAddress = request.getParameter("defaultAddress");
 
             CustomerDAO dao = new CustomerDAO();
-            UserDAO userDAO = new UserDAO();
 
             Customer c = new Customer();
-            c.setCustomerId(customerId);
             c.setFullName(fullName);
+            c.setEmail(email);
             c.setPhone(phone);
-            c.setDefaultAddress(defaultAddress);
+            c.setAccountStatus(accountStatus);
+            c.setIsVerified(true); 
 
             String errorMessage = null;
             boolean isEdit = action != null && action.equals("edit");
 
-            // VALIDATE ĐẦU VÀO BACKEND
             if (fullName == null || fullName.trim().isEmpty()
                     || email == null || email.trim().isEmpty()
                     || phone == null || phone.trim().isEmpty()
@@ -150,18 +132,16 @@ public class CustomerDetailServlet extends HttpServlet {
                     || (!isEdit && (password == null || password.trim().isEmpty()))) {
                 errorMessage = "Vui lòng điền đầy đủ các trường thông tin";
             } else if (!phone.matches("^(0)[35789][0-9]{8}$")) {
-                errorMessage = "Số điện thoại phải là 10 chữ số đầu VN";
+                errorMessage = "Số điện thoại phải là 10 chữ số đầu Việt Nam.";
             } else if (!isEdit && password.length() < 6) {
-                errorMessage = "Mật khẩu thêm mới phải từ 6 kí tự trở lên";
+                errorMessage = "Mật khẩu thêm mới phải từ 6 ký tự trở lên";
             } else if (dao.checkEmailExist(email, isEdit ? customerId : null)) {
-                errorMessage = "Địa chỉ Email này đã được đăng kí bởi một khách hàng khác";
+                errorMessage = "Địa chỉ Email này đã được đăng ký bởi một khách hàng khác";
             }
 
             if (errorMessage != null) {
                 request.setAttribute("ERROR_MSG", errorMessage);
                 request.setAttribute("CUSTOMER_DATA", c);
-                request.setAttribute("FORM_EMAIL", email);
-                request.setAttribute("FORM_STATUS", accountStatus);
                 request.getRequestDispatcher("admin/customerDetail.jsp").forward(request, response);
                 return;
             }
@@ -169,78 +149,20 @@ public class CustomerDetailServlet extends HttpServlet {
             HttpSession session = request.getSession();
 
             if (isEdit) {
+                c.setCustomerId(customerId);
                 Customer oldCus = dao.getCustomerById(customerId);
 
-                if (oldCus == null) {
-                    session.setAttribute("errorMessage", "Không tìm thấy khách hàng cần cập nhật!");
-                    response.sendRedirect("customerList");
-                    return;
-                }
-
-                User oldUser = userDAO.getUserById(oldCus.getUserId());
-
-                if (oldUser == null) {
-                    session.setAttribute("errorMessage", "Không tìm thấy tài khoản của khách hàng!");
-                    response.sendRedirect("customerList");
-                    return;
-                }
-
-                String finalPassword;
-
                 if (password == null || password.trim().isEmpty()) {
-                    finalPassword = oldUser.getPassword();
+                    c.setPassword(oldCus.getPassword());
                 } else {
-                    finalPassword = PasswordUtils.hashPassword(password);
-
-                    if (finalPassword == null) {
-                        request.setAttribute("ERROR_MSG", "Không thể xử lý mật khẩu. Vui lòng thử lại.");
-                        request.setAttribute("CUSTOMER_DATA", c);
-                        request.setAttribute("FORM_EMAIL", email);
-                        request.setAttribute("FORM_STATUS", accountStatus);
-                        request.getRequestDispatcher("admin/customerDetail.jsp").forward(request, response);
-                        return;
-                    }
+                    c.setPassword(password);
                 }
 
-                User u = new User();
-                u.setUserId(oldCus.getUserId());
-                u.setEmail(email.trim().toLowerCase());
-                u.setPassword(finalPassword);
-                u.setRoleId("CUS");
-                u.setVerified(true);
-                u.setAccountStatus(accountStatus);
-                u.setFullName(fullName);
-                u.setPhone(phone);
-                u.setDefaultAddress(defaultAddress);
-
-                userDAO.updateUser(u);
-
+                dao.updateCustomer(c);
                 session.setAttribute("successMessage", "Cập nhật tài khoản khách hàng thành công!");
             } else {
-                String hashedPassword = PasswordUtils.hashPassword(password);
-
-                if (hashedPassword == null) {
-                    request.setAttribute("ERROR_MSG", "Không thể xử lý mật khẩu. Vui lòng thử lại.");
-                    request.setAttribute("CUSTOMER_DATA", c);
-                    request.setAttribute("FORM_EMAIL", email);
-                    request.setAttribute("FORM_STATUS", accountStatus);
-                    request.getRequestDispatcher("admin/customerDetail.jsp").forward(request, response);
-                    return;
-                }
-
-                User u = new User();
-                u.setFullName(fullName);
-                u.setEmail(email.trim().toLowerCase());
-                u.setPassword(hashedPassword);
-                u.setPhone(phone);
-                u.setDefaultAddress(defaultAddress);
-                u.setRoleId("CUS");
-                u.setVerified(true);
-                u.setAccountStatus(accountStatus);
-
-                userDAO.insertUser(u);
-                System.out.println("Đã insert thành công vào Database!");
-
+                c.setPassword(password);
+                dao.insertCustomer(c);
                 session.setAttribute("successMessage", "Thêm mới khách hàng thành công!");
             }
 
@@ -252,14 +174,16 @@ public class CustomerDetailServlet extends HttpServlet {
         }
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
-    @Override
-    public String getServletInfo() {
+
+/**
+ * Returns a short description of the servlet.
+ *
+ * @return a String containing servlet description
+ */
+@Override
+public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
 
 }
+

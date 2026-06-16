@@ -4,40 +4,32 @@
  */
 package com.bakeryzone.model;
 
-import java.sql.Timestamp;
-
 /**
  *
  * @author Asus
  */
 public class Staff {
-   private String staffId;
-    private String userId;       
+    private String staffId;
     private String fullName;
-    private String phone;
-    private String position;    
-    private boolean isActiveStaff;
-    private Timestamp createdAt; 
     private String email;
     private String password;
+    private String phone;
     private String roleId;
     private String accountStatus;
+    private boolean isActiveStaff;
 
     public Staff() {
     }
 
-    public Staff(String staffId, String userId, String fullName, String phone, String position, boolean isActiveStaff, Timestamp createdAt, String email, String password, String roleId, String accountStatus) {
+    public Staff(String staffId, String fullName, String email, String password, String phone, String roleId, String accountStatus, boolean isActiveStaff) {
         this.staffId = staffId;
-        this.userId = userId;
         this.fullName = fullName;
-        this.phone = phone;
-        this.position = position;
-        this.isActiveStaff = isActiveStaff;
-        this.createdAt = createdAt;
         this.email = email;
         this.password = password;
+        this.phone = phone;
         this.roleId = roleId;
         this.accountStatus = accountStatus;
+        this.isActiveStaff = isActiveStaff;
     }
 
     public String getStaffId() {
@@ -48,52 +40,12 @@ public class Staff {
         this.staffId = staffId;
     }
 
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
     public String getFullName() {
         return fullName;
     }
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getPosition() {
-        return position;
-    }
-
-    public void setPosition(String position) {
-        this.position = position;
-    }
-
-    public boolean isIsActiveStaff() {
-        return isActiveStaff;
-    }
-
-    public void setIsActiveStaff(boolean isActiveStaff) {
-        this.isActiveStaff = isActiveStaff;
-    }
-
-    public Timestamp getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Timestamp createdAt) {
-        this.createdAt = createdAt;
     }
 
     public String getEmail() {
@@ -112,6 +64,14 @@ public class Staff {
         this.password = password;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
     public String getRoleId() {
         return roleId;
     }
@@ -128,7 +88,13 @@ public class Staff {
         this.accountStatus = accountStatus;
     }
 
-    
+    public boolean isIsActiveStaff() {
+        return isActiveStaff;
+    }
+
+    public void setIsActiveStaff(boolean isActiveStaff) {
+        this.isActiveStaff = isActiveStaff;
+    }
     
     
 }

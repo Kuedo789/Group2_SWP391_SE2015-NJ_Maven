@@ -91,12 +91,12 @@ public class CustomerListServlet extends HttpServlet {
             request.setAttribute("CUSTOMERS", customerList);
             request.setAttribute("currentPage", pageIndex);
             request.setAttribute("endPage", totalPages);
-            request.setAttribute("activeMenu", "customers");
-            request.getRequestDispatcher("/admin/customerList.jsp").forward(request, response);
+
+            request.getRequestDispatcher("admin/customerList.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/customerList");
+            response.sendRedirect("userList");
         }
 
     }
