@@ -103,11 +103,46 @@
                 font-size: 14px;
             }
 
-            .address-area {
-                min-height: 145px;
-                padding-top: 14px;
-                resize: vertical;
-                font-family: inherit;
+            .alert {
+                margin-bottom: 28px;
+                padding: 12px 16px;
+                border-radius: 10px;
+                font-weight: 600;
+            }
+
+            .profile-error {
+                color: #d62828;
+                background-color: #fff0f0;
+                border: 1px solid #f5b5b5;
+            }
+
+            .profile-success {
+                color: #155c2e;
+                background-color: #eefaf1;
+                border: 1px solid #b8e6c4;
+            }
+
+            .change-password-toggle {
+                width: fit-content;
+                padding: 10px 18px;
+                border: none;
+                border-radius: 10px;
+                background-color: var(--primary);
+                color: white;
+                font-weight: 600;
+                cursor: pointer;
+            }
+
+            .change-password-toggle:hover {
+                opacity: 0.9;
+            }
+
+            .password-box {
+                margin-top: 18px;
+                padding: 18px;
+                border: 1px solid #ead8c7;
+                border-radius: 14px;
+                background-color: #fffaf5;
             }
 
             .profile-actions {
@@ -177,9 +212,79 @@
                 }
             }
 
-            .alert {
-                margin-bottom: 28px;
+            .show-password-row {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-top: -6px;
+                color: var(--text);
+                font-size: 15px;
+                font-weight: 500;
+                cursor: pointer;
             }
+
+            .show-password-row input {
+                cursor: pointer;
+            }
+
+            .address-profile-box {
+                margin-top: 10px;
+                margin-bottom: 24px;
+                padding: 18px;
+                border: 1px solid #ead8c7;
+                border-radius: 14px;
+                background-color: #fffaf5;
+            }
+
+            .address-profile-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 16px;
+            }
+
+            .address-profile-title h3 {
+                margin: 0 0 6px;
+                color: var(--text);
+                font-size: 20px;
+                font-weight: 800;
+            }
+
+            .address-profile-title p {
+                margin: 0;
+                color: var(--text-muted);
+                font-size: 15px;
+            }
+
+            .btn-address-manage {
+                min-width: 170px;
+                height: 46px;
+                border-radius: 9px;
+                background-color: var(--primary);
+                color: white;
+                text-decoration: none;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .btn-address-manage:hover {
+                color: white;
+                opacity: 0.9;
+            }
+
+            @media (max-width: 768px) {
+                .address-profile-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .btn-address-manage {
+                    width: 100%;
+                }
+            }
+
         </style>
     </head>
 
@@ -196,18 +301,28 @@
                 </div>
 
                 <% if (request.getAttribute("successMessage") != null) { %>
-                <div class="alert alert-success">
-                     ✓ <%= request.getAttribute("successMessage") %>
+                <div class="alert profile-success">
+                    ✓ <%= request.getAttribute("successMessage") %>
                 </div>
                 <% } %>
 
                 <% if (request.getAttribute("errorMessage") != null) { %>
-                <div class="alert alert-danger">
+                <div class="alert profile-error">
                     <%= request.getAttribute("errorMessage") %>
                 </div>
                 <% } %>
 
-                <form class="profile-form" action="${pageContext.request.contextPath}/profile" method="post">
+                <form id="profileForm"
+                      class="profile-form"
+                      action="${pageContext.request.contextPath}/profile"
+                      method="post">
+
+                    <!-- Dùng để reset về thông tin gốc khi bấm Hủy -->
+                    <input type="hidden" id="originalFullName" value="${sessionScope.user.fullName}">
+                    <input type="hidden" id="originalPhone" value="${sessionScope.user.phone}">
+
+                    <!-- Giữ address cũ để servlet không update address thành null -->
+                    <input type="hidden" name="address" value="${sessionScope.user.defaultAddress}">
 
                     <div class="form-row">
                         <div class="form-group">
@@ -215,7 +330,8 @@
                             <input type="text"
                                    name="fullName"
                                    class="form-control"
-                                   value="${sessionScope.user.fullName}"
+                                   value="${requestScope.inputFullName != null ? requestScope.inputFullName : sessionScope.user.fullName}"
+                                   maxlength="30"
                                    placeholder="Nhập họ và tên của bạn">
                         </div>
 
@@ -224,7 +340,8 @@
                             <input type="text"
                                    name="phone"
                                    class="form-control"
-                                   value="${sessionScope.user.phone}"
+                                   value="${requestScope.inputPhone != null ? requestScope.inputPhone : sessionScope.user.phone}"
+                                   maxlength="10"
                                    placeholder="Nhập số điện thoại">
                         </div>
                     </div>
@@ -239,15 +356,79 @@
                         <div class="form-note">Email dùng để đăng nhập và không thể thay đổi tại đây.</div>
                     </div>
 
+                    <div class="address-profile-box">
+                        <div class="address-profile-header">
+                            <div class="address-profile-title">
+                                <h3>Địa chỉ giao hàng</h3>
+                                <p>Quản lý địa chỉ nhận bánh, ghi chú giao hàng và vị trí giao hàng trên bản đồ.</p>
+                            </div>
+
+                            <a href="${pageContext.request.contextPath}/delivery-address"
+                               class="btn-address-manage">
+                                Quản lý địa chỉ
+                            </a>
+                        </div>
+                    </div>           
+
                     <div class="form-group">
-                        <label>Địa chỉ giao hàng <span class="required">*</span></label>
-                        <textarea name="address"
-                                  class="form-control address-area"
-                                  placeholder="Nhập địa chỉ giao hàng">${sessionScope.user.defaultAddress}</textarea>
+                        <label>Mật khẩu</label>
+
+                        <button type="button"
+                                class="change-password-toggle"
+                                onclick="togglePasswordBox()">
+                            Đổi mật khẩu
+                        </button>
+
+                        <div id="passwordBox"
+                             class="password-box"
+                             style="display: <%= request.getAttribute("showPasswordBox") != null ? "block" : "none" %>;">
+
+                            <div class="form-group">
+                                <label>Mật khẩu hiện tại</label>
+                                <input type="password"
+                                       id="currentPassword"
+                                       name="currentPassword"
+                                       class="form-control"
+                                       value="${requestScope.inputCurrentPassword != null ? requestScope.inputCurrentPassword : ''}"
+                                       placeholder="Nhập mật khẩu hiện tại">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Mật khẩu mới</label>
+                                <input type="password"
+                                       id="newPassword"
+                                       name="newPassword"
+                                       class="form-control"
+                                       maxlength="20"
+                                       value="${requestScope.inputNewPassword != null ? requestScope.inputNewPassword : ''}"
+                                       placeholder="Nhập mật khẩu mới">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Xác nhận mật khẩu mới</label>
+                                <input type="password"
+                                       id="confirmPassword"
+                                       name="confirmPassword"
+                                       class="form-control"
+                                       maxlength="20"
+                                       value="${requestScope.inputConfirmPassword != null ? requestScope.inputConfirmPassword : ''}"
+                                       placeholder="Nhập lại mật khẩu mới">
+                            </div>
+
+                            <label class="show-password-row">
+                                <input type="checkbox" id="showPassword" onchange="toggleAllPasswords()">
+                                Hiển thị mật khẩu
+                            </label>           
+
+                        </div>
                     </div>
 
                     <div class="profile-actions">
-                        <button type="button" class="btn-cancel" onclick="history.back()">Hủy</button>
+                        <button type="button"
+                                class="btn-cancel"
+                                onclick="resetProfileForm()">
+                            Hủy
+                        </button>
 
                         <button type="submit" class="btn-update">
                             <i class="fa fa-save"></i>
@@ -262,6 +443,40 @@
 
         <jsp:include page="../common/footer.jsp" />
         <jsp:include page="../common/scripts.jsp" />
+
+        <script>
+            function togglePasswordBox() {
+                const box = document.getElementById("passwordBox");
+                box.style.display = box.style.display === "none" ? "block" : "none";
+            }
+
+            function toggleAllPasswords() {
+                const type = document.getElementById("showPassword").checked ? "text" : "password";
+
+                document.getElementById("currentPassword").type = type;
+                document.getElementById("newPassword").type = type;
+                document.getElementById("confirmPassword").type = type;
+            }
+
+            function resetProfileForm() {
+                document.querySelector('input[name="fullName"]').value =
+                        document.getElementById("originalFullName").value;
+
+                document.querySelector('input[name="phone"]').value =
+                        document.getElementById("originalPhone").value;
+
+                document.getElementById("currentPassword").value = "";
+                document.getElementById("newPassword").value = "";
+                document.getElementById("confirmPassword").value = "";
+
+                document.getElementById("currentPassword").type = "password";
+                document.getElementById("newPassword").type = "password";
+                document.getElementById("confirmPassword").type = "password";
+
+                document.getElementById("showPassword").checked = false;
+                document.getElementById("passwordBox").style.display = "none";
+            }
+        </script>
 
     </body>
 </html>

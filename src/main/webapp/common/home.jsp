@@ -5,7 +5,9 @@
     Author     : admin
 --%>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="com.bakeryzone.model.Product" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
@@ -60,7 +62,7 @@
                         </p>
 
                         <div class="hero-actions">
-                            <a href="#" class="btn btn-primary">Đặt bánh ngay</a>
+                            <a href="<%= request.getContextPath() %>/products" class="btn btn-primary">Đặt bánh ngay</a>
                             <a href="#" class="btn btn-outline">Tự thiết kế bánh của bạn</a>
                         </div>
                     </div>
@@ -82,79 +84,65 @@
 
                 <div class="category-grid">
 
-                    <a href="${pageContext.request.contextPath}/products?category=Bánh Flan Gato" class="category-item">
+                    <%
+                        List<Map<String, String>> homepageCategories =
+                                (List<Map<String, String>>) request.getAttribute("homepageCategories");
+
+                        if (homepageCategories != null && !homepageCategories.isEmpty()) {
+                            for (Map<String, String> category : homepageCategories) {
+                                String categoryId = category.get("id");
+                                String categoryName = category.get("name");
+
+                               String encodedCategory = java.net.URLEncoder.encode(categoryName, "UTF-8");
+
+                               String iconFile = "default.png";
+
+                                if ("CAT_FLAN".equalsIgnoreCase(categoryId)) {
+                                    iconFile = "flan-gato.png";
+                                } else if ("CAT_ENTREMET".equalsIgnoreCase(categoryId)) {
+                                    iconFile = "entremet.png";
+                                } else if ("CAT_CREAM".equalsIgnoreCase(categoryId)) {
+                                    iconFile = "kem-bap.png";
+                                } else if ("CAT_MOUSSE".equalsIgnoreCase(categoryId)) {
+                                    iconFile = "banh-mousse.png";
+                                } else if ("CAT_PREMIUM".equalsIgnoreCase(categoryId)) {
+                                    iconFile = "sweetbox-premium.png";
+                                } else if ("CAT_SWEETIN".equalsIgnoreCase(categoryId)) {
+                                    iconFile = "sweetin.png";
+                                } else if ("CAT_HEALTHY".equalsIgnoreCase(categoryId)) {
+                                    iconFile = "healthy.png";
+                                } else if ("CAT_BAKED".equalsIgnoreCase(categoryId)) {
+                                    iconFile = "banh-my.png";
+                                } else if ("CAT_COMBO".equalsIgnoreCase(categoryId)) {
+                                    iconFile = "combo.png";
+                                } else if ("CAT_SIGNATURE".equalsIgnoreCase(categoryId)) {
+                                    iconFile = "signature-cake.png";
+                                }
+                    %>
+
+                    <a href="${pageContext.request.contextPath}/products?category=<%= encodedCategory %>" class="category-item">
                         <div class="category-icon">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/flan-gato.png" alt="Bánh Flan Gato">
+                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/<%= iconFile %>"
+                                 alt="<%= categoryName %>">
                         </div>
-                        <span>Bánh Flan Gato</span>
+                        <span><%= categoryName %></span>
                     </a>
 
-                    <a href="${pageContext.request.contextPath}/products?category=Bánh Entremet" class="category-item">
-                        <div class="category-icon">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/entremet.png" alt="Bánh Entremet">
-                        </div>
-                        <span>Bánh Entremet</span>
-                    </a>
+                    <%
+                            }
+                        } else {
+                    %>
 
-                    <a href="${pageContext.request.contextPath}/products?category=Bánh Kem Bắp" class="category-item">
-                        <div class="category-icon">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/kem-bap.png" alt="Bánh Kem Bắp">
-                        </div>
-                        <span>Bánh Kem Bắp</span>
-                    </a>
+                    <div class="category-empty">
+                        <p>Hiện chưa có danh mục nào.</p>
+                    </div>
 
-                    <a href="${pageContext.request.contextPath}/products?category=Bánh Mousse" class="category-item">
-                        <div class="category-icon">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/banh-mousse.png" alt="Bánh Mousse">
-                        </div>
-                        <span>Bánh Mousse</span>
-                    </a>
-
-                    <a href="${pageContext.request.contextPath}/products?category=Sweetbox Premium" class="category-item">
-                        <div class="category-icon">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/sweetbox-premium.png" alt="Sweetbox Premium">
-                        </div>
-                        <span>Sweetbox Premium</span>
-                    </a>
-
-                    <a href="${pageContext.request.contextPath}/products?category=Sweetbox" class="category-item">
-                        <div class="category-icon">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/sweetbox.png" alt="Sweetbox">
-                        </div>
-                        <span>Sweetbox</span>
-                    </a>
-
-                    <a href="${pageContext.request.contextPath}/products?category=Sweetin" class="category-item">
-                        <div class="category-icon">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/sweetin.png" alt="Sweetin">
-                        </div>
-                        <span>Sweetin</span>
-                    </a>
-
-                    <a href="${pageContext.request.contextPath}/products?category=Bánh Healthy" class="category-item">
-                        <div class="category-icon">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/healthy.png" alt="Bánh Healthy">
-                        </div>
-                        <span>Bánh Healthy</span>
-                    </a>
-
-                    <a href="${pageContext.request.contextPath}/products?category=Bánh nướng %26 Bánh mì" class="category-item">
-                        <div class="category-icon">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/banh-my.png" alt="Bánh nướng và Bánh mì">
-                        </div>
-                        <span>Bánh nướng & Bánh mì</span>
-                    </a>
-
-                    <a href="${pageContext.request.contextPath}/products?category=Combo" class="category-item">
-                        <div class="category-icon">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/combo.png" alt="Combo">
-                        </div>
-                        <span>Combo</span>
-                    </a>
+                    <%
+                        }
+                    %>
 
                 </div>
             </section>
-
             <!-- Bánh bán chạy -->
             <section class="section">
                 <div class="section-heading section-heading-bottom">
@@ -163,83 +151,109 @@
                         <p>Những hương vị được yêu thích nhất tại tiệm.</p>
                     </div>
 
-                    <a href="#" class="view-more">
+                    <a href="${pageContext.request.contextPath}/products" class="view-more">
                         Xem tất cả
                         <span class="material-symbols-outlined">arrow_forward</span>
                     </a>
                 </div>
 
                 <div class="product-grid">
+                    <%
+                        List<Product> bestSellerProducts =
+                                (List<Product>) request.getAttribute("bestSellerProducts");
+
+                        if (bestSellerProducts != null && !bestSellerProducts.isEmpty()) {
+                            for (int i = 0; i < bestSellerProducts.size(); i++) {
+                                Product product = bestSellerProducts.get(i);
+
+                                String productId = product.getId();
+                                String productName = product.getName();
+                                String description = product.getFullDescription();
+                                String imageUrl = product.getImageUrl();
+
+                                if (description == null || description.trim().isEmpty()) {
+                                    description = "Sản phẩm được yêu thích tại Bakery Zone.";
+                                }
+
+                                if (description.length() > 95) {
+                                    description = description.substring(0, 95) + "...";
+                                }
+
+                                if (imageUrl == null || imageUrl.trim().isEmpty()) {
+                                    imageUrl = "assets/images/products/basic.png";
+                                }
+
+                                String finalImageUrl;
+                                if (imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+                                    finalImageUrl = imageUrl;
+                                } else {
+                                    finalImageUrl = request.getContextPath() + "/" + imageUrl;
+                                }
+
+                                String badgeClass = "";
+                                String badgeText = "";
+
+                                if (i == 0) {
+                                    badgeClass = "badge-red";
+                                    badgeText = "Bán chạy";
+                                } else if (i == 1) {
+                                    badgeClass = "badge-brown";
+                                    badgeText = "Mới";
+                                } else if (i == 2) {
+                                    badgeClass = "badge-yellow";
+                                    badgeText = "Nổi bật";
+                                }
+                    %>
+
                     <div class="product-card">
                         <div class="product-image">
-                            <img src="${pageContext.request.contextPath}/assets/images/products/matcha_dautay.png"
-                                 alt="Bánh Matcha Dâu Tây">
-                            <span class="badge badge-red">Bán chạy</span>
+                            <a href="<%= request.getContextPath() %>/product-detail?id=<%= productId %>">
+                                <img src="<%= finalImageUrl %>" alt="<%= productName %>">
+                            </a>
+
+                            <% if (!badgeText.isEmpty()) { %>
+                            <span class="badge <%= badgeClass %>"><%= badgeText %></span>
+                            <% } %>
                         </div>
 
-                        <h3>Bánh Matcha Dâu Tây</h3>
-                        <p>Cốt bánh matcha thơm lừng, kem tươi và dâu tươi chua ngọt hài hòa.</p>
+                        <h3><%= productName %></h3>
+                        <p><%= description %></p>
 
                         <div class="product-bottom">
-                            <strong>450.000đ</strong>
-                            <button type="button">
+                            <strong><%= String.format("%,.0f", product.getBasePrice()).replace(",", ".") %>đ</strong>
+
+                            <button type="button"
+                                    onclick="window.location.href = '<%= request.getContextPath() %>/product-detail?id=<%= productId %>'">
                                 <span class="material-symbols-outlined">add_shopping_cart</span>
                             </button>
                         </div>
                     </div>
+
+                    <%
+                            }
+                        } else {
+                    %>
 
                     <div class="product-card">
                         <div class="product-image">
                             <img src="${pageContext.request.contextPath}/assets/images/products/basic.png"
-                                 alt="Bánh Sinh Nhật Tối Giản">
-                            <span class="badge badge-brown">Mới</span>
+                                 alt="Chưa có sản phẩm bán chạy">
                         </div>
 
-                        <h3>Bánh Sinh Nhật Tối Giản</h3>
-                        <p>Thiết kế thanh lịch, kem béo ngậy với điểm nhấn trang trí thiên nhiên.</p>
+                        <h3>Chưa có sản phẩm</h3>
+                        <p>Hiện chưa có sản phẩm bán chạy nào được cấu hình trong hệ thống.</p>
 
                         <div class="product-bottom">
-                            <strong>380.000đ</strong>
+                            <strong>0đ</strong>
                             <button type="button">
                                 <span class="material-symbols-outlined">add_shopping_cart</span>
                             </button>
                         </div>
                     </div>
 
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="${pageContext.request.contextPath}/assets/images/products/basic-2.png"
-                                 alt="Mousse Dâu Tây">
-                            <span class="badge badge-yellow">Nổi bật</span>
-                        </div>
-
-                        <h3>Mousse Dâu Tây</h3>
-                        <p>Lớp mousse dâu tươi mềm mịn, ngọt thanh mát lạnh bọc nhân dâu tây.</p>
-
-                        <div class="product-bottom">
-                            <strong>420.000đ</strong>
-                            <button type="button">
-                                <span class="material-symbols-outlined">add_shopping_cart</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="${pageContext.request.contextPath}/assets/images/products/sung_bo.png"
-                                 alt="Croissant Bơ Pháp">
-                        </div>
-
-                        <h3>Croissant Bơ Pháp</h3>
-                        <p>Vỏ bánh giòn rụm, ngàn lớp thơm phức mùi bơ Pháp hảo hạng.</p>
-
-                        <div class="product-bottom">
-                            <strong>45.000đ</strong>
-                            <button type="button">
-                                <span class="material-symbols-outlined">add_shopping_cart</span>
-                            </button>
-                        </div>
-                    </div>
+                    <%
+                        }
+                    %>
                 </div>
             </section>
 

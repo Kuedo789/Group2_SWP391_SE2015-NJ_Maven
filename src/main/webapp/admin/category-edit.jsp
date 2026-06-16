@@ -65,7 +65,7 @@
 
                         <div class="form-group">
                             <label class="form-label">Mô Tả (Description)</label>
-                            <textarea name="description" class="form-control" ${category.categoryType == 'Nguyên liệu' ? 'disabled' : ''}>${category.description}</textarea>
+                            <textarea name="description" class="form-control" ${category.categoryType == 'Nguyên liệu' ? 'disabled' : ''} maxlength="255">${category.description}</textarea>
                         </div>
 
                         <div class="form-actions">

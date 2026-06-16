@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
+    <!-- ================= SERVLETS ================= -->
     <servlet>
         <servlet-name>UserDetailServlet</servlet-name>
         <servlet-class>com.bakeryzone.admin.controller.UserDetailServlet</servlet-class>
@@ -41,20 +42,26 @@
         <servlet-class>com.bakeryzone.auth.controller.HomeServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>GoogleLoginServlet</servlet-name>
-        <servlet-class>com.bakeryzone.auth.controller.GoogleLoginServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>GoogleCallbackServlet</servlet-name>
-        <servlet-class>com.bakeryzone.auth.controller.GoogleCallbackServlet</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>CustomerListServlet</servlet-name>
         <servlet-class>com.bakeryzone.admin.controller.CustomerListServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>CustomerDetailServlet</servlet-name>
         <servlet-class>com.bakeryzone.admin.controller.CustomerDetailServlet</servlet-class>
+    </servlet>
+    <!-- ================= FILTERS ================= -->
+    <filter>
+        <filter-name>AuthorizationFilter</filter-name>
+        <filter-class>com.bakeryzone.auth.controller.AuthorizationFilter</filter-class>
+    </filter>
+    <!-- ================= SERVLET MAPPINGS ================= -->
+    <servlet>
+        <servlet-name>CustomerOrderListServlet</servlet-name>
+        <servlet-class>com.bakeryzone.customer.controller.CustomerOrderListServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>CustomerOrderDetailServlet</servlet-name>
+        <servlet-class>com.bakeryzone.customer.controller.CustomerOrderDetailServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>UserDetailServlet</servlet-name>
@@ -97,14 +104,6 @@
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>GoogleLoginServlet</servlet-name>
-        <url-pattern>/goole-login</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>GoogleCallbackServlet</servlet-name>
-        <url-pattern>/google-callback</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
         <servlet-name>CustomerListServlet</servlet-name>
         <url-pattern>/customerList</url-pattern>
     </servlet-mapping>
@@ -112,9 +111,33 @@
         <servlet-name>CustomerDetailServlet</servlet-name>
         <url-pattern>/customerDetail</url-pattern>
     </servlet-mapping>
+    <!-- ================= FILTER MAPPINGS ================= -->
+    <filter-mapping>
+        <filter-name>AuthorizationFilter</filter-name>
+        <url-pattern>/userList</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthorizationFilter</filter-name>
+        <url-pattern>/userDetail</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthorizationFilter</filter-name>
+        <url-pattern>/customerList</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthorizationFilter</filter-name>
+        <url-pattern>/customerDetail</url-pattern>
+    </filter-mapping>
+    <!-- ================= SESSION CONFIG ================= -->
+    <servlet-mapping>
+        <servlet-name>CustomerOrderListServlet</servlet-name>
+        <url-pattern>/OrderList</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CustomerOrderDetailServlet</servlet-name>
+        <url-pattern>/OrderDetail</url-pattern>
+    </servlet-mapping>
     <session-config>
-        <session-timeout>
-            30
-        </session-timeout>
+        <session-timeout>30</session-timeout>
     </session-config>
 </web-app>
