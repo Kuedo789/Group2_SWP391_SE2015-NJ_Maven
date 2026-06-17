@@ -5,77 +5,101 @@
 
 package com.bakeryzone.customer.controller;
 
+import com.bakeryzone.dao.CustomerDAO;
+import com.bakeryzone.dao.OrderDAO;
+import com.bakeryzone.model.Customer;
+import com.bakeryzone.model.Order;
+import com.bakeryzone.model.User;
 import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
-/**
- *
- * @author admin
- */
 public class CustomerOrderDetailServlet extends HttpServlet {
    
-    /** 
-     * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet CustomerOrderDetailServlet</title>");  
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>Servlet CustomerOrderDetailServlet at " + request.getContextPath () + "</h1>");
-            out.println("</body>");
-            out.println("</html>");
-        }
-    } 
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-    /** 
-     * Handles the HTTP <code>GET</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        // Nếu chưa đăng nhập, chuyển hướng về trang đăng nhập
+        if (currentUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        String orderNo = request.getParameter("orderNo");
+        if (orderNo == null || orderNo.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/OrderList");
+            return;
+        }
+
+        OrderDAO orderDAO = new OrderDAO();
+        Order order = orderDAO.getOrderByNo(orderNo);
+
+        // Kiểm tra đơn hàng tồn tại
+        if (order == null) {
+            response.sendRedirect(request.getContextPath() + "/OrderList");
+            return;
+        }
+
+        // Đảm bảo khách hàng chỉ xem được đơn hàng của chính mình (Bảo mật)
+        if (!order.getCustomerId().equals(currentUser.getUserId())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập thông tin đơn hàng này.");
+            return;
+        }
+
+        // Lấy thông tin chi tiết khách hàng để hiển thị Tên và Số điện thoại người nhận
+        CustomerDAO customerDAO = new CustomerDAO();
+        Customer customer = customerDAO.getCustomerById(order.getCustomerId());
+
+        // Truyền thông tin sang trang JSP
+        request.setAttribute("order", order);
+        request.setAttribute("customer", customer);
+        
+        request.getRequestDispatcher("/customer/order-detail.jsp").forward(request, response);
     } 
 
-    /** 
-     * Handles the HTTP <code>POST</code> method.
-     * @param request servlet request
-     * @param response servlet response
-     * @throws ServletException if a servlet-specific error occurs
-     * @throws IOException if an I/O error occurs
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-    throws ServletException, IOException {
-        processRequest(request, response);
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        
+        HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+
+        if (currentUser == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        String action = request.getParameter("action");
+        String orderNo = request.getParameter("orderNo");
+
+        if ("cancel".equalsIgnoreCase(action) && orderNo != null && !orderNo.trim().isEmpty()) {
+            OrderDAO orderDAO = new OrderDAO();
+            Order order = orderDAO.getOrderByNo(orderNo);
+
+            if (order != null && order.getCustomerId().equals(currentUser.getUserId())) {
+                String dbStatus = order.getOrderStatus();
+                if (dbStatus != null && (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed"))) {
+                    orderDAO.updateOrderStatus(orderNo, "Cancelled");
+                }
+            }
+            response.sendRedirect(request.getContextPath() + "/OrderDetail?orderNo=" + orderNo);
+            return;
+        }
+
+        doGet(request, response);
     }
 
-    /** 
-     * Returns a short description of the servlet.
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
-
+        return "Customer Order Detail Servlet";
+    }
 }

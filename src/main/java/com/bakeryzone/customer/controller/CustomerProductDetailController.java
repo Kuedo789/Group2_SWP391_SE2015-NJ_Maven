@@ -12,6 +12,7 @@ package com.bakeryzone.customer.controller;
 import com.bakeryzone.dao.ProductDAO;
 import com.bakeryzone.model.Product;
 import com.bakeryzone.model.ProductSearchResult;
+import com.bakeryzone.model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -61,8 +62,25 @@ public class CustomerProductDetailController extends HttpServlet {
             }
         }
 
+        // Check purchase and review status
+        jakarta.servlet.http.HttpSession session = request.getSession();
+        User currentUser = (User) session.getAttribute("user");
+        boolean hasBought = false;
+        boolean hasReviewed = false;
+        com.bakeryzone.dao.ReviewDAO reviewDAO = new com.bakeryzone.dao.ReviewDAO();
+        if (currentUser != null) {
+            hasBought = reviewDAO.hasBoughtProduct(currentUser.getUserId(), product.getId());
+            hasReviewed = reviewDAO.hasReviewed(currentUser.getUserId(), product.getId());
+        }
+
+        // Load reviews
+        List<com.bakeryzone.model.Review> reviewsList = reviewDAO.getReviewsByProductId(product.getId());
+
         request.setAttribute("product", product);
         request.setAttribute("relatedProducts", relatedProducts);
+        request.setAttribute("hasBought", hasBought);
+        request.setAttribute("hasReviewed", hasReviewed);
+        request.setAttribute("reviewsList", reviewsList);
 
         request.getRequestDispatcher("/customer/productDetail.jsp").forward(request, response);
     }

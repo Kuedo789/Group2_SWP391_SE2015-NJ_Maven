@@ -13,6 +13,10 @@ public class OrderItem {
     // Fields mapped from cake_template or accessory for displaying on UI
     private String itemName;
     private String itemImage;
+    private String greetingText;
+    private String categoryName;
+    private String templateId;
+    private String templateImage;
 
     public OrderItem() {
     }
@@ -79,5 +83,37 @@ public class OrderItem {
 
     public void setItemImage(String itemImage) {
         this.itemImage = itemImage;
+    }
+
+    public String getGreetingText() {
+        return greetingText;
+    }
+
+    public void setGreetingText(String greetingText) {
+        this.greetingText = greetingText;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public String getTemplateId() {
+        return templateId;
+    }
+
+    public void setTemplateId(String templateId) {
+        this.templateId = templateId;
+    }
+
+    public String getTemplateImage() {
+        return templateImage;
+    }
+
+    public void setTemplateImage(String templateImage) {
+        this.templateImage = templateImage;
     }
 }

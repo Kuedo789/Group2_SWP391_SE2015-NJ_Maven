@@ -64,10 +64,15 @@ public class OrderDAO {
                 oi.Quantity,
                 oi.Price_At_Purchase,
                 COALESCE(t.Template_Name, a.Accessory_Name) AS Item_Name,
-                COALESCE(t.Image_URL, a.Image_URL) AS Item_Image
+                COALESCE(cc.Canvas_Image_URL, t.Image_URL, a.Image_URL) AS Item_Image,
+                cc.Greeting_Text,
+                COALESCE(cat.Category_Name, 'Phụ kiện') AS Category_Name,
+                t.Template_ID,
+                t.Image_URL AS Template_Image
             FROM order_item oi
             LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
             LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID
+            LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID
             LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID
             WHERE oi.Order_No = ?
             """;
@@ -85,6 +90,10 @@ public class OrderDAO {
                     item.setPriceAtPurchase(rs.getBigDecimal("Price_At_Purchase"));
                     item.setItemName(rs.getString("Item_Name"));
                     item.setItemImage(rs.getString("Item_Image"));
+                    item.setGreetingText(rs.getString("Greeting_Text"));
+                    item.setCategoryName(rs.getString("Category_Name"));
+                    item.setTemplateId(rs.getString("Template_ID"));
+                    item.setTemplateImage(rs.getString("Template_Image"));
                     items.add(item);
                 }
             }
@@ -105,5 +114,18 @@ public class OrderDAO {
         order.setTotalCost(rs.getBigDecimal("Total_Cost"));
         order.setOrderStatus(rs.getString("OrderStatus"));
         return order;
+    }
+
+    public boolean updateOrderStatus(String orderNo, String status) {
+        String sql = "UPDATE `orders` SET OrderStatus = ? WHERE Order_No = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setString(2, orderNo);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
