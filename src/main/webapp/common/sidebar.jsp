@@ -33,7 +33,7 @@
             <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Thuộc tính</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'customers' ? 'active' : ''}">
-            <a href="${pageContext.request.contextPath}/customerList"><i class="fa-solid fa-users"></i> Khách hàng</a>
+            <a href="customer?action=list"><i class="fa-solid fa-users"></i> Khách hàng</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'promotions' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi <i class="fa-solid fa-chevron-down arrow"></i></a>
@@ -52,7 +52,7 @@
     <div class="nav-section-title">Hệ thống</div>
     <ul class="sidebar-menu">
         <li class="menu-item ${param.activeMenu == 'users' ? 'active' : ''}">
-            <a href="${pageContext.request.contextPath}/userList"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
+            <a href="staff?action=list"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'roles' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a>
