@@ -21,12 +21,12 @@ public class Product {
     private boolean isFeatured;
     private String fullDescription;
     private String productType; // Always "Cake"
-    
+
     // New dynamic financial fields and chef instructions
     private double defaultMarginPercent;
     private double defaultServicePercent;
     private String instructionSteps;
-    
+
     private List<String> additionalImages = new ArrayList<>();
 
     // Default constructor
@@ -40,11 +40,11 @@ public class Product {
     }
 
     // Parameterized constructor
-    public Product(String id, String name, String categoryId, String categoryName, 
-                   double estimatedLaborHours, boolean allowsGreeting, String imageUrl, 
-                   String status, boolean isFeatured, String fullDescription, 
-                   String productType, double defaultMarginPercent, double defaultServicePercent, 
-                   String instructionSteps) {
+    public Product(String id, String name, String categoryId, String categoryName,
+            double estimatedLaborHours, boolean allowsGreeting, String imageUrl,
+            String status, boolean isFeatured, String fullDescription,
+            String productType, double defaultMarginPercent, double defaultServicePercent,
+            String instructionSteps) {
         this.id = id;
         this.name = name;
         this.categoryId = categoryId;

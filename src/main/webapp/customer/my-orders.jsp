@@ -2,6 +2,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="com.bakeryzone.model.Order" %>
 <%@ page import="com.bakeryzone.model.OrderItem" %>
+<%@ page import="com.bakeryzone.model.User" %>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -90,6 +91,9 @@
                     int totalQty = 0;
                     StringBuilder itemsSummary = new StringBuilder();
                     String firstItemImage = "";
+                    String firstItemTemplateImage = "";
+                    String firstItemTemplateId = "";
+                    String firstItemCustomCakeId = "";
                     List<OrderItem> items = order.getItems();
                     
                     if (items != null && !items.isEmpty()) {
@@ -115,11 +119,33 @@
                                 } else {
                                     firstItemImage = imgPath;
                                 }
+                                
+                                String tplImg = item.getTemplateImage();
+                                if (tplImg != null && !tplImg.trim().isEmpty()) {
+                                    if (!tplImg.startsWith("http") && !tplImg.startsWith("https")) {
+                                        if (!tplImg.startsWith("/")) {
+                                            firstItemTemplateImage = request.getContextPath() + "/" + tplImg;
+                                        } else {
+                                            firstItemTemplateImage = request.getContextPath() + tplImg;
+                                        }
+                                    } else {
+                                        firstItemTemplateImage = tplImg;
+                                    }
+                                }
+                                firstItemTemplateId = item.getTemplateId() != null ? item.getTemplateId() : "";
+                                firstItemCustomCakeId = item.getCustomCakeId() != null ? item.getCustomCakeId() : "";
                             }
                         }
                     } else {
                         itemsSummary.append("Sản phẩm tùy chỉnh");
                         firstItemImage = request.getContextPath() + "/assets/images/default-cake.png";
+                    }
+
+                    User currentUser = (User) session.getAttribute("user");
+                    com.bakeryzone.dao.ReviewDAO reviewDAO = new com.bakeryzone.dao.ReviewDAO();
+                    boolean hasReviewed = false;
+                    if (currentUser != null && firstItemTemplateId != null && !firstItemTemplateId.isEmpty()) {
+                        hasReviewed = reviewDAO.hasReviewed(currentUser.getUserId(), firstItemTemplateId);
                     }
 
                     String formattedDate = order.getOrderTime() != null ? dateFormat.format(order.getOrderTime()) : "";
@@ -129,15 +155,15 @@
             <div class="order-card" data-status="<%= dataStatus %>" <%= "cancelled".equals(dataStatus) ? "style=\"opacity: 0.75;\"" : "" %>>
                 <div class="order-card-header">
                     <div class="order-info">
-                        <span class="order-code">Mã đơn: #<%= order.getOrderNo() %></span>
+                        <span class="order-code" style="cursor: pointer;" onclick="window.location.href='<%= request.getContextPath() %>/OrderDetail?orderNo=<%= order.getOrderNo() %>'">Mã đơn: #<%= order.getOrderNo().replace("ORD_", "") %></span>
                         <span class="order-date">Ngày đặt: <%= formattedDate %></span>
                     </div>
                     <span class="status-badge <%= badgeClass %>"><%= displayStatus %></span>
                 </div>
-                <div class="order-card-body">
-                    <img class="order-item-img" <%= "cancelled".equals(dataStatus) ? "style=\"filter: grayscale(100%);\"" : "" %> alt="<%= itemsSummary %>" src="<%= firstItemImage %>" onerror="this.src='<%= request.getContextPath() %>/assets/images/default-cake.png';"/>
+                <div class="order-card-body" style="cursor: pointer;" onclick="window.location.href='<%= request.getContextPath() %>/OrderDetail?orderNo=<%= order.getOrderNo() %>'">
+                    <img class="order-item-img" <%= "cancelled".equals(dataStatus) ? "style=\"filter: grayscale(100%);\"" : "" %> alt="<%= itemsSummary %>" src="<%= firstItemImage %>" data-template-image="<%= firstItemTemplateImage %>" onerror="this.src = this.getAttribute('data-template-image') || '<%= request.getContextPath() %>/assets/images/default-cake.png'; this.onerror = function() { this.src = '<%= request.getContextPath() %>/assets/images/default-cake.png'; };"/>
                     <div class="order-item-details">
-                        <div class="order-item-names"><%= itemsSummary %></div>
+                        <div class="order-item-names" style="font-weight: 600; color: var(--text);"><%= itemsSummary %></div>
                         <div class="order-item-qty">Số lượng: <%= totalQty %> sản phẩm</div>
                     </div>
                 </div>
@@ -147,8 +173,21 @@
                         <strong><%= formattedTotal %></strong>
                     </div>
                     <div class="order-actions">
-                        <button class="btn btn-outline" onclick="window.location.href='<%= request.getContextPath() %>/OrderDetail?orderNo=<%= order.getOrderNo() %>'">Xem chi tiết</button>
-                        <button class="btn btn-primary">Đặt lại</button>
+                        <button class="btn btn-outline" style="min-width: 44px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center;" onclick="alert('Đã thêm tất cả sản phẩm trong đơn vào giỏ hàng của bạn!');" title="Thêm vào giỏ hàng">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">add_shopping_cart</span>
+                        </button>
+                        
+                        <% if ("completed".equals(dataStatus)) { %>
+                            <% if (hasReviewed) { %>
+                                <button class="btn btn-outline" onclick="window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= firstItemTemplateId %>&tab=review'">Xem đánh giá</button>
+                            <% } else { %>
+                                <button class="btn btn-primary" onclick="window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= firstItemTemplateId %>&tab=review&customCakeId=<%= firstItemCustomCakeId %>'">Đánh giá</button>
+                            <% } %>
+                        <% } else if ("cancelled".equals(dataStatus)) { %>
+                            <button class="btn btn-outline" onclick="alert('Đã thêm tất cả sản phẩm trong đơn vào giỏ hàng của bạn!');">Đặt lại</button>
+                        <% } else { %>
+                            <button class="btn btn-primary" onclick="window.location.href='<%= request.getContextPath() %>/OrderDetail?orderNo=<%= order.getOrderNo() %>'">Xem tiến độ</button>
+                        <% } %>
                     </div>
                 </div>
             </div>
