@@ -83,7 +83,7 @@ public class CustomerDetailServlet extends HttpServlet {
                 request.setAttribute("CUSTOMER_DATA", existingCustomer);
             }
 
-            request.getRequestDispatcher("admin/customerDetail.jsp").forward(request, response);
+            request.getRequestDispatcher("/admin/customerDetail.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -111,7 +111,7 @@ public class CustomerDetailServlet extends HttpServlet {
             String fullName = request.getParameter("fullName");
             String email = request.getParameter("email");
             if (email != null) {
-                email = email.trim(); 
+                email = email.trim();
             }
             String password = request.getParameter("password");
             String phone = request.getParameter("phone");
@@ -131,8 +131,12 @@ public class CustomerDetailServlet extends HttpServlet {
             c.setDefaultAddress(defaultAddress);
             c.setUser(u);
 
-            String errorMessage = null;
             boolean isEdit = action != null && action.equals("edit");
+            if (isEdit) {
+                c.setCustomerId(customerId);
+            }
+
+            String errorMessage = null;
 
             if (fullName == null || fullName.trim().isEmpty()
                     || email == null || email.trim().isEmpty()
@@ -146,19 +150,25 @@ public class CustomerDetailServlet extends HttpServlet {
                 errorMessage = "Mật khẩu thêm mới phải từ 6 ký tự trở lên";
             } else if (dao.checkEmailExist(email, isEdit ? customerId : null)) {
                 errorMessage = "Địa chỉ Email này đã được đăng ký bởi một khách hàng khác";
+            } else if (defaultAddress != null) {
+                String trimmedAddr = defaultAddress.trim();
+                if (trimmedAddr.isEmpty()) {
+                    errorMessage = "Vui lòng nhập địa chỉ mặc định cho khách hàng!";
+                } else if (trimmedAddr.length() > 100) {
+                    errorMessage = "Địa chỉ không được vượt quá 100 ký tự. Vui lòng rút gọn!";
+                }
             }
 
             if (errorMessage != null) {
                 request.setAttribute("ERROR_MSG", errorMessage);
                 request.setAttribute("CUSTOMER_DATA", c);
-                request.getRequestDispatcher("admin/customerDetail.jsp").forward(request, response);
+                request.getRequestDispatcher("/admin/customerDetail.jsp").forward(request, response);
                 return;
             }
 
             HttpSession session = request.getSession();
 
             if (isEdit) {
-                c.setCustomerId(customerId);
                 Customer oldCus = dao.getCustomerById(customerId);
 
                 if (password == null || password.trim().isEmpty()) {
@@ -187,8 +197,8 @@ public class CustomerDetailServlet extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            //   response.sendRedirect("customerList");
-            response.getWriter().println("Bắt được lỗi Server: " + e.getMessage());
+            response.sendRedirect("customerList");
+
         }
     }
 

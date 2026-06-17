@@ -102,6 +102,11 @@ public class UserDetailServlet extends HttpServlet {
             s.setIsActiveStaff(true);
             s.setUser(u); // Quan trọng: Bao gộp User vào Staff
 
+            boolean isEdit = action != null && action.equals("edit");
+            if (isEdit) {
+                s.setStaffId(userId);
+            }
+
             String position = "";
             if ("ADMIN".equals(roleId)) {
                 position = "Quản lý";
@@ -113,8 +118,6 @@ public class UserDetailServlet extends HttpServlet {
             s.setPosition(position);
 
             String errorMessage = null;
-            boolean isEdit = action != null && action.equals("edit");
-
             if (fullName == null || fullName.trim().isEmpty()
                     || email == null || email.trim().isEmpty()
                     || phone == null || phone.trim().isEmpty()
@@ -149,7 +152,6 @@ public class UserDetailServlet extends HttpServlet {
 
             // Xử lý Thêm mới hoặc Cập nhật
             if (isEdit) {
-                s.setStaffId(userId);
 
                 Staff oldStaff = dao.getStaffById(userId);
                 s.setIsActiveStaff(oldStaff.isIsActiveStaff());

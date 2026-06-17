@@ -262,10 +262,10 @@
                     <div class="breadcrumbs">
                         <a href="#">Dashboard</a>
                         <span>&gt;</span>
-                        <a href="${pageContext.request.contextPath}/admin/customerList">Customer System</a>
+                        <a href="${pageContext.request.contextPath}/customerList">Customer System</a>
                         <span>&gt;</span>
                         <a href="#" class="active text-dark font-weight-bold">
-                            <c:set var="cusId" value="${not empty CUSTOMER_DATA.customerId ? CUSTOMER_DATA.customerId : CUSTOMER_DATA.customer_ID}" />
+                            <c:set var="cusId" value="${CUSTOMER_DATA.customerId}" />
                             <c:if test="${cusId != null}">Cập nhật thông tin khách hàng</c:if>
                             <c:if test="${cusId == null}">Thêm khách hàng mới</c:if>
                             </a>
@@ -312,37 +312,38 @@
 
                             <div class="col-md-6">
                                 <label class="form-label">Email đăng nhập <span class="text-danger">*</span></label>
-                                <input type="email" name="email" value="${CUSTOMER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required
-                                       ${param.action == 'edit' ? 'readonly style="background-color: #f1ede8; cursor: not-allowed;"' : ''}>
+                                <input type="email" name="email" value="${CUSTOMER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
+                                <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
                             </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Địa chỉ mặc định</label>
+                                <input type="text" name="defaultAddress" value="${CUSTOMER_DATA.defaultAddress}" class="form-control" placeholder="Nhập địa chỉ chi tiết (Ví dụ: Số 12 Nguyễn Trãi, Hà Nội)...">
+                            </div>  
 
                             <div class="col-md-6">
                                 <label class="form-label">Trạng thái tài khoản <span class="text-danger">*</span></label>
-                                <c:set var="statusKey" value="${not empty CUSTOMER_DATA.user.accountStatus ? CUSTOMER_DATA.user.accountStatus : CUSTOMER_DATA.user.account_Status}" />
+                                <c:set var="statusKey" value="${CUSTOMER_DATA.user.accountStatus}" />
                                 <select name="accountStatus" class="form-select">
                                     <option value="Active" ${statusKey == 'Active' ? 'selected' : ''}>Active (Đang hoạt động)</option>
                                     <option value="Deactive" ${statusKey == 'Deactive' ? 'selected' : ''}>Deactive (Vô hiệu hóa)</option>
                                 </select>
                             </div>
 
+
                             <div class="col-12 d-flex justify-content-end gap-3 mt-5">
-                                <a href="${pageContext.request.contextPath}/admin/customerList" class="btn-cz-secondary">
+                                <a href="${pageContext.request.contextPath}/customerList" class="btn-cz-secondary">
                                     <i class="fa-solid fa-arrow-left"></i> Trở về danh sách
                                 </a>
                                 <button class="btn-cz-primary" type="submit">
                                     <i class="fa-solid fa-floppy-disk"></i> Lưu thông tin tài khoản
                                 </button>
                             </div>
-                                    
-                            <div class="col-12">
-                                <label class="form-label">Địa chỉ mặc định</label>
-                                <input type="text" name="defaultAddress" value="${CUSTOMER_DATA.defaultAddress}" class="form-control" placeholder="Nhập địa chỉ chi tiết (Ví dụ: Số 12 Nguyễn Trãi, Hà Nội)...">
-                            </div>     
+
 
 
                         </div>
@@ -359,6 +360,8 @@
                 let phone = document.getElementsByName("phone")[0].value.trim();
                 let password = document.getElementsByName("password")[0].value;
                 let action = document.getElementsByName("action")[0].value;
+                let defaultAddress = document.getElementsByName("defaultAddress")[0].value.trim();
+
 
                 if (fullName.length < 2) {
                     alert("Họ và tên khách hàng phải có ít nhất 2 ký tự!");
@@ -381,7 +384,10 @@
                     alert("Số điện thoại không hợp lệ! Phải gồm 10 chữ số và bắt đầu bằng đầu số VN (03, 05, 07, 08, 09)!");
                     return false;
                 }
-
+                if (defaultAddress.length > 100) {
+                    alert("Địa chỉ mặc định không được vượt quá 100 ký tự!");
+                    return false;
+                }
                 return true;
             }
 
