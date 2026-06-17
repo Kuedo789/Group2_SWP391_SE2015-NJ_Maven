@@ -339,7 +339,7 @@
 
                             <div class="col-md-6">
                                 <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
+                                <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
                             </div>
 
                             <div class="col-md-6">
