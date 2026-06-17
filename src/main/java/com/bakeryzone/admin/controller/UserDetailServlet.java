@@ -4,6 +4,7 @@ import com.bakeryzone.dao.StaffDAO;
 import com.bakeryzone.model.Staff;
 import com.bakeryzone.model.User;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+@WebServlet(name = "UserDetailServlet", urlPatterns = {"/userDetail"})
 public class UserDetailServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -36,7 +38,6 @@ public class UserDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             String action = request.getParameter("action");
-
             String id = request.getParameter("id");
 
             StaffDAO dao = new StaffDAO();
@@ -61,7 +62,7 @@ public class UserDetailServlet extends HttpServlet {
                 request.setAttribute("USER_DATA", existingStaff);
             }
 
-            request.getRequestDispatcher("admin/userDetail.jsp").forward(request, response);
+            request.getRequestDispatcher("/admin/userDetail.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -87,17 +88,31 @@ public class UserDetailServlet extends HttpServlet {
 
             StaffDAO dao = new StaffDAO();
 
-            Staff s = new Staff();
+            // 1. Khởi tạo đối tượng User và nạp dữ liệu xác thực
+            User u = new User();
+            u.setEmail(email);
+            u.setRoleId(roleId);
+            u.setAccountStatus(accountStatus);
+            u.setVerified(true);
 
+            // 2. Khởi tạo đối tượng Staff và nhúng User vào
+            Staff s = new Staff();
             s.setFullName(fullName);
-            s.setEmail(email);
             s.setPhone(phone);
-            s.setRoleId(roleId);
-            s.setAccountStatus(accountStatus);
             s.setIsActiveStaff(true);
+            s.setUser(u); // Quan trọng: Bao gộp User vào Staff
+
+            String position = "";
+            if ("ADMIN".equals(roleId)) {
+                position = "Quản lý";
+            } else if ("SHIPPER".equals(roleId)) {
+                position = "Người giao hàng";
+            } else if ("STAFF".equals(roleId)) {
+                position = "Nhân viên";
+            }
+            s.setPosition(position);
 
             String errorMessage = null;
-
             boolean isEdit = action != null && action.equals("edit");
 
             if (fullName == null || fullName.trim().isEmpty()
@@ -109,7 +124,7 @@ public class UserDetailServlet extends HttpServlet {
 
                 errorMessage = "Vui lòng điền đầy đủ các trường thông tin";
 
-            } else if (!phone.matches("^(0)[3579][0-9]{8}$")) {
+            } else if (!phone.matches("^(0)[35789][0-9]{8}$")) {
 
                 errorMessage = "Số điện thoại phải là 10 chữ số";
 
@@ -122,24 +137,28 @@ public class UserDetailServlet extends HttpServlet {
                 errorMessage = "Địa chỉ Email này đã được đăng kí bởi một nhân viên khác";
             }
 
+            // Nếu có lỗi, trả lại dữ liệu về form
             if (errorMessage != null) {
                 request.setAttribute("ERROR_MSG", errorMessage);
                 request.setAttribute("USER_DATA", s);
-                request.getRequestDispatcher("admin/userDetail.jsp").forward(request, response);
+                request.getRequestDispatcher("/admin/userDetail.jsp").forward(request, response);
                 return;
             }
 
             HttpSession session = request.getSession();
 
+            // Xử lý Thêm mới hoặc Cập nhật
             if (isEdit) {
                 s.setStaffId(userId);
 
                 Staff oldStaff = dao.getStaffById(userId);
                 s.setIsActiveStaff(oldStaff.isIsActiveStaff());
+
+                // Xử lý password khi Edit
                 if (password == null || password.trim().isEmpty()) {
-                    s.setPassword(oldStaff.getPassword());
+                    s.getUser().setPassword(oldStaff.getUser().getPassword()); // Lấy mk cũ từ đối tượng User
                 } else {
-                    s.setPassword(password);
+                    s.getUser().setPassword(password); // Set mk mới
                 }
 
                 dao.updateStaff(s);
@@ -150,7 +169,7 @@ public class UserDetailServlet extends HttpServlet {
                 );
 
             } else {
-                s.setPassword(password);
+                s.getUser().setPassword(password);
 
                 dao.insertStaff(s);
 

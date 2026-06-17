@@ -1,4 +1,3 @@
-
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%-- Khai báo cả 2 phiên bản URI để đảm bảo NetBeans/Tomcat không bao giờ bị báo đỏ sọc --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
@@ -35,7 +34,7 @@
                 margin: 0;
             }
 
-            /* 🌟 ĐÃ BỔ SUNG: Trả lại bộ luật CSS Sidebar gốc của nhóm bị thiếu */
+            /* CSS Sidebar */
             .sidebar {
                 width: 260px;
                 background-color: var(--cz-dark-bg);
@@ -133,7 +132,7 @@
                 margin-bottom: 0;
             }
 
-            /* Main Panel & Container trải rộng */
+            /* Main Panel */
             .main-panel {
                 margin-left: 260px;
                 min-height: 100vh;
@@ -168,7 +167,7 @@
                 flex: 1;
             }
 
-            /* Form Card Trải Rộng Toàn Bộ Màn Hình */
+            /* Form Card */
             .form-card {
                 background-color: var(--cz-card-bg);
                 border-radius: 12px;
@@ -195,7 +194,6 @@
                 margin-bottom: 8px;
             }
 
-            /* Custom Input & Select đồng bộ phong cách mượt mà */
             .form-control, .form-select {
                 height: 48px;
                 border-radius: 8px;
@@ -314,7 +312,7 @@
 
                             <div class="col-md-6">
                                 <label class="form-label">Email đăng nhập <span class="text-danger">*</span></label>
-                                <input type="email" name="email" value="${CUSTOMER_DATA.email}" class="form-control" placeholder="username@gmail.com" required
+                                <input type="email" name="email" value="${CUSTOMER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required
                                        ${param.action == 'edit' ? 'readonly style="background-color: #f1ede8; cursor: not-allowed;"' : ''}>
                             </div>
 
@@ -325,7 +323,7 @@
 
                             <div class="col-md-6">
                                 <label class="form-label">Trạng thái tài khoản <span class="text-danger">*</span></label>
-                                <c:set var="statusKey" value="${not empty CUSTOMER_DATA.accountStatus ? CUSTOMER_DATA.accountStatus : CUSTOMER_DATA.account_Status}" />
+                                <c:set var="statusKey" value="${not empty CUSTOMER_DATA.user.accountStatus ? CUSTOMER_DATA.user.accountStatus : CUSTOMER_DATA.user.account_Status}" />
                                 <select name="accountStatus" class="form-select">
                                     <option value="Active" ${statusKey == 'Active' ? 'selected' : ''}>Active (Đang hoạt động)</option>
                                     <option value="Deactive" ${statusKey == 'Deactive' ? 'selected' : ''}>Deactive (Vô hiệu hóa)</option>
@@ -340,6 +338,13 @@
                                     <i class="fa-solid fa-floppy-disk"></i> Lưu thông tin tài khoản
                                 </button>
                             </div>
+                                    
+                            <div class="col-12">
+                                <label class="form-label">Địa chỉ mặc định</label>
+                                <input type="text" name="defaultAddress" value="${CUSTOMER_DATA.defaultAddress}" class="form-control" placeholder="Nhập địa chỉ chi tiết (Ví dụ: Số 12 Nguyễn Trãi, Hà Nội)...">
+                            </div>     
+
+
                         </div>
                     </form>
 

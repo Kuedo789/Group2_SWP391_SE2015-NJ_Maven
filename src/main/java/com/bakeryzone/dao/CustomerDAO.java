@@ -1,6 +1,7 @@
 package com.bakeryzone.dao;
 
-import com.bakeryzone.model.Customer; 
+import com.bakeryzone.model.Customer;
+import com.bakeryzone.model.User;
 import com.bakeryzone.utils.DBContext;
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,7 +14,10 @@ public class CustomerDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT * FROM `customer` WHERE `Customer_ID` = ?";
+            String sql = "SELECT c.Customer_ID, c.User_ID, c.Full_Name, c.Phone,c.Default_Address, u.Email, u.Password, u.Account_Status, u.Is_Verified "
+                    + "FROM `customer` c "
+                    + "JOIN `user` u ON c.User_ID = u.User_ID "
+                    + "WHERE c.Customer_ID = ?";
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, id);
@@ -21,12 +25,19 @@ public class CustomerDAO {
             if (rs.next()) {
                 Customer c = new Customer();
                 c.setCustomerId(rs.getString("Customer_ID"));
+                c.setUserId(rs.getString("User_ID"));
                 c.setFullName(rs.getString("Full_Name"));
-                c.setEmail(rs.getString("Email"));
-                c.setPassword(rs.getString("Password"));
                 c.setPhone(rs.getString("Phone"));
-                c.setAccountStatus(rs.getString("Account_Status"));
-                c.setIsVerified(rs.getBoolean("Is_Verified"));
+                c.setDefaultAddress(rs.getString("Default_Address"));
+
+                User u = new User();
+                u.setUserId(rs.getString("User_ID"));
+                u.setEmail(rs.getString("Email"));
+                u.setPassword(rs.getString("Password"));
+                u.setAccountStatus(rs.getString("Account_Status"));
+                u.setVerified(rs.getBoolean("Is_Verified"));
+
+                c.setUser(u);
                 return c;
             }
         } catch (Exception e) {
@@ -39,48 +50,73 @@ public class CustomerDAO {
 
     public boolean insertCustomer(Customer c) {
         Connection conn = null;
-        PreparedStatement ps = null;
+        PreparedStatement psUser = null;
+        PreparedStatement psCus = null;
+        boolean isSuccess = false;
         try {
-            String sql = "INSERT INTO `customer` (Customer_ID, Full_Name, Email, Password, Phone, Account_Status, Is_Verified) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?)";
             conn = DBContext.getJDBCConnection();
-            ps = conn.prepareStatement(sql);
+            conn.setAutoCommit(false);
 
-            String generatedId = (c.getCustomerId() == null || c.getCustomerId().trim().isEmpty())
-                    ? "CUS" + System.currentTimeMillis()
+            String userId = "USR_" + System.currentTimeMillis();
+            String generatedCusId = (c.getCustomerId() == null || c.getCustomerId().trim().isEmpty())
+                    ? "CUS_" + System.currentTimeMillis()
                     : c.getCustomerId();
 
-            ps.setString(1, generatedId);
-            ps.setString(2, c.getFullName());
-            ps.setString(3, c.getEmail());
-            ps.setString(4, c.getPassword());
-            ps.setString(5, c.getPhone());
-            ps.setString(6, c.getAccountStatus());
-            ps.setBoolean(7, c.isIsVerified());
+            // Insert vào bảng user lấy thông tin từ c.getUser()
+            String sqlUser = "INSERT INTO `user` (User_ID, Email, Password, Role_ID, Account_Status, Is_Verified) VALUES (?, ?, ?, 'CUSTOMER', ?, ?)";
+            psUser = conn.prepareStatement(sqlUser);
+            psUser.setString(1, userId);
+            psUser.setString(2, c.getUser().getEmail());
+            psUser.setString(3, c.getUser().getPassword());
+            psUser.setString(4, c.getUser().getAccountStatus() != null ? c.getUser().getAccountStatus() : "Active");
+            psUser.setBoolean(5, c.getUser().isVerified());
+            psUser.executeUpdate();
 
-            return ps.executeUpdate() > 0;
+            // Insert vào bảng customer
+            String sqlCus = "INSERT INTO `customer` (Customer_ID, User_ID, Full_Name, Phone, Default_Address, Is_Active_Customer) VALUES (?, ?, ?, ?, ?, 1)";
+            psCus = conn.prepareStatement(sqlCus);
+            psCus.setString(1, generatedCusId);
+            psCus.setString(2, userId);
+            psCus.setString(3, c.getFullName());
+            psCus.setString(4, c.getPhone());
+            psCus.setString(5, c.getDefaultAddress());
+            psCus.executeUpdate();
+
+            conn.commit();
+            isSuccess = true;
         } catch (Exception e) {
-            System.out.println("Lỗi SQL khi insertCustomer: " + e.getMessage());
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
         } finally {
-            close(conn, ps, null);
+            close(null, psUser, null);
+            close(conn, psCus, null);
         }
-        return false;
+        return isSuccess;
     }
 
     public boolean updateCustomer(Customer c) {
         Connection conn = null;
         PreparedStatement ps = null;
         try {
-            String sql = "UPDATE `customer` SET Full_Name = ?, Email = ?, Password = ?, Phone = ?, Account_Status = ? WHERE Customer_ID = ?";
+            String sql = "UPDATE `customer` c "
+                    + "JOIN `user` u ON c.User_ID = u.User_ID "
+                    + "SET c.Full_Name = ?, c.Phone = ?,c.Default_Address = ?, u.Email = ?, u.Password = ?, u.Account_Status = ? "
+                    + "WHERE c.Customer_ID = ?";
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, c.getFullName());
-            ps.setString(2, c.getEmail());
-            ps.setString(3, c.getPassword());
-            ps.setString(4, c.getPhone());
-            ps.setString(5, c.getAccountStatus());
-            ps.setString(6, c.getCustomerId());
+            ps.setString(2, c.getPhone());
+            ps.setString(3, c.getDefaultAddress());
+            ps.setString(4, c.getUser().getEmail()); // Lấy email từ object User
+            ps.setString(5, c.getUser().getPassword());
+            ps.setString(6, c.getUser().getAccountStatus());
+            ps.setString(7, c.getCustomerId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,7 +130,10 @@ public class CustomerDAO {
         Connection conn = null;
         PreparedStatement ps = null;
         try {
-            String sql = "UPDATE `customer` SET `Is_Verified` = 0 WHERE `Customer_ID` = ?";
+            String sql = "UPDATE `customer` c "
+                    + "JOIN `user` u ON c.User_ID = u.User_ID "
+                    + "SET u.Is_Verified = 0, c.Is_Active_Customer = 0 "
+                    + "WHERE c.Customer_ID = ?";
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, id);
@@ -112,9 +151,10 @@ public class CustomerDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT * FROM `customer` WHERE Email = ?";
+            String sql = "SELECT Email FROM `user` WHERE Email = ?";
+
             if (customerId != null) {
-                sql += " AND Customer_ID != ?";
+                sql += " AND User_ID != (SELECT User_ID FROM `customer` WHERE Customer_ID = ?)";
             }
 
             conn = DBContext.getJDBCConnection();
@@ -139,12 +179,14 @@ public class CustomerDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT COUNT(*) FROM `customer` WHERE `Is_Verified` = 1";
+            String sql = "SELECT COUNT(*) FROM `customer` c "
+                    + "JOIN `user` u ON c.User_ID = u.User_ID "
+                    + "WHERE u.Is_Verified = 1";
             if (keyword != null && !keyword.trim().isEmpty()) {
-                sql += " AND (Full_Name LIKE ? OR Email LIKE ?)";
+                sql += " AND (c.Full_Name LIKE ? OR u.Email LIKE ?)";
             }
             if (status != null && !status.trim().isEmpty()) {
-                sql += " AND Account_Status = ?";
+                sql += " AND u.Account_Status = ?";
             }
 
             conn = DBContext.getJDBCConnection();
@@ -177,12 +219,16 @@ public class CustomerDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT * FROM `customer` WHERE `Is_Verified` = 1";
+            String sql = "SELECT c.Customer_ID, c.User_ID, c.Full_Name, c.Phone,c.Default_Address, u.Email, u.Password, u.Account_Status, u.Is_Verified "
+                    + "FROM `customer` c "
+                    + "JOIN `user` u ON c.User_ID = u.User_ID "
+                    + "WHERE u.Is_Verified = 1";
+
             if (keyword != null && !keyword.trim().isEmpty()) {
-                sql += " AND (Full_Name LIKE ? OR Email LIKE ?)";
+                sql += " AND (c.Full_Name LIKE ? OR u.Email LIKE ?)";
             }
             if (status != null && !status.trim().isEmpty()) {
-                sql += " AND Account_Status = ?";
+                sql += " AND u.Account_Status = ?";
             }
 
             sql += " LIMIT ? OFFSET ?";
@@ -206,12 +252,19 @@ public class CustomerDAO {
             while (rs.next()) {
                 Customer c = new Customer();
                 c.setCustomerId(rs.getString("Customer_ID"));
+                c.setUserId(rs.getString("User_ID"));
                 c.setFullName(rs.getString("Full_Name"));
-                c.setEmail(rs.getString("Email"));
-                c.setPassword(rs.getString("Password"));
                 c.setPhone(rs.getString("Phone"));
-                c.setAccountStatus(rs.getString("Account_Status"));
-                c.setIsVerified(rs.getBoolean("Is_Verified"));
+                c.setDefaultAddress(rs.getString("Default_Address"));
+
+                User u = new User();
+                u.setUserId(rs.getString("User_ID"));
+                u.setEmail(rs.getString("Email"));
+                u.setPassword(rs.getString("Password"));
+                u.setAccountStatus(rs.getString("Account_Status"));
+                u.setVerified(rs.getBoolean("Is_Verified"));
+
+                c.setUser(u);
                 list.add(c);
             }
         } catch (Exception e) {

@@ -6,6 +6,7 @@ package com.bakeryzone.admin.controller;
 
 import com.bakeryzone.dao.CustomerDAO;
 import com.bakeryzone.model.Customer;
+import com.bakeryzone.model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -62,7 +63,7 @@ public class CustomerDetailServlet extends HttpServlet {
             throws ServletException, IOException {
         try {
             String action = request.getParameter("action");
-            String id = request.getParameter("id"); 
+            String id = request.getParameter("id");
 
             CustomerDAO dao = new CustomerDAO();
 
@@ -70,7 +71,7 @@ public class CustomerDetailServlet extends HttpServlet {
                 Customer cus = dao.getCustomerById(id);
                 String name = (cus != null) ? cus.getFullName() : "khách hàng";
 
-                dao.deleteCustomer(id); 
+                dao.deleteCustomer(id);
 
                 request.getSession().setAttribute("successMessage", "xóa tài khoản " + name + " thành công!");
                 response.sendRedirect("customerList");
@@ -109,18 +110,26 @@ public class CustomerDetailServlet extends HttpServlet {
             String customerId = request.getParameter("customerId");
             String fullName = request.getParameter("fullName");
             String email = request.getParameter("email");
+            if (email != null) {
+                email = email.trim(); 
+            }
             String password = request.getParameter("password");
             String phone = request.getParameter("phone");
+            String defaultAddress = request.getParameter("defaultAddress");
             String accountStatus = request.getParameter("accountStatus");
 
             CustomerDAO dao = new CustomerDAO();
 
+            User u = new User();
+            u.setEmail(email);
+            u.setAccountStatus(accountStatus);
+            u.setVerified(true);
+
             Customer c = new Customer();
             c.setFullName(fullName);
-            c.setEmail(email);
             c.setPhone(phone);
-            c.setAccountStatus(accountStatus);
-            c.setIsVerified(true); 
+            c.setDefaultAddress(defaultAddress);
+            c.setUser(u);
 
             String errorMessage = null;
             boolean isEdit = action != null && action.equals("edit");
@@ -153,37 +162,44 @@ public class CustomerDetailServlet extends HttpServlet {
                 Customer oldCus = dao.getCustomerById(customerId);
 
                 if (password == null || password.trim().isEmpty()) {
-                    c.setPassword(oldCus.getPassword());
+                    c.getUser().setPassword(oldCus.getUser().getPassword());
                 } else {
-                    c.setPassword(password);
+                    c.getUser().setPassword(password);
                 }
 
-                dao.updateCustomer(c);
-                session.setAttribute("successMessage", "Cập nhật tài khoản khách hàng thành công!");
+                boolean isUpdated = dao.updateCustomer(c);
+                if (isUpdated) {
+                    session.setAttribute("successMessage", "Cập nhật tài khoản khách hàng thành công!");
+                } else {
+                    session.setAttribute("errorMessage", "Cập nhật thất bại do lỗi hệ thống database!");
+                }
             } else {
-                c.setPassword(password);
-                dao.insertCustomer(c);
-                session.setAttribute("successMessage", "Thêm mới khách hàng thành công!");
-            }
+                c.getUser().setPassword(password);
 
+                boolean isInserted = dao.insertCustomer(c);
+                if (isInserted) {
+                    session.setAttribute("successMessage", "Thêm mới khách hàng thành công!");
+                } else {
+                    session.setAttribute("errorMessage", "Thêm mới thất bại! Email hoặc dữ liệu không hợp lệ.");
+                }
+            }
             response.sendRedirect("customerList");
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("customerList");
+            //   response.sendRedirect("customerList");
+            response.getWriter().println("Bắt được lỗi Server: " + e.getMessage());
         }
     }
 
-
-/**
- * Returns a short description of the servlet.
- *
- * @return a String containing servlet description
- */
-@Override
-public String getServletInfo() {
+    /**
+     * Returns a short description of the servlet.
+     *
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
         return "Short description";
     }// </editor-fold>
 
 }
-
