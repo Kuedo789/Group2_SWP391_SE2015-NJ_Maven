@@ -675,13 +675,13 @@
 
                                     <td class="font-weight-bold">${u.fullName}</td>
 
-                                    <td>${u.email}</td>
+                                    <td>${u.user.email}</td>
 
                                     <td class="text-warning">${u.phone}</td>
 
                                     <td style="text-align: center;">
 
-                                        <c:set var="roleKey" value="${not empty u.roleId ? u.roleId : u.role_ID}" />
+                                        <c:set var="roleKey" value="${not empty u.user.roleId ? u.user.roleId : u.user.role_ID}" />
                                         <span class="badge ${roleKey eq 'ADMIN' ? 'badge-admin' : (roleKey eq 'STAFF' ? 'badge-staff' : 'badge-shipper')}">
                                             <c:choose>
                                                 <c:when test="${roleKey eq 'ADMIN'}">Quản lý</c:when>
@@ -693,7 +693,7 @@
                                     </td>
 
                                     <td style="text-align: center;">
-                                        <c:set var="statusKey" value="${not empty u.accountStatus ? u.accountStatus : u.account_Status}" />
+                                        <c:set var="statusKey" value="${not empty u.user.accountStatus ? u.user.accountStatus : u.user.account_Status}" />
                                         <span class="badge ${statusKey eq 'Active' ? 'badge-success' : 'badge-secondary'}">
                                             <c:choose>
                                                 <c:when test="${statusKey eq 'Active'}">Đang hoạt động</c:when>
@@ -758,28 +758,28 @@
 
         <script>
             <c:if test="${not empty sessionScope.successMessage}">
-                                                   Toastify({
-                                                       text: "${sessionScope.successMessage}",
-                                                       duration: 4000,
-                                                       close: true,
-                                                       gravity: "top",
-                                                       position: "right",
-                                                       backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                                                       stopOnFocus: true
-                                                   }).showToast();
+                           Toastify({
+                               text: "${sessionScope.successMessage}",
+                               duration: 4000,
+                               close: true,
+                               gravity: "top",
+                               position: "right",
+                               backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                               stopOnFocus: true
+                           }).showToast();
                 <c:remove var="successMessage" scope="session" />
             </c:if>
 
             <c:if test="${not empty sessionScope.errorMessage}">
-                                                   Toastify({
-                                                       text: "${sessionScope.errorMessage}",
-                                                       duration: 4000,
-                                                       close: true,
-                                                       gravity: "top",
-                                                       position: "right",
-                                                       backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                                                       stopOnFocus: true
-                                                   }).showToast();
+                           Toastify({
+                               text: "${sessionScope.errorMessage}",
+                               duration: 4000,
+                               close: true,
+                               gravity: "top",
+                               position: "right",
+                               backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                               stopOnFocus: true
+                           }).showToast();
                 <c:remove var="errorMessage" scope="session" />
             </c:if>
         </script>

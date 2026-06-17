@@ -606,13 +606,13 @@
                                 <tr>
                                     <td style="text-align: center;">${(currentPage - 1) * 5 + status.count}</td>
                                     <td class="font-weight-bold">${c.fullName}</td>
-                                    <td>${c.email}</td>
+                                    <td>${c.user.email}</td>
                                     <td class="text-warning">${c.phone}</td>
                                     <td style="text-align: center;">
                                         <span class="badge badge-customer">Khách hàng</span>
                                     </td>
                                     <td style="text-align: center;">
-                                        <c:set var="statusKey" value="${not empty c.accountStatus ? c.accountStatus : c.account_Status}" />
+                                        <c:set var="statusKey" value="${not empty c.user.accountStatus ? c.user.accountStatus : c.user.account_Status}" />
                                         <span class="badge ${statusKey eq 'Active' ? 'badge-success' : 'badge-secondary'}">
                                             <c:choose>
                                                 <c:when test="${statusKey eq 'Active'}">Đang hoạt động</c:when>

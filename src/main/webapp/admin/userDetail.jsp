@@ -333,7 +333,7 @@
 
                             <div class="col-md-6">
                                 <label class="form-label">Email đăng nhập hệ thống <span class="text-danger">*</span></label>
-                                <input type="email" name="email" value="${USER_DATA.email}" class="form-control" placeholder="username@gmail.com" required
+                                <input type="email" name="email" value="${USER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required
                                        ${param.action == 'edit' ? ' style=""' : ''}>
                             </div>
 
@@ -345,17 +345,17 @@
                             <div class="col-md-6">
                                 <label class="form-label">Chức vụ hệ thống <span class="text-danger">*</span></label>
                                 <select name="roleId" class="form-select">
-                                    <option value="SHIPPER" ${USER_DATA.roleId == 'SHIPPER' ? 'selected' : ''}>Người giao hàng</option>
-                                    <option value="STAFF" ${USER_DATA.roleId == 'STAFF' ? 'selected' : ''}>Nhân viên</option>
-                                    <option value="ADMIN" ${USER_DATA.roleId == 'ADMIN' ? 'selected' : ''}>Quản lý</option>
+                                    <option value="SHIPPER" ${USER_DATA.user.roleId == 'SHIPPER' ? 'selected' : ''}>Người giao hàng</option>
+                                    <option value="STAFF" ${USER_DATA.user.roleId == 'STAFF' ? 'selected' : ''}>Nhân viên</option>
+                                    <option value="ADMIN" ${USER_DATA.user.roleId == 'ADMIN' ? 'selected' : ''}>Quản lý</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6">
                                 <label class="form-label">Trạng thái tài khoản <span class="text-danger">*</span></label>
                                 <select name="accountStatus" class="form-select">
-                                    <option value="Active" ${USER_DATA.accountStatus == 'Active' ? 'selected' : ''}>Active (Đang hoạt động)</option>
-                                    <option value="Deactive" ${USER_DATA.accountStatus == 'Deactive' ? 'selected' : ''}>Deactive (Đã khóa)</option>
+                                    <option value="Active" ${USER_DATA.user.accountStatus == 'Active' ? 'selected' : ''}>Active (Đang hoạt động)</option>
+                                    <option value="Deactive" ${USER_DATA.user.accountStatus == 'Deactive' ? 'selected' : ''}>Deactive (Đã khóa)</option>
                                 </select>
                             </div>
 
@@ -412,3 +412,4 @@
         </script>
     </body>
 </html>
+
