@@ -1,5 +1,8 @@
 package com.bakeryzone.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Model class representing a Product (Cake Template).
  * Synchronized with the updated database schema where static pricing, stock,
@@ -18,11 +21,13 @@ public class Product {
     private boolean isFeatured;
     private String fullDescription;
     private String productType; // Always "Cake"
-    
+
     // New dynamic financial fields and chef instructions
     private double defaultMarginPercent;
     private double defaultServicePercent;
     private String instructionSteps;
+
+    private List<String> additionalImages = new ArrayList<>();
 
     // Default constructor
     public Product() {
@@ -35,11 +40,11 @@ public class Product {
     }
 
     // Parameterized constructor
-    public Product(String id, String name, String categoryId, String categoryName, 
-                   double estimatedLaborHours, boolean allowsGreeting, String imageUrl, 
-                   String status, boolean isFeatured, String fullDescription, 
-                   String productType, double defaultMarginPercent, double defaultServicePercent, 
-                   String instructionSteps) {
+    public Product(String id, String name, String categoryId, String categoryName,
+            double estimatedLaborHours, boolean allowsGreeting, String imageUrl,
+            String status, boolean isFeatured, String fullDescription,
+            String productType, double defaultMarginPercent, double defaultServicePercent,
+            String instructionSteps) {
         this.id = id;
         this.name = name;
         this.categoryId = categoryId;
@@ -177,7 +182,11 @@ public class Product {
         this.instructionSteps = instructionSteps;
     }
 
-    public java.util.List<String> getAdditionalImages() {
-        return java.util.Collections.emptyList();
+    public List<String> getAdditionalImages() {
+        return additionalImages;
+    }
+
+    public void setAdditionalImages(List<String> additionalImages) {
+        this.additionalImages = additionalImages;
     }
 }

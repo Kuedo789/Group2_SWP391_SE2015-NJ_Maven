@@ -42,13 +42,73 @@ public class ProductDAO {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapRowToProduct(rs);
+                    Product product = mapRowToProduct(rs);
+                    if (product != null) {
+                        product.setAdditionalImages(getAdditionalImagesByProductId(product.getId()));
+                    }
+                    return product;
                 }
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to get product by ID: " + id, e);
         }
         return null;
+    }
+
+    public List<String> getAdditionalImagesByProductId(String productId) {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT Image_URL FROM product_image WHERE Product_ID = ? ORDER BY Sort_Order ASC, Image_ID ASC";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(rs.getString("Image_URL"));
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to get additional images for product: " + productId, e);
+        }
+        return list;
+    }
+
+    public void saveProductAdditionalImages(String productId, List<String> imageUrls) {
+        String deleteSql = "DELETE FROM product_image WHERE Product_ID = ?";
+        String insertSql = "INSERT INTO product_image (Product_ID, Image_URL, Is_Cover, Sort_Order) VALUES (?, ?, 0, ?)";
+        try (Connection conn = DBContext.getJDBCConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // First delete old ones
+                try (PreparedStatement ps = conn.prepareStatement(deleteSql)) {
+                    ps.setString(1, productId);
+                    ps.executeUpdate();
+                }
+                
+                // Then insert new ones
+                if (imageUrls != null && !imageUrls.isEmpty()) {
+                    try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
+                        int order = 1;
+                        for (String url : imageUrls) {
+                            if (url != null && !url.trim().isEmpty()) {
+                                ps.setString(1, productId);
+                                ps.setString(2, url);
+                                ps.setInt(3, order++);
+                                ps.addBatch();
+                            }
+                        }
+                        ps.executeBatch();
+                    }
+                }
+                conn.commit();
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to save additional images for product: " + productId, e);
+        }
     }
 
     /**
