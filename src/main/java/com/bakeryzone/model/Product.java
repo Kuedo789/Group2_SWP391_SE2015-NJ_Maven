@@ -1,5 +1,8 @@
 package com.bakeryzone.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Model class representing a Product (Cake Template).
  * Synchronized with the updated database schema where static pricing, stock,
@@ -23,6 +26,8 @@ public class Product {
     private double defaultMarginPercent;
     private double defaultServicePercent;
     private String instructionSteps;
+    
+    private List<String> additionalImages = new ArrayList<>();
 
     // Default constructor
     public Product() {
@@ -175,5 +180,13 @@ public class Product {
 
     public void setInstructionSteps(String instructionSteps) {
         this.instructionSteps = instructionSteps;
+    }
+
+    public List<String> getAdditionalImages() {
+        return additionalImages;
+    }
+
+    public void setAdditionalImages(List<String> additionalImages) {
+        this.additionalImages = additionalImages;
     }
 }
