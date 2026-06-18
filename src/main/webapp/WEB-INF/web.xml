@@ -56,12 +56,16 @@
     </filter>
     <!-- ================= SERVLET MAPPINGS ================= -->
     <servlet>
-        <servlet-name>CustomerOrderListServlet</servlet-name>
-        <servlet-class>com.bakeryzone.customer.controller.CustomerOrderListServlet</servlet-class>
+        <servlet-name>CustomerCheckoutServlet</servlet-name>
+        <servlet-class>com.bakeryzone.customer.controller.CustomerCheckoutServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>CustomerOrderDetailServlet</servlet-name>
-        <servlet-class>com.bakeryzone.customer.controller.CustomerOrderDetailServlet</servlet-class>
+        <servlet-name>CustomerServlet</servlet-name>
+        <servlet-class>com.bakeryzone.admin.controller.CustomerServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>StaffServlet</servlet-name>
+        <servlet-class>com.bakeryzone.admin.controller.StaffServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>UserDetailServlet</servlet-name>
@@ -130,12 +134,16 @@
     </filter-mapping>
     <!-- ================= SESSION CONFIG ================= -->
     <servlet-mapping>
-        <servlet-name>CustomerOrderListServlet</servlet-name>
-        <url-pattern>/OrderList</url-pattern>
+        <servlet-name>CustomerServlet</servlet-name>
+        <url-pattern>/customer</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>CustomerOrderDetailServlet</servlet-name>
-        <url-pattern>/OrderDetail</url-pattern>
+        <servlet-name>StaffServlet</servlet-name>
+        <url-pattern>/staff</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CustomerCheckoutServlet</servlet-name>
+        <url-pattern>/checkout</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>

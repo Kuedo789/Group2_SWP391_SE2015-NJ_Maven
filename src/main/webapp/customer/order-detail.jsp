@@ -737,7 +737,7 @@
                     Cần hỗ trợ?
                 </button>
                 
-                <% if (dbStatus != null && (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed"))) { %>
+                <% if (dbStatus != null && (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing"))) { %>
                     <button class="btn btn-cancel" onclick="confirmCancelOrder()">
                         Hủy đơn hàng
                     </button>
@@ -745,10 +745,6 @@
                         <input type="hidden" name="action" value="cancel" />
                         <input type="hidden" name="orderNo" value="<%= order.getOrderNo() %>" />
                     </form>
-                <% } else if (dbStatus != null && dbStatus.equalsIgnoreCase("Processing")) { %>
-                    <button class="btn btn-cancel" onclick="alert('Đơn hàng đang trong quá trình xử lý, vui lòng liên hệ hotline 090 123 4567 để yêu cầu hủy đơn hàng.')">
-                        Yêu cầu hủy
-                    </button>
                 <% } %>
             </div>
         </section>
@@ -821,6 +817,7 @@
                     <h2 class="card-title">Danh sách món ăn</h2>
                     <div class="food-list">
                     <%
+                        com.bakeryzone.dao.ReviewDAO reviewDAO = new com.bakeryzone.dao.ReviewDAO();
                         if (order.getItems() != null && !order.getItems().isEmpty()) {
                             for (OrderItem item : order.getItems()) {
                                 String itemImage = item.getItemImage();
@@ -839,6 +836,13 @@
                                 if (item.getTemplateId() != null && !item.getTemplateId().trim().isEmpty()) {
                                     itemLink = request.getContextPath() + "/product-detail?id=" + item.getTemplateId().trim();
                                 }
+                                
+                                String itemTemplateId = item.getTemplateId() != null ? item.getTemplateId() : "";
+                                String itemCustomCakeId = item.getCustomCakeId() != null ? item.getCustomCakeId() : "";
+                                boolean itemReviewed = false;
+                                if (sessionUser != null && !itemTemplateId.isEmpty()) {
+                                    itemReviewed = reviewDAO.hasReviewed(sessionUser.getUserId(), itemTemplateId);
+                                }
                     %>
                                 <div class="food-item">
                                     <% if (!itemLink.isEmpty()) { %>
@@ -856,7 +860,7 @@
                                         <% } %>
                                         
                                         <!-- Custom note or Category classification -->
-                                        <div class="food-note">
+                                        <div class="food-note" style="margin-bottom: 4px;">
                                             <% if (item.getGreetingText() != null && !item.getGreetingText().trim().isEmpty()) { %>
                                                 Ghi chú viết lên bánh: <span>"<%= item.getGreetingText() %>"</span>
                                             <% } else { %>
@@ -864,7 +868,21 @@
                                             <% } %>
                                         </div>
                                         
-                                        <div class="food-qty-badge">Số lượng: x<%= item.getQuantity() %></div>
+                                        <div class="food-version" style="font-size: 13px; color: var(--muted); margin-bottom: 8px;">
+                                            Phiên bản: <span><%= item.getVariationName() != null ? item.getVariationName() : "Tiêu chuẩn" %></span>
+                                        </div>
+                                        
+                                        <div class="food-qty-badge" style="margin-bottom: 5px;">Số lượng: x<%= item.getQuantity() %></div>
+
+                                        <% if ("completed".equals(dataStatus) && !itemTemplateId.isEmpty()) { %>
+                                            <div style="margin-top: 10px;">
+                                                <% if (itemReviewed) { %>
+                                                    <button class="btn" style="background: var(--bg-soft); color: var(--text); border: 1px solid var(--border); padding: 5px 12px; font-size: 12px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer;" onclick="window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= itemTemplateId %>&tab=review'">Xem đánh giá</button>
+                                                <% } else { %>
+                                                    <button class="btn" style="background: var(--primary); color: white; border: none; padding: 5px 12px; font-size: 12px; border-radius: var(--radius-sm); font-weight: 600; cursor: pointer;" onclick="window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= itemTemplateId %>&tab=review&customCakeId=<%= itemCustomCakeId %>'">Đánh giá</button>
+                                                <% } %>
+                                            </div>
+                                        <% } %>
                                     </div>
                                     <div class="food-price"><%= formattedPrice %></div>
                                 </div>
@@ -976,30 +994,12 @@
                         </span>
                     </div>
                     
-                    <% if (dbStatus != null && dbStatus.equalsIgnoreCase("Completed")) { 
-                        String firstTplId = "";
-                        String firstCCId = "";
-                        if (order.getItems() != null) {
-                            for (OrderItem item : order.getItems()) {
-                                if (item.getTemplateId() != null && !item.getTemplateId().trim().isEmpty()) {
-                                    firstTplId = item.getTemplateId().trim();
-                                    firstCCId = item.getCustomCakeId() != null ? item.getCustomCakeId().trim() : "";
-                                    break;
-                                }
-                            }
-                        }
-                    %>
+                    <% if (dbStatus != null && dbStatus.equalsIgnoreCase("Completed")) { %>
                         <div class="reorder-actions-row" style="display: flex; gap: 10px; width: 100%;">
                             <button class="btn-reorder" style="flex: 1;" onclick="alert('Đã thêm tất cả món ăn trong đơn vào giỏ hàng của bạn!')">
                                 <span class="material-symbols-outlined">shopping_bag</span>
                                 Mua lại đơn này
                             </button>
-                            <% if (!firstTplId.isEmpty()) { %>
-                                <button class="btn-reorder" style="flex: 1; background: var(--bg-soft); color: var(--text); border: 1px solid var(--border);" onclick="window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= firstTplId %>&tab=review&customCakeId=<%= firstCCId %>'">
-                                    <span class="material-symbols-outlined">star</span>
-                                    Đánh giá sản phẩm
-                                </button>
-                            <% } %>
                         </div>
                     <% } %>
                 </div>

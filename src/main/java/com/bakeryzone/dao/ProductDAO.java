@@ -302,8 +302,9 @@ public class ProductDAO {
         List<Map<String, String>> categories = new ArrayList<>();
 
         String sql = """
-                 SELECT Category_ID, Category_Name
+                 SELECT Category_ID, Category_Name, Icon_URL
                  FROM product_category
+                 WHERE enable = 1
                  ORDER BY Category_Name ASC
                  """;
 
@@ -313,6 +314,7 @@ public class ProductDAO {
                 Map<String, String> cat = new HashMap<>();
                 cat.put("id", rs.getString("Category_ID"));
                 cat.put("name", rs.getString("Category_Name"));
+                cat.put("iconUrl", rs.getString("Icon_URL"));
                 categories.add(cat);
             }
 
@@ -413,17 +415,25 @@ public class ProductDAO {
     public List<Product> getHomepageBestSellerProducts(int limit) {
         List<Product> products = new ArrayList<>();
 
-        String sql = "SELECT * FROM (" + getBaseUnionQuery() + ") AS p "
-                + "WHERE p.Status = ? AND p.Is_Featured = ? "
-                + "ORDER BY p.Product_ID DESC "
+        String sql = "SELECT p.*, COALESCE(sales.total_qty, 0) as total_sold "
+                + "FROM (" + getBaseUnionQuery() + ") AS p "
+                + "LEFT JOIN ("
+                + "    SELECT cc.Template_ID, SUM(oi.Quantity) as total_qty "
+                + "    FROM order_item oi "
+                + "    JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID "
+                + "    JOIN orders o ON oi.Order_No = o.Order_No "
+                + "    WHERE o.OrderStatus = 'Completed' "
+                + "    GROUP BY cc.Template_ID"
+                + ") AS sales ON p.Product_ID = sales.Template_ID "
+                + "WHERE p.Status = ? "
+                + "ORDER BY total_sold DESC, p.Is_Featured DESC, p.Product_ID DESC "
                 + "LIMIT ?";
 
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, "Active");
-            ps.setBoolean(2, true);
-            ps.setInt(3, limit);
+            ps.setInt(2, limit);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {

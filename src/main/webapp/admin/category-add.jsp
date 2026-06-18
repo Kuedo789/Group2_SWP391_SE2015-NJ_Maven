@@ -131,11 +131,11 @@
                                 placeholder="Chọn phân loại trước..." 
                                 required 
                                 maxlength="50"
-                                pattern="^CAT-[A-Z0-9\-]+$"
-                                title="Mã danh mục phải bắt đầu bằng 'CAT-' và chỉ chứa chữ in hoa, số, hoặc dấu gạch ngang."
+                                pattern="^CAT[\-_][A-Z0-9\-_]+$"
+                                title="Mã danh mục phải bắt đầu bằng 'CAT-' hoặc 'CAT_' và chỉ chứa chữ in hoa, số, dấu gạch ngang hoặc dấu gạch dưới."
                                 style="text-transform: uppercase;"
                             >
-                            <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">Mã sẽ tự động tạo tiền tố dựa trên Phân loại. Chỉ chứa chữ in hoa, số và gạch ngang.</small>
+                            <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">Mã sẽ tự động tạo tiền tố dựa trên Phân loại. Chỉ chứa chữ in hoa, số, gạch ngang và gạch dưới.</small>
                         </div>
 
                         <div class="form-group">
@@ -147,6 +147,12 @@
                             <label class="form-label" for="description">Mô Tả (Description)</label>
                             <textarea id="description" name="description" class="form-control" placeholder="Mô tả ngắn gọn về danh mục này..." maxlength="255"></textarea>
                             <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">Lưu ý: Nhóm Nguyên liệu không hiển thị mô tả.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="iconUrl">Đường dẫn Icon (Icon URL)</label>
+                            <input type="text" id="iconUrl" name="iconUrl" class="form-control" placeholder="Ví dụ: assets/images/categories/icons/default.png" maxlength="255">
+                            <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">Lưu ý: Nhóm Nguyên liệu không hiển thị icon.</small>
                         </div>
 
                         <div class="form-actions">
@@ -162,13 +168,23 @@
                             document.getElementById('categoryType').addEventListener('change', function() {
                                 const type = this.value;
                                 const idInput = document.getElementById('categoryId');
+                                const descInput = document.getElementById('description');
+                                const iconInput = document.getElementById('iconUrl');
                                 
                                 if (type === 'Sản phẩm chính') {
                                     idInput.value = 'CAT-PROD-';
+                                    descInput.disabled = false;
+                                    iconInput.disabled = false;
                                 } else if (type === 'Nguyên liệu') {
                                     idInput.value = 'CAT-ING-';
+                                    descInput.disabled = true;
+                                    descInput.value = '';
+                                    iconInput.disabled = true;
+                                    iconInput.value = '';
                                 } else if (type === 'Phụ kiện') {
                                     idInput.value = 'CAT-ACC-';
+                                    descInput.disabled = false;
+                                    iconInput.disabled = false;
                                 }
                                 
                                 idInput.focus(); // Snap the cursor to the input box so they can finish typing
