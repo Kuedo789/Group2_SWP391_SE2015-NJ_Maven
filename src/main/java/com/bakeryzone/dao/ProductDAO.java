@@ -16,9 +16,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+<<<<<<< Updated upstream
  * DAO class for managing Product CRUD operations matching the simplified MySQL
  * schema. Operates strictly on cake_template, product_category, and cake_recipe
  * tables.
+=======
+ * DAO class for managing Product CRUD operations matching the updated schema.
+ * Calculates Base Price dynamically from Ingredient costs, Margin, and Service
+ * percentages.
+>>>>>>> Stashed changes
  */
 public class ProductDAO {
 
@@ -395,9 +401,17 @@ public class ProductDAO {
                 + "    t.Category_ID AS Category_ID, "
                 + "    c.Category_Name AS Category_Name, "
                 + "    t.Estimated_Labor_Hours AS Estimated_Labor_Hours, "
+<<<<<<< Updated upstream
                 + "    r.Recipe_ID AS Recipe_ID, "
                 + "    r.Recipe_Name AS Recipe_Name, "
                 + "    r.Instruction_Steps AS Recipe_Instructions "
+=======
+                + "    t.Base_Price AS Base_Price, "
+                + "    (SELECT COALESCE(SUM(d.Standard_Gram * i.Price_Per_Unit), 0) "
+                + "     FROM template_ingredient_detail d "
+                + "     JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
+                + "     WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost "
+>>>>>>> Stashed changes
                 + "FROM cake_template t "
                 + "LEFT JOIN product_category c ON t.Category_ID = c.Category_ID "
                 + "LEFT JOIN cake_recipe r ON t.Template_ID = r.Template_ID";
@@ -462,9 +476,13 @@ public List<Product> getHomepageBestSellerProducts(int limit) {
     try (Connection conn = DBContext.getJDBCConnection();
          PreparedStatement ps = conn.prepareStatement(sql)) {
 
+<<<<<<< Updated upstream
         ps.setString(1, "Active");
         ps.setBoolean(2, true);
         ps.setInt(3, limit);
+=======
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+>>>>>>> Stashed changes
 
         try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -476,6 +494,80 @@ public List<Product> getHomepageBestSellerProducts(int limit) {
         LOGGER.log(Level.SEVERE, "Failed to get homepage best seller products.", e);
     }
 
+<<<<<<< Updated upstream
     return products;
 }
+=======
+    public List<Map<String, Object>> getProductIngredients(String templateId) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        String sql = "SELECT d.Ingredient_ID, d.Standard_Gram, i.Ingredient_Name, i.Price_Per_Unit "
+                + "FROM template_ingredient_detail d "
+                + "JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
+                + "WHERE d.Template_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, templateId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("ingredientId", rs.getString("Ingredient_ID"));
+                    map.put("ingredientName", rs.getString("Ingredient_Name"));
+                    map.put("standardGram", rs.getDouble("Standard_Gram"));
+                    map.put("pricePerUnit", rs.getDouble("Price_Per_Unit"));
+                    list.add(map);
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to get product ingredients for template: " + templateId, e);
+        }
+        return list;
+    }
+
+    public boolean saveProductIngredients(String templateId, String[] ingredientIds, String[] standardGrams) {
+        try (Connection conn = DBContext.getJDBCConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // 1. Delete existing
+                String deleteSql = "DELETE FROM template_ingredient_detail WHERE Template_ID = ?";
+                try (PreparedStatement ps = conn.prepareStatement(deleteSql)) {
+                    ps.setString(1, templateId);
+                    ps.executeUpdate();
+                }
+
+                // 2. Insert new batch
+                if (ingredientIds != null && standardGrams != null) {
+                    String insertSql = "INSERT INTO template_ingredient_detail (Template_ID, Ingredient_ID, Standard_Gram) VALUES (?, ?, ?)";
+                    try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
+                        for (int i = 0; i < ingredientIds.length; i++) {
+                            if (ingredientIds[i] != null && !ingredientIds[i].trim().isEmpty()) {
+                                double grams = 0.0;
+                                try {
+                                    grams = Double.parseDouble(standardGrams[i]);
+                                } catch (NumberFormatException e) {
+                                    grams = 0.0;
+                                }
+                                if (grams > 0) {
+                                    ps.setString(1, templateId);
+                                    ps.setString(2, ingredientIds[i].trim());
+                                    ps.setDouble(3, grams);
+                                    ps.addBatch();
+                                }
+                            }
+                        }
+                        ps.executeBatch();
+                    }
+                }
+                conn.commit();
+                return true;
+            } catch (SQLException e) {
+                conn.rollback();
+                throw e;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to save product ingredients for template: " + templateId, e);
+        }
+        return false;
+    }
+>>>>>>> Stashed changes
 }
