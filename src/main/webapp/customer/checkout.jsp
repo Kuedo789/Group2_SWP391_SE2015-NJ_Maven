@@ -42,8 +42,8 @@
 
         .checkout-container {
             max-width: 1200px;
-            margin: 40px auto 80px auto;
-            padding: 0 24px;
+            margin: 0 auto;
+            padding: 120px 24px 80px; /* Clear fixed navbar */
         }
 
         .checkout-title-section {
@@ -108,15 +108,21 @@
         }
 
         .btn-add-address {
-            color: var(--text-muted);
+            background-color: #f3f8f1;
+            color: var(--primary-dark);
             text-decoration: none;
-            font-weight: 600;
-            font-size: 14px;
-            transition: color 0.2s;
+            font-weight: 700;
+            font-size: 13px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(63, 95, 54, 0.15);
         }
 
         .btn-add-address:hover {
-            color: var(--primary-dark);
+            background-color: var(--primary-dark);
+            color: white;
+            box-shadow: 0 4px 10px rgba(63, 95, 54, 0.15);
         }
 
         /* Address List Styling */
@@ -460,7 +466,7 @@
         }
 
         .btn-place-order {
-            background-color: white;
+            background: linear-gradient(135deg, var(--accent-gold, #c5a880) 0%, #d4bc9c 100%);
             color: var(--primary-dark);
             border: none;
             border-radius: var(--radius-md);
@@ -473,18 +479,21 @@
             justify-content: center;
             align-items: center;
             gap: 12px;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         .btn-place-order:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 25px rgba(197, 168, 128, 0.4);
+            filter: brightness(1.05);
         }
 
         .btn-place-order:disabled {
             background-color: rgba(255, 255, 255, 0.3);
             color: rgba(255, 255, 255, 0.6);
             cursor: not-allowed;
+            box-shadow: none;
         }
 
         .terms-text {
@@ -574,14 +583,26 @@
                             </a>
                         </div>
 
-                        <div class="address-list">
+                        <!-- Display currently selected address -->
+                        <div id="selectedAddressWrapper" style="margin-bottom: 16px;">
+                            <!-- Will be synced by JS -->
+                        </div>
+
+                        <!-- Button to toggle address list -->
+                        <div style="margin-bottom: 16px;">
+                            <button type="button" class="btn btn-outline" id="btnToggleAddressList" onclick="toggleAddressList()" style="width: 100%; border-radius: var(--radius-md); height: 48px; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border-color); background: white; cursor: pointer; color: var(--text-dark); transition: all 0.2s;">
+                                <i class="fa fa-exchange-alt"></i> Thay đổi địa chỉ nhận hàng
+                            </button>
+                        </div>
+
+                        <div class="address-list" id="addressListContainer" style="display: none;">
                             <% 
                                 if (addressList == null || addressList.isEmpty()) {
                             %>
                                 <div class="empty-address-msg">
                                     <i class="fa fa-map-marked-alt"></i>
                                     <p>Bạn chưa lưu địa chỉ giao hàng nào.</p>
-                                    <a href="${pageContext.request.contextPath}/delivery-address?action=add" class="btn btn-primary" style="margin-top: 10px; display: inline-block;">Thêm địa chỉ giao hàng</a>
+                                    <a href="${pageContext.request.contextPath}/delivery-address?action=add" class="btn btn-primary" style="margin-top: 10px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; height: 44px; padding: 0 24px; font-weight: 700; font-size: 14px; background: var(--primary-dark); color: white; border: none; cursor: pointer; text-decoration: none; box-shadow: 0 6px 15px rgba(47, 71, 40, 0.2);">Thêm địa chỉ giao hàng</a>
                                 </div>
                             <% 
                                 } else {
@@ -629,10 +650,18 @@
                             </h2>
                         </div>
 
+                        <!-- Date selection -->
+                        <div style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 8px;">
+                            <label for="deliveryDate" style="font-weight: 700; font-size: 14px; color: var(--text-dark);">Chọn ngày giao hàng: <span style="color:#d62828;">*</span></label>
+                            <input type="date" id="deliveryDate" name="deliveryDate" style="width: 100%; height: 48px; padding: 0 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 15px; outline: none; box-sizing: border-box;" required>
+                        </div>
+
+                        <div style="font-weight: 700; font-size: 14px; color: var(--text-dark); margin-bottom: 12px;">Chọn khung giờ: <span style="color:#d62828;">*</span></div>
+
                         <div class="time-slots-grid">
-                            <div class="time-slot-pill disabled" data-slot="08:00 - 09:00">
+                            <div class="time-slot-pill" data-slot="08:00 - 09:00" onclick="selectTimeSlot('08:00 - 09:00', this)">
                                 <span class="slot-time">08:00 - 09:00</span>
-                                <span class="slot-status">Hết chỗ</span>
+                                <span class="slot-status">Còn chỗ</span>
                             </div>
                             <div class="time-slot-pill active" data-slot="09:00 - 10:00" onclick="selectTimeSlot('09:00 - 10:00', this)">
                                 <span class="slot-time">09:00 - 10:00</span>
@@ -815,11 +844,75 @@
             // Set initial time slot input
             document.getElementById("selectedTimeSlotInput").value = selectedTimeSlot;
 
+            // Set delivery date picker constraints and default value
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            let mm = today.getMonth() + 1;
+            let dd = today.getDate();
+            if (dd < 10) dd = '0' + dd;
+            if (mm < 10) mm = '0' + mm;
+            const minDateStr = yyyy + '-' + mm + '-' + dd;
+            
+            const deliveryDateInput = document.getElementById("deliveryDate");
+            if (deliveryDateInput) {
+                deliveryDateInput.min = minDateStr;
+                // Default to tomorrow
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tyyyy = tomorrow.getFullYear();
+                let tmm = tomorrow.getMonth() + 1;
+                let tdd = tomorrow.getDate();
+                if (tdd < 10) tdd = '0' + tdd;
+                if (tmm < 10) tmm = '0' + tmm;
+                deliveryDateInput.value = tyyyy + '-' + tmm + '-' + tdd;
+            }
+
+            // Sync the selected address display initially
+            syncSelectedAddressDisplay();
+
             // Clear cart upon successful order placement
             document.getElementById("checkoutForm").addEventListener("submit", function() {
                 localStorage.removeItem("cart");
             });
         });
+
+        function syncSelectedAddressDisplay() {
+            const activeCard = document.querySelector("#addressListContainer .address-card-option.active");
+            const wrapper = document.getElementById("selectedAddressWrapper");
+            const toggleBtn = document.getElementById("btnToggleAddressList");
+            if (!activeCard) {
+                if (wrapper) wrapper.innerHTML = "";
+                if (toggleBtn) toggleBtn.style.display = "none";
+                document.getElementById("addressListContainer").style.display = "block";
+                return;
+            }
+            if (toggleBtn) toggleBtn.style.display = "flex";
+            
+            const clone = activeCard.cloneNode(true);
+            clone.removeAttribute("onclick");
+            clone.style.cursor = "default";
+            clone.style.borderColor = "var(--primary-dark)";
+            clone.style.borderWidth = "2px";
+            clone.style.backgroundColor = "#f6f8f5";
+            
+            const radio = clone.querySelector(".address-radio");
+            if (radio) radio.style.display = "none";
+            
+            wrapper.innerHTML = "";
+            wrapper.appendChild(clone);
+        }
+
+        function toggleAddressList() {
+            const container = document.getElementById("addressListContainer");
+            const btn = document.getElementById("btnToggleAddressList");
+            if (container.style.display === "none") {
+                container.style.display = "flex";
+                if (btn) btn.innerHTML = `<i class="fa fa-times"></i> Đóng danh sách địa chỉ`;
+            } else {
+                container.style.display = "none";
+                if (btn) btn.innerHTML = `<i class="fa fa-exchange-alt"></i> Thay đổi địa chỉ nhận hàng`;
+            }
+        }
 
         function loadCartItems() {
             let localCartStr = localStorage.getItem("cart");
@@ -943,7 +1036,7 @@
             selectedAddressId = id;
             document.getElementById("selectedAddressIdInput").value = id;
 
-            document.querySelectorAll(".address-card-option").forEach(card => {
+            document.querySelectorAll("#addressListContainer .address-card-option").forEach(card => {
                 card.classList.remove("active");
                 const radio = card.querySelector(".address-radio");
                 if (radio) radio.checked = false;
@@ -967,6 +1060,16 @@
 
             currentShippingFee = Math.max(15000, Math.round(finalDistance) * 5000);
             updateSummary();
+
+            // Sync with display card
+            syncSelectedAddressDisplay();
+
+            // Auto-hide the list container
+            document.getElementById("addressListContainer").style.display = "none";
+            const btn = document.getElementById("btnToggleAddressList");
+            if (btn) {
+                btn.innerHTML = `<i class="fa fa-exchange-alt"></i> Thay đổi địa chỉ nhận hàng`;
+            }
         }
 
         function selectTimeSlot(slot, element) {

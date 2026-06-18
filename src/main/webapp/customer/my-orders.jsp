@@ -20,6 +20,38 @@
             <p>Theo dõi trạng thái và quản lý lịch sử những chiếc bánh ngọt ngào bạn đã đặt tại BakeryZone.</p>
         </section>
 
+        <%-- Success banner after placing an order --%>
+        <%
+            String msgParam   = request.getParameter("msg");
+            String orderNoParam = request.getParameter("orderNo");
+            boolean orderSuccess = "order_success".equals(msgParam);
+        %>
+        <% if (orderSuccess) { %>
+        <div id="orderSuccessBanner" style="
+            background: linear-gradient(135deg, #1b3322 0%, #2d5037 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 24px 32px;
+            margin: 0 0 28px 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 8px 30px rgba(27,51,34,0.18);
+            animation: slideDown 0.4s ease;">
+            <span class="material-symbols-outlined" style="font-size: 40px; color: #c5a880; flex-shrink: 0;">check_circle</span>
+            <div>
+                <div style="font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 4px;">Đặt hàng thành công! 🎂</div>
+                <div style="font-size: 14px; color: rgba(255,255,255,0.8);">
+                    Đơn hàng <strong style="color:#c5a880;"><%= orderNoParam != null ? orderNoParam : "" %></strong>
+                    đã được tạo và đang chờ bếp xác nhận. Chúng tôi sẽ liên hệ sớm nhất!
+                </div>
+            </div>
+            <button onclick="document.getElementById('orderSuccessBanner').style.display='none'"
+                    style="margin-left:auto; background:none; border:none; color:rgba(255,255,255,0.6); font-size:22px; cursor:pointer; line-height:1;">&times;</button>
+        </div>
+        <style>@keyframes slideDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }</style>
+        <% } %>
+
         <!-- Filters Section -->
         <section class="orders-filter">
             <button class="filter-btn active" data-filter="all">Tất cả</button>
@@ -61,27 +93,34 @@
                     String displayStatus = dbStatus != null ? dbStatus : "Đang xử lý";
 
                     if (dbStatus != null) {
-                        if (dbStatus.equalsIgnoreCase("Pending")) {
+                        // English keys
+                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equals("Chờ xác nhận")) {
                             dataStatus = "processing";
                             badgeClass = "status-processing";
                             displayStatus = "Chờ xác nhận";
-                        } else if (dbStatus.equalsIgnoreCase("Confirmed")) {
+                        } else if (dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equals("Đã xác nhận")) {
                             dataStatus = "processing";
                             badgeClass = "status-processing";
                             displayStatus = "Đã xác nhận";
-                        } else if (dbStatus.equalsIgnoreCase("Processing")) {
+                        } else if (dbStatus.equalsIgnoreCase("Processing") || dbStatus.equals("Đang xử lý")) {
                             dataStatus = "processing";
                             badgeClass = "status-processing";
                             displayStatus = "Đang xử lý";
-                        } else if (dbStatus.equalsIgnoreCase("Delivering")) {
+                        } else if (dbStatus.equalsIgnoreCase("Delivering")
+                                || dbStatus.equals("Đang giao hàng")
+                                || dbStatus.equals("Đang giao")) {
                             dataStatus = "shipping";
                             badgeClass = "status-shipping";
-                            displayStatus = "Đang giao";
-                        } else if (dbStatus.equalsIgnoreCase("Completed")) {
+                            displayStatus = "Đang giao hàng";
+                        } else if (dbStatus.equalsIgnoreCase("Completed")
+                                || dbStatus.equals("Hoàn thành")
+                                || dbStatus.equals("Đã giao")) {
                             dataStatus = "completed";
                             badgeClass = "status-completed";
                             displayStatus = "Hoàn thành";
-                        } else if (dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled")) {
+                        } else if (dbStatus.equalsIgnoreCase("Cancelled")
+                                || dbStatus.equalsIgnoreCase("Canceled")
+                                || dbStatus.equals("Đã hủy")) {
                             dataStatus = "cancelled";
                             badgeClass = "status-cancelled";
                             displayStatus = "Đã hủy";
