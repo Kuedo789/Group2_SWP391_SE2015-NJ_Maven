@@ -159,7 +159,7 @@ public class StaffDAO {
             String sql = "SELECT Email FROM `user` WHERE Email = ?";
 
             if (staffId != null) {
-                sql += " AND User_ID != (SELECT User_ID FROM `customer` WHERE Customer_ID = ?)";
+                sql += " AND User_ID != (SELECT User_ID FROM `staff` WHERE Staff_ID = ?)";
             }
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);

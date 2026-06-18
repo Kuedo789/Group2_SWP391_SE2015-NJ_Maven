@@ -1,34 +1,66 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
 package com.bakeryzone.customer.controller;
 
-/**
- *
- * @author Nguyễn Hùng
- */
 import com.bakeryzone.dao.ProductDAO;
+import com.bakeryzone.dao.ReviewDAO;
 import com.bakeryzone.model.Product;
 import com.bakeryzone.model.ProductSearchResult;
+import com.bakeryzone.model.Review;
 import com.bakeryzone.model.User;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-@WebServlet(name = "CustomerProductDetailController", urlPatterns = {"/product-detail"})
-public class CustomerProductDetailController extends HttpServlet {
+@WebServlet(name = "CustomerProductController", urlPatterns = {"/products", "/product-detail"})
+public class CustomerProductController extends HttpServlet {
 
     private final ProductDAO productDAO = new ProductDAO();
+    private final ReviewDAO reviewDAO = new ReviewDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        String path = request.getServletPath();
+        String action = request.getParameter("action");
+
+        if ("/product-detail".equals(path) || "detail".equals(action)) {
+            handleDetail(request, response);
+        } else {
+            handleList(request, response);
+        }
+    }
+
+    private void handleList(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        ProductSearchResult result = productDAO.getAllProductsAdmin(
+                "",
+                "Active",
+                "",
+                "newest",
+                1,
+                100
+        );
+
+        List<Product> productList = result.list();
+        List<Map<String, String>> categoryList = productDAO.getAllProductCategories();
+
+        request.setAttribute("productList", productList);
+        request.setAttribute("categoryList", categoryList);
+
+        request.getRequestDispatcher("/customer/productList.jsp").forward(request, response);
+    }
+
+    private void handleDetail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String id = request.getParameter("id");
@@ -63,18 +95,18 @@ public class CustomerProductDetailController extends HttpServlet {
         }
 
         // Check purchase and review status
-        jakarta.servlet.http.HttpSession session = request.getSession();
+        HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
         boolean hasBought = false;
         boolean hasReviewed = false;
-        com.bakeryzone.dao.ReviewDAO reviewDAO = new com.bakeryzone.dao.ReviewDAO();
+        
         if (currentUser != null) {
             hasBought = reviewDAO.hasBoughtProduct(currentUser.getUserId(), product.getId());
             hasReviewed = reviewDAO.hasReviewed(currentUser.getUserId(), product.getId());
         }
 
         // Load reviews
-        List<com.bakeryzone.model.Review> reviewsList = reviewDAO.getReviewsByProductId(product.getId());
+        List<Review> reviewsList = reviewDAO.getReviewsByProductId(product.getId());
 
         request.setAttribute("product", product);
         request.setAttribute("relatedProducts", relatedProducts);

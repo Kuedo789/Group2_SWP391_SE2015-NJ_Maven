@@ -33,7 +33,8 @@ public class AuthorizationFilter implements Filter {
         String uri = request.getRequestURI();
         String roleId = user.getRoleId();
 
-        if (uri.contains("/admin/") || uri.contains("/userList") || uri.contains("/userDetail") || uri.contains("/customerList") || uri.contains("/customerDetail")) {
+        // Chỉ chặn /admin/ và /staff/ — KHÔNG chặn /customer/ (khách hàng có quyền vào)
+        if (uri.contains("/admin/") || uri.contains("/staff/")) {
             if (!"ADMIN".equalsIgnoreCase(roleId) && !"STAFF".equalsIgnoreCase(roleId)) {
                 response.sendRedirect(request.getContextPath() + "/home");
                 return;

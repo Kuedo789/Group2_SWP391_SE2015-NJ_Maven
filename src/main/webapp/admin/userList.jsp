@@ -624,13 +624,14 @@
                         <h1 class="page-title">Quản lý người dùng</h1>
                         <p class="page-subtitle">Hệ thống quản lý tài khoản Quản lý, Nhân viên, Người giao hàng</p>
                     </div>
-                    <a href="${pageContext.request.contextPath}/userDetail?action=add" class="btn btn-cz-primary">
+                    <a href="staff?action=add" class="btn btn-cz-primary">
                         <i class="fa-solid fa-circle-plus"></i> Thêm tài khoản mới
                     </a>
                 </div>
 
                 <div class="filter-card">
-                    <form class="filter-form" action="${pageContext.request.contextPath}/userList" method="GET">
+                    <form class="filter-form" action="${pageContext.request.contextPath}/staff" method="GET">
+                        <input type="hidden" name="action" value="list">
 
                         <div class="search-wrapper">
                             <i class="fa-solid fa-magnifying-glass"></i>
@@ -651,7 +652,7 @@
                         </select>
 
                         <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
-                        <a href="${pageContext.request.contextPath}/userList" class="btn-clear-filter text-center">Làm mới</a>
+                        <a href="${pageContext.request.contextPath}/staff?action=list" class="btn-clear-filter text-center">Làm mới</a>
                     </form>
                 </div>
 
@@ -707,11 +708,11 @@
                                         <div class="d-flex align-items-center justify-content-center gap-2">
                                             <c:set var="staffIdKey" value="${not empty u.staffId ? u.staffId : u.staff_ID}" />
 
-                                            <a href="userDetail?action=edit&id=${staffIdKey}" class="btn-action-edit" title="Chỉnh sửa">
+                                            <a href="staff?action=edit&id=${u.staffId}" class="btn-action-edit" title="Chỉnh sửa">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
 
-                                            <a href="userDetail?action=delete&id=${staffIdKey}" class="btn-action-delete"
+                                            <a href="staff?action=delete&id=${u.staffId}" class="btn-action-delete"
                                                onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản của ${u.fullName} không?')" title="Xóa">
                                                 <i class="fa-regular fa-trash-can"></i>
                                             </a>
@@ -727,7 +728,7 @@
                         <ul class="pagination-nav">
                             <c:if test="${currentPage > 1}">
                                 <li class="page-num-item">
-                                    <a href="userList?page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
+                                    <a href="staff?action=list&page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
                                         <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -735,13 +736,13 @@
 
                             <c:forEach begin="1" end="${endPage}" var="i">
                                 <li class="page-num-item ${currentPage == i ? 'active' : ''}">
-                                    <a href="userList?page=${i}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">${i}</a>
+                                    <a href="staff?action=list&page=${i}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">${i}</a>
                                 </li>
                             </c:forEach>
 
                             <c:if test="${currentPage < endPage}">
                                 <li class="page-num-item">
-                                    <a href="userList?page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
+                                    <a href="staff?action=list&page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
                                         <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -758,28 +759,28 @@
 
         <script>
             <c:if test="${not empty sessionScope.successMessage}">
-                           Toastify({
-                               text: "${sessionScope.successMessage}",
-                               duration: 4000,
-                               close: true,
-                               gravity: "top",
-                               position: "right",
-                               backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                               stopOnFocus: true
-                           }).showToast();
+                                                   Toastify({
+                                                       text: "${sessionScope.successMessage}",
+                                                       duration: 4000,
+                                                       close: true,
+                                                       gravity: "top",
+                                                       position: "right",
+                                                       backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                                                       stopOnFocus: true
+                                                   }).showToast();
                 <c:remove var="successMessage" scope="session" />
             </c:if>
 
             <c:if test="${not empty sessionScope.errorMessage}">
-                           Toastify({
-                               text: "${sessionScope.errorMessage}",
-                               duration: 4000,
-                               close: true,
-                               gravity: "top",
-                               position: "right",
-                               backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                               stopOnFocus: true
-                           }).showToast();
+                                                   Toastify({
+                                                       text: "${sessionScope.errorMessage}",
+                                                       duration: 4000,
+                                                       close: true,
+                                                       gravity: "top",
+                                                       position: "right",
+                                                       backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                                                       stopOnFocus: true
+                                                   }).showToast();
                 <c:remove var="errorMessage" scope="session" />
             </c:if>
         </script>

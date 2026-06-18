@@ -348,7 +348,67 @@
             }
 
             function addToCart() {
-                alert("Đã thêm " + quantity + " sản phẩm vào giỏ hàng!");
+                let cart = [];
+                try {
+                    const cartStr = localStorage.getItem("cart");
+                    if (cartStr) {
+                        cart = JSON.parse(cartStr);
+                    }
+                } catch (e) {
+                    cart = [];
+                }
+
+                if (!Array.isArray(cart)) {
+                    cart = [];
+                }
+
+                const selectedVar = variants[selectedVariant];
+                let resolvedImage = "assets/images/products/basic.png";
+                if (product.image) {
+                    if (product.image.startsWith("http")) {
+                        resolvedImage = product.image;
+                    } else {
+                        let imgPath = product.image;
+                        if (contextPath && imgPath.startsWith(contextPath)) {
+                            imgPath = imgPath.substring(contextPath.length);
+                        }
+                        if (imgPath.startsWith("/")) {
+                            imgPath = imgPath.substring(1);
+                        }
+                        resolvedImage = imgPath;
+                    }
+                }
+
+                const item = {
+                    id: product.id + "_" + selectedVariant,
+                    name: selectedVar.name,
+                    desc: selectedVar.note,
+                    price: selectedVar.price,
+                    qty: quantity,
+                    image: resolvedImage
+                };
+
+                const existingItem = cart.find(x => x && x.name === item.name);
+                if (existingItem) {
+                    existingItem.qty = (parseInt(existingItem.qty) || 0) + quantity;
+                } else {
+                    cart.push(item);
+                }
+
+                localStorage.setItem("cart", JSON.stringify(cart));
+                
+                // Update nav badge count if local function is available, or dispatch storage event
+                window.dispatchEvent(new Event("storage"));
+                const countEl = document.getElementById("navCartCount");
+                if (countEl) {
+                    let totalQty = 0;
+                    cart.forEach(c => { if (c) totalQty += (parseInt(c.qty) || 1); });
+                    countEl.innerText = totalQty;
+                }
+
+                if (confirm("Đã thêm " + quantity + " sản phẩm \"" + item.name + "\" vào giỏ hàng!\nBạn có muốn đi đến trang Thanh toán ngay không?")) {
+                    window.location.href = contextPath + "/checkout";
+                }
             }
 
             function toggleFavorite() {
