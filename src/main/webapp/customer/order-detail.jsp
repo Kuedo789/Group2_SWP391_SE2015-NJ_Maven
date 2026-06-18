@@ -998,8 +998,15 @@
                         <div class="reorder-actions-row" style="display: flex; gap: 10px; width: 100%;">
                             <button class="btn-reorder" style="flex: 1;" onclick="alert('Đã thêm tất cả món ăn trong đơn vào giỏ hàng của bạn!')">
                                 <span class="material-symbols-outlined">shopping_bag</span>
-                                Mua lại đơn này
+                                Mua lại
                             </button>
+                            <% if (!firstTplId.isEmpty()) { %>
+                                <button class="btn-reorder" style="flex: 1; background: var(--bg-soft); color: var(--text); border: 1px solid var(--border);" onclick="window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= firstTplId %>&tab=review&customCakeId=<%= firstCCId %>'">
+                                    <span class="material-symbols-outlined">star</span>
+                                    Đánh giá
+                                </button>
+                            <% } %>
+
                         </div>
                     <% } %>
                 </div>
