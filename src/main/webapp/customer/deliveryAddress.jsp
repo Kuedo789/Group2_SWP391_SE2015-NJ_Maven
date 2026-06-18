@@ -514,7 +514,7 @@
                         </div>
                         <% } %>
 
-                        <form class="address-form"
+                        <form id="addressForm" class="address-form"
                               action="${pageContext.request.contextPath}/delivery-address"
                               method="post">
 
@@ -879,6 +879,73 @@
                     hideSuggestions();
                 }
             });
+
+            // Form Validation on Submit
+            const addressForm = document.getElementById("addressForm");
+            if (addressForm) {
+                addressForm.addEventListener("submit", function (e) {
+                    const nameInput = document.querySelector('input[name="receiverName"]');
+                    const phoneInput = document.querySelector('input[name="receiverPhone"]');
+                    const addressInput = document.getElementById("addressInput");
+                    const latInput = document.getElementById("latitudeInput");
+                    const lngInput = document.getElementById("longitudeInput");
+
+                    const nameVal = nameInput ? nameInput.value.trim() : "";
+                    if (nameVal === "") {
+                        alert("Vui lòng nhập tên người nhận.");
+                        if (nameInput) nameInput.focus();
+                        e.preventDefault();
+                        return;
+                    }
+                    if (nameVal.length > 30) {
+                        alert("Tên người nhận không được dài quá 30 ký tự.");
+                        if (nameInput) nameInput.focus();
+                        e.preventDefault();
+                        return;
+                    }
+                    // Validate name format: no numbers or special characters (except spaces)
+                    const specialCharOrNum = /[0-9!@#$%^&*(),.?":{}|<>_\[\]\\\/+=~`-]/;
+                    if (specialCharOrNum.test(nameVal)) {
+                        alert("Tên người nhận không hợp lệ (chỉ chứa chữ cái và khoảng trắng, không chứa số hay ký tự đặc biệt).");
+                        if (nameInput) nameInput.focus();
+                        e.preventDefault();
+                        return;
+                    }
+
+                    const phoneVal = phoneInput ? phoneInput.value.trim() : "";
+                    if (phoneVal === "") {
+                        alert("Vui lòng nhập số điện thoại người nhận.");
+                        if (phoneInput) phoneInput.focus();
+                        e.preventDefault();
+                        return;
+                    }
+                    // Vietnamese phone regex: starts with 03, 05, 07, 08, 09, exactly 10 digits
+                    const phoneRegex = /^0(3|5|7|8|9)\d{8}$/;
+                    if (!phoneRegex.test(phoneVal)) {
+                        alert("Số điện thoại không hợp lệ (phải đủ 10 chữ số và bắt đầu bằng 03, 05, 07, 08 hoặc 09).");
+                        if (phoneInput) phoneInput.focus();
+                        e.preventDefault();
+                        return;
+                    }
+
+                    const addrVal = addressInput ? addressInput.value.trim() : "";
+                    if (addrVal === "") {
+                        alert("Vui lòng nhập và tìm kiếm địa chỉ trên bản đồ.");
+                        if (addressInput) addressInput.focus();
+                        e.preventDefault();
+                        return;
+                    }
+
+                    const latVal = latInput ? latInput.value.trim() : "";
+                    const lngVal = lngInput ? lngInput.value.trim() : "";
+                    if (latVal === "" || lngVal === "") {
+                        alert("Vui lòng tìm địa chỉ hoặc ghim vị trí trên bản đồ để xác định tọa độ giao hàng.");
+                        if (addressInput) addressInput.focus();
+                        e.preventDefault();
+                        return;
+                    }
+                });
+            }
         </script>
 
     </body>

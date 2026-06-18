@@ -143,9 +143,12 @@
                             <button type="button" onclick="changeQuantity(1)">+</button>
                         </div>
 
-                        <button type="button" class="add-cart-btn" onclick="addToCart()">
-                            <i class="fa fa-shopping-bag"></i>
-                            Thêm vào giỏ · <span id="cartPrice">0đ</span>
+                        <button type="button" class="add-cart-btn" onclick="buyNow()">
+                            Đặt hàng · <span id="cartPrice">0đ</span>
+                        </button>
+
+                        <button type="button" class="favorite-btn" onclick="addToCartIconOnly()" title="Thêm vào giỏ hàng" style="color: var(--primary); display: flex; align-items: center; justify-content: center;">
+                            <i class="fa fa-shopping-cart"></i>
                         </button>
 
                         <button type="button" class="favorite-btn" id="favoriteBtn" onclick="toggleFavorite()">
@@ -347,7 +350,7 @@
                 updatePrice();
             }
 
-            function addToCart() {
+            function addToCartIconOnly() {
                 let cart = [];
                 try {
                     const cartStr = localStorage.getItem("cart");
@@ -397,7 +400,6 @@
 
                 localStorage.setItem("cart", JSON.stringify(cart));
                 
-                // Update nav badge count if local function is available, or dispatch storage event
                 window.dispatchEvent(new Event("storage"));
                 const countEl = document.getElementById("navCartCount");
                 if (countEl) {
@@ -406,9 +408,62 @@
                     countEl.innerText = totalQty;
                 }
 
-                if (confirm("Đã thêm " + quantity + " sản phẩm \"" + item.name + "\" vào giỏ hàng!\nBạn có muốn đi đến trang Thanh toán ngay không?")) {
-                    window.location.href = contextPath + "/checkout";
+                alert("Đã thêm " + quantity + " sản phẩm \"" + item.name + "\" vào giỏ hàng!");
+            }
+
+            function buyNow() {
+                let cart = [];
+                try {
+                    const cartStr = localStorage.getItem("cart");
+                    if (cartStr) {
+                        cart = JSON.parse(cartStr);
+                    }
+                } catch (e) {
+                    cart = [];
                 }
+
+                if (!Array.isArray(cart)) {
+                    cart = [];
+                }
+
+                const selectedVar = variants[selectedVariant];
+                let resolvedImage = "assets/images/products/basic.png";
+                if (product.image) {
+                    if (product.image.startsWith("http")) {
+                        resolvedImage = product.image;
+                    } else {
+                        let imgPath = product.image;
+                        if (contextPath && imgPath.startsWith(contextPath)) {
+                            imgPath = imgPath.substring(contextPath.length);
+                        }
+                        if (imgPath.startsWith("/")) {
+                            imgPath = imgPath.substring(1);
+                        }
+                        resolvedImage = imgPath;
+                    }
+                }
+
+                const item = {
+                    id: product.id + "_" + selectedVariant,
+                    name: selectedVar.name,
+                    desc: selectedVar.note,
+                    price: selectedVar.price,
+                    qty: quantity,
+                    image: resolvedImage
+                };
+
+                const existingItem = cart.find(x => x && x.name === item.name);
+                if (existingItem) {
+                    existingItem.qty = (parseInt(existingItem.qty) || 0) + quantity;
+                } else {
+                    cart.push(item);
+                }
+
+                localStorage.setItem("cart", JSON.stringify(cart));
+                
+                window.dispatchEvent(new Event("storage"));
+                
+                window.location.href = contextPath + "/checkout";
             }
 
             function toggleFavorite() {
