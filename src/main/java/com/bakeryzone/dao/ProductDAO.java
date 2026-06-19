@@ -346,6 +346,7 @@ public class ProductDAO {
     }
 
     public Product mapRowToProduct(ResultSet rs) throws SQLException {
+<<<<<<< Updated upstream
         // Safe check to see if explicit constructor with margin/service/instruction fields exists
         Product p;
         try {
@@ -388,6 +389,20 @@ public class ProductDAO {
         double margin = rs.getDouble("Default_Margin_Percent");
         double service = rs.getDouble("Default_Service_Percent");
         double divisor = 1.0 - ((margin + service) / 100.0);
+=======
+        Product p = new Product();
+        // Uses standard setters assuming standard Java bean structure in Product.java
+        p.setId(rs.getString("Product_ID"));
+        p.setName(rs.getString("Product_Name"));
+        p.setCategoryId(rs.getString("Category_ID"));
+        p.setCategoryName(rs.getString("Category_Name"));
+        p.setEstimatedLaborHours(rs.getDouble("Estimated_Labor_Hours"));
+        p.setAllowsGreeting(rs.getBoolean("Allows_Greeting"));
+        p.setImageUrl(rs.getString("Image_URL"));
+        p.setStatus(rs.getString("Status"));
+        p.setFeatured(rs.getBoolean("Is_Featured"));
+        p.setFullDescription(rs.getString("Full_Description"));
+>>>>>>> Stashed changes
         
         double calculatedBasePrice = 0.0;
         if (divisor > 0.0) {
