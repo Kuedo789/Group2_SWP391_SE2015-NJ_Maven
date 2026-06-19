@@ -93,6 +93,7 @@
                         <thead>
                             <tr>
                                 <th>Mã Danh Mục</th>
+                                <th>Icon</th>
                                 <th>Tên Danh Mục</th>
                                 <th>Mô Tả</th>
                                 <th>Phân Loại</th>
@@ -107,6 +108,16 @@
                                         <c:if test="${!cat.enable}">
                                             <br><span class="badge" style="background: #fee2e2; color: #991b1b; font-size: 10px; margin-top: 4px; padding: 2px 6px;">Đã vô hiệu hóa</span>
                                         </c:if>
+                                    </td>
+                                    <td class="cat-icon">
+                                        <c:choose>
+                                            <c:when test="${not empty cat.iconUrl}">
+                                                <img src="${pageContext.request.contextPath}/${cat.iconUrl}" alt="${cat.categoryName}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px; background-color: #f1f5f9; padding: 2px;">
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span style="color: #94a3b8; font-size: 11px;">Mặc định</span>
+                                            </c:otherwise>
+                                        </c:choose>
                                     </td>
                                     <td class="cat-name">${cat.categoryName}</td>
                                     <td class="cat-desc">${cat.description != null ? cat.description : 'Không có mô tả'}</td>

@@ -25,10 +25,10 @@ public class CategoryDAO {
 
         String sql
                 = "SELECT Category_ID, Category_Name, Description, "
-                + "CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable "
+                + "CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable, Icon_URL "
                 + "FROM product_category "
                 + "UNION ALL "
-                + "SELECT Category_ID, Category_Name, NULL AS Description, 'Nguyên liệu' AS Category_Type, enable "
+                + "SELECT Category_ID, Category_Name, NULL AS Description, 'Nguyên liệu' AS Category_Type, enable, NULL AS Icon_URL "
                 + "FROM ingredient_category "
                 + "ORDER BY Category_ID";
 
@@ -43,7 +43,8 @@ public class CategoryDAO {
                         rs.getString("Category_Name"),
                         rs.getString("Description"),
                         rs.getString("Category_Type"),
-                        rs.getBoolean("enable") // ADDED THIS LINE
+                        rs.getBoolean("enable"),
+                        rs.getString("Icon_URL")
                 );
                 list.add(cat);
             }
@@ -72,11 +73,12 @@ public class CategoryDAO {
 
             // Route "Sản phẩm chính" and "Phụ kiện" to product_category
             if ("Sản phẩm chính".equals(cat.getCategoryType()) || "Phụ kiện".equals(cat.getCategoryType())) {
-                String sql = "INSERT INTO product_category (Category_ID, Category_Name, Description) VALUES (?, ?, ?)";
+                String sql = "INSERT INTO product_category (Category_ID, Category_Name, Description, Icon_URL) VALUES (?, ?, ?, ?)";
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, cat.getCategoryId());
                 ps.setString(2, cat.getCategoryName());
                 ps.setString(3, cat.getDescription());
+                ps.setString(4, cat.getIconUrl());
             } else if ("Nguyên liệu".equals(cat.getCategoryType())) {
                 String sql = "INSERT INTO ingredient_category (Category_ID, Category_Name) VALUES (?, ?)";
                 ps = conn.prepareStatement(sql);
@@ -164,10 +166,10 @@ public class CategoryDAO {
         String searchPattern = "%" + (search != null ? search : "") + "%";
 
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT Category_ID, Category_Name, Description, Category_Type, enable FROM ( ");
-        sql.append("SELECT Category_ID, Category_Name, Description, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable FROM product_category ");
+        sql.append("SELECT Category_ID, Category_Name, Description, Category_Type, enable, Icon_URL FROM ( ");
+        sql.append("SELECT Category_ID, Category_Name, Description, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable, Icon_URL FROM product_category ");
         sql.append("UNION ALL ");
-        sql.append("SELECT Category_ID, Category_Name, NULL AS Description, 'Nguyên liệu' AS Category_Type, enable FROM ingredient_category ");
+        sql.append("SELECT Category_ID, Category_Name, NULL AS Description, 'Nguyên liệu' AS Category_Type, enable, NULL AS Icon_URL FROM ingredient_category ");
         sql.append(") AS combined ");
         sql.append("WHERE (Category_ID LIKE ? OR Category_Name LIKE ?) ");
 
@@ -197,7 +199,8 @@ public class CategoryDAO {
                         rs.getString("Category_Name"),
                         rs.getString("Description"),
                         rs.getString("Category_Type"),
-                        rs.getBoolean("enable") // Pull the soft-delete status
+                        rs.getBoolean("enable"),
+                        rs.getString("Icon_URL")
                 );
                 list.add(cat);
             }
@@ -262,9 +265,9 @@ public class CategoryDAO {
         ResultSet rs = null;
 
         String sql
-                = "SELECT Category_ID, Category_Name, Description, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable FROM product_category WHERE Category_ID = ? "
+                = "SELECT Category_ID, Category_Name, Description, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable, Icon_URL FROM product_category WHERE Category_ID = ? "
                 + "UNION ALL "
-                + "SELECT Category_ID, Category_Name, NULL AS Description, 'Nguyên liệu' AS Category_Type, enable FROM ingredient_category WHERE Category_ID = ?";
+                + "SELECT Category_ID, Category_Name, NULL AS Description, 'Nguyên liệu' AS Category_Type, enable, NULL AS Icon_URL FROM ingredient_category WHERE Category_ID = ?";
 
         try {
             conn = DBContext.getJDBCConnection();
@@ -279,7 +282,8 @@ public class CategoryDAO {
                         rs.getString("Category_Name"),
                         rs.getString("Description"),
                         rs.getString("Category_Type"),
-                        rs.getBoolean("enable") // ADDED THIS LINE
+                        rs.getBoolean("enable"),
+                        rs.getString("Icon_URL")
                 );
             }
         } finally {
@@ -307,11 +311,12 @@ public class CategoryDAO {
 
             // Route "Sản phẩm chính" and "Phụ kiện" to product_category
             if ("Sản phẩm chính".equals(cat.getCategoryType()) || "Phụ kiện".equals(cat.getCategoryType())) {
-                String sql = "UPDATE product_category SET Category_Name = ?, Description = ? WHERE Category_ID = ?";
+                String sql = "UPDATE product_category SET Category_Name = ?, Description = ?, Icon_URL = ? WHERE Category_ID = ?";
                 ps = conn.prepareStatement(sql);
                 ps.setString(1, cat.getCategoryName());
                 ps.setString(2, cat.getDescription());
-                ps.setString(3, cat.getCategoryId());
+                ps.setString(3, cat.getIconUrl());
+                ps.setString(4, cat.getCategoryId());
             } else if ("Nguyên liệu".equals(cat.getCategoryType())) {
                 String sql = "UPDATE ingredient_category SET Category_Name = ? WHERE Category_ID = ?";
                 ps = conn.prepareStatement(sql);

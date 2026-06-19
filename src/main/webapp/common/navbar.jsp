@@ -34,13 +34,13 @@
                     placeholder="Tìm bánh..."
                     class="nav-search-input">
 
-                <button type="submit" class="nav-search-button" title="Tìm kiếm">
+                <button type="submit" class="nav-search-btn" title="Tìm kiếm">
                     <span class="material-symbols-outlined">search</span>
                 </button>
             </form>
 
             <!-- Cart -->
-            <button type="button" title="Giỏ hàng" onclick="window.location.href='<%= contextPath %>/checkout'">
+            <button type="button" title="Giỏ hàng" onclick="#'">
                 <span class="material-symbols-outlined">shopping_cart</span>
                 <span class="cart-count" id="navCartCount">0</span>
             </button>

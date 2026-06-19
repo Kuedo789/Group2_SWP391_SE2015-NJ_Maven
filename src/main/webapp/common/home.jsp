@@ -95,35 +95,25 @@
 
                                String encodedCategory = java.net.URLEncoder.encode(categoryName, "UTF-8");
 
-                               String iconFile = "default.png";
-
-                                if ("CAT_FLAN".equalsIgnoreCase(categoryId)) {
-                                    iconFile = "flan-gato.png";
-                                } else if ("CAT_ENTREMET".equalsIgnoreCase(categoryId)) {
-                                    iconFile = "entremet.png";
-                                } else if ("CAT_CREAM".equalsIgnoreCase(categoryId)) {
-                                    iconFile = "kem-bap.png";
-                                } else if ("CAT_MOUSSE".equalsIgnoreCase(categoryId)) {
-                                    iconFile = "banh-mousse.png";
-                                } else if ("CAT_PREMIUM".equalsIgnoreCase(categoryId)) {
-                                    iconFile = "sweetbox-premium.png";
-                                } else if ("CAT_SWEETIN".equalsIgnoreCase(categoryId)) {
-                                    iconFile = "sweetin.png";
-                                } else if ("CAT_HEALTHY".equalsIgnoreCase(categoryId)) {
-                                    iconFile = "healthy.png";
-                                } else if ("CAT_BAKED".equalsIgnoreCase(categoryId)) {
-                                    iconFile = "banh-my.png";
-                                } else if ("CAT_COMBO".equalsIgnoreCase(categoryId)) {
-                                    iconFile = "combo.png";
-                                } else if ("CAT_SIGNATURE".equalsIgnoreCase(categoryId)) {
-                                    iconFile = "signature-cake.png";
-                                }
+                               String iconPath = category.get("iconUrl");
+                               if (iconPath == null || iconPath.trim().isEmpty()) {
+                                   iconPath = request.getContextPath() + "/assets/images/categories/icons/default.png";
+                               } else if (!iconPath.startsWith("http://") && !iconPath.startsWith("https://")) {
+                                   if (!iconPath.startsWith("/")) {
+                                       if (iconPath.contains("assets/")) {
+                                           iconPath = request.getContextPath() + "/" + iconPath;
+                                       } else {
+                                           iconPath = request.getContextPath() + "/assets/images/categories/icons/" + iconPath;
+                                       }
+                                   } else {
+                                       iconPath = request.getContextPath() + iconPath;
+                                   }
+                               }
                     %>
 
                     <a href="${pageContext.request.contextPath}/products?category=<%= encodedCategory %>" class="category-item">
                         <div class="category-icon">
-                            <img src="${pageContext.request.contextPath}/assets/images/categories/icons/<%= iconFile %>"
-                                 alt="<%= categoryName %>">
+                            <img src="<%= iconPath %>" alt="<%= categoryName %>">
                         </div>
                         <span><%= categoryName %></span>
                     </a>
@@ -203,57 +193,42 @@
                                     badgeClass = "badge-yellow";
                                     badgeText = "Nổi bật";
                                 }
-                    %>
+                        %>
 
-                    <div class="product-card">
-                        <div class="product-image">
-                            <a href="<%= request.getContextPath() %>/product-detail?id=<%= productId %>">
-                                <img src="<%= finalImageUrl %>" alt="<%= productName %>">
-                            </a>
+                        <div class="product-card">
+                            <div class="product-image">
+                                <a href="<%= request.getContextPath() %>/product-detail?id=<%= productId %>">
+                                    <img src="<%= finalImageUrl %>" alt="<%= productName %>">
+                                </a>
 
-                            <% if (!badgeText.isEmpty()) { %>
-                            <span class="badge <%= badgeClass %>"><%= badgeText %></span>
-                            <% } %>
+                                <% if (!badgeText.isEmpty()) { %>
+                                <span class="badge <%= badgeClass %>"><%= badgeText %></span>
+                                <% } %>
+                            </div>
+
+                            <h3><%= productName %></h3>
+                            <p><%= description %></p>
+
+                            <div class="product-bottom">
+                                <strong><%= String.format("%,.0f", product.getBasePrice()).replace(",", ".") %>đ</strong>
+
+                                <button type="button"
+                                        onclick="window.location.href = '<%= request.getContextPath() %>/product-detail?id=<%= productId %>'">
+                                    <span class="material-symbols-outlined">add_shopping_cart</span>
+                                </button>
+                            </div>
                         </div>
 
-                        <h3><%= productName %></h3>
-                        <p><%= description %></p>
-
-                        <div class="product-bottom">
-                            <strong><%= String.format("%,.0f", product.getBasePrice()).replace(",", ".") %>đ</strong>
-
-                            <button type="button"
-                                    onclick="window.location.href = '<%= request.getContextPath() %>/product-detail?id=<%= productId %>'">
-                                <span class="material-symbols-outlined">add_shopping_cart</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <%
+                        <%
                             }
                         } else {
-                    %>
-
-                    <div class="product-card">
-                        <div class="product-image">
-                            <img src="${pageContext.request.contextPath}/assets/images/products/basic.png"
-                                 alt="Chưa có sản phẩm bán chạy">
+                        %>
+                        <div class="category-empty" style="grid-column: span 4; text-align: center; padding: 40px;">
+                            <p>Hiện chưa có bánh bán chạy nào.</p>
                         </div>
-
-                        <h3>Chưa có sản phẩm</h3>
-                        <p>Hiện chưa có sản phẩm bán chạy nào được cấu hình trong hệ thống.</p>
-
-                        <div class="product-bottom">
-                            <strong>0đ</strong>
-                            <button type="button">
-                                <span class="material-symbols-outlined">add_shopping_cart</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <%
-                        }
-                    %>
+                        <%
+                            }
+                        %>
                 </div>
             </section>
 

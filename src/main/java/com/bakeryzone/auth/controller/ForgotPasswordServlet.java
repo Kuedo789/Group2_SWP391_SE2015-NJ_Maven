@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 
 public class ForgotPasswordServlet extends HttpServlet {
 
-    private static final int EMAIL_MAX_LENGTH = 100;
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -32,20 +32,9 @@ public class ForgotPasswordServlet extends HttpServlet {
 
         request.setAttribute("email", email);
 
-        if (email.isEmpty()) {
-            request.setAttribute("error", "Vui lòng nhập email.");
-            request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
-            return;
-        }
-
-        if (email.length() > EMAIL_MAX_LENGTH) {
-            request.setAttribute("error", "Email không được vượt quá " + EMAIL_MAX_LENGTH + " ký tự.");
-            request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
-            return;
-        }
-
-        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-            request.setAttribute("error", "Email không đúng định dạng.");
+        String validationError = com.bakeryzone.utils.ValidationUtils.validateForgotPasswordInput(email);
+        if (validationError != null) {
+            request.setAttribute("error", validationError);
             request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
             return;
         }

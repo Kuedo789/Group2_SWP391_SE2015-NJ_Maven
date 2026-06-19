@@ -45,8 +45,8 @@
         <div>
             <h4>Tài khoản</h4>
             <ul>
-                <li><a href="#">Đăng nhập</a></li>
-                <li><a href="#">Đăng ký</a></li>
+                <li><a href="<%= request.getContextPath() %>/login">Đăng nhập</a></li>
+                <li><a href="<%= request.getContextPath() %>/register">Đăng ký</a></li>
             </ul>
         </div>
     </div>

@@ -113,7 +113,7 @@
                                    name="fullName"
                                    value="<%= fullName %>"
                                    placeholder="Nhập họ và tên"
-                                   maxlength="100"
+                                   maxlength="30"
                                    pattern="^[A-Za-zÀ-ỹ]+( [A-Za-zÀ-ỹ]+)*$"
                                    title="Họ tên chỉ được chứa chữ cái và không được có nhiều hơn 1 khoảng trắng liên tiếp"
                                    required>
@@ -224,6 +224,23 @@
 <jsp:include page="../common/footer.jsp" />
 <jsp:include page="../common/scripts.jsp" />
 <script src="${pageContext.request.contextPath}/assets/js/password-toggle.js"></script>
+<script>
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+
+    function validatePasswordMatch() {
+        if (passwordInput.value !== confirmPasswordInput.value) {
+            confirmPasswordInput.setCustomValidity("Mật khẩu xác nhận không khớp.");
+        } else {
+            confirmPasswordInput.setCustomValidity("");
+        }
+    }
+
+    if (passwordInput && confirmPasswordInput) {
+        passwordInput.addEventListener('change', validatePasswordMatch);
+        confirmPasswordInput.addEventListener('keyup', validatePasswordMatch);
+    }
+</script>
 
 </body>
 </html>

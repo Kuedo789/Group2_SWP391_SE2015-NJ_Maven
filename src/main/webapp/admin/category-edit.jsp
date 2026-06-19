@@ -68,6 +68,11 @@
                             <textarea name="description" class="form-control" ${category.categoryType == 'Nguyên liệu' ? 'disabled' : ''} maxlength="255">${category.description}</textarea>
                         </div>
 
+                        <div class="form-group">
+                            <label class="form-label">Đường dẫn Icon (Icon URL)</label>
+                            <input type="text" name="iconUrl" class="form-control" value="${category.iconUrl}" ${category.categoryType == 'Nguyên liệu' ? 'disabled' : ''} placeholder="Ví dụ: assets/images/categories/icons/default.png" maxlength="255">
+                        </div>
+
                         <div class="form-actions">
                             <button type="submit" class="btn-primary">
                                 <i class="fa-solid fa-floppy-disk"></i> Lưu Cập Nhật

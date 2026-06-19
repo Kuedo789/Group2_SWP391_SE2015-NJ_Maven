@@ -116,4 +116,14 @@ public class OrderItem {
     public void setTemplateImage(String templateImage) {
         this.templateImage = templateImage;
     }
+
+    private String variationName;
+
+    public String getVariationName() {
+        return variationName;
+    }
+
+    public void setVariationName(String variationName) {
+        this.variationName = variationName;
+    }
 }

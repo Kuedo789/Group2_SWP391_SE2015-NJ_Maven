@@ -3,6 +3,23 @@
 <%@ page import="com.bakeryzone.model.Order" %>
 <%@ page import="com.bakeryzone.model.OrderItem" %>
 <%@ page import="com.bakeryzone.model.User" %>
+<%
+    String currentStatus = (String) request.getAttribute("status");
+    if (currentStatus == null) {
+        currentStatus = "all";
+    }
+
+    String startDateVal = request.getAttribute("startDate") != null ? request.getAttribute("startDate").toString() : "";
+    String endDateVal = request.getAttribute("endDate") != null ? request.getAttribute("endDate").toString() : "";
+
+    String dateParams = "";
+    if (!startDateVal.isEmpty()) {
+        dateParams += "&startDate=" + startDateVal;
+    }
+    if (!endDateVal.isEmpty()) {
+        dateParams += "&endDate=" + endDateVal;
+    }
+%>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -53,12 +70,29 @@
         <% } %>
 
         <!-- Filters Section -->
-        <section class="orders-filter">
-            <button class="filter-btn active" data-filter="all">Tất cả</button>
-            <button class="filter-btn" data-filter="processing">Đang xử lý</button>
-            <button class="filter-btn" data-filter="shipping">Đang giao</button>
-            <button class="filter-btn" data-filter="completed">Hoàn thành</button>
-            <button class="filter-btn" data-filter="cancelled">Đã hủy</button>
+        <section class="orders-filter" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 25px;">
+            <a href="<%= request.getContextPath() %>/OrderList?status=all<%= dateParams %>" class="filter-btn <%= "all".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Tất cả</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=processing<%= dateParams %>" class="filter-btn <%= "processing".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang xử lý</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=shipping<%= dateParams %>" class="filter-btn <%= "shipping".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang giao</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=completed<%= dateParams %>" class="filter-btn <%= "completed".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Hoàn thành</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=cancelled<%= dateParams %>" class="filter-btn <%= "cancelled".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đã hủy</a>
+        </section>
+
+        <!-- Date Range Filter -->
+        <section class="date-filter" style="margin: 20px auto; max-width: 900px; display: flex; gap: 15px; align-items: center; justify-content: center; background: var(--card); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <form action="<%= request.getContextPath() %>/OrderList" method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
+                <input type="hidden" name="status" value="<%= currentStatus %>" />
+                <label for="startDate" style="font-weight: 600; font-size: 14px;">Từ ngày:</label>
+                <input type="date" id="startDate" name="startDate" value="<%= request.getAttribute("startDate") != null ? request.getAttribute("startDate") : "" %>" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; background: var(--bg-soft); color: var(--text);" />
+                
+                <label for="endDate" style="font-weight: 600; font-size: 14px;">Đến ngày:</label>
+                <input type="date" id="endDate" name="endDate" value="<%= request.getAttribute("endDate") != null ? request.getAttribute("endDate") : "" %>" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; background: var(--bg-soft); color: var(--text);" />
+                
+                <button type="submit" class="btn btn-primary" style="padding: 8px 20px; border-radius: var(--radius-sm);">Lọc</button>
+                <% if ((request.getAttribute("startDate") != null && !request.getAttribute("startDate").toString().isEmpty()) || (request.getAttribute("endDate") != null && !request.getAttribute("endDate").toString().isEmpty())) { %>
+                    <a href="<%= request.getContextPath() %>/OrderList" class="btn btn-outline" style="padding: 8px 20px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; height: 38px; border-radius: var(--radius-sm);">Xóa bộ lọc</a>
+                <% } %>
+            </form>
         </section>
 
         <!-- Orders List -->
@@ -199,12 +233,76 @@
                     </div>
                     <span class="status-badge <%= badgeClass %>"><%= displayStatus %></span>
                 </div>
-                <div class="order-card-body" style="cursor: pointer;" onclick="window.location.href='<%= request.getContextPath() %>/OrderDetail?orderNo=<%= order.getOrderNo() %>'">
-                    <img class="order-item-img" <%= "cancelled".equals(dataStatus) ? "style=\"filter: grayscale(100%);\"" : "" %> alt="<%= itemsSummary %>" src="<%= firstItemImage %>" data-template-image="<%= firstItemTemplateImage %>" onerror="this.src = this.getAttribute('data-template-image') || '<%= request.getContextPath() %>/assets/images/default-cake.png'; this.onerror = function() { this.src = '<%= request.getContextPath() %>/assets/images/default-cake.png'; };"/>
-                    <div class="order-item-details">
-                        <div class="order-item-names" style="font-weight: 600; color: var(--text);"><%= itemsSummary %></div>
-                        <div class="order-item-qty">Số lượng: <%= totalQty %> sản phẩm</div>
-                    </div>
+                <div class="order-card-body" style="cursor: pointer; display: flex; flex-direction: column; gap: 15px;" onclick="window.location.href='<%= request.getContextPath() %>/OrderDetail?orderNo=<%= order.getOrderNo() %>'">
+                    <% 
+                    if (items != null && !items.isEmpty()) {
+                        for (OrderItem item : items) {
+                            String itemImage = "";
+                            String imgPath = item.getItemImage();
+                            if (imgPath == null || imgPath.trim().isEmpty()) {
+                                itemImage = request.getContextPath() + "/assets/images/default-cake.png";
+                            } else if (!imgPath.startsWith("http") && !imgPath.startsWith("https")) {
+                                if (!imgPath.startsWith("/")) {
+                                    itemImage = request.getContextPath() + "/" + imgPath;
+                                } else {
+                                    itemImage = request.getContextPath() + imgPath;
+                                }
+                            } else {
+                                itemImage = imgPath;
+                            }
+
+                            String tplImg = item.getTemplateImage();
+                            String itemTemplateImage = "";
+                            if (tplImg != null && !tplImg.trim().isEmpty()) {
+                                if (!tplImg.startsWith("http") && !tplImg.startsWith("https")) {
+                                    if (!tplImg.startsWith("/")) {
+                                        itemTemplateImage = request.getContextPath() + "/" + tplImg;
+                                    } else {
+                                        itemTemplateImage = request.getContextPath() + tplImg;
+                                    }
+                                } else {
+                                    itemTemplateImage = tplImg;
+                                }
+                            }
+                    %>
+                            <%
+                                String itemTemplateId = item.getTemplateId() != null ? item.getTemplateId() : "";
+                                String itemCustomCakeId = item.getCustomCakeId() != null ? item.getCustomCakeId() : "";
+                                boolean itemReviewed = false;
+                                if (currentUser != null && !itemTemplateId.isEmpty()) {
+                                    itemReviewed = reviewDAO.hasReviewed(currentUser.getUserId(), itemTemplateId);
+                                }
+                            %>
+                            <div class="order-item-row" style="display: flex; gap: 15px; align-items: center; width: 100%;">
+                                <img class="order-item-img" <%= "cancelled".equals(dataStatus) ? "style=\"filter: grayscale(100%);\"" : "" %> alt="<%= item.getItemName() %>" src="<%= itemImage %>" data-template-image="<%= itemTemplateImage %>" onerror="this.src = this.getAttribute('data-template-image') || '<%= request.getContextPath() %>/assets/images/default-cake.png'; this.onerror = function() { this.src = '<%= request.getContextPath() %>/assets/images/default-cake.png'; };" style="width: 70px; height: 70px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--border);"/>
+                                <div class="order-item-details" style="flex: 1;">
+                                    <div class="order-item-names" style="font-weight: 600; color: var(--text);"><%= item.getItemName() %></div>
+                                    <div class="order-item-version" style="font-size: 13px; color: var(--muted); margin: 3px 0;">Phiên bản: <%= item.getVariationName() != null ? item.getVariationName() : "Sản phẩm" %></div>
+                                    <div class="order-item-qty" style="font-size: 13px; color: var(--muted);">Số lượng: x<%= item.getQuantity() %></div>
+                                    <% if ("completed".equals(dataStatus) && !itemTemplateId.isEmpty()) { %>
+                                        <div style="margin-top: 5px;">
+                                            <% if (itemReviewed) { %>
+                                                <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px; height: auto; display: inline-block; min-width: auto; width: auto;" onclick="event.stopPropagation(); window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= itemTemplateId %>&tab=review'">Xem đánh giá</button>
+                                            <% } else { %>
+                                                <button class="btn btn-primary" style="padding: 4px 10px; font-size: 11px; height: auto; display: inline-block; min-width: auto; width: auto; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm);" onclick="event.stopPropagation(); window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= itemTemplateId %>&tab=review&customCakeId=<%= itemCustomCakeId %>'">Đánh giá</button>
+                                            <% } %>
+                                        </div>
+                                    <% } %>
+                                </div>
+                            </div>
+                    <%
+                        }
+                    } else {
+                    %>
+                        <div class="order-item-row" style="display: flex; gap: 15px; align-items: center; width: 100%;">
+                            <img class="order-item-img" alt="Default cake" src="<%= request.getContextPath() %>/assets/images/default-cake.png" style="width: 70px; height: 70px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--border);"/>
+                            <div class="order-item-details" style="flex: 1;">
+                                <div class="order-item-names" style="font-weight: 600; color: var(--text);">Sản phẩm tùy chỉnh</div>
+                            </div>
+                        </div>
+                    <%
+                    }
+                    %>
                 </div>
                 <div class="order-card-footer">
                     <div class="order-total">
@@ -217,11 +315,7 @@
                         </button>
                         
                         <% if ("completed".equals(dataStatus)) { %>
-                            <% if (hasReviewed) { %>
-                                <button class="btn btn-outline" onclick="window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= firstItemTemplateId %>&tab=review'">Xem đánh giá</button>
-                            <% } else { %>
-                                <button class="btn btn-primary" onclick="window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= firstItemTemplateId %>&tab=review&customCakeId=<%= firstItemCustomCakeId %>'">Đánh giá</button>
-                            <% } %>
+                            <button class="btn btn-outline" onclick="alert('Đã thêm tất cả sản phẩm trong đơn vào giỏ hàng của bạn!');">Đặt lại</button>
                         <% } else if ("cancelled".equals(dataStatus)) { %>
                             <button class="btn btn-outline" onclick="alert('Đã thêm tất cả sản phẩm trong đơn vào giỏ hàng của bạn!');">Đặt lại</button>
                         <% } else { %>
@@ -235,6 +329,44 @@
             }
         %>
         </section>
+
+        <!-- Pagination Section -->
+        <%
+            Object curPageObj = request.getAttribute("currentPage");
+            Object totPagesObj = request.getAttribute("totalPages");
+            int currentPage = curPageObj != null ? (Integer) curPageObj : 1;
+            int totalPages = totPagesObj != null ? (Integer) totPagesObj : 1;
+            
+            String startDateParam = "";
+            if (request.getAttribute("startDate") != null && !request.getAttribute("startDate").toString().isEmpty()) {
+                startDateParam = "&startDate=" + request.getAttribute("startDate");
+            }
+            String endDateParam = "";
+            if (request.getAttribute("endDate") != null && !request.getAttribute("endDate").toString().isEmpty()) {
+                endDateParam = "&endDate=" + request.getAttribute("endDate");
+            }
+            String statusParam = "&status=" + currentStatus;
+            
+            if (totalPages > 0) {
+        %>
+            <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 40px; margin-bottom: 40px;">
+                <% if (currentPage > 1) { %>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage - 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Trước</a>
+                <% } else { %>
+                    <button class="btn btn-outline" style="padding: 8px 16px; border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;" disabled>Trước</button>
+                <% } %>
+                
+                <% for (int i = 1; i <= totalPages; i++) { %>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= i %><%= statusParam %><%= startDateParam %><%= endDateParam %>" class="btn <%= i == currentPage ? "btn-primary" : "btn-outline" %>" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= i %></a>
+                <% } %>
+                
+                <% if (currentPage < totalPages) { %>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage + 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Sau</a>
+                <% } else { %>
+                    <button class="btn btn-outline" style="padding: 8px 16px; border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;" disabled>Sau</button>
+                <% } %>
+            </div>
+        <% } %>
 
         <!-- Help Section (Asymmetric Bento Style) -->
         <section class="help-section">
@@ -261,34 +393,9 @@
     <jsp:include page="../common/footer.jsp" />
     <jsp:include page="../common/scripts.jsp" />
 
+    <!-- Client side script for interaction, status filters are handled server side -->
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            const orderCards = document.querySelectorAll('.order-card');
-
-            filterButtons.forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Cập nhật trạng thái active cho các nút bộ lọc
-                    filterButtons.forEach(b => b.classList.remove('active'));
-                    this.classList.add('active');
-
-                    const filterValue = this.getAttribute('data-filter');
-
-                    // Ẩn/hiện đơn hàng dựa trên data-status tương ứng
-                    orderCards.forEach(card => {
-                        if (filterValue === 'all') {
-                            card.style.display = 'flex';
-                        } else {
-                            if (card.getAttribute('data-status') === filterValue) {
-                                card.style.display = 'flex';
-                            } else {
-                                card.style.display = 'none';
-                            }
-                        }
-                    });
-                });
-            });
-        });
+        // No client-side show/hide is needed since list is filtered server-side
     </script>
 </body>
 </html>

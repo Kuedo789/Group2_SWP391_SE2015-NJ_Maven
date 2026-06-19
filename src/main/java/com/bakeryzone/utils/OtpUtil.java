@@ -6,7 +6,7 @@ import java.sql.Timestamp;
 public class OtpUtil {
 
     private static final SecureRandom random = new SecureRandom();
-    private static final int OTP_EXPIRE_MINUTES = 1;
+    private static final int OTP_EXPIRE_MINUTES = 3;
 
     public static String generateOtp() {
         return String.format("%06d", random.nextInt(1_000_000));

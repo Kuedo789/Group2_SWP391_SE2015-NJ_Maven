@@ -10,8 +10,7 @@ import java.io.IOException;
 
 public class ResetPasswordServlet extends HttpServlet {
 
-    private static final int PASSWORD_MIN_LENGTH = 6;
-    private static final int PASSWORD_MAX_LENGTH = 20;
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -49,32 +48,9 @@ public class ResetPasswordServlet extends HttpServlet {
         newPassword = newPassword == null ? "" : newPassword;
         confirmPassword = confirmPassword == null ? "" : confirmPassword;
 
-        if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
-            request.setAttribute("error", "Vui lòng nhập đầy đủ mật khẩu.");
-            request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
-            return;
-        }
-
-        if (newPassword.matches(".*\\s.*") || confirmPassword.matches(".*\\s.*")) {
-            request.setAttribute("error", "Mật khẩu không được chứa khoảng trắng.");
-            request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
-            return;
-        }
-
-        if (newPassword.length() < PASSWORD_MIN_LENGTH) {
-            request.setAttribute("error", "Mật khẩu phải có ít nhất " + PASSWORD_MIN_LENGTH + " ký tự.");
-            request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
-            return;
-        }
-
-        if (newPassword.length() > PASSWORD_MAX_LENGTH) {
-            request.setAttribute("error", "Mật khẩu không được vượt quá " + PASSWORD_MAX_LENGTH + " ký tự.");
-            request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
-            return;
-        }
-
-        if (!newPassword.equals(confirmPassword)) {
-            request.setAttribute("error", "Mật khẩu xác nhận không khớp.");
+        String validationError = com.bakeryzone.utils.ValidationUtils.validateResetPasswordInput(newPassword, confirmPassword);
+        if (validationError != null) {
+            request.setAttribute("error", validationError);
             request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
             return;
         }

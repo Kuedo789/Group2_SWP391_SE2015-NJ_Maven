@@ -61,6 +61,15 @@ public class CustomerReviewServlet extends HttpServlet {
                     return;
                 }
 
+                if (productId != null && !productId.trim().isEmpty()) {
+                    if (reviewDAO.hasReviewed(customerId, productId)) {
+                        jsonResponse.put("success", false);
+                        jsonResponse.put("message", "Bạn đã đánh giá sản phẩm này rồi.");
+                        response.getWriter().write(gson.toJson(jsonResponse));
+                        return;
+                    }
+                }
+
                 // If customCakeId not provided, find the most recent completed custom cake purchase
                 if (customCakeId == null || customCakeId.trim().isEmpty()) {
                     customCakeId = reviewDAO.getRecentCustomCakeId(customerId, productId);
@@ -102,23 +111,23 @@ public class CustomerReviewServlet extends HttpServlet {
                     return;
                 }
 
-                boolean success = reviewDAO.updateReview(reviewId, rating, comment.trim());
+                boolean success = reviewDAO.updateReview(reviewId, customerId, rating, comment.trim());
                 jsonResponse.put("success", success);
                 if (success) {
                     jsonResponse.put("message", "Cập nhật đánh giá thành công!");
                 } else {
-                    jsonResponse.put("message", "Không thể cập nhật đánh giá.");
+                    jsonResponse.put("message", "Không thể cập nhật đánh giá (hoặc bạn không có quyền sửa đánh giá này).");
                 }
 
             } else if ("delete".equalsIgnoreCase(action)) {
                 String reviewId = request.getParameter("reviewId");
 
-                boolean success = reviewDAO.deleteReview(reviewId);
+                boolean success = reviewDAO.deleteReview(reviewId, customerId);
                 jsonResponse.put("success", success);
                 if (success) {
                     jsonResponse.put("message", "Đã xóa đánh giá thành công.");
                 } else {
-                    jsonResponse.put("message", "Không thể xóa đánh giá.");
+                    jsonResponse.put("message", "Không thể xóa đánh giá (hoặc bạn không có quyền xóa đánh giá này).");
                 }
             } else {
                 jsonResponse.put("success", false);
