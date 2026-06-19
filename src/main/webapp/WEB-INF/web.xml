@@ -64,18 +64,6 @@
         <servlet-name>StaffServlet</servlet-name>
         <servlet-class>com.bakeryzone.admin.controller.StaffServlet</servlet-class>
     </servlet>
-    <servlet>
-        <servlet-name>CustomerCheckoutServlet</servlet-name>
-        <servlet-class>com.bakeryzone.customer.controller.CustomerCheckoutServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>CustomerServlet</servlet-name>
-        <servlet-class>com.bakeryzone.admin.controller.CustomerServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>StaffServlet</servlet-name>
-        <servlet-class>com.bakeryzone.admin.controller.StaffServlet</servlet-class>
-    </servlet>
     <servlet-mapping>
         <servlet-name>UserDetailServlet</servlet-name>
         <url-pattern>/userDetail</url-pattern>
@@ -139,18 +127,6 @@
         <url-pattern>/customerDetail</url-pattern>
     </filter-mapping>
     <!-- ================= SESSION CONFIG ================= -->
-    <servlet-mapping>
-        <servlet-name>CustomerServlet</servlet-name>
-        <url-pattern>/customer</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>StaffServlet</servlet-name>
-        <url-pattern>/staff</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>CustomerCheckoutServlet</servlet-name>
-        <url-pattern>/checkout</url-pattern>
-    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>CustomerServlet</servlet-name>
         <url-pattern>/customer</url-pattern>

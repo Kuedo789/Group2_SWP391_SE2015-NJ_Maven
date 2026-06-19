@@ -282,9 +282,9 @@
                                     <% if ("completed".equals(dataStatus) && !itemTemplateId.isEmpty()) { %>
                                         <div style="margin-top: 5px;">
                                             <% if (itemReviewed) { %>
-                                                <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px; height: auto; display: inline-block; min-width: auto; width: auto;" onclick="window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= itemTemplateId %>&tab=review'">Xem đánh giá</button>
+                                                <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px; height: auto; display: inline-block; min-width: auto; width: auto;" onclick="event.stopPropagation(); window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= itemTemplateId %>&tab=review'">Xem đánh giá</button>
                                             <% } else { %>
-                                                <button class="btn btn-primary" style="padding: 4px 10px; font-size: 11px; height: auto; display: inline-block; min-width: auto; width: auto; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm);" onclick="window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= itemTemplateId %>&tab=review&customCakeId=<%= itemCustomCakeId %>'">Đánh giá</button>
+                                                <button class="btn btn-primary" style="padding: 4px 10px; font-size: 11px; height: auto; display: inline-block; min-width: auto; width: auto; background: var(--primary); color: white; border: none; border-radius: var(--radius-sm);" onclick="event.stopPropagation(); window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= itemTemplateId %>&tab=review&customCakeId=<%= itemCustomCakeId %>'">Đánh giá</button>
                                             <% } %>
                                         </div>
                                     <% } %>
@@ -315,7 +315,7 @@
                         </button>
                         
                         <% if ("completed".equals(dataStatus)) { %>
-                            <button class="btn btn-outline" style="cursor: default; opacity: 0.7;" disabled>Đã hoàn thành</button>
+                            <button class="btn btn-outline" onclick="alert('Đã thêm tất cả sản phẩm trong đơn vào giỏ hàng của bạn!');">Đặt lại</button>
                         <% } else if ("cancelled".equals(dataStatus)) { %>
                             <button class="btn btn-outline" onclick="alert('Đã thêm tất cả sản phẩm trong đơn vào giỏ hàng của bạn!');">Đặt lại</button>
                         <% } else { %>
@@ -347,11 +347,13 @@
             }
             String statusParam = "&status=" + currentStatus;
             
-            if (totalPages > 1) {
+            if (totalPages > 0) {
         %>
             <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 40px; margin-bottom: 40px;">
                 <% if (currentPage > 1) { %>
                     <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage - 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Trước</a>
+                <% } else { %>
+                    <button class="btn btn-outline" style="padding: 8px 16px; border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;" disabled>Trước</button>
                 <% } %>
                 
                 <% for (int i = 1; i <= totalPages; i++) { %>
@@ -360,6 +362,8 @@
                 
                 <% if (currentPage < totalPages) { %>
                     <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage + 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Sau</a>
+                <% } else { %>
+                    <button class="btn btn-outline" style="padding: 8px 16px; border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;" disabled>Sau</button>
                 <% } %>
             </div>
         <% } %>
