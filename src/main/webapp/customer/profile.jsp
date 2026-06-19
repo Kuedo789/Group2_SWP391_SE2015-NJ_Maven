@@ -360,7 +360,7 @@
                         <div class="address-profile-header">
                             <div class="address-profile-title">
                                 <h3>Địa chỉ giao hàng</h3>
-                                <p>Quản lý địa chỉ nhận bánh, ghi chú giao hàng và vị trí giao hàng trên bản đồ.</p>
+                                <p>${sessionScope.user.defaultAddress != null ? sessionScope.user.defaultAddress : 'Chưa thiết lập địa chỉ mặc định. Vui lòng thêm địa chỉ.'}</p>
                             </div>
 
                             <a href="${pageContext.request.contextPath}/delivery-address"

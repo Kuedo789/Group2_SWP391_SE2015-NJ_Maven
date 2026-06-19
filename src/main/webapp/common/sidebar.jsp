@@ -20,16 +20,20 @@
             <a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
         <li class="menu-item ${param.activeMenu == 'products' ? 'active' : ''}">
-            <a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm <i class="fa-solid fa-chevron-down arrow"></i></a>
+            <a href="${pageContext.request.contextPath}/admin/product?action=list"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
         <li class="menu-item ${param.activeMenu == 'categories' ? 'active' : ''}" style="padding-left: 20px;">
             <a href="${pageContext.request.contextPath}/admin/categories" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Danh mục</a>
+        </li>
+
+        <li class="menu-item ${param.activeMenu == 'ingredients' ? 'active' : ''}" style="padding-left: 20px;">
+            <a href="${pageContext.request.contextPath}/admin/ingredient?action=list" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Nguyên liệu</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'attributes' ? 'active' : ''}" style="padding-left: 20px;">
             <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Thuộc tính</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'customers' ? 'active' : ''}">
-            <a href="#"><i class="fa-solid fa-users"></i> Khách hàng</a>
+            <a href="customer?action=list"><i class="fa-solid fa-users"></i> Khách hàng</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'promotions' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi <i class="fa-solid fa-chevron-down arrow"></i></a>
@@ -48,7 +52,7 @@
     <div class="nav-section-title">Hệ thống</div>
     <ul class="sidebar-menu">
         <li class="menu-item ${param.activeMenu == 'users' ? 'active' : ''}">
-            <a href="${pageContext.request.contextPath}/userList"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
+            <a href="staff?action=list"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'roles' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a>
@@ -68,3 +72,5 @@
         <p>Tạo ra những chiếc bánh đẹp và trao gửi hạnh phúc!</p>
     </div>
 </div>
+
+            

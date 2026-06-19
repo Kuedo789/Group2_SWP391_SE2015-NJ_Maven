@@ -16,8 +16,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * DAO class for managing Product CRUD operations matching the bakery_2 schema.
- * Operates on cake_template, product_category, and retrieves Base Price directly.
+ * DAO class for managing Product CRUD operations matching the updated schema.
+ * Operates on cake_template, product_category, tracks Base_Price, 
+ * and calculates dynamic margins/service percentages.
  */
 public class ProductDAO {
 
@@ -232,11 +233,11 @@ public class ProductDAO {
                 }
 
                 if (exists) {
-                    // Update Template matching bakery_2 schema
+                    // Merged Update query containing all fields
                     String updateT = "UPDATE cake_template SET Template_Name = ?, "
                             + "Estimated_Labor_Hours = ?, Allows_Greeting = ?, Image_URL = ?, Status = ?, "
                             + "Is_Featured = ?, Full_Description = ?, Category_ID = ?, "
-                            + "Base_Price = ? "
+                            + "Base_Price = ?, Default_Margin_Percent = ?, Default_Service_Percent = ?, Instruction_Steps = ? "
                             + "WHERE Template_ID = ?";
                     try (PreparedStatement ps = conn.prepareStatement(updateT)) {
                         ps.setString(1, product.getName());
@@ -251,16 +252,19 @@ public class ProductDAO {
                         ps.setString(8, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
 
                         ps.setDouble(9, product.getBasePrice());
-                        ps.setString(10, product.getId());
+                        ps.setDouble(10, product.getDefaultMarginPercent());
+                        ps.setDouble(11, product.getDefaultServicePercent());
+                        ps.setString(12, product.getInstructionSteps());
+                        ps.setString(13, product.getId());
 
                         success = ps.executeUpdate() > 0;
                     }
                 } else {
-                    // Insert Template matching bakery_2 schema
+                    // Merged Insert query containing all fields
                     String insertT = "INSERT INTO cake_template (Template_ID, Template_Name, Estimated_Labor_Hours, "
                             + "Allows_Greeting, Image_URL, Status, Is_Featured, Full_Description, Category_ID, "
-                            + "Base_Price) "
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            + "Base_Price, Default_Margin_Percent, Default_Service_Percent, Instruction_Steps) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     try (PreparedStatement ps = conn.prepareStatement(insertT)) {
                         ps.setString(1, product.getId());
                         ps.setString(2, product.getName());
@@ -275,6 +279,9 @@ public class ProductDAO {
                         ps.setString(9, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
 
                         ps.setDouble(10, product.getBasePrice());
+                        ps.setDouble(11, product.getDefaultMarginPercent());
+                        ps.setDouble(12, product.getDefaultServicePercent());
+                        ps.setString(13, product.getInstructionSteps());
 
                         success = ps.executeUpdate() > 0;
                     }
@@ -296,7 +303,6 @@ public class ProductDAO {
 
     public List<Map<String, String>> getAllProductCategories() {
         List<Map<String, String>> categories = new ArrayList<>();
-
         String sql = "SELECT Category_ID, Category_Name FROM product_category ORDER BY Category_Name ASC";
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
@@ -328,6 +334,9 @@ public class ProductDAO {
                 + "    c.Category_Name AS Category_Name, "
                 + "    t.Estimated_Labor_Hours AS Estimated_Labor_Hours, "
                 + "    t.Base_Price AS Base_Price, "
+                + "    t.Default_Margin_Percent AS Default_Margin_Percent, "
+                + "    t.Default_Service_Percent AS Default_Service_Percent, "
+                + "    t.Instruction_Steps AS Instruction_Steps, "
                 + "    (SELECT COALESCE(SUM(d.Standard_Gram * i.Price_Per_Unit), 0) "
                 + "     FROM template_ingredient_detail d "
                 + "     JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
@@ -337,22 +346,63 @@ public class ProductDAO {
     }
 
     public Product mapRowToProduct(ResultSet rs) throws SQLException {
-        Product p = new Product();
-        // Uses standard setters assuming standard Java bean structure in Product.java
-        p.setId(rs.getString("Product_ID"));
-        p.setName(rs.getString("Product_Name"));
-        p.setCategoryId(rs.getString("Category_ID"));
-        p.setCategoryName(rs.getString("Category_Name"));
-        p.setEstimatedLaborHours(rs.getDouble("Estimated_Labor_Hours"));
-        p.setAllowsGreeting(rs.getBoolean("Allows_Greeting"));
-        p.setImageUrl(rs.getString("Image_URL"));
-        p.setStatus(rs.getString("Status"));
-        p.setFeatured(rs.getBoolean("Is_Featured"));
-        p.setFullDescription(rs.getString("Full_Description"));
-        p.setType(rs.getString("Product_Type"));
+        // Safe check to see if explicit constructor with margin/service/instruction fields exists
+        Product p;
+        try {
+            p = new Product(
+                    rs.getString("Product_ID"),
+                    rs.getString("Product_Name"),
+                    rs.getString("Category_ID"),
+                    rs.getString("Category_Name"),
+                    rs.getDouble("Estimated_Labor_Hours"),
+                    rs.getBoolean("Allows_Greeting"),
+                    rs.getString("Image_URL"),
+                    rs.getString("Status"),
+                    rs.getBoolean("Is_Featured"),
+                    rs.getString("Full_Description"),
+                    rs.getString("Product_Type"),
+                    rs.getDouble("Default_Margin_Percent"),
+                    rs.getDouble("Default_Service_Percent"),
+                    rs.getString("Instruction_Steps")
+            );
+        } catch (Exception e) {
+            // Fallback to standard bean if constructor signature differs
+            p = new Product();
+            p.setId(rs.getString("Product_ID"));
+            p.setName(rs.getString("Product_Name"));
+            p.setCategoryId(rs.getString("Category_ID"));
+            p.setCategoryName(rs.getString("Category_Name"));
+            p.setEstimatedLaborHours(rs.getDouble("Estimated_Labor_Hours"));
+            p.setAllowsGreeting(rs.getBoolean("Allows_Greeting"));
+            p.setImageUrl(rs.getString("Image_URL"));
+            p.setStatus(rs.getString("Status"));
+            p.setFeatured(rs.getBoolean("Is_Featured"));
+            p.setFullDescription(rs.getString("Full_Description"));
+            p.setDefaultMarginPercent(rs.getDouble("Default_Margin_Percent"));
+            p.setDefaultServicePercent(rs.getDouble("Default_Service_Percent"));
+            p.setInstructionSteps(rs.getString("Instruction_Steps"));
+        }
+
+        // Handle both: dynamic validation fallback logic from main AND actual saved Base_Price fallback
+        double ingredientCost = rs.getDouble("Ingredient_Cost");
+        double margin = rs.getDouble("Default_Margin_Percent");
+        double service = rs.getDouble("Default_Service_Percent");
+        double divisor = 1.0 - ((margin + service) / 100.0);
         
-        // Use the actual Base Price from the table instead of the old math calculation
-        p.setBasePrice(rs.getDouble("Base_Price"));
+        double calculatedBasePrice = 0.0;
+        if (divisor > 0.0) {
+            calculatedBasePrice = ingredientCost / divisor;
+        } else {
+            calculatedBasePrice = ingredientCost;
+        }
+
+        // If your DB explicitly has a static Base_Price set, use it. Otherwise, use calculated option.
+        double explicitBasePrice = rs.getDouble("Base_Price");
+        if (explicitBasePrice > 0) {
+            p.setBasePrice(explicitBasePrice);
+        } else {
+            p.setBasePrice(calculatedBasePrice);
+        }
 
         return p;
     }
@@ -378,16 +428,15 @@ public class ProductDAO {
 
     private String getOrderByClause(String sortBy) {
         if ("price-asc".equalsIgnoreCase(sortBy)) {
-            return " ORDER BY p.Base_Price ASC";
+            return " ORDER BY p.Ingredient_Cost / (1.0 - (p.Default_Margin_Percent + p.Default_Service_Percent)/100.0) ASC";
         } else if ("price-desc".equalsIgnoreCase(sortBy)) {
-            return " ORDER BY p.Base_Price DESC";
+            return " ORDER BY p.Ingredient_Cost / (1.0 - (p.Default_Margin_Percent + p.Default_Service_Percent)/100.0) DESC";
         }
         return " ORDER BY p.Product_ID DESC"; // newest first
     }
 
     public List<Product> getHomepageBestSellerProducts(int limit) {
         List<Product> products = new ArrayList<>();
-
         String sql = "SELECT * FROM (" + getBaseUnionQuery() + ") AS p "
                 + "WHERE p.Status = ? AND p.Is_Featured = ? "
                 + "ORDER BY p.Product_ID DESC "

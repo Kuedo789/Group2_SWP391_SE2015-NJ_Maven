@@ -40,9 +40,9 @@
             </form>
 
             <!-- Cart -->
-            <button type="button" title="Giỏ hàng">
+            <button type="button" title="Giỏ hàng" onclick="window.location.href='<%= contextPath %>/checkout'">
                 <span class="material-symbols-outlined">shopping_cart</span>
-                <span class="cart-count">0</span>
+                <span class="cart-count" id="navCartCount">0</span>
             </button>
 
             <!-- User dropdown -->
@@ -93,7 +93,7 @@
                     </a>
 
                     <!-- Orders -->
-                    <a href="<%= contextPath %>/orders" class="user-dropdown-item">
+                    <a href="<%= contextPath %>/OrderList" class="user-dropdown-item">
                         <span class="material-symbols-outlined">receipt_long</span>
                         <span>Xem đơn hàng</span>
                     </a>
@@ -122,22 +122,47 @@
 </nav>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+        // Handle search form validation
         const navSearchForm = document.getElementById("navSearchForm");
-
-        if (!navSearchForm) {
-            return;
+        if (navSearchForm) {
+            navSearchForm.addEventListener("submit", function (event) {
+                const input = navSearchForm.querySelector("input[name='search']");
+                const keyword = input ? input.value.trim() : "";
+                if (keyword.length === 0) {
+                    event.preventDefault();
+                    if (input) {
+                        input.focus();
+                    }
+                }
+            });
         }
 
-        navSearchForm.addEventListener("submit", function (event) {
-            const input = navSearchForm.querySelector("input[name='search']");
-            const keyword = input ? input.value.trim() : "";
-
-            if (keyword.length === 0) {
-                event.preventDefault();
-                if (input) {
-                    input.focus();
+        // Update cart badge from localStorage
+        const updateCartCount = () => {
+            const countEl = document.getElementById("navCartCount");
+            if (countEl) {
+                try {
+                    const cartStr = localStorage.getItem("cart");
+                    if (cartStr) {
+                        const cart = JSON.parse(cartStr);
+                        if (Array.isArray(cart)) {
+                            let totalQty = 0;
+                            cart.forEach(item => { if (item) totalQty += (parseInt(item.qty) || 1); });
+                            countEl.innerText = totalQty;
+                        } else {
+                            countEl.innerText = "0";
+                        }
+                    } else {
+                        countEl.innerText = "0";
+                    }
+                } catch(e) {
+                    countEl.innerText = "0";
                 }
             }
-        });
+        };
+
+        updateCartCount();
+        // Listen to storage events to keep it synchronized across tabs
+        window.addEventListener("storage", updateCartCount);
     });
 </script>

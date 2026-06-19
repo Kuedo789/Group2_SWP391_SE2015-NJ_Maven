@@ -585,50 +585,9 @@
     </head>
     <body>
 
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fa-solid fa-cake-candles"></i>
-                <span>Cake<span>Zone</span> Admin</span>
-            </div>
-
-            <div class="nav-section-title">Hệ thống chính</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item">
-                    <a href="#"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
-                </li>
-            </ul>
-
-            <div class="nav-section-title">Quản lý</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item">
-                    <a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
-                </li>
-                <li class="menu-item">
-                    <a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm</a>
-                </li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-users"></i> Khách hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a></li>
-            </ul>
-
-            <div class="nav-section-title">Hệ thống</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item active">
-                    <a href="${pageContext.request.contextPath}/userList"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
-                </li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hoạt động</a></li>
-            </ul>
-
-            <div class="sidebar-banner">
-                <i class="fa-solid fa-cake-candles cake-icon"></i>
-                <h6>Phát triển tiệm bánh</h6>
-                <p>Tạo ra những chiếc bánh đẹp và trao gửi hạnh phúc!</p>
-            </div>
-        </div>
+        <jsp:include page="/common/sidebar.jsp">
+            <jsp:param name="activeMenu" value="users" />
+        </jsp:include>
 
         <div class="main-panel">
 
@@ -665,13 +624,14 @@
                         <h1 class="page-title">Quản lý người dùng</h1>
                         <p class="page-subtitle">Hệ thống quản lý tài khoản Quản lý, Nhân viên, Người giao hàng</p>
                     </div>
-                    <a href="${pageContext.request.contextPath}/userDetail?action=add" class="btn btn-cz-primary">
+                    <a href="staff?action=add" class="btn btn-cz-primary">
                         <i class="fa-solid fa-circle-plus"></i> Thêm tài khoản mới
                     </a>
                 </div>
 
                 <div class="filter-card">
-                    <form class="filter-form" action="${pageContext.request.contextPath}/userList" method="GET">
+                    <form class="filter-form" action="${pageContext.request.contextPath}/staff" method="GET">
+                        <input type="hidden" name="action" value="list">
 
                         <div class="search-wrapper">
                             <i class="fa-solid fa-magnifying-glass"></i>
@@ -692,7 +652,7 @@
                         </select>
 
                         <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
-                        <a href="${pageContext.request.contextPath}/userList" class="btn-clear-filter text-center">Làm mới</a>
+                        <a href="${pageContext.request.contextPath}/staff?action=list" class="btn-clear-filter text-center">Làm mới</a>
                     </form>
                 </div>
 
@@ -716,21 +676,31 @@
 
                                     <td class="font-weight-bold">${u.fullName}</td>
 
-                                    <td>${u.email}</td>
+                                    <td>${u.user.email}</td>
 
                                     <td class="text-warning">${u.phone}</td>
 
                                     <td style="text-align: center;">
-                                        <c:set var="roleKey" value="${not empty u.roleId ? u.roleId : u.role_ID}" />
+
+                                        <c:set var="roleKey" value="${not empty u.user.roleId ? u.user.roleId : u.user.role_ID}" />
                                         <span class="badge ${roleKey eq 'ADMIN' ? 'badge-admin' : (roleKey eq 'STAFF' ? 'badge-staff' : 'badge-shipper')}">
-                                            ${roleKey}
+                                            <c:choose>
+                                                <c:when test="${roleKey eq 'ADMIN'}">Quản lý</c:when>
+                                                <c:when test="${roleKey eq 'STAFF'}">Nhân viên</c:when>
+                                                <c:when test="${roleKey eq 'SHIPPER'}">Người giao hàng</c:when>
+                                                <c:otherwise>${roleKey}</c:otherwise>
+                                            </c:choose>
                                         </span>
                                     </td>
 
                                     <td style="text-align: center;">
-                                        <c:set var="statusKey" value="${not empty u.accountStatus ? u.accountStatus : u.account_Status}" />
+                                        <c:set var="statusKey" value="${not empty u.user.accountStatus ? u.user.accountStatus : u.user.account_Status}" />
                                         <span class="badge ${statusKey eq 'Active' ? 'badge-success' : 'badge-secondary'}">
-                                            ● ${not empty statusKey ? statusKey : 'Unknown'}
+                                            <c:choose>
+                                                <c:when test="${statusKey eq 'Active'}">Đang hoạt động</c:when>
+                                                <c:when test="${statusKey eq 'Deactive'}">Đã khóa</c:when>
+                                                <c:otherwise>${statusKey}</c:otherwise>
+                                            </c:choose>
                                         </span>
                                     </td>
 
@@ -738,11 +708,11 @@
                                         <div class="d-flex align-items-center justify-content-center gap-2">
                                             <c:set var="staffIdKey" value="${not empty u.staffId ? u.staffId : u.staff_ID}" />
 
-                                            <a href="userDetail?action=edit&id=${staffIdKey}" class="btn-action-edit" title="Chỉnh sửa">
+                                            <a href="staff?action=edit&id=${u.staffId}" class="btn-action-edit" title="Chỉnh sửa">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
 
-                                            <a href="userDetail?action=delete&id=${staffIdKey}" class="btn-action-delete"
+                                            <a href="staff?action=delete&id=${u.staffId}" class="btn-action-delete"
                                                onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản của ${u.fullName} không?')" title="Xóa">
                                                 <i class="fa-regular fa-trash-can"></i>
                                             </a>
@@ -758,7 +728,7 @@
                         <ul class="pagination-nav">
                             <c:if test="${currentPage > 1}">
                                 <li class="page-num-item">
-                                    <a href="userList?page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
+                                    <a href="staff?action=list&page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
                                         <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -766,13 +736,13 @@
 
                             <c:forEach begin="1" end="${endPage}" var="i">
                                 <li class="page-num-item ${currentPage == i ? 'active' : ''}">
-                                    <a href="userList?page=${i}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">${i}</a>
+                                    <a href="staff?action=list&page=${i}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">${i}</a>
                                 </li>
                             </c:forEach>
 
                             <c:if test="${currentPage < endPage}">
                                 <li class="page-num-item">
-                                    <a href="userList?page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
+                                    <a href="staff?action=list&page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterRoleId=${param.filterRoleId}&filterStatus=${param.filterStatus}">
                                         <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -789,28 +759,28 @@
 
         <script>
             <c:if test="${not empty sessionScope.successMessage}">
-               Toastify({
-                   text: "${sessionScope.successMessage}",
-                   duration: 4000,
-                   close: true,
-                   gravity: "top",
-                   position: "right",
-                   backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                   stopOnFocus: true
-               }).showToast();
+                                                   Toastify({
+                                                       text: "${sessionScope.successMessage}",
+                                                       duration: 4000,
+                                                       close: true,
+                                                       gravity: "top",
+                                                       position: "right",
+                                                       backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                                                       stopOnFocus: true
+                                                   }).showToast();
                 <c:remove var="successMessage" scope="session" />
             </c:if>
 
             <c:if test="${not empty sessionScope.errorMessage}">
-               Toastify({
-                   text: "${sessionScope.errorMessage}",
-                   duration: 4000,
-                   close: true,
-                   gravity: "top",
-                   position: "right",
-                   backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                   stopOnFocus: true
-               }).showToast();
+                                                   Toastify({
+                                                       text: "${sessionScope.errorMessage}",
+                                                       duration: 4000,
+                                                       close: true,
+                                                       gravity: "top",
+                                                       position: "right",
+                                                       backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                                                       stopOnFocus: true
+                                                   }).showToast();
                 <c:remove var="errorMessage" scope="session" />
             </c:if>
         </script>

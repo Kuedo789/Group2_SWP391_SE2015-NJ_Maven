@@ -1,7 +1,8 @@
 package com.bakeryzone.dao;
 
 import com.bakeryzone.model.Staff;
-import com.bakeryzone.utils.DBContext; // Hướng đúng đường dẫn DBContext của nhóm bạn
+import com.bakeryzone.model.User;
+import com.bakeryzone.utils.DBContext;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,11 @@ public class StaffDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT * FROM `staff` WHERE `Staff_ID` = ?";
+            String sql = "SELECT s.Staff_ID, s.User_ID, s.Full_Name, s.Phone, s.Position, s.Is_Active_Staff, "
+                    + "u.Email, u.Password, u.Role_ID, u.Account_Status, u.Is_Verified "
+                    + "FROM `staff` s "
+                    + "JOIN `user` u ON s.User_ID = u.User_ID "
+                    + "WHERE s.Staff_ID = ?";
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, id);
@@ -21,13 +26,21 @@ public class StaffDAO {
             if (rs.next()) {
                 Staff s = new Staff();
                 s.setStaffId(rs.getString("Staff_ID"));
+                s.setUserId(rs.getString("User_ID"));
                 s.setFullName(rs.getString("Full_Name"));
-                s.setEmail(rs.getString("Email"));
-                s.setPassword(rs.getString("Password"));
                 s.setPhone(rs.getString("Phone"));
-                s.setRoleId(rs.getString("Role_ID"));
-                s.setAccountStatus(rs.getString("Account_Status"));
+                s.setPosition(rs.getString("Position"));
                 s.setIsActiveStaff(rs.getBoolean("Is_Active_Staff"));
+
+                User u = new User();
+                u.setUserId(rs.getString("User_ID"));
+                u.setEmail(rs.getString("Email"));
+                u.setPassword(rs.getString("Password"));
+                u.setRoleId(rs.getString("Role_ID"));
+                u.setAccountStatus(rs.getString("Account_Status"));
+                u.setVerified(rs.getBoolean("Is_Verified"));
+
+                s.setUser(u); // Nhúng user vào staff
                 return s;
             }
         } catch (Exception e) {
@@ -38,53 +51,77 @@ public class StaffDAO {
         return null;
     }
 
-    // 2. Hàm Thêm mới Nhân viên vào Database
     public boolean insertStaff(Staff s) {
         Connection conn = null;
-        PreparedStatement ps = null;
+        PreparedStatement psUser = null;
+        PreparedStatement psStaff = null;
+        boolean isSuccess = false;
         try {
-            String sql = "INSERT INTO `staff` (Staff_ID, Full_Name, Email, Password, Phone, Role_ID, Account_Status, Is_Active_Staff) "
-                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             conn = DBContext.getJDBCConnection();
-            ps = conn.prepareStatement(sql);
+            conn.setAutoCommit(false); // Transaction
 
-            String generatedId = (s.getStaffId() == null || s.getStaffId().trim().isEmpty())
-                    ? "STF" + System.currentTimeMillis()
+            String userId = "USR_" + System.currentTimeMillis();
+            String generatedStaffId = (s.getStaffId() == null || s.getStaffId().trim().isEmpty())
+                    ? "STF_" + System.currentTimeMillis()
                     : s.getStaffId();
 
-            ps.setString(1, generatedId);
-            ps.setString(2, s.getFullName());
-            ps.setString(3, s.getEmail());
-            ps.setString(4, s.getPassword());
-            ps.setString(5, s.getPhone());
-            ps.setString(6, s.getRoleId());
-            ps.setString(7, s.getAccountStatus());
-            ps.setBoolean(8, s.isIsActiveStaff());
+            // 1. Insert vào bảng User
+            String sqlUser = "INSERT INTO `user` (User_ID, Email, Password, Role_ID, Account_Status, Is_Verified) VALUES (?, ?, ?, ?, ?, ?)";
+            psUser = conn.prepareStatement(sqlUser);
+            psUser.setString(1, userId);
+            psUser.setString(2, s.getUser().getEmail());
+            psUser.setString(3, s.getUser().getPassword());
+            psUser.setString(4, s.getUser().getRoleId()); // Lấy Role từ object User
+            psUser.setString(5, s.getUser().getAccountStatus() != null ? s.getUser().getAccountStatus() : "Active");
+            psUser.setBoolean(6, s.getUser().isVerified());
+            psUser.executeUpdate();
 
-            return ps.executeUpdate() > 0;
+            // 2. Insert vào bảng Staff
+            String sqlStaff = "INSERT INTO `staff` (Staff_ID, User_ID, Full_Name, Phone, Position, Is_Active_Staff) VALUES (?, ?, ?, ?, ?, 1)";
+            psStaff = conn.prepareStatement(sqlStaff);
+            psStaff.setString(1, generatedStaffId);
+            psStaff.setString(2, userId);
+            psStaff.setString(3, s.getFullName());
+            psStaff.setString(4, s.getPhone());
+            psStaff.setString(5, s.getPosition());
+            psStaff.executeUpdate();
+
+            conn.commit();
+            isSuccess = true;
         } catch (Exception e) {
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
         } finally {
-            close(conn, ps, null);
+            close(null, psUser, null);
+            close(conn, psStaff, null);
         }
-        return false;
+        return isSuccess;
     }
 
-    // 3. Hàm Cập nhật thông tin nhân viên
     public boolean updateStaff(Staff s) {
         Connection conn = null;
         PreparedStatement ps = null;
         try {
-            String sql = "UPDATE `staff` SET Full_Name = ?, Email = ?, Password = ?, Phone = ?, Role_ID = ?, Account_Status = ? WHERE Staff_ID = ?";
+            String sql = "UPDATE `staff` s "
+                    + "JOIN `user` u ON s.User_ID = u.User_ID "
+                    + "SET s.Full_Name = ?, s.Phone = ?, s.Position = ?, u.Email = ?, u.Password = ?, u.Role_ID = ?, u.Account_Status = ? "
+                    + "WHERE s.Staff_ID = ?";
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, s.getFullName());
-            ps.setString(2, s.getEmail());
-            ps.setString(3, s.getPassword());
-            ps.setString(4, s.getPhone());
-            ps.setString(5, s.getRoleId());
-            ps.setString(6, s.getAccountStatus());
-            ps.setString(7, s.getStaffId());
+            ps.setString(2, s.getPhone());
+            ps.setString(3, s.getPosition());
+            ps.setString(4, s.getUser().getEmail());
+            ps.setString(5, s.getUser().getPassword());
+            ps.setString(6, s.getUser().getRoleId());
+            ps.setString(7, s.getUser().getAccountStatus());
+            ps.setString(8, s.getStaffId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,12 +131,14 @@ public class StaffDAO {
         return false;
     }
 
-    // 4. Hàm Xóa nhân viên khỏi hệ thống
     public boolean deleteStaff(String id) {
         Connection conn = null;
         PreparedStatement ps = null;
         try {
-            String sql = "UPDATE `staff` SET `Is_Active_Staff` = 0 WHERE `Staff_ID` = ?";
+            String sql = "UPDATE `staff` s "
+                    + "JOIN `user` u ON s.User_ID = u.User_ID "
+                    + "SET u.Is_Verified = 0, s.Is_Active_Staff = 0 "
+                    + "WHERE s.Staff_ID = ?";
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, id);
@@ -112,17 +151,16 @@ public class StaffDAO {
         return false;
     }
 
-    // 5. Hàm check trùng email trong bảng staff
     public boolean checkEmailExist(String email, String staffId) {
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT * FROM `staff` WHERE Email = ?";
-            if (staffId != null) {
-                sql += " AND Staff_ID != ?";
-            }
+            String sql = "SELECT Email FROM `user` WHERE Email = ?";
 
+            if (staffId != null) {
+                sql += " AND User_ID != (SELECT User_ID FROM `staff` WHERE Staff_ID = ?)";
+            }
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, email);
@@ -140,36 +178,23 @@ public class StaffDAO {
         return false;
     }
 
-    private void close(Connection conn, PreparedStatement ps, ResultSet rs) {
-        try {
-            if (rs != null) {
-                rs.close();
-            }
-            if (ps != null) {
-                ps.close();
-            }
-            if (conn != null) {
-                conn.close();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public int getTotalStaffs(String keyword, String roleId, String status) {
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT * FROM `staff` WHERE `Is_Active_Staff` = 1";
+            String sql = "SELECT COUNT(*) FROM `staff` s "
+                    + "JOIN `user` u ON s.User_ID = u.User_ID "
+                    + "WHERE u.Is_Verified = 1";
+
             if (keyword != null && !keyword.trim().isEmpty()) {
-                sql += " AND (Full_Name LIKE ? OR Email LIKE ?)";
+                sql += " AND (s.Full_Name LIKE ? OR u.Email LIKE ?)";
             }
             if (roleId != null && !roleId.trim().isEmpty()) {
-                sql += " AND Role_ID = ?";
+                sql += " AND u.Role_ID = ?";
             }
             if (status != null && !status.trim().isEmpty()) {
-                sql += " AND Account_Status = ?";
+                sql += " AND u.Account_Status = ?";
             }
 
             conn = DBContext.getJDBCConnection();
@@ -199,22 +224,26 @@ public class StaffDAO {
         return 0;
     }
 
-    // 7. Hàm tìm kiếm, lọc và phân trang nhân viên (Đổ ra bảng hiển thị chính)
     public List<Staff> searchAndFilterStaffs(String keyword, String roleId, String status, int pageIndex, int pageSize) {
         List<Staff> list = new ArrayList<>();
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT * FROM `staff` WHERE `Is_Active_Staff` = 1";
+            String sql = "SELECT s.Staff_ID, s.User_ID, s.Full_Name, s.Phone, s.Position, s.Is_Active_Staff, "
+                    + "u.Email, u.Password, u.Role_ID, u.Account_Status, u.Is_Verified "
+                    + "FROM `staff` s "
+                    + "JOIN `user` u ON s.User_ID = u.User_ID "
+                    + "WHERE u.Is_Verified = 1";
+
             if (keyword != null && !keyword.trim().isEmpty()) {
-                sql += " AND (Full_Name LIKE ? OR Email LIKE ?)";
+                sql += " AND (s.Full_Name LIKE ? OR u.Email LIKE ?)";
             }
             if (roleId != null && !roleId.trim().isEmpty()) {
-                sql += " AND Role_ID = ?";
+                sql += " AND u.Role_ID = ?";
             }
             if (status != null && !status.trim().isEmpty()) {
-                sql += " AND Account_Status = ?";
+                sql += " AND u.Account_Status = ?";
             }
 
             sql += " LIMIT ? OFFSET ?";
@@ -241,13 +270,21 @@ public class StaffDAO {
             while (rs.next()) {
                 Staff s = new Staff();
                 s.setStaffId(rs.getString("Staff_ID"));
+                s.setUserId(rs.getString("User_ID"));
                 s.setFullName(rs.getString("Full_Name"));
-                s.setEmail(rs.getString("Email"));
-                s.setPassword(rs.getString("Password"));
                 s.setPhone(rs.getString("Phone"));
-                s.setRoleId(rs.getString("Role_ID"));
-                s.setAccountStatus(rs.getString("Account_Status"));
+                s.setPosition(rs.getString("Position"));
                 s.setIsActiveStaff(rs.getBoolean("Is_Active_Staff"));
+
+                User u = new User();
+                u.setUserId(rs.getString("User_ID"));
+                u.setEmail(rs.getString("Email"));
+                u.setPassword(rs.getString("Password"));
+                u.setRoleId(rs.getString("Role_ID"));
+                u.setAccountStatus(rs.getString("Account_Status"));
+                u.setVerified(rs.getBoolean("Is_Verified"));
+
+                s.setUser(u);
                 list.add(s);
             }
         } catch (Exception e) {
@@ -256,5 +293,21 @@ public class StaffDAO {
             close(conn, ps, rs);
         }
         return list;
+    }
+
+    private void close(Connection conn, PreparedStatement ps, ResultSet rs) {
+        try {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (conn != null) {
+                conn.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

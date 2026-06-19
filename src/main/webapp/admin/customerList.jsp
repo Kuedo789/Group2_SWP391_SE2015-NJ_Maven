@@ -17,7 +17,7 @@
         <title>CakeZone Admin - Customer Management</title>
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        
+
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/v4-shims.min.css" rel="stylesheet">
@@ -49,7 +49,8 @@
                 background-color: var(--cz-dark-bg);
                 min-height: 100vh;
                 position: fixed;
-                top: 0; left: 0;
+                top: 0;
+                left: 0;
                 display: flex;
                 flex-direction: column;
                 padding: 20px 0;
@@ -63,23 +64,86 @@
                 border-bottom: 1px solid #2d2b2b;
             }
 
-            .sidebar-brand i { color: var(--cz-primary); font-size: 24px; margin-right: 10px; }
-            .sidebar-brand span { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
-            .sidebar-brand span span { color: var(--cz-primary); }
-            .nav-section-title { color: var(--cz-text-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 20px 25px 8px 25px; }
-            .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+            .sidebar-brand i {
+                color: var(--cz-primary);
+                font-size: 24px;
+                margin-right: 10px;
+            }
+            .sidebar-brand span {
+                color: #fff;
+                font-size: 20px;
+                font-weight: 700;
+                letter-spacing: 0.5px;
+            }
+            .sidebar-brand span span {
+                color: var(--cz-primary);
+            }
+            .nav-section-title {
+                color: var(--cz-text-muted);
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                padding: 20px 25px 8px 25px;
+            }
+            .sidebar-menu {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
 
             .menu-item a {
-                display: flex; align-items: center; padding: 11px 25px; color: #b5b5b5; text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                padding: 11px 25px;
+                color: #b5b5b5;
+                text-decoration: none;
+                font-size: 14px;
+                font-weight: 500;
+                transition: all 0.2s ease;
             }
-            .menu-item a:hover { color: #fff; background-color: var(--cz-sidebar-active); }
-            .menu-item.active a { color: var(--cz-primary); background-color: var(--cz-sidebar-active); border-left: 3px solid var(--cz-primary); font-weight: 600; }
-            .menu-item a i { display: inline-block; width: 20px; font-size: 16px; margin-right: 12px; text-align: center; }
+            .menu-item a:hover {
+                color: #fff;
+                background-color: var(--cz-sidebar-active);
+            }
+            .menu-item.active a {
+                color: var(--cz-primary);
+                background-color: var(--cz-sidebar-active);
+                border-left: 3px solid var(--cz-primary);
+                font-weight: 600;
+            }
+            .menu-item a i {
+                display: inline-block;
+                width: 20px;
+                font-size: 16px;
+                margin-right: 12px;
+                text-align: center;
+            }
 
-            .sidebar-banner { margin: auto 20px 20px 20px; background: linear-gradient(135deg, #232222, #181717); border-radius: 12px; padding: 20px; border: 1px dashed var(--cz-primary); text-align: center; }
-            .sidebar-banner i.cake-icon { font-size: 40px; color: var(--cz-primary); margin-bottom: 10px; display: inline-block; }
-            .sidebar-banner h6 { color: #fff; font-size: 14px; margin-bottom: 6px; }
-            .sidebar-banner p { color: #999; font-size: 11px; margin-bottom: 0; }
+            .sidebar-banner {
+                margin: auto 20px 20px 20px;
+                background: linear-gradient(135deg, #232222, #181717);
+                border-radius: 12px;
+                padding: 20px;
+                border: 1px dashed var(--cz-primary);
+                text-align: center;
+            }
+            .sidebar-banner i.cake-icon {
+                font-size: 40px;
+                color: var(--cz-primary);
+                margin-bottom: 10px;
+                display: inline-block;
+            }
+            .sidebar-banner h6 {
+                color: #fff;
+                font-size: 14px;
+                margin-bottom: 6px;
+            }
+            .sidebar-banner p {
+                color: #999;
+                font-size: 11px;
+                margin-bottom: 0;
+            }
 
             /* Main Content Panel */
             .main-panel {
@@ -103,126 +167,370 @@
                 z-index: 90;
             }
 
-            .header-left { display: flex; align-items: center; gap: 15px; }
-            .sidebar-toggle { background: none; border: none; font-size: 18px; color: #555; cursor: pointer; }
-            .breadcrumbs { font-size: 13px; color: var(--cz-text-muted); margin-bottom: 0; }
-            .breadcrumbs a { color: var(--cz-text-muted); text-decoration: none; transition: color 0.2s; }
-            .breadcrumbs a:hover { color: var(--cz-primary); }
-            .breadcrumbs span { margin: 0 6px; }
+            .header-left {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+            .sidebar-toggle {
+                background: none;
+                border: none;
+                font-size: 18px;
+                color: #555;
+                cursor: pointer;
+            }
+            .breadcrumbs {
+                font-size: 13px;
+                color: var(--cz-text-muted);
+                margin-bottom: 0;
+            }
+            .breadcrumbs a {
+                color: var(--cz-text-muted);
+                text-decoration: none;
+                transition: color 0.2s;
+            }
+            .breadcrumbs a:hover {
+                color: var(--cz-primary);
+            }
+            .breadcrumbs span {
+                margin: 0 6px;
+            }
 
-            .header-right { display: flex; align-items: center; gap: 20px; }
-            .header-icon-btn { background: none; border: none; font-size: 18px; color: #555; position: relative; cursor: pointer; transition: color 0.2s; }
-            .header-icon-btn:hover { color: var(--cz-primary); }
-            .header-icon-btn .badge-dot { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background-color: var(--cz-primary); border-radius: 50%; border: 1px solid #fff; }
+            .header-right {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+            .header-icon-btn {
+                background: none;
+                border: none;
+                font-size: 18px;
+                color: #555;
+                position: relative;
+                cursor: pointer;
+                transition: color 0.2s;
+            }
+            .header-icon-btn:hover {
+                color: var(--cz-primary);
+            }
+            .header-icon-btn .badge-dot {
+                position: absolute;
+                top: -2px;
+                right: -2px;
+                width: 8px;
+                height: 8px;
+                background-color: var(--cz-primary);
+                border-radius: 50%;
+                border: 1px solid #fff;
+            }
 
-            .profile-section { display: flex; align-items: center; gap: 10px; border-left: 1px solid var(--cz-border-color); padding-left: 20px; }
-            .profile-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--cz-border-color); }
-            .profile-info { line-height: 1.2; }
-            .profile-name { font-size: 13.5px; font-weight: 600; color: #333; }
-            .profile-role { font-size: 10.5px; color: var(--cz-text-muted); font-weight: 500; }
+            .profile-section {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border-left: 1px solid var(--cz-border-color);
+                padding-left: 20px;
+            }
+            .profile-img {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid var(--cz-border-color);
+            }
+            .profile-info {
+                line-height: 1.2;
+            }
+            .profile-name {
+                font-size: 13.5px;
+                font-weight: 600;
+                color: #333;
+            }
+            .profile-role {
+                font-size: 10.5px;
+                color: var(--cz-text-muted);
+                font-weight: 500;
+            }
 
             /* Container & Elements */
-            .content-container { padding: 35px; flex: 1; }
-            .page-title-area { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
-            .page-title { font-size: 26px; font-weight: 700; color: #111; margin-bottom: 4px; }
-            .page-subtitle { font-size: 13.5px; color: var(--cz-text-muted); margin-bottom: 0; }
+            .content-container {
+                padding: 35px;
+                flex: 1;
+            }
+            .page-title-area {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 25px;
+            }
+            .page-title {
+                font-size: 26px;
+                font-weight: 700;
+                color: #111;
+                margin-bottom: 4px;
+            }
+            .page-subtitle {
+                font-size: 13.5px;
+                color: var(--cz-text-muted);
+                margin-bottom: 0;
+            }
 
             .btn-cz-primary {
-                background-color: var(--cz-primary); color: #fff; font-weight: 600; font-size: 14.5px; padding: 10px 20px; border-radius: 8px; border: none; transition: all 0.2s; display: flex; align-items: center; gap: 8px; text-decoration: none;
+                background-color: var(--cz-primary);
+                color: #fff;
+                font-weight: 600;
+                font-size: 14.5px;
+                padding: 10px 20px;
+                border-radius: 8px;
+                border: none;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                text-decoration: none;
             }
-            .btn-cz-primary:hover { background-color: var(--cz-primary-hover); color: #fff; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(63, 95, 54, 0.25); }
+            .btn-cz-primary:hover {
+                background-color: var(--cz-primary-hover);
+                color: #fff;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 10px rgba(63, 95, 54, 0.25);
+            }
 
-            .filter-card { background-color: var(--cz-card-bg); border-radius: 12px; padding: 20px; border: 1px solid var(--cz-border-color); margin-bottom: 25px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02); }
-            .filter-form { display: flex; align-items: center; flex-wrap: wrap; gap: 15px; }
-            .filter-select { min-width: 160px; padding: 10px 15px; font-size: 13.5px; font-weight: 500; border-radius: 8px; border: 1px solid var(--cz-border-color); background-color: #fff; color: #444; cursor: pointer; outline: none; transition: border-color 0.2s; }
-            .filter-select:focus { border-color: var(--cz-primary); }
+            .filter-card {
+                background-color: var(--cz-card-bg);
+                border-radius: 12px;
+                padding: 20px;
+                border: 1px solid var(--cz-border-color);
+                margin-bottom: 25px;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+            }
+            .filter-form {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 15px;
+            }
+            .filter-select {
+                min-width: 160px;
+                padding: 10px 15px;
+                font-size: 13.5px;
+                font-weight: 500;
+                border-radius: 8px;
+                border: 1px solid var(--cz-border-color);
+                background-color: #fff;
+                color: #444;
+                cursor: pointer;
+                outline: none;
+                transition: border-color 0.2s;
+            }
+            .filter-select:focus {
+                border-color: var(--cz-primary);
+            }
 
-            .search-wrapper { position: relative; flex: 1; min-width: 250px; }
-            .search-input { width: 100%; padding: 10px 15px 10px 40px; font-size: 13.5px; border-radius: 8px; border: 1px solid var(--cz-border-color); outline: none; transition: border-color 0.2s; }
-            .search-input:focus { border-color: var(--cz-primary); }
-            .search-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 14px; }
+            .search-wrapper {
+                position: relative;
+                flex: 1;
+                min-width: 250px;
+            }
+            .search-input {
+                width: 100%;
+                padding: 10px 15px 10px 40px;
+                font-size: 13.5px;
+                border-radius: 8px;
+                border: 1px solid var(--cz-border-color);
+                outline: none;
+                transition: border-color 0.2s;
+            }
+            .search-input:focus {
+                border-color: var(--cz-primary);
+            }
+            .search-wrapper i {
+                position: absolute;
+                left: 15px;
+                top: 50%;
+                transform: translateY(-50%);
+                color: #aaa;
+                font-size: 14px;
+            }
 
-            .btn-filter-action { padding: 10px 20px; font-size: 13.5px; font-weight: 600; border-radius: 8px; border: 1px solid var(--cz-border-color); background-color: #fff; color: #444; transition: all 0.2s; }
-            .btn-filter-action:hover { background-color: #fdfdfd; border-color: #ccc; }
-            .btn-clear-filter { padding: 10px 15px; font-size: 13.5px; font-weight: 500; border-radius: 8px; background-color: #555; color: #fff; text-decoration: none; transition: background 0.2s; }
-            .btn-clear-filter:hover { background-color: #333; color: #fff; }
+            .btn-filter-action {
+                padding: 10px 20px;
+                font-size: 13.5px;
+                font-weight: 600;
+                border-radius: 8px;
+                border: 1px solid var(--cz-border-color);
+                background-color: #fff;
+                color: #444;
+                transition: all 0.2s;
+            }
+            .btn-filter-action:hover {
+                background-color: #fdfdfd;
+                border-color: #ccc;
+            }
+            .btn-clear-filter {
+                padding: 10px 15px;
+                font-size: 13.5px;
+                font-weight: 500;
+                border-radius: 8px;
+                background-color: #555;
+                color: #fff;
+                text-decoration: none;
+                transition: background 0.2s;
+            }
+            .btn-clear-filter:hover {
+                background-color: #333;
+                color: #fff;
+            }
 
             /* Table Design */
-            .table-card { background-color: var(--cz-card-bg); border-radius: 12px; border: 1px solid var(--cz-border-color); overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02); margin-bottom: 25px; }
-            .cz-table { width: 100%; margin-bottom: 0; border-collapse: collapse; }
-            .cz-table th { background-color: #fffaf5; color: #666; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 16px 20px; border-bottom: 2px solid var(--cz-border-color); }
-            .cz-table td { padding: 16px 20px; vertical-align: middle; font-size: 14px; border-bottom: 1px solid var(--cz-border-color); }
-            .cz-table tr:hover td { background-color: #fdfbf9; }
+            .table-card {
+                background-color: var(--cz-card-bg);
+                border-radius: 12px;
+                border: 1px solid var(--cz-border-color);
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+                margin-bottom: 25px;
+            }
+            .cz-table {
+                width: 100%;
+                margin-bottom: 0;
+                border-collapse: collapse;
+            }
+            .cz-table th {
+                background-color: #fffaf5;
+                color: #666;
+                font-size: 11.5px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                padding: 16px 20px;
+                border-bottom: 2px solid var(--cz-border-color);
+            }
+            .cz-table td {
+                padding: 16px 20px;
+                vertical-align: middle;
+                font-size: 14px;
+                border-bottom: 1px solid var(--cz-border-color);
+            }
+            .cz-table tr:hover td {
+                background-color: #fdfbf9;
+            }
 
             /* Badges Custom */
-            .badge-customer { background-color: #6c757d !important; color: white; font-weight: 600; padding: 5px 10px; border-radius: 6px; }
-            .badge-success { background-color: #e6f6eb !important; color: #28a745 !important; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 30px; }
-            .badge-secondary { background-color: #fcebeb !important; color: #dc3545 !important; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 30px; }
+            .badge-customer {
+                background-color: #6c757d !important;
+                color: white;
+                font-weight: 600;
+                padding: 5px 10px;
+                border-radius: 6px;
+            }
+            .badge-success {
+                background-color: #e6f6eb !important;
+                color: #28a745 !important;
+                font-size: 12px;
+                font-weight: 600;
+                padding: 5px 12px;
+                border-radius: 30px;
+            }
+            .badge-secondary {
+                background-color: #fcebeb !important;
+                color: #dc3545 !important;
+                font-size: 12px;
+                font-weight: 600;
+                padding: 5px 12px;
+                border-radius: 30px;
+            }
 
             /* ĐỒNG BỘ CSS NÚT SỬA XOÁ ĐỂ HIỆN ICON CHUẨN MẪU */
             .btn-action-edit, .btn-action-delete {
-                width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--cz-border-color); background-color: #fff; color: #666; cursor: pointer; transition: all 0.2s; text-decoration: none;
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--cz-border-color);
+                background-color: #fff;
+                color: #666;
+                cursor: pointer;
+                transition: all 0.2s;
+                text-decoration: none;
             }
-            .btn-action-edit { color: var(--cz-primary); }
-            .btn-action-edit:hover { background-color: #f6faf5; border-color: var(--cz-primary); }
-            .btn-action-delete { color: #dc3545; }
-            .btn-action-delete:hover { background-color: #fdf3f4; border-color: #dc3545; }
+            .btn-action-edit {
+                color: var(--cz-primary);
+            }
+            .btn-action-edit:hover {
+                background-color: #f6faf5;
+                border-color: var(--cz-primary);
+            }
+            .btn-action-delete {
+                color: #dc3545;
+            }
+            .btn-action-delete:hover {
+                background-color: #fdf3f4;
+                border-color: #dc3545;
+            }
 
             /* Pagination Design */
-            .pagination-area { display: flex; align-items: center; justify-content: space-between; padding: 20px 25px; border-top: 1px solid var(--cz-border-color); background-color: #fff; }
-            .pagination-text { font-size: 13px; color: var(--cz-text-muted); }
-            .pagination-nav { display: flex; gap: 5px; margin: 0; padding: 0; list-style: none; }
+            .pagination-area {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px 25px;
+                border-top: 1px solid var(--cz-border-color);
+                background-color: #fff;
+            }
+            .pagination-text {
+                font-size: 13px;
+                color: var(--cz-text-muted);
+            }
+            .pagination-nav {
+                display: flex;
+                gap: 5px;
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
 
-            .page-num-item a { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--cz-border-color); font-size: 13px; font-weight: 600; color: #555; text-decoration: none; transition: all 0.2s; }
-            .page-num-item a:hover { background-color: #fafafa; border-color: #ccc; }
-            .page-num-item.active a { background-color: var(--cz-primary) !important; border-color: var(--cz-primary) !important; color: #fff !important; }
-            .page-num-item.disabled a { opacity: 0.5; pointer-events: none; background-color: #f8f6f4; }
+            .page-num-item a {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 6px;
+                border: 1px solid var(--cz-border-color);
+                font-size: 13px;
+                font-weight: 600;
+                color: #555;
+                text-decoration: none;
+                transition: all 0.2s;
+            }
+            .page-num-item a:hover {
+                background-color: #fafafa;
+                border-color: #ccc;
+            }
+            .page-num-item.active a {
+                background-color: var(--cz-primary) !important;
+                border-color: var(--cz-primary) !important;
+                color: #fff !important;
+            }
+            .page-num-item.disabled a {
+                opacity: 0.5;
+                pointer-events: none;
+                background-color: #f8f6f4;
+            }
         </style>
     </head>
     <body>
 
-        <div class="sidebar">
-            <div class="sidebar-brand">
-                <i class="fa-solid fa-cake-candles"></i>
-                <span>Cake<span>Zone</span> Admin</span>
-            </div>
-
-            <div class="nav-section-title">Hệ thống chính</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item">
-                    <a href="#"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
-                </li>
-            </ul>
-
-            <div class="nav-section-title">Quản lý</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng</a></li>
-                <li class="menu-item"><a href="${pageContext.request.contextPath}/admin/products"><i class="fa-solid fa-cookie-bite"></i> Sản phẩm</a></li>
-                <li class="menu-item active"><a href="${pageContext.request.contextPath}/customerList"><i class="fa-solid fa-users"></i> Khách hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a></li>
-            </ul>
-
-            <div class="nav-section-title">Hệ thống</div>
-            <ul class="sidebar-menu">
-                <li class="menu-item">
-                    <a href="${pageContext.request.contextPath}/userList"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
-                </li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a></li>
-                <li class="menu-item"><a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hoạt động</a></li>
-            </ul>
-
-            <div class="sidebar-banner">
-                <i class="fa-solid fa-cake-candles cake-icon"></i>
-                <h6>Phát triển tiệm bánh</h6>
-                <p>Tạo ra những chiếc bánh đẹp và trao gửi hạnh phúc!</p>
-            </div>
-        </div>
+        <jsp:include page="/common/sidebar.jsp">
+            <jsp:param name="activeMenu" value="customers" />
+        </jsp:include>
 
         <div class="main-panel">
+
+
 
             <div class="top-header">
                 <div class="header-left">
@@ -257,13 +565,14 @@
                         <h1 class="page-title">Quản lý khách hàng</h1>
                         <p class="page-subtitle">Hệ thống quản lý tài khoản khách hàng mua sắm hệ thống Bakery</p>
                     </div>
-                    <a href="${pageContext.request.contextPath}/customerDetail?action=add" class="btn btn-cz-primary">
+                    <a href="customer?action=add" class="btn btn-cz-primary">
                         <i class="fa-solid fa-circle-plus"></i> Thêm khách hàng mới
                     </a>
                 </div>
 
                 <div class="filter-card">
-                    <form class="filter-form" action="${pageContext.request.contextPath}/customerList" method="GET">
+                    <form class="filter-form" action="${pageContext.request.contextPath}/customer" method="GET">
+                        <input type="hidden" name="action" value="list">
                         <div class="search-wrapper">
                             <i class="fa-solid fa-magnifying-glass"></i>
                             <input type="text" class="search-input" name="searchKeyword" value="${param.searchKeyword}" placeholder="Tìm kiếm khách hàng theo tên, email...">
@@ -276,7 +585,7 @@
                         </select>
 
                         <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
-                        <a href="${pageContext.request.contextPath}/customerList" class="btn-clear-filter text-center">Làm mới</a>
+                        <a href="${pageContext.request.contextPath}/customer?action=list" class="btn-clear-filter text-center">Làm mới</a>
                     </form>
                 </div>
 
@@ -298,24 +607,28 @@
                                 <tr>
                                     <td style="text-align: center;">${(currentPage - 1) * 5 + status.count}</td>
                                     <td class="font-weight-bold">${c.fullName}</td>
-                                    <td>${c.email}</td>
+                                    <td>${c.user.email}</td>
                                     <td class="text-warning">${c.phone}</td>
                                     <td style="text-align: center;">
-                                        <span class="badge badge-customer">CUSTOMER</span>
+                                        <span class="badge badge-customer">Khách hàng</span>
                                     </td>
                                     <td style="text-align: center;">
-                                        <c:set var="statusKey" value="${not empty c.accountStatus ? c.accountStatus : c.account_Status}" />
+                                        <c:set var="statusKey" value="${not empty c.user.accountStatus ? c.user.accountStatus : c.user.account_Status}" />
                                         <span class="badge ${statusKey eq 'Active' ? 'badge-success' : 'badge-secondary'}">
-                                            ● ${not empty statusKey ? statusKey : 'Unknown'}
+                                            <c:choose>
+                                                <c:when test="${statusKey eq 'Active'}">Đang hoạt động</c:when>
+                                                <c:when test="${statusKey eq 'Deactive'}">Đã khóa</c:when>
+                                                <c:otherwise>${statusKey}</c:otherwise>
+                                            </c:choose>
                                         </span>
                                     </td>
                                     <td>
                                         <div class="d-flex align-items-center justify-content-center gap-2">
                                             <c:set var="cusIdKey" value="${not empty c.customerId ? c.customerId : c.customer_ID}" />
-                                            <a href="customerDetail?action=edit&id=${cusIdKey}" class="btn-action-edit" title="Chỉnh sửa">
+                                            <a href="customer?action=edit&id=${c.customerId}" class="btn-action-edit" title="Chỉnh sửa">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
-                                            <a href="customerDetail?action=delete&id=${cusIdKey}" class="btn-action-delete"
+                                            <a href="customer?action=delete&id=${c.customerId}" class="btn-action-delete"
                                                onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản của ${c.fullName} không?')" title="Xóa">
                                                 <i class="fa-regular fa-trash-can"></i>
                                             </a>
@@ -331,7 +644,7 @@
                         <ul class="pagination-nav">
                             <c:if test="${currentPage > 1}">
                                 <li class="page-num-item">
-                                    <a href="customerList?page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
+                                    <a href="customer?action=list&page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
                                         <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -339,13 +652,13 @@
 
                             <c:forEach begin="1" end="${endPage}" var="i">
                                 <li class="page-num-item ${currentPage == i ? 'active' : ''}">
-                                    <a href="customerList?page=${i}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">${i}</a>
+                                    <a href="customer?action=list&page=${i}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">${i}</a>
                                 </li>
                             </c:forEach>
 
                             <c:if test="${currentPage < endPage}">
                                 <li class="page-num-item">
-                                    <a href="customerList?page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
+                                    <a href="customer?action=list&page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
                                         <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -362,28 +675,28 @@
 
         <script>
             <c:if test="${not empty sessionScope.successMessage}">
-                Toastify({
-                    text: "${sessionScope.successMessage}",
-                    duration: 4000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                    stopOnFocus: true
-                }).showToast();
+                                                   Toastify({
+                                                       text: "${sessionScope.successMessage}",
+                                                       duration: 4000,
+                                                       close: true,
+                                                       gravity: "top",
+                                                       position: "right",
+                                                       backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                                                       stopOnFocus: true
+                                                   }).showToast();
                 <c:remove var="successMessage" scope="session" />
             </c:if>
 
             <c:if test="${not empty sessionScope.errorMessage}">
-                Toastify({
-                    text: "${sessionScope.errorMessage}",
-                    duration: 4000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                    stopOnFocus: true
-                }).showToast();
+                                                   Toastify({
+                                                       text: "${sessionScope.errorMessage}",
+                                                       duration: 4000,
+                                                       close: true,
+                                                       gravity: "top",
+                                                       position: "right",
+                                                       backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                                                       stopOnFocus: true
+                                                   }).showToast();
                 <c:remove var="errorMessage" scope="session" />
             </c:if>
         </script>

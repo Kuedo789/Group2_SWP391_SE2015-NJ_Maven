@@ -93,14 +93,15 @@
                     <h1 class="page-title">Danh sách bánh kem</h1>
                     <p class="page-subtitle">Quản lý tất cả sản phẩm bánh kem, nguyên liệu và trạng thái kinh doanh.</p>
                 </div>
-                <a href="${pageContext.request.contextPath}/admin/product-detail?id=new" class="btn btn-cz-primary">
+                <a href="${pageContext.request.contextPath}/admin/product?action=create" class="btn btn-cz-primary">
                     <i class="fa-solid fa-circle-plus"></i> Thêm bánh mới
                 </a>
             </div>
 
             <!-- Filters -->
             <div class="filter-card">
-                <form class="filter-form" action="${pageContext.request.contextPath}/admin/products" method="get">
+                <form class="filter-form" action="${pageContext.request.contextPath}/admin/product" method="get">
+                    <input type="hidden" name="action" value="list">
                     <!-- Maintain page size -->
                     <input type="hidden" name="pageSize" value="${pageSize}">
                     
@@ -128,7 +129,7 @@
                     </select>
 
                     <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
-                    <a href="${pageContext.request.contextPath}/admin/products" class="btn-clear-filter"><i class="fa-solid fa-arrow-rotate-left"></i> Làm mới</a>
+                    <a href="${pageContext.request.contextPath}/admin/product?action=list" class="btn-clear-filter"><i class="fa-solid fa-arrow-rotate-left"></i> Làm mới</a>
                 </form>
             </div>
 
@@ -168,7 +169,7 @@
                                                     </c:otherwise>
                                                 </c:choose>
                                                 <div class="product-meta">
-                                                    <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="product-name-link">${p.name}</a>
+                                                    <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}" class="product-name-link">${p.name}</a>
                                                     <span class="product-sku">Mã: ${p.id}</span>
                                                 </div>
                                             </div>
@@ -198,9 +199,9 @@
                                          </td>
                                          <td>
                                              <c:choose>
-                                                 <c:when test="${not empty p.recipeName}">
-                                                     <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}#recipe-editor-container" class="product-name-link" style="font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">
-                                                         <i class="fa-solid fa-receipt" style="color: var(--cz-secondary); font-size: 12px;"></i> ${p.recipeName}
+                                                 <c:when test="${not empty p.instructionSteps}">
+                                                     <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}#recipe-editor-container" class="product-name-link" style="font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">
+                                                         <i class="fa-solid fa-receipt" style="color: var(--cz-secondary); font-size: 12px;"></i> Xem hướng dẫn
                                                      </a>
                                                  </c:when>
                                                  <c:otherwise>
@@ -220,24 +221,15 @@
                                         </td>
                                         <td>
                                             <div class="actions-cell">
-                                                <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="btn-action-view" title="Xem chi tiết">
+                                                <a href="${pageContext.request.contextPath}/admin/product?action=detail&id=${p.id}" class="btn-action-view" title="Xem chi tiết">
                                                     <i class="fa-regular fa-eye"></i>
                                                 </a>
-                                                <a href="${pageContext.request.contextPath}/admin/product-detail?id=${p.id}" class="btn-action-edit" title="Chỉnh sửa">
+                                                <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}" class="btn-action-edit" title="Chỉnh sửa">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </a>
-                                                 <c:choose>
-                                                     <c:when test="${p.status eq 'Active'}">
-                                                         <button class="btn-action-delete" title="Vô hiệu hóa" onclick="if(confirm('Bạn có chắc chắn muốn vô hiệu hóa bánh kem ${p.name} không?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=deactivate&id=${p.id}'; }">
-                                                             <i class="fa-solid fa-ban"></i>
-                                                         </button>
-                                                     </c:when>
-                                                     <c:otherwise>
-                                                         <button class="btn-action-view" style="color: #3f5f36; border-color: #3f5f36; background-color: #eaf1e6;" title="Kích hoạt" onclick="if(confirm('Bạn có chắc chắn muốn kích hoạt lại bánh kem ${p.name} không?')) { window.location.href='${pageContext.request.contextPath}/admin/products?action=activate&id=${p.id}'; }">
-                                                             <i class="fa-solid fa-circle-check"></i>
-                                                         </button>
-                                                     </c:otherwise>
-                                                 </c:choose>
+                                                <button class="btn-action-delete" title="Xóa sản phẩm" onclick="if(confirm('Bạn có chắc chắn muốn xóa bánh kem ${p.name} không?')) { deleteProduct('${p.id}'); }">
+                                                    <i class="fa-regular fa-trash-can"></i>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -263,7 +255,7 @@
                             <!-- Prev page -->
                             <c:if test="${currentPage > 1}">
                                 <li class="page-num-item">
-                                    <a href="${pageContext.request.contextPath}/admin/products?page=${currentPage - 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
+                                    <a href="${pageContext.request.contextPath}/admin/product?action=list&page=${currentPage - 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
                                         <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -272,21 +264,22 @@
                             <!-- Page Numbers -->
                             <c:forEach var="i" begin="1" end="${totalPages}">
                                 <li class="page-num-item ${i == currentPage ? 'active' : ''}">
-                                    <a href="${pageContext.request.contextPath}/admin/products?page=${i}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">${i}</a>
+                                    <a href="${pageContext.request.contextPath}/admin/product?action=list&page=${i}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">${i}</a>
                                 </li>
                             </c:forEach>
                             
                             <!-- Next page -->
                             <c:if test="${currentPage < totalPages}">
                                 <li class="page-num-item">
-                                    <a href="${pageContext.request.contextPath}/admin/products?page=${currentPage + 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
+                                    <a href="${pageContext.request.contextPath}/admin/product?action=list&page=${currentPage + 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
                                         <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
                             </c:if>
                         </ul>
                         
-                        <form action="${pageContext.request.contextPath}/admin/products" method="get" class="d-inline">
+                        <form action="${pageContext.request.contextPath}/admin/product" method="get" class="d-inline">
+                            <input type="hidden" name="action" value="list">
                             <input type="hidden" name="category" value="${category}">
                             <input type="hidden" name="status" value="${status}">
                             <input type="hidden" name="search" value="${search}">
@@ -304,7 +297,18 @@
         </div>
     </div>
 
+    <!-- Hidden delete form for POST request -->
+    <form id="deleteProductForm" action="${pageContext.request.contextPath}/admin/product?action=delete" method="post" style="display:none;">
+        <input type="hidden" name="id" id="deleteProductId">
+    </form>
+
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function deleteProduct(id) {
+            document.getElementById('deleteProductId').value = id;
+            document.getElementById('deleteProductForm').submit();
+        }
+    </script>
 </body>
 </html>
