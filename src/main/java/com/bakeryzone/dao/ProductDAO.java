@@ -302,13 +302,15 @@ public class ProductDAO {
         List<Map<String, String>> categories = new ArrayList<>();
 
         String sql = """
-                 SELECT Category_ID, Category_Name, Icon_URL
+                 SELECT Category_ID, Category_Name, image_url AS Icon_URL
                  FROM product_category
                  WHERE enable = 1
                  ORDER BY Category_Name ASC
                  """;
 
-        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBContext.getJDBCConnection(); 
+             PreparedStatement ps = conn.prepareStatement(sql); 
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Map<String, String> cat = new HashMap<>();
@@ -321,7 +323,6 @@ public class ProductDAO {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to get product categories.", e);
         }
-
         return categories;
     }
 
