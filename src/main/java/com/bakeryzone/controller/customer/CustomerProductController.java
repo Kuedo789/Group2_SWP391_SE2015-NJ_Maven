@@ -1,4 +1,4 @@
-package com.bakeryzone.customer.controller;
+package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.ProductDAO;
 import com.bakeryzone.dao.ReviewDAO;

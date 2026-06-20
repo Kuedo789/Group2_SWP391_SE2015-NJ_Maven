@@ -1,4 +1,4 @@
-package com.bakeryzone.admin.controller;
+package com.bakeryzone.controller.admin;
 
 import com.bakeryzone.dao.ProductDAO;
 import com.bakeryzone.dao.IngredientDAO;

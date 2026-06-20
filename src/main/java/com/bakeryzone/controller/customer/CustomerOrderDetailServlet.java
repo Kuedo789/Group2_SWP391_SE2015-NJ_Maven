@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
  */
 
-package com.bakeryzone.customer.controller;
+package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.CustomerDAO;
 import com.bakeryzone.dao.OrderDAO;

@@ -1,4 +1,4 @@
-package com.bakeryzone.auth.controller;
+package com.bakeryzone.controller.auth;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;

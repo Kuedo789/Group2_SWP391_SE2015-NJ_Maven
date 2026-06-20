@@ -1,4 +1,4 @@
-package com.bakeryzone.customer.controller;
+package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.DeliveryAddressDAO;
 import com.bakeryzone.model.DeliveryAddress;

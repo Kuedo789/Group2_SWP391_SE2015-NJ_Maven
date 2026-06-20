@@ -1,4 +1,4 @@
-package com.bakeryzone.auth.controller;
+package com.bakeryzone.controller.auth;
 
 import com.bakeryzone.model.User;
 import jakarta.servlet.Filter;
