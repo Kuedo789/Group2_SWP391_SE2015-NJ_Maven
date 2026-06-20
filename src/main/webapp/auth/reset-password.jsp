@@ -152,6 +152,23 @@
 <jsp:include page="../common/scripts.jsp" />
 
 <script src="<%= contextPath %>/assets/js/password-toggle.js"></script>
+<script>
+    const newPasswordInput = document.getElementById('newPassword');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+
+    function validatePasswordMatch() {
+        if (newPasswordInput.value !== confirmPasswordInput.value) {
+            confirmPasswordInput.setCustomValidity("Mật khẩu xác nhận không khớp.");
+        } else {
+            confirmPasswordInput.setCustomValidity("");
+        }
+    }
+
+    if (newPasswordInput && confirmPasswordInput) {
+        newPasswordInput.addEventListener('change', validatePasswordMatch);
+        confirmPasswordInput.addEventListener('keyup', validatePasswordMatch);
+    }
+</script>
 
 </body>
 </html>

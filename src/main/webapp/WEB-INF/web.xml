@@ -53,14 +53,6 @@
     </filter>
     <!-- ================= SERVLET MAPPINGS ================= -->
     <servlet>
-        <servlet-name>CustomerOrderListServlet</servlet-name>
-        <servlet-class>com.bakeryzone.customer.controller.CustomerOrderListServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>CustomerOrderDetailServlet</servlet-name>
-        <servlet-class>com.bakeryzone.customer.controller.CustomerOrderDetailServlet</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>CustomerCheckoutServlet</servlet-name>
         <servlet-class>com.bakeryzone.customer.controller.CustomerCheckoutServlet</servlet-class>
     </servlet>
@@ -135,14 +127,6 @@
         <url-pattern>/customerDetail</url-pattern>
     </filter-mapping>
     <!-- ================= SESSION CONFIG ================= -->
-    <servlet-mapping>
-        <servlet-name>CustomerOrderListServlet</servlet-name>
-        <url-pattern>/OrderList</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>CustomerOrderDetailServlet</servlet-name>
-        <url-pattern>/OrderDetail</url-pattern>
-    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>CustomerServlet</servlet-name>
         <url-pattern>/customer</url-pattern>

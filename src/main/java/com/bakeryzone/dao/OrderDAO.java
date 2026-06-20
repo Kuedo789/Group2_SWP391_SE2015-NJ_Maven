@@ -69,7 +69,13 @@ public class OrderDAO {
                 cc.Greeting_Text,
                 COALESCE(cat.Category_Name, 'Phụ kiện') AS Category_Name,
                 t.Template_ID,
-                t.Image_URL AS Template_Image
+                t.Image_URL AS Template_Image,
+                (SELECT COALESCE(SUM(d.Standard_Gram * i.Price_Per_Unit), 0) 
+                 FROM template_ingredient_detail d 
+                 JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID 
+                 WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost,
+                t.Default_Margin_Percent,
+                t.Default_Service_Percent
             FROM order_item oi
             LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
             LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID
@@ -95,6 +101,34 @@ public class OrderDAO {
                     item.setCategoryName(rs.getString("Category_Name"));
                     item.setTemplateId(rs.getString("Template_ID"));
                     item.setTemplateImage(rs.getString("Template_Image"));
+                    
+                    if (item.getCustomCakeId() != null && !item.getCustomCakeId().trim().isEmpty()) {
+                        double ingredientCost = rs.getDouble("Ingredient_Cost");
+                        double margin = rs.getDouble("Default_Margin_Percent");
+                        double service = rs.getDouble("Default_Service_Percent");
+                        double divisor = 1.0 - ((margin + service) / 100.0);
+                        double basePrice = 0.0;
+                        if (divisor > 0.0) {
+                            basePrice = ingredientCost / divisor;
+                        } else {
+                            basePrice = ingredientCost;
+                        }
+                        
+                        double purchasePrice = item.getPriceAtPurchase() != null ? item.getPriceAtPurchase().doubleValue() : 0.0;
+                        double diff = purchasePrice - basePrice;
+                        if (diff <= 40000) {
+                            item.setVariationName("Size 16cm");
+                        } else if (diff <= 120000) {
+                            item.setVariationName("Size 20cm");
+                        } else {
+                            item.setVariationName("Size 24cm");
+                        }
+                    } else if (item.getAccessoryId() != null && !item.getAccessoryId().trim().isEmpty()) {
+                        item.setVariationName("Phụ kiện");
+                    } else {
+                        item.setVariationName("Tiêu chuẩn");
+                    }
+                    
                     items.add(item);
                 }
             }
