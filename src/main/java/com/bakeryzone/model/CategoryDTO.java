@@ -14,12 +14,12 @@ public class CategoryDTO {
     private String description;
     private String categoryType; // "Sản phẩm chính" or "Nguyên liệu"
     private boolean enable; // NEW: Soft delete flag
+    private String iconUrl; // NEW: Icon image path for category
 
     // Empty Constructor
     public CategoryDTO() {}
 
-    // Full Constructor
-
+    // Original 5-arg Constructor
     public CategoryDTO(String categoryId, String categoryName, String description, String categoryType, boolean enable) {
         this.categoryId = categoryId;
         this.categoryName = categoryName;
@@ -27,7 +27,16 @@ public class CategoryDTO {
         this.categoryType = categoryType;
         this.enable = enable;
     }
-    
+
+    // New 6-arg Constructor with iconUrl
+    public CategoryDTO(String categoryId, String categoryName, String description, String categoryType, boolean enable, String iconUrl) {
+        this.categoryId = categoryId;
+        this.categoryName = categoryName;
+        this.description = description;
+        this.categoryType = categoryType;
+        this.enable = enable;
+        this.iconUrl = iconUrl;
+    }
 
     // Getters and Setters
     public String getCategoryId() { return categoryId; }
@@ -49,6 +58,12 @@ public class CategoryDTO {
     public void setEnable(boolean enable) {
         this.enable = enable;
     }
-    
-    
+
+    public String getIconUrl() {
+        return iconUrl;
+    }
+
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
+    }
 }

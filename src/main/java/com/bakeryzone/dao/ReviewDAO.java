@@ -166,13 +166,14 @@ public class ReviewDAO {
         return false;
     }
 
-    public boolean updateReview(String reviewId, int ratingStars, String comment) {
-        String sql = "UPDATE product_review SET Rating_Stars = ?, Comment = ? WHERE Review_ID = ?";
+    public boolean updateReview(String reviewId, String customerId, int ratingStars, String comment) {
+        String sql = "UPDATE product_review SET Rating_Stars = ?, Comment = ? WHERE Review_ID = ? AND Customer_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, ratingStars);
             ps.setString(2, comment);
             ps.setString(3, reviewId);
+            ps.setString(4, customerId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -180,11 +181,12 @@ public class ReviewDAO {
         return false;
     }
 
-    public boolean deleteReview(String reviewId) {
-        String sql = "DELETE FROM product_review WHERE Review_ID = ?";
+    public boolean deleteReview(String reviewId, String customerId) {
+        String sql = "DELETE FROM product_review WHERE Review_ID = ? AND Customer_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, reviewId);
+            ps.setString(2, customerId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();

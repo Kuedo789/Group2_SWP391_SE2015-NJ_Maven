@@ -220,20 +220,20 @@
         }
 
         .time-slot-pill.active {
-            background-color: var(--primary-dark);
-            border-color: var(--primary-dark);
+            background-color: #2e7d32; /* Màu xanh lá */
+            border-color: #2e7d32;
             color: white;
         }
 
         .time-slot-pill.active .slot-status {
-            color: #b0cbb6;
+            color: #c8e6c9;
         }
 
         .time-slot-pill.disabled {
-            background-color: #f5f5f5;
-            color: #cccccc;
+            background-color: #e0e0e0; /* Màu xám rõ hơn */
+            color: #757575;
             cursor: not-allowed;
-            border-color: #e0e0e0;
+            border-color: #bdbdbd;
         }
 
         .slot-time {
@@ -248,7 +248,7 @@
         }
 
         .time-slot-pill.disabled .slot-status {
-            color: #cccccc;
+            color: #757575;
         }
 
         /* Banners */
@@ -578,65 +578,69 @@
                             <h2 class="card-title">
                                 <i class="fa fa-map-marker-alt"></i> Địa chỉ giao hàng
                             </h2>
-                            <a href="${pageContext.request.contextPath}/delivery-address?action=add" class="btn-add-address">
-                                + Thêm địa chỉ mới
+                            <a href="${pageContext.request.contextPath}/delivery-address?source=checkout" class="btn-add-address" style="text-decoration: none; font-size: 14px; font-weight: 700; color: var(--primary-dark); display: flex; align-items: center; gap: 6px;">
+                                <i class="fa fa-edit"></i> Thay đổi
                             </a>
                         </div>
 
-                        <!-- Display currently selected address -->
-                        <div id="selectedAddressWrapper" style="margin-bottom: 16px;">
-                            <!-- Will be synced by JS -->
-                        </div>
-
-                        <!-- Button to toggle address list -->
-                        <div style="margin-bottom: 16px;">
-                            <button type="button" class="btn btn-outline" id="btnToggleAddressList" onclick="toggleAddressList()" style="width: 100%; border-radius: var(--radius-md); height: 48px; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border-color); background: white; cursor: pointer; color: var(--text-dark); transition: all 0.2s;">
-                                <i class="fa fa-exchange-alt"></i> Thay đổi địa chỉ nhận hàng
-                            </button>
-                        </div>
-
-                        <div class="address-list" id="addressListContainer" style="display: none;">
+                        <!-- Display currently selected address directly -->
+                        <div id="selectedAddressWrapper" style="margin-bottom: 0;">
                             <% 
                                 if (addressList == null || addressList.isEmpty()) {
                             %>
-                                <div class="empty-address-msg">
-                                    <i class="fa fa-map-marked-alt"></i>
-                                    <p>Bạn chưa lưu địa chỉ giao hàng nào.</p>
-                                    <a href="${pageContext.request.contextPath}/delivery-address?action=add" class="btn btn-primary" style="margin-top: 10px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; height: 44px; padding: 0 24px; font-weight: 700; font-size: 14px; background: var(--primary-dark); color: white; border: none; cursor: pointer; text-decoration: none; box-shadow: 0 6px 15px rgba(47, 71, 40, 0.2);">Thêm địa chỉ giao hàng</a>
+                                <div class="empty-address-msg" style="text-align: center; padding: 30px 16px; border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+                                    <i class="fa fa-map-marked-alt" style="font-size: 40px; color: #ddd; margin-bottom: 16px;"></i>
+                                    <p style="color: var(--text-muted); margin-bottom: 16px;">Bạn chưa lưu địa chỉ giao hàng nào.</p>
+                                    <a href="${pageContext.request.contextPath}/delivery-address?action=add&source=checkout" style="display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; height: 44px; padding: 0 24px; font-weight: 700; font-size: 14px; background: var(--primary-dark); color: white; text-decoration: none;">Thêm địa chỉ giao hàng</a>
                                 </div>
                             <% 
                                 } else {
-                                    for (int i = 0; i < addressList.size(); i++) {
-                                        DeliveryAddress addr = addressList.get(i);
-                            %>
-                                <div class="address-card-option <%= addr.isDefault() ? "active" : "" %>" 
-                                     data-address-id="<%= addr.getAddressId() %>"
-                                     data-lat="<%= addr.getLatitude() %>"
-                                     data-lng="<%= addr.getLongitude() %>"
-                                     onclick="selectAddress(<%= addr.getAddressId() %>, <%= addr.getLatitude() %>, <%= addr.getLongitude() %>, this)">
-                                    <input type="radio" 
-                                           name="address_radio" 
-                                           class="address-radio" 
-                                           value="<%= addr.getAddressId() %>" 
-                                           <%= addr.isDefault() ? "checked" : "" %>>
+                                    String selectedParam = request.getParameter("selectedAddressId");
+                                    DeliveryAddress selectedAddr = addressList.get(0);
                                     
-                                    <div class="address-details">
-                                        <div class="address-name-tag">
-                                            <%= addr.getReceiverName() %>
-                                            <% if (addr.isDefault()) { %>
-                                                <span class="default-badge">Mặc định</span>
+                                    boolean foundParam = false;
+                                    if (selectedParam != null && !selectedParam.isEmpty()) {
+                                        for (DeliveryAddress addr : addressList) {
+                                            if (String.valueOf(addr.getAddressId()).equals(selectedParam)) {
+                                                selectedAddr = addr;
+                                                foundParam = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (!foundParam) {
+                                        for (DeliveryAddress addr : addressList) {
+                                            if (addr.isDefault()) {
+                                                selectedAddr = addr;
+                                                break;
+                                            }
+                                        }
+                                    }
+                            %>
+                                <div class="address-card-option active" 
+                                     id="finalSelectedAddressCard"
+                                     data-address-id="<%= selectedAddr.getAddressId() %>"
+                                     data-lat="<%= selectedAddr.getLatitude() %>"
+                                     data-lng="<%= selectedAddr.getLongitude() %>"
+                                     style="border: 2px solid var(--primary-dark); background-color: #f6f8f5; padding: 16px; border-radius: var(--radius-md); margin-bottom: 0; display: block; cursor: default;">
+                                    
+                                    <div class="address-details" style="display: flex; flex-direction: column; gap: 4px;">
+                                        <div class="address-name-tag" style="font-weight: 700; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                                            <%= selectedAddr.getReceiverName() %>
+                                            <% if (selectedAddr.isDefault()) { %>
+                                                <span class="default-badge" style="font-size: 11px; font-weight: 600; color: var(--primary-dark); background-color: #e2ece5; padding: 2px 8px; border-radius: 4px;">Mặc định</span>
                                             <% } %>
                                         </div>
-                                        <div class="address-text">
-                                            <%= addr.getAddressDetail() %>
+                                        <div class="address-text" style="font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 6px;">
+                                            <%= selectedAddr.getAddressDetail() %>
                                         </div>
-                                        <div class="address-text" style="font-weight: 600;">
-                                            SĐT: <%= addr.getReceiverPhone() %>
+                                        <div class="address-text" style="font-weight: 600; font-size: 14px; color: var(--text-muted);">
+                                            SĐT: <%= selectedAddr.getReceiverPhone() %>
                                         </div>
                                     </div>
                                 </div>
                             <% 
-                                    }
                                 }
                             %>
                         </div>
@@ -663,7 +667,7 @@
                                 <span class="slot-time">08:00 - 09:00</span>
                                 <span class="slot-status">Còn chỗ</span>
                             </div>
-                            <div class="time-slot-pill active" data-slot="09:00 - 10:00" onclick="selectTimeSlot('09:00 - 10:00', this)">
+                            <div class="time-slot-pill" data-slot="09:00 - 10:00" onclick="selectTimeSlot('09:00 - 10:00', this)">
                                 <span class="slot-time">09:00 - 10:00</span>
                                 <span class="slot-status">Còn chỗ</span>
                             </div>
@@ -701,9 +705,9 @@
                             </div>
                         </div>
 
-                        <div class="banner-info" id="slotConfirmationBanner">
+                        <div class="banner-info" id="slotConfirmationBanner" style="display: none;">
                             <i class="fa fa-check-circle"></i> 
-                            <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ 09:00 - 10:00</span>
+                            <span>Vui lòng chọn khung giờ giao hàng</span>
                         </div>
                     </div>
 
@@ -796,7 +800,7 @@
 
         let currentCart = [];
         let selectedAddressId = null;
-        let selectedTimeSlot = "09:00 - 10:00"; // default selected
+        let selectedTimeSlot = ""; // no default selected
         let currentShippingFee = 0;
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -856,63 +860,122 @@
             const deliveryDateInput = document.getElementById("deliveryDate");
             if (deliveryDateInput) {
                 deliveryDateInput.min = minDateStr;
-                // Default to tomorrow
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const tyyyy = tomorrow.getFullYear();
-                let tmm = tomorrow.getMonth() + 1;
-                let tdd = tomorrow.getDate();
-                if (tdd < 10) tdd = '0' + tdd;
-                if (tmm < 10) tmm = '0' + tmm;
-                deliveryDateInput.value = tyyyy + '-' + tmm + '-' + tdd;
+                // Không đặt ngày mặc định để bắt người dùng chọn
+                deliveryDateInput.value = "";
+                
+                deliveryDateInput.addEventListener("change", updateAvailableTimeSlots);
             }
 
-            // Sync the selected address display initially
-            syncSelectedAddressDisplay();
-
-            // Clear cart upon successful order placement
-            document.getElementById("checkoutForm").addEventListener("submit", function() {
+            // We render the address directly via JSP now, no need to sync display via JS
+            document.getElementById("checkoutForm").addEventListener("submit", function(e) {
+                const selectedAddressId = document.getElementById("selectedAddressIdInput").value;
+                if (!selectedAddressId || selectedAddressId.trim() === "") {
+                    e.preventDefault();
+                    alert("Vui lòng thêm địa chỉ giao hàng trước khi đặt hàng.");
+                    return;
+                }
+                const timeSlot = document.getElementById("selectedTimeSlotInput").value;
+                if (!timeSlot || timeSlot.trim() === "") {
+                    e.preventDefault();
+                    alert("Vui lòng chọn khung giờ giao hàng hợp lệ.");
+                    return;
+                }
                 localStorage.removeItem("cart");
             });
+
+            // Initialize available time slots on load
+            updateAvailableTimeSlots();
         });
 
-        function syncSelectedAddressDisplay() {
-            const activeCard = document.querySelector("#addressListContainer .address-card-option.active");
-            const wrapper = document.getElementById("selectedAddressWrapper");
-            const toggleBtn = document.getElementById("btnToggleAddressList");
-            if (!activeCard) {
-                if (wrapper) wrapper.innerHTML = "";
-                if (toggleBtn) toggleBtn.style.display = "none";
-                document.getElementById("addressListContainer").style.display = "block";
+        function updateAvailableTimeSlots() {
+            const dateVal = document.getElementById("deliveryDate").value;
+            const btn = document.getElementById("btnPlaceOrder");
+            const banner = document.getElementById("slotConfirmationBanner");
+            const inputField = document.getElementById("selectedTimeSlotInput");
+
+            if (!dateVal) {
+                // Nếu chưa chọn ngày, vô hiệu hóa tất cả các khung giờ
+                const allPills = document.querySelectorAll(".time-slot-pill");
+                for (let i = 0; i < allPills.length; i++) {
+                    const pill = allPills[i];
+                    pill.classList.add("disabled");
+                    pill.classList.remove("active");
+                    const statusSpan = pill.querySelector(".slot-status");
+                    if (statusSpan) statusSpan.innerText = "Vui lòng chọn ngày";
+                }
+                
+                if (btn) btn.disabled = true;
+                if (banner) banner.style.display = "none";
+                if (inputField) inputField.value = "";
+                selectedTimeSlot = "";
                 return;
             }
-            if (toggleBtn) toggleBtn.style.display = "flex";
             
-            const clone = activeCard.cloneNode(true);
-            clone.removeAttribute("onclick");
-            clone.style.cursor = "default";
-            clone.style.borderColor = "var(--primary-dark)";
-            clone.style.borderWidth = "2px";
-            clone.style.backgroundColor = "#f6f8f5";
-            
-            const radio = clone.querySelector(".address-radio");
-            if (radio) radio.style.display = "none";
-            
-            wrapper.innerHTML = "";
-            wrapper.appendChild(clone);
-        }
-
-        function toggleAddressList() {
-            const container = document.getElementById("addressListContainer");
-            const btn = document.getElementById("btnToggleAddressList");
-            if (container.style.display === "none") {
-                container.style.display = "flex";
-                if (btn) btn.innerHTML = `<i class="fa fa-times"></i> Đóng danh sách địa chỉ`;
+            const dateParts = dateVal.split('-');
+            let selectedDate;
+            if (dateParts.length === 3) {
+                selectedDate = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
             } else {
-                container.style.display = "none";
-                if (btn) btn.innerHTML = `<i class="fa fa-exchange-alt"></i> Thay đổi địa chỉ nhận hàng`;
+                selectedDate = new Date(dateVal);
+            }
+            const today = new Date();
+            
+            const isToday = selectedDate.getDate() === today.getDate() && 
+                            selectedDate.getMonth() === today.getMonth() && 
+                            selectedDate.getFullYear() === today.getFullYear();
+            
+            // Check past date by stripping time
+            const pastDateLimit = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const isPastDate = selectedDate < pastDateLimit;
+            
+            const currentHour = today.getHours();
+            let hasAvailableSlot = false;
+            
+            const timePills = document.querySelectorAll(".time-slot-pill");
+            for (let i = 0; i < timePills.length; i++) {
+                const pill = timePills[i];
+                const slotText = pill.getAttribute("data-slot");
+                const slotHour = parseInt(slotText.substring(0, 2), 10);
+                
+                // Khóa những khung giờ đã qua trong ngày hôm nay hoặc ngày trong quá khứ
+                if (isPastDate || (isToday && slotHour <= currentHour)) {
+                    pill.classList.add("disabled");
+                    const statusSpan = pill.querySelector(".slot-status");
+                    if (statusSpan) statusSpan.innerText = "Hết chỗ/Quá hạn";
+                    pill.classList.remove("active");
+                } else {
+                    pill.classList.remove("disabled");
+                    const statusSpan = pill.querySelector(".slot-status");
+                    if (statusSpan) statusSpan.innerText = "Còn chỗ";
+                    hasAvailableSlot = true;
+                }
+            }
+            
+            const currentActive = document.querySelector(".time-slot-pill.active");
+            
+            if (!currentActive) {
+                if (btn) btn.disabled = true;
+                if (banner) {
+                    if (!hasAvailableSlot) {
+                        banner.style.display = "flex";
+                        banner.innerHTML = `<i class="fa fa-exclamation-circle" style="color:#d62828;"></i> <span style="color:#d62828;">Không còn khung giờ giao hàng trống trong ngày này. Vui lòng chọn ngày khác.</span>`;
+                    } else {
+                        banner.style.display = "none"; // Ẩn banner khi chưa chọn giờ
+                    }
+                }
+                if (inputField) inputField.value = "";
+                selectedTimeSlot = "";
+            } else {
+                // Có giờ đang được chọn và nó hợp lệ
+                if (btn) btn.disabled = false;
+                if (banner) {
+                    banner.style.display = "flex";
+                    banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ ${selectedTimeSlot}</span>`;
+                }
             }
         }
+
+        // toggleAddressList function removed as there is no list to toggle
 
         function loadCartItems() {
             let localCartStr = localStorage.getItem("cart");
@@ -1036,11 +1099,12 @@
             selectedAddressId = id;
             document.getElementById("selectedAddressIdInput").value = id;
 
-            document.querySelectorAll("#addressListContainer .address-card-option").forEach(card => {
-                card.classList.remove("active");
-                const radio = card.querySelector(".address-radio");
+            const cards = document.querySelectorAll("#addressListContainer .address-card-option");
+            for (let i = 0; i < cards.length; i++) {
+                cards[i].classList.remove("active");
+                const radio = cards[i].querySelector(".address-radio");
                 if (radio) radio.checked = false;
-            });
+            }
 
             element.classList.add("active");
             const radio = element.querySelector(".address-radio");
@@ -1060,35 +1124,38 @@
 
             currentShippingFee = Math.max(15000, Math.round(finalDistance) * 5000);
             updateSummary();
-
-            // Sync with display card
-            syncSelectedAddressDisplay();
-
-            // Auto-hide the list container
-            document.getElementById("addressListContainer").style.display = "none";
-            const btn = document.getElementById("btnToggleAddressList");
-            if (btn) {
-                btn.innerHTML = `<i class="fa fa-exchange-alt"></i> Thay đổi địa chỉ nhận hàng`;
-            }
         }
 
         function selectTimeSlot(slot, element) {
-            if (element.classList.contains("disabled")) return;
+            try {
+                if (element.classList.contains("disabled")) {
+                    alert("Khung giờ này đã quá hạn hoặc hết chỗ, vui lòng chọn giờ khác.");
+                    return;
+                }
 
-            selectedTimeSlot = slot;
-            document.getElementById("selectedTimeSlotInput").value = slot;
+                selectedTimeSlot = slot;
+                const inputField = document.getElementById("selectedTimeSlotInput");
+                if (inputField) inputField.value = slot;
 
-            document.querySelectorAll(".time-slot-pill").forEach(pill => {
-                pill.classList.remove("active");
-            });
+                const pills = document.querySelectorAll(".time-slot-pill");
+                for (let i = 0; i < pills.length; i++) {
+                    pills[i].classList.remove("active");
+                }
 
-            element.classList.add("active");
+                element.classList.add("active");
 
-            const banner = document.getElementById("slotConfirmationBanner");
-            banner.style.display = "flex";
-            banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ ${slot}</span>`;
-            
-            document.getElementById("btnPlaceOrder").disabled = false;
+                const banner = document.getElementById("slotConfirmationBanner");
+                if (banner) {
+                    banner.style.display = "flex";
+                    banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ ${slot}</span>`;
+                }
+                
+                const btn = document.getElementById("btnPlaceOrder");
+                if (btn) btn.disabled = false;
+            } catch (e) {
+                alert("Đã xảy ra lỗi JS khi chọn giờ: " + e.message);
+                console.error(e);
+            }
         }
 
         function getHaversineDistance(lat1, lon1, lat2, lon2) {
@@ -1116,9 +1183,13 @@
 
             const finalTotal = productTotal > 0 ? (productTotal + currentShippingFee) : 0;
 
-            document.getElementById("productTotalSum").innerText = productTotal.toLocaleString("vi-VN") + "đ";
-            document.getElementById("shippingFeeSum").innerText = currentShippingFee.toLocaleString("vi-VN") + "đ";
-            document.getElementById("finalTotalSum").innerText = finalTotal.toLocaleString("vi-VN") + "đ";
+            const subtotalEl = document.getElementById("subtotalDisplay");
+            const shippingEl = document.getElementById("shippingFeeDisplay");
+            const totalEl = document.getElementById("totalDisplay");
+            
+            if (subtotalEl) subtotalEl.innerText = productTotal.toLocaleString("vi-VN") + "đ";
+            if (shippingEl) shippingEl.innerText = currentShippingFee.toLocaleString("vi-VN") + "đ";
+            if (totalEl) totalEl.innerText = finalTotal.toLocaleString("vi-VN") + "đ";
         }
     </script>
 </body>

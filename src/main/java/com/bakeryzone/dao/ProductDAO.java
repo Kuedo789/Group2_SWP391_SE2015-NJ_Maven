@@ -17,8 +17,8 @@ import java.util.logging.Logger;
 
 /**
  * DAO class for managing Product CRUD operations matching the updated schema.
- * Operates on cake_template, product_category, tracks Base_Price, 
- * and calculates dynamic margins/service percentages.
+ * Operates on cake_template, product_category, tracks Base_Price, and
+ * calculates dynamic margins/service percentages.
  */
 public class ProductDAO {
 
@@ -59,8 +59,7 @@ public class ProductDAO {
     public List<String> getAdditionalImagesByProductId(String productId) {
         List<String> list = new ArrayList<>();
         String sql = "SELECT Image_URL FROM product_image WHERE Product_ID = ? ORDER BY Sort_Order ASC, Image_ID ASC";
-        try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -84,7 +83,7 @@ public class ProductDAO {
                     ps.setString(1, productId);
                     ps.executeUpdate();
                 }
-                
+
                 // Then insert new ones
                 if (imageUrls != null && !imageUrls.isEmpty()) {
                     try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
@@ -181,7 +180,8 @@ public class ProductDAO {
     }
 
     /**
-     * Deactivates a product by setting its Status to 'Inactive' in the database.
+     * Deactivates a product by setting its Status to 'Inactive' in the
+     * database.
      */
     public boolean deactivateProduct(String id) {
         if (id == null || id.trim().isEmpty()) {
@@ -303,19 +303,26 @@ public class ProductDAO {
 
     public List<Map<String, String>> getAllProductCategories() {
         List<Map<String, String>> categories = new ArrayList<>();
-        String sql = "SELECT Category_ID, Category_Name FROM product_category ORDER BY Category_Name ASC";
+
+        String sql = """
+                     SELECT Category_ID, Category_Name, image_url AS Icon_URL
+                     FROM product_category
+                     WHERE enable = 1
+                     ORDER BY Category_Name ASC
+                     """;
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 Map<String, String> cat = new HashMap<>();
                 cat.put("id", rs.getString("Category_ID"));
                 cat.put("name", rs.getString("Category_Name"));
+                cat.put("iconUrl", rs.getString("Icon_URL"));
                 categories.add(cat);
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to get product categories.", e);
         }
-
         return categories;
     }
 
@@ -389,7 +396,7 @@ public class ProductDAO {
         double margin = rs.getDouble("Default_Margin_Percent");
         double service = rs.getDouble("Default_Service_Percent");
         double divisor = 1.0 - ((margin + service) / 100.0);
-        
+
         double calculatedBasePrice = 0.0;
         if (divisor > 0.0) {
             calculatedBasePrice = ingredientCost / divisor;
@@ -438,17 +445,25 @@ public class ProductDAO {
 
     public List<Product> getHomepageBestSellerProducts(int limit) {
         List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM (" + getBaseUnionQuery() + ") AS p "
-                + "WHERE p.Status = ? AND p.Is_Featured = ? "
-                + "ORDER BY p.Product_ID DESC "
+
+        String sql = "SELECT p.*, COALESCE(sales.total_qty, 0) as total_sold "
+                + "FROM (" + getBaseUnionQuery() + ") AS p "
+                + "LEFT JOIN ("
+                + "    SELECT cc.Template_ID, SUM(oi.Quantity) as total_qty "
+                + "    FROM order_item oi "
+                + "    JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID "
+                + "    JOIN orders o ON oi.Order_No = o.Order_No "
+                + "    WHERE o.OrderStatus = 'Completed' "
+                + "    GROUP BY cc.Template_ID"
+                + ") AS sales ON p.Product_ID = sales.Template_ID "
+                + "WHERE p.Status = ? "
+                + "ORDER BY total_sold DESC, p.Is_Featured DESC, p.Product_ID DESC "
                 + "LIMIT ?";
 
-        try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, "Active");
-            ps.setBoolean(2, true);
-            ps.setInt(3, limit);
+            ps.setInt(2, limit);
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -465,12 +480,11 @@ public class ProductDAO {
 
     public List<Map<String, Object>> getProductIngredients(String templateId) {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT d.Ingredient_ID, d.Standard_Gram, i.Ingredient_Name, i.Price_Per_Unit " +
-                     "FROM template_ingredient_detail d " +
-                     "JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID " +
-                     "WHERE d.Template_ID = ?";
-        try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "SELECT d.Ingredient_ID, d.Standard_Gram, i.Ingredient_Name, i.Price_Per_Unit "
+                + "FROM template_ingredient_detail d "
+                + "JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
+                + "WHERE d.Template_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, templateId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -498,7 +512,7 @@ public class ProductDAO {
                     ps.setString(1, templateId);
                     ps.executeUpdate();
                 }
-                
+
                 // 2. Insert new batch
                 if (ingredientIds != null && standardGrams != null) {
                     String insertSql = "INSERT INTO template_ingredient_detail (Template_ID, Ingredient_ID, Standard_Gram) VALUES (?, ?, ?)";

@@ -184,9 +184,14 @@ public class AdminCategoryServlet extends HttpServlet {
         String name = request.getParameter("categoryName");
         String description = request.getParameter("description");
         String type = request.getParameter("categoryType");
+        String iconUrl = request.getParameter("iconUrl");
 
-        // 1. Check ID Format Security
-        if (!id.matches("^CAT-[A-Z0-9\\-]+$")) {
+        if (iconUrl != null) {
+            iconUrl = iconUrl.trim();
+        }
+
+        // 1. Check ID Format Security (allowing both hyphens and underscores, as database uses underscores like CAT_CREAM)
+        if (!id.matches("^CAT[\\-_][A-Z0-9\\-_]+$")) {
             response.sendRedirect(request.getContextPath() + "/admin/categories?error=invalid_id_format");
             return;
         }
@@ -197,8 +202,8 @@ public class AdminCategoryServlet extends HttpServlet {
             return;
         }
 
-        // ADDED 'true' to the constructor since newly added/updated items should be active!
-        CategoryDTO cat = new CategoryDTO(id, name, description, type, true);
+        // ADDED 'true' and iconUrl to the constructor since newly added/updated items should be active!
+        CategoryDTO cat = new CategoryDTO(id, name, description, type, true, iconUrl);
         boolean success = false;
 
         // 3. Save vs Update Logic with Duplicate Checking

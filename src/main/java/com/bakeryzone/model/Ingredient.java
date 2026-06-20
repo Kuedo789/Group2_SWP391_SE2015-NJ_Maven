@@ -3,28 +3,23 @@ package com.bakeryzone.model;
 public class Ingredient {
     private String ingredientId;
     private String ingredientName;
-    private String categoryId;
-    private String categoryName;
     private double pricePerUnit;
-    private String status;
+    private String unitMeasure;
+    private String imageUrl;
+    private boolean enable;
 
     public Ingredient() {
+        this.unitMeasure = "gram";
+        this.enable = true;
     }
 
-    public Ingredient(String ingredientId, String ingredientName, String categoryId, double pricePerUnit) {
+    public Ingredient(String ingredientId, String ingredientName, double pricePerUnit, String unitMeasure, String imageUrl, boolean enable) {
         this.ingredientId = ingredientId;
         this.ingredientName = ingredientName;
-        this.categoryId = categoryId;
         this.pricePerUnit = pricePerUnit;
-        this.status = "Active";
-    }
-
-    public Ingredient(String ingredientId, String ingredientName, String categoryId, double pricePerUnit, String status) {
-        this.ingredientId = ingredientId;
-        this.ingredientName = ingredientName;
-        this.categoryId = categoryId;
-        this.pricePerUnit = pricePerUnit;
-        this.status = status;
+        this.unitMeasure = unitMeasure;
+        this.imageUrl = imageUrl;
+        this.enable = enable;
     }
 
     public String getIngredientId() {
@@ -43,22 +38,6 @@ public class Ingredient {
         this.ingredientName = ingredientName;
     }
 
-    public String getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
-    }
-
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
-
     public double getPricePerUnit() {
         return pricePerUnit;
     }
@@ -67,11 +46,27 @@ public class Ingredient {
         this.pricePerUnit = pricePerUnit;
     }
 
-    public String getStatus() {
-        return status;
+    public String getUnitMeasure() {
+        return unitMeasure;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setUnitMeasure(String unitMeasure) {
+        this.unitMeasure = unitMeasure;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
     }
 }

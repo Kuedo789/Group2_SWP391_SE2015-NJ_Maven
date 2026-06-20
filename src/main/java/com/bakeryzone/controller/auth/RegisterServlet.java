@@ -14,10 +14,7 @@ import java.sql.Timestamp;
 
 public class RegisterServlet extends HttpServlet {
 
-    private static final int NAME_MAX_LENGTH = 30;
-    private static final int EMAIL_MAX_LENGTH = 100;
-    private static final int PASSWORD_MIN_LENGTH = 6;
-    private static final int PASSWORD_MAX_LENGTH = 20;
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -51,74 +48,9 @@ public class RegisterServlet extends HttpServlet {
         request.setAttribute("email", email);
         request.setAttribute("phone", phone);
 
-        if (fullName.isEmpty() || email.isEmpty() || phone.isEmpty()
-                || password.isEmpty() || confirmPassword.isEmpty()) {
-            request.setAttribute("error", "Vui lòng nhập đầy đủ thông tin đăng ký.");
-            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
-            return;
-        }
-
-        if (fullName.length() > NAME_MAX_LENGTH) {
-            request.setAttribute("error", "Họ tên không được vượt quá " + NAME_MAX_LENGTH + " ký tự.");
-            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
-            return;
-        }
-
-        // Chỉ cho chữ cái tiếng Việt và khoảng trắng đơn giữa các từ.
-        // Không cho số, ký tự đặc biệt, nhiều hơn 1 space liên tiếp.
-        if (!fullName.matches("^[\\p{L}]+(?: [\\p{L}]+)*$")) {
-            request.setAttribute("error", "Họ tên chỉ được chứa chữ cái và không được có nhiều hơn 1 khoảng trắng liên tiếp.");
-            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
-            return;
-        }
-
-        if (email.length() > EMAIL_MAX_LENGTH) {
-            request.setAttribute("error", "Email không được vượt quá " + EMAIL_MAX_LENGTH + " ký tự.");
-            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
-            return;
-        }
-
-        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-            request.setAttribute("error", "Email không đúng định dạng.");
-            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
-            return;
-        }
-
-        // Số điện thoại bắt đầu bằng 0 và đúng 10 chữ số
-        if (!phone.matches("^0\\d{9}$")) {
-            request.setAttribute("error", "Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số.");
-            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
-            return;
-        }
-
-        // Chặn 0000000000, 1111111111, ...
-        if (phone.matches("^(\\d)\\1{9}$")) {
-            request.setAttribute("error", "Số điện thoại không hợp lệ.");
-            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
-            return;
-        }
-
-        // Mật khẩu không được chứa bất kỳ khoảng trắng nào
-        if (password.matches(".*\\s.*") || confirmPassword.matches(".*\\s.*")) {
-            request.setAttribute("error", "Mật khẩu không được chứa khoảng trắng.");
-            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
-            return;
-        }
-
-        if (password.length() < PASSWORD_MIN_LENGTH) {
-            request.setAttribute("error", "Mật khẩu phải có ít nhất " + PASSWORD_MIN_LENGTH + " ký tự.");
-            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
-            return;
-        }
-
-        if (password.length() > PASSWORD_MAX_LENGTH) {
-            request.setAttribute("error", "Mật khẩu không được vượt quá " + PASSWORD_MAX_LENGTH + " ký tự.");
-            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
-            return;
-        }
-
-        if (!password.equals(confirmPassword)) {
-            request.setAttribute("error", "Mật khẩu xác nhận không khớp.");
+        String validationError = com.bakeryzone.utils.ValidationUtils.validateRegisterInput(fullName, email, phone, password, confirmPassword);
+        if (validationError != null) {
+            request.setAttribute("error", validationError);
             request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
             return;
         }

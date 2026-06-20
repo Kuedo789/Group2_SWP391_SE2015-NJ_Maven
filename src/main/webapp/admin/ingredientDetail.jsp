@@ -93,16 +93,17 @@
                                  </div>
 
                                  <div class="col-md-6">
-                                     <label class="form-label-cz">Phân nhóm nguyên liệu <span>*</span></label>
-                                     <select class="form-select-cz" name="categoryId" required>
-                                         <c:forEach var="cat" items="${categories}">
-                                             <option value="${cat.categoryId}" ${ingredient.categoryId eq cat.categoryId ? 'selected' : ''}>${cat.categoryName}</option>
-                                         </c:forEach>
-                                     </select>
+                                     <label class="form-label-cz">Đơn vị đo (Ví dụ: gram, ml, cái) <span>*</span></label>
+                                     <input type="text" class="form-control-cz" id="unitMeasure" name="unitMeasure" value="${ingredient.unitMeasure}" required>
                                  </div>
 
                                  <div class="col-md-6">
-                                     <label class="form-label-cz">Đơn giá trên mỗi gram (VND) <span>*</span></label>
+                                     <label class="form-label-cz">Đường dẫn ảnh (Image URL)</label>
+                                     <input type="text" class="form-control-cz" id="imageUrl" name="imageUrl" value="${ingredient.imageUrl}">
+                                 </div>
+
+                                 <div class="col-md-6">
+                                     <label class="form-label-cz">Đơn giá (VND) <span>*</span></label>
                                      <input type="number" step="0.01" class="form-control-cz" id="pricePerUnit" name="pricePerUnit" value="${ingredient.pricePerUnit}" required>
                                      <div id="error-price" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>

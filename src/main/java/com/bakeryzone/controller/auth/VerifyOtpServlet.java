@@ -101,6 +101,19 @@ public class VerifyOtpServlet extends HttpServlet {
             return;
         }
 
+        Long lastResend = (Long) request.getSession().getAttribute("lastOtpResendTime");
+        long now = System.currentTimeMillis();
+        if (lastResend != null && (now - lastResend) < 180000L) {
+            long waitSec = (180000L - (now - lastResend) + 999L) / 1000L;
+            long mins = waitSec / 60;
+            long secs = waitSec % 60;
+            String waitText = mins > 0 ? (mins + " phút " + secs + " giây") : (secs + " giây");
+            request.setAttribute("error", "Vui lòng đợi " + waitText + " trước khi yêu cầu gửi lại mã.");
+            request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
+            return;
+        }
+        request.getSession().setAttribute("lastOtpResendTime", now);
+
         UserDAO dao = new UserDAO();
         User user = dao.findByEmail(email);
 

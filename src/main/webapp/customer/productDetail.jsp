@@ -71,7 +71,7 @@
 
     <head>
         <jsp:include page="../common/header.jsp" />
-        <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/productDetail.css">
+        <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/productDetail.css?v=2">
     </head>
 
     <body>
@@ -792,11 +792,21 @@
                 renderProductInfo();
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get('tab') === 'review') {
-                    const reviewBtn = document.querySelector(".tab-btn[onclick*='review']");
+                    const buttons = document.querySelectorAll(".tab-btn");
+                    let reviewBtn = null;
+                    buttons.forEach(btn => {
+                        const onclickAttr = btn.getAttribute('onclick');
+                        if (onclickAttr && onclickAttr.includes('review')) {
+                            reviewBtn = btn;
+                        }
+                    });
                     if (reviewBtn) {
                         showTab('review', reviewBtn);
                         setTimeout(() => {
-                            document.querySelector(".detail-tabs").scrollIntoView({ behavior: 'smooth' });
+                            const tabsSection = document.querySelector(".detail-tabs");
+                            if (tabsSection) {
+                                tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
                         }, 300);
                     }
                 }
