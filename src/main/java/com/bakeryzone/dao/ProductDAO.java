@@ -17,7 +17,8 @@ import java.util.logging.Logger;
 
 /**
  * DAO class for managing Product CRUD operations matching the updated schema.
- * Calculates Base Price dynamically from Ingredient costs, Margin, and Service percentages.
+ * Operates on cake_template, product_category, tracks Base_Price, and
+ * calculates dynamic margins/service percentages.
  */
 public class ProductDAO {
 
@@ -58,8 +59,7 @@ public class ProductDAO {
     public List<String> getAdditionalImagesByProductId(String productId) {
         List<String> list = new ArrayList<>();
         String sql = "SELECT Image_URL FROM product_image WHERE Product_ID = ? ORDER BY Sort_Order ASC, Image_ID ASC";
-        try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -83,7 +83,7 @@ public class ProductDAO {
                     ps.setString(1, productId);
                     ps.executeUpdate();
                 }
-                
+
                 // Then insert new ones
                 if (imageUrls != null && !imageUrls.isEmpty()) {
                     try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
@@ -180,7 +180,8 @@ public class ProductDAO {
     }
 
     /**
-     * Deactivates a product by setting its Status to 'Inactive' in the database.
+     * Deactivates a product by setting its Status to 'Inactive' in the
+     * database.
      */
     public boolean deactivateProduct(String id) {
         if (id == null || id.trim().isEmpty()) {
@@ -232,11 +233,11 @@ public class ProductDAO {
                 }
 
                 if (exists) {
-                    // Update Template (without Base_Price, including default margin, default service, and instruction steps)
+                    // Merged Update query containing all fields
                     String updateT = "UPDATE cake_template SET Template_Name = ?, "
                             + "Estimated_Labor_Hours = ?, Allows_Greeting = ?, Image_URL = ?, Status = ?, "
                             + "Is_Featured = ?, Full_Description = ?, Category_ID = ?, "
-                            + "Default_Margin_Percent = ?, Default_Service_Percent = ?, Instruction_Steps = ? "
+                            + "Base_Price = ?, Default_Margin_Percent = ?, Default_Service_Percent = ?, Instruction_Steps = ? "
                             + "WHERE Template_ID = ?";
                     try (PreparedStatement ps = conn.prepareStatement(updateT)) {
                         ps.setString(1, product.getName());
@@ -250,19 +251,20 @@ public class ProductDAO {
                         String cId = product.getCategoryId();
                         ps.setString(8, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
 
-                        ps.setDouble(9, product.getDefaultMarginPercent());
-                        ps.setDouble(10, product.getDefaultServicePercent());
-                        ps.setString(11, product.getInstructionSteps());
-                        ps.setString(12, product.getId());
+                        ps.setDouble(9, product.getBasePrice());
+                        ps.setDouble(10, product.getDefaultMarginPercent());
+                        ps.setDouble(11, product.getDefaultServicePercent());
+                        ps.setString(12, product.getInstructionSteps());
+                        ps.setString(13, product.getId());
 
                         success = ps.executeUpdate() > 0;
                     }
                 } else {
-                    // Insert Template
+                    // Merged Insert query containing all fields
                     String insertT = "INSERT INTO cake_template (Template_ID, Template_Name, Estimated_Labor_Hours, "
                             + "Allows_Greeting, Image_URL, Status, Is_Featured, Full_Description, Category_ID, "
-                            + "Default_Margin_Percent, Default_Service_Percent, Instruction_Steps) "
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            + "Base_Price, Default_Margin_Percent, Default_Service_Percent, Instruction_Steps) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     try (PreparedStatement ps = conn.prepareStatement(insertT)) {
                         ps.setString(1, product.getId());
                         ps.setString(2, product.getName());
@@ -276,9 +278,10 @@ public class ProductDAO {
                         String cId = product.getCategoryId();
                         ps.setString(9, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
 
-                        ps.setDouble(10, product.getDefaultMarginPercent());
-                        ps.setDouble(11, product.getDefaultServicePercent());
-                        ps.setString(12, product.getInstructionSteps());
+                        ps.setDouble(10, product.getBasePrice());
+                        ps.setDouble(11, product.getDefaultMarginPercent());
+                        ps.setDouble(12, product.getDefaultServicePercent());
+                        ps.setString(13, product.getInstructionSteps());
 
                         success = ps.executeUpdate() > 0;
                     }
@@ -302,15 +305,13 @@ public class ProductDAO {
         List<Map<String, String>> categories = new ArrayList<>();
 
         String sql = """
-                 SELECT Category_ID, Category_Name, image_url AS Icon_URL
-                 FROM product_category
-                 WHERE enable = 1
-                 ORDER BY Category_Name ASC
-                 """;
+                     SELECT Category_ID, Category_Name, image_url AS Icon_URL
+                     FROM product_category
+                     WHERE enable = 1
+                     ORDER BY Category_Name ASC
+                     """;
 
-        try (Connection conn = DBContext.getJDBCConnection(); 
-             PreparedStatement ps = conn.prepareStatement(sql); 
-             ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Map<String, String> cat = new HashMap<>();
@@ -319,7 +320,6 @@ public class ProductDAO {
                 cat.put("iconUrl", rs.getString("Icon_URL"));
                 categories.add(cat);
             }
-
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to get product categories.", e);
         }
@@ -340,6 +340,7 @@ public class ProductDAO {
                 + "    t.Category_ID AS Category_ID, "
                 + "    c.Category_Name AS Category_Name, "
                 + "    t.Estimated_Labor_Hours AS Estimated_Labor_Hours, "
+                + "    t.Base_Price AS Base_Price, "
                 + "    t.Default_Margin_Percent AS Default_Margin_Percent, "
                 + "    t.Default_Service_Percent AS Default_Service_Percent, "
                 + "    t.Instruction_Steps AS Instruction_Steps, "
@@ -352,35 +353,64 @@ public class ProductDAO {
     }
 
     public Product mapRowToProduct(ResultSet rs) throws SQLException {
-        Product p = new Product(
-                rs.getString("Product_ID"),
-                rs.getString("Product_Name"),
-                rs.getString("Category_ID"),
-                rs.getString("Category_Name"),
-                rs.getDouble("Estimated_Labor_Hours"),
-                rs.getBoolean("Allows_Greeting"),
-                rs.getString("Image_URL"),
-                rs.getString("Status"),
-                rs.getBoolean("Is_Featured"),
-                rs.getString("Full_Description"),
-                rs.getString("Product_Type"),
-                rs.getDouble("Default_Margin_Percent"),
-                rs.getDouble("Default_Service_Percent"),
-                rs.getString("Instruction_Steps")
-        );
+        // Safe check to see if explicit constructor with margin/service/instruction fields exists
+        Product p;
+        try {
+            p = new Product(
+                    rs.getString("Product_ID"),
+                    rs.getString("Product_Name"),
+                    rs.getString("Category_ID"),
+                    rs.getString("Category_Name"),
+                    rs.getDouble("Estimated_Labor_Hours"),
+                    rs.getBoolean("Allows_Greeting"),
+                    rs.getString("Image_URL"),
+                    rs.getString("Status"),
+                    rs.getBoolean("Is_Featured"),
+                    rs.getString("Full_Description"),
+                    rs.getString("Product_Type"),
+                    rs.getDouble("Default_Margin_Percent"),
+                    rs.getDouble("Default_Service_Percent"),
+                    rs.getString("Instruction_Steps")
+            );
+        } catch (Exception e) {
+            // Fallback to standard bean if constructor signature differs
+            p = new Product();
+            p.setId(rs.getString("Product_ID"));
+            p.setName(rs.getString("Product_Name"));
+            p.setCategoryId(rs.getString("Category_ID"));
+            p.setCategoryName(rs.getString("Category_Name"));
+            p.setEstimatedLaborHours(rs.getDouble("Estimated_Labor_Hours"));
+            p.setAllowsGreeting(rs.getBoolean("Allows_Greeting"));
+            p.setImageUrl(rs.getString("Image_URL"));
+            p.setStatus(rs.getString("Status"));
+            p.setFeatured(rs.getBoolean("Is_Featured"));
+            p.setFullDescription(rs.getString("Full_Description"));
+            //p.setType(rs.getString("Product_Type"));
+            p.setDefaultMarginPercent(rs.getDouble("Default_Margin_Percent"));
+            p.setDefaultServicePercent(rs.getDouble("Default_Service_Percent"));
+            p.setInstructionSteps(rs.getString("Instruction_Steps"));
+        }
 
-        // Dynamically compute Base Price
+        // Handle both: dynamic validation fallback logic from main AND actual saved Base_Price fallback
         double ingredientCost = rs.getDouble("Ingredient_Cost");
         double margin = rs.getDouble("Default_Margin_Percent");
         double service = rs.getDouble("Default_Service_Percent");
         double divisor = 1.0 - ((margin + service) / 100.0);
-        double basePrice = 0.0;
+
+        double calculatedBasePrice = 0.0;
         if (divisor > 0.0) {
-            basePrice = ingredientCost / divisor;
+            calculatedBasePrice = ingredientCost / divisor;
         } else {
-            basePrice = ingredientCost; // Avoid division by zero/negative
+            calculatedBasePrice = ingredientCost;
         }
-        p.setBasePrice(basePrice);
+
+        // If your DB explicitly has a static Base_Price set, use it. Otherwise, use calculated option.
+        double explicitBasePrice = rs.getDouble("Base_Price");
+        if (explicitBasePrice > 0) {
+            p.setBasePrice(explicitBasePrice);
+        } else {
+            p.setBasePrice(calculatedBasePrice);
+        }
 
         return p;
     }
@@ -430,8 +460,7 @@ public class ProductDAO {
                 + "ORDER BY total_sold DESC, p.Is_Featured DESC, p.Product_ID DESC "
                 + "LIMIT ?";
 
-        try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, "Active");
             ps.setInt(2, limit);
@@ -451,12 +480,11 @@ public class ProductDAO {
 
     public List<Map<String, Object>> getProductIngredients(String templateId) {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT d.Ingredient_ID, d.Standard_Gram, i.Ingredient_Name, i.Price_Per_Unit " +
-                     "FROM template_ingredient_detail d " +
-                     "JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID " +
-                     "WHERE d.Template_ID = ?";
-        try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String sql = "SELECT d.Ingredient_ID, d.Standard_Gram, i.Ingredient_Name, i.Price_Per_Unit "
+                + "FROM template_ingredient_detail d "
+                + "JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
+                + "WHERE d.Template_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, templateId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -484,7 +512,7 @@ public class ProductDAO {
                     ps.setString(1, templateId);
                     ps.executeUpdate();
                 }
-                
+
                 // 2. Insert new batch
                 if (ingredientIds != null && standardGrams != null) {
                     String insertSql = "INSERT INTO template_ingredient_detail (Template_ID, Ingredient_ID, Standard_Gram) VALUES (?, ?, ?)";

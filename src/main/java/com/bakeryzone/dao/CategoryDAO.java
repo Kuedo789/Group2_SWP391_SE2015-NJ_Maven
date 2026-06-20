@@ -101,11 +101,12 @@ public class CategoryDAO {
         String searchPattern = "%" + (search != null ? search : "") + "%";
 
         StringBuilder sql = new StringBuilder();
-        // Using COALESCE to ensure it returns 0 instead of NULL if the table is totally empty
+
         sql.append("SELECT COUNT(*) AS TotalCount, ");
         sql.append("COALESCE(SUM(CASE WHEN enable = 1 THEN 1 ELSE 0 END), 0) AS ActiveCount, ");
         sql.append("COALESCE(SUM(CASE WHEN enable = 0 THEN 1 ELSE 0 END), 0) AS DisabledCount ");
         sql.append("FROM ( ");
+        // Removed the UNION ALL and ingredient_category entirely
         sql.append("SELECT Category_ID, Category_Name, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable FROM product_category ");
         sql.append(") AS combined ");
         sql.append("WHERE (Category_ID LIKE ? OR Category_Name LIKE ?) ");
