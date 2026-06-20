@@ -220,20 +220,20 @@
         }
 
         .time-slot-pill.active {
-            background-color: var(--primary-dark);
-            border-color: var(--primary-dark);
+            background-color: #2e7d32; /* Màu xanh lá */
+            border-color: #2e7d32;
             color: white;
         }
 
         .time-slot-pill.active .slot-status {
-            color: #b0cbb6;
+            color: #c8e6c9;
         }
 
         .time-slot-pill.disabled {
-            background-color: #f5f5f5;
-            color: #cccccc;
+            background-color: #e0e0e0; /* Màu xám rõ hơn */
+            color: #757575;
             cursor: not-allowed;
-            border-color: #e0e0e0;
+            border-color: #bdbdbd;
         }
 
         .slot-time {
@@ -248,7 +248,7 @@
         }
 
         .time-slot-pill.disabled .slot-status {
-            color: #cccccc;
+            color: #757575;
         }
 
         /* Banners */
@@ -667,7 +667,7 @@
                                 <span class="slot-time">08:00 - 09:00</span>
                                 <span class="slot-status">Còn chỗ</span>
                             </div>
-                            <div class="time-slot-pill active" data-slot="09:00 - 10:00" onclick="selectTimeSlot('09:00 - 10:00', this)">
+                            <div class="time-slot-pill" data-slot="09:00 - 10:00" onclick="selectTimeSlot('09:00 - 10:00', this)">
                                 <span class="slot-time">09:00 - 10:00</span>
                                 <span class="slot-status">Còn chỗ</span>
                             </div>
@@ -705,9 +705,9 @@
                             </div>
                         </div>
 
-                        <div class="banner-info" id="slotConfirmationBanner">
+                        <div class="banner-info" id="slotConfirmationBanner" style="display: none;">
                             <i class="fa fa-check-circle"></i> 
-                            <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ 09:00 - 10:00</span>
+                            <span>Vui lòng chọn khung giờ giao hàng</span>
                         </div>
                     </div>
 
@@ -800,7 +800,7 @@
 
         let currentCart = [];
         let selectedAddressId = null;
-        let selectedTimeSlot = "09:00 - 10:00"; // default selected
+        let selectedTimeSlot = ""; // no default selected
         let currentShippingFee = 0;
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -860,23 +860,120 @@
             const deliveryDateInput = document.getElementById("deliveryDate");
             if (deliveryDateInput) {
                 deliveryDateInput.min = minDateStr;
-                // Default to tomorrow
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const tyyyy = tomorrow.getFullYear();
-                let tmm = tomorrow.getMonth() + 1;
-                let tdd = tomorrow.getDate();
-                if (tdd < 10) tdd = '0' + tdd;
-                if (tmm < 10) tmm = '0' + tmm;
-                deliveryDateInput.value = tyyyy + '-' + tmm + '-' + tdd;
+                // Không đặt ngày mặc định để bắt người dùng chọn
+                deliveryDateInput.value = "";
+                
+                deliveryDateInput.addEventListener("change", updateAvailableTimeSlots);
             }
 
             // We render the address directly via JSP now, no need to sync display via JS
-            // Clear cart upon successful order placement
-            document.getElementById("checkoutForm").addEventListener("submit", function() {
+            document.getElementById("checkoutForm").addEventListener("submit", function(e) {
+                const selectedAddressId = document.getElementById("selectedAddressIdInput").value;
+                if (!selectedAddressId || selectedAddressId.trim() === "") {
+                    e.preventDefault();
+                    alert("Vui lòng thêm địa chỉ giao hàng trước khi đặt hàng.");
+                    return;
+                }
+                const timeSlot = document.getElementById("selectedTimeSlotInput").value;
+                if (!timeSlot || timeSlot.trim() === "") {
+                    e.preventDefault();
+                    alert("Vui lòng chọn khung giờ giao hàng hợp lệ.");
+                    return;
+                }
                 localStorage.removeItem("cart");
             });
+
+            // Initialize available time slots on load
+            updateAvailableTimeSlots();
         });
+
+        function updateAvailableTimeSlots() {
+            const dateVal = document.getElementById("deliveryDate").value;
+            const btn = document.getElementById("btnPlaceOrder");
+            const banner = document.getElementById("slotConfirmationBanner");
+            const inputField = document.getElementById("selectedTimeSlotInput");
+
+            if (!dateVal) {
+                // Nếu chưa chọn ngày, vô hiệu hóa tất cả các khung giờ
+                const allPills = document.querySelectorAll(".time-slot-pill");
+                for (let i = 0; i < allPills.length; i++) {
+                    const pill = allPills[i];
+                    pill.classList.add("disabled");
+                    pill.classList.remove("active");
+                    const statusSpan = pill.querySelector(".slot-status");
+                    if (statusSpan) statusSpan.innerText = "Vui lòng chọn ngày";
+                }
+                
+                if (btn) btn.disabled = true;
+                if (banner) banner.style.display = "none";
+                if (inputField) inputField.value = "";
+                selectedTimeSlot = "";
+                return;
+            }
+            
+            const dateParts = dateVal.split('-');
+            let selectedDate;
+            if (dateParts.length === 3) {
+                selectedDate = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
+            } else {
+                selectedDate = new Date(dateVal);
+            }
+            const today = new Date();
+            
+            const isToday = selectedDate.getDate() === today.getDate() && 
+                            selectedDate.getMonth() === today.getMonth() && 
+                            selectedDate.getFullYear() === today.getFullYear();
+            
+            // Check past date by stripping time
+            const pastDateLimit = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const isPastDate = selectedDate < pastDateLimit;
+            
+            const currentHour = today.getHours();
+            let hasAvailableSlot = false;
+            
+            const timePills = document.querySelectorAll(".time-slot-pill");
+            for (let i = 0; i < timePills.length; i++) {
+                const pill = timePills[i];
+                const slotText = pill.getAttribute("data-slot");
+                const slotHour = parseInt(slotText.substring(0, 2), 10);
+                
+                // Khóa những khung giờ đã qua trong ngày hôm nay hoặc ngày trong quá khứ
+                if (isPastDate || (isToday && slotHour <= currentHour)) {
+                    pill.classList.add("disabled");
+                    const statusSpan = pill.querySelector(".slot-status");
+                    if (statusSpan) statusSpan.innerText = "Hết chỗ/Quá hạn";
+                    pill.classList.remove("active");
+                } else {
+                    pill.classList.remove("disabled");
+                    const statusSpan = pill.querySelector(".slot-status");
+                    if (statusSpan) statusSpan.innerText = "Còn chỗ";
+                    hasAvailableSlot = true;
+                }
+            }
+            
+            const currentActive = document.querySelector(".time-slot-pill.active");
+            
+            if (!currentActive) {
+                if (btn) btn.disabled = true;
+                if (banner) {
+                    if (!hasAvailableSlot) {
+                        banner.style.display = "flex";
+                        banner.innerHTML = `<i class="fa fa-exclamation-circle" style="color:#d62828;"></i> <span style="color:#d62828;">Không còn khung giờ giao hàng trống trong ngày này. Vui lòng chọn ngày khác.</span>`;
+                    } else {
+                        banner.style.display = "none"; // Ẩn banner khi chưa chọn giờ
+                    }
+                }
+                if (inputField) inputField.value = "";
+                selectedTimeSlot = "";
+            } else {
+                // Có giờ đang được chọn và nó hợp lệ
+                if (btn) btn.disabled = false;
+                if (banner) {
+                    banner.style.display = "flex";
+                    banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ ${selectedTimeSlot}</span>`;
+                }
+            }
+        }
 
         // toggleAddressList function removed as there is no list to toggle
 
@@ -1002,11 +1099,12 @@
             selectedAddressId = id;
             document.getElementById("selectedAddressIdInput").value = id;
 
-            document.querySelectorAll("#addressListContainer .address-card-option").forEach(card => {
-                card.classList.remove("active");
-                const radio = card.querySelector(".address-radio");
+            const cards = document.querySelectorAll("#addressListContainer .address-card-option");
+            for (let i = 0; i < cards.length; i++) {
+                cards[i].classList.remove("active");
+                const radio = cards[i].querySelector(".address-radio");
                 if (radio) radio.checked = false;
-            });
+            }
 
             element.classList.add("active");
             const radio = element.querySelector(".address-radio");
@@ -1029,22 +1127,35 @@
         }
 
         function selectTimeSlot(slot, element) {
-            if (element.classList.contains("disabled")) return;
+            try {
+                if (element.classList.contains("disabled")) {
+                    alert("Khung giờ này đã quá hạn hoặc hết chỗ, vui lòng chọn giờ khác.");
+                    return;
+                }
 
-            selectedTimeSlot = slot;
-            document.getElementById("selectedTimeSlotInput").value = slot;
+                selectedTimeSlot = slot;
+                const inputField = document.getElementById("selectedTimeSlotInput");
+                if (inputField) inputField.value = slot;
 
-            document.querySelectorAll(".time-slot-pill").forEach(pill => {
-                pill.classList.remove("active");
-            });
+                const pills = document.querySelectorAll(".time-slot-pill");
+                for (let i = 0; i < pills.length; i++) {
+                    pills[i].classList.remove("active");
+                }
 
-            element.classList.add("active");
+                element.classList.add("active");
 
-            const banner = document.getElementById("slotConfirmationBanner");
-            banner.style.display = "flex";
-            banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ ${slot}</span>`;
-            
-            document.getElementById("btnPlaceOrder").disabled = false;
+                const banner = document.getElementById("slotConfirmationBanner");
+                if (banner) {
+                    banner.style.display = "flex";
+                    banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ ${slot}</span>`;
+                }
+                
+                const btn = document.getElementById("btnPlaceOrder");
+                if (btn) btn.disabled = false;
+            } catch (e) {
+                alert("Đã xảy ra lỗi JS khi chọn giờ: " + e.message);
+                console.error(e);
+            }
         }
 
         function getHaversineDistance(lat1, lon1, lat2, lon2) {
@@ -1072,9 +1183,13 @@
 
             const finalTotal = productTotal > 0 ? (productTotal + currentShippingFee) : 0;
 
-            document.getElementById("productTotalSum").innerText = productTotal.toLocaleString("vi-VN") + "đ";
-            document.getElementById("shippingFeeSum").innerText = currentShippingFee.toLocaleString("vi-VN") + "đ";
-            document.getElementById("finalTotalSum").innerText = finalTotal.toLocaleString("vi-VN") + "đ";
+            const subtotalEl = document.getElementById("subtotalDisplay");
+            const shippingEl = document.getElementById("shippingFeeDisplay");
+            const totalEl = document.getElementById("totalDisplay");
+            
+            if (subtotalEl) subtotalEl.innerText = productTotal.toLocaleString("vi-VN") + "đ";
+            if (shippingEl) shippingEl.innerText = currentShippingFee.toLocaleString("vi-VN") + "đ";
+            if (totalEl) totalEl.innerText = finalTotal.toLocaleString("vi-VN") + "đ";
         }
     </script>
 </body>

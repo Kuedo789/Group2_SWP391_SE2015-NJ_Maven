@@ -429,9 +429,8 @@
         <main class="address-page">
 
             <% 
-                String view = (String) request.getAttribute("view");
-                if (view == null) view = "list";
-                
+                // view is already declared at the top of the file
+
                 String source = request.getParameter("source");
                 String sourceParam = (source != null && !source.isEmpty()) ? "&source=" + source : "";
                 String sourceQuery = (source != null && !source.isEmpty()) ? "?source=" + source : "";
@@ -596,6 +595,12 @@
                                 <input type="checkbox" name="isDefault" <%= (isEditMode && addressToEdit.isDefault()) ? "checked disabled" : "" %> <%= (!isEditMode && (addressList == null || addressList.isEmpty())) ? "checked disabled" : "" %>>
                                 Đặt làm địa chỉ mặc định
                             </label>
+                            <% if (isEditMode && addressToEdit.isDefault()) { %>
+                                <input type="hidden" name="isDefault" value="on">
+                            <% } %>
+                            <% if (!isEditMode && (addressList == null || addressList.isEmpty())) { %>
+                                <input type="hidden" name="isDefault" value="on">
+                            <% } %>
 
                             <div class="button-row">
                                 <button type="button"

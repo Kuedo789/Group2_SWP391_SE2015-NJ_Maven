@@ -64,6 +64,10 @@
         <servlet-name>StaffServlet</servlet-name>
         <servlet-class>com.bakeryzone.admin.controller.StaffServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>DeliveryAddressServlet</servlet-name>
+        <servlet-class>com.bakeryzone.customer.controller.DeliveryAddressServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UserDetailServlet</servlet-name>
         <url-pattern>/userDetail</url-pattern>
@@ -138,6 +142,10 @@
     <servlet-mapping>
         <servlet-name>CustomerCheckoutServlet</servlet-name>
         <url-pattern>/checkout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DeliveryAddressServlet</servlet-name>
+        <url-pattern>/delivery-address</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>
