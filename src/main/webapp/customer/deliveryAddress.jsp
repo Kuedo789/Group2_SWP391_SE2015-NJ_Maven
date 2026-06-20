@@ -428,18 +428,32 @@
 
         <main class="address-page">
 
+            <% 
+                String view = (String) request.getAttribute("view");
+                if (view == null) view = "list";
+                
+                String source = request.getParameter("source");
+                String sourceParam = (source != null && !source.isEmpty()) ? "&source=" + source : "";
+                String sourceQuery = (source != null && !source.isEmpty()) ? "?source=" + source : "";
+            %>
             <% if (view.equals("list")) { %>
                 <!-- View 1: Address List Screen -->
                 <div class="address-list-container">
                     <div class="address-card">
                         <div class="address-header">
                             <div style="display:flex;align-items:center;gap:12px;">
+                                <% if ("checkout".equals(source)) { %>
+                                <a href="${pageContext.request.contextPath}/checkout" class="btn-back" title="Quay lại thanh toán">
+                                    <i class="fa fa-arrow-left" style="margin-right:6px;"></i> Quay lại
+                                </a>
+                                <% } else { %>
                                 <a href="${pageContext.request.contextPath}/profile" class="btn-back" title="Quay lại trang cá nhân">
                                     <i class="fa fa-arrow-left" style="margin-right:6px;"></i> Quay lại
                                 </a>
+                                <% } %>
                                 <h2 style="margin:0;">Địa chỉ của tôi</h2>
                             </div>
-                            <a href="${pageContext.request.contextPath}/delivery-address?action=add" class="btn-add-new">
+                            <a href="${pageContext.request.contextPath}/delivery-address?action=add<%= sourceParam %>" class="btn-add-new">
                                 <i class="fa fa-plus"></i> Thêm địa chỉ mới
                             </a>
                         </div>
@@ -468,7 +482,11 @@
                                 } else {
                                     for (DeliveryAddress addr : addressList) {
                             %>
-                                <div class="address-item <%= addr.isDefault() ? "default-item" : "" %>">
+                                <div class="address-item <%= addr.isDefault() ? "default-item" : "" %>"
+                                     <% if ("checkout".equals(source)) { %>
+                                     style="cursor: pointer;"
+                                     onclick="if(event.target.tagName !== 'A') window.location.href='${pageContext.request.contextPath}/checkout?selectedAddressId=<%= addr.getAddressId() %>'"
+                                     <% } %>>
                                     <div class="address-item-left">
                                         <div class="address-item-header">
                                             <span class="receiver-name"><%= addr.getReceiverName() %></span>
@@ -481,14 +499,19 @@
                                         <% if (addr.isDefault()) { %>
                                             <span class="badge-default">Mặc định</span>
                                         <% } %>
+                                        <% if ("checkout".equals(source)) { %>
+                                            <div style="margin-top: 8px; font-size: 13px; color: var(--primary-dark); font-weight: 600;">
+                                                <i class="fa fa-check-circle"></i> Nhấp để chọn địa chỉ này
+                                            </div>
+                                        <% } %>
                                     </div>
                                     <div class="address-item-right">
                                         <div class="address-actions">
-                                            <a href="${pageContext.request.contextPath}/delivery-address?action=edit&id=<%= addr.getAddressId() %>" class="action-link">Cập nhật</a>
-                                            <a href="${pageContext.request.contextPath}/delivery-address?action=delete&id=<%= addr.getAddressId() %>" class="action-link delete-link" onclick="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')">Xóa</a>
+                                            <a href="${pageContext.request.contextPath}/delivery-address?action=edit&id=<%= addr.getAddressId() %><%= sourceParam %>" class="action-link">Cập nhật</a>
+                                            <a href="${pageContext.request.contextPath}/delivery-address?action=delete&id=<%= addr.getAddressId() %><%= sourceParam %>" class="action-link delete-link" onclick="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')">Xóa</a>
                                         </div>
                                         <% if (!addr.isDefault()) { %>
-                                            <a href="${pageContext.request.contextPath}/delivery-address?action=set-default&id=<%= addr.getAddressId() %>" class="btn-set-default">Thiết lập mặc định</a>
+                                            <a href="${pageContext.request.contextPath}/delivery-address?action=set-default&id=<%= addr.getAddressId() %><%= sourceParam %>" class="btn-set-default">Thiết lập mặc định</a>
                                         <% } %>
                                     </div>
                                 </div>
@@ -519,6 +542,7 @@
                               method="post">
 
                             <input type="hidden" name="addressId" value="<%= isEditMode ? addressToEdit.getAddressId() : "" %>">
+                            <input type="hidden" name="source" value="<%= source != null ? source : "" %>">
 
                             <div class="form-field-group">
                                 <label class="form-field-label">Tên người nhận <span class="required">*</span></label>
@@ -585,7 +609,7 @@
                                     Lưu địa chỉ
                                 </button>
 
-                                <a href="${pageContext.request.contextPath}/delivery-address" class="btn-back">
+                                <a href="${pageContext.request.contextPath}/delivery-address<%= sourceQuery %>" class="btn-back">
                                     Trở lại
                                 </a>
                             </div>

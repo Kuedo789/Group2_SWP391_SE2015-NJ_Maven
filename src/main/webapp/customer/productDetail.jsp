@@ -71,7 +71,7 @@
 
     <head>
         <jsp:include page="../common/header.jsp" />
-        <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/productDetail.css">
+        <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/productDetail.css?v=2">
     </head>
 
     <body>

@@ -578,65 +578,69 @@
                             <h2 class="card-title">
                                 <i class="fa fa-map-marker-alt"></i> Địa chỉ giao hàng
                             </h2>
-                            <a href="${pageContext.request.contextPath}/delivery-address?action=add" class="btn-add-address">
-                                + Thêm địa chỉ mới
+                            <a href="${pageContext.request.contextPath}/delivery-address?source=checkout" class="btn-add-address" style="text-decoration: none; font-size: 14px; font-weight: 700; color: var(--primary-dark); display: flex; align-items: center; gap: 6px;">
+                                <i class="fa fa-edit"></i> Thay đổi
                             </a>
                         </div>
 
-                        <!-- Display currently selected address -->
-                        <div id="selectedAddressWrapper" style="margin-bottom: 16px;">
-                            <!-- Will be synced by JS -->
-                        </div>
-
-                        <!-- Button to toggle address list -->
-                        <div style="margin-bottom: 16px;">
-                            <button type="button" class="btn btn-outline" id="btnToggleAddressList" onclick="toggleAddressList()" style="width: 100%; border-radius: var(--radius-md); height: 48px; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border-color); background: white; cursor: pointer; color: var(--text-dark); transition: all 0.2s;">
-                                <i class="fa fa-exchange-alt"></i> Thay đổi địa chỉ nhận hàng
-                            </button>
-                        </div>
-
-                        <div class="address-list" id="addressListContainer" style="display: none;">
+                        <!-- Display currently selected address directly -->
+                        <div id="selectedAddressWrapper" style="margin-bottom: 0;">
                             <% 
                                 if (addressList == null || addressList.isEmpty()) {
                             %>
-                                <div class="empty-address-msg">
-                                    <i class="fa fa-map-marked-alt"></i>
-                                    <p>Bạn chưa lưu địa chỉ giao hàng nào.</p>
-                                    <a href="${pageContext.request.contextPath}/delivery-address?action=add" class="btn btn-primary" style="margin-top: 10px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; height: 44px; padding: 0 24px; font-weight: 700; font-size: 14px; background: var(--primary-dark); color: white; border: none; cursor: pointer; text-decoration: none; box-shadow: 0 6px 15px rgba(47, 71, 40, 0.2);">Thêm địa chỉ giao hàng</a>
+                                <div class="empty-address-msg" style="text-align: center; padding: 30px 16px; border: 1px dashed var(--border-color); border-radius: var(--radius-md);">
+                                    <i class="fa fa-map-marked-alt" style="font-size: 40px; color: #ddd; margin-bottom: 16px;"></i>
+                                    <p style="color: var(--text-muted); margin-bottom: 16px;">Bạn chưa lưu địa chỉ giao hàng nào.</p>
+                                    <a href="${pageContext.request.contextPath}/delivery-address?action=add&source=checkout" style="display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; height: 44px; padding: 0 24px; font-weight: 700; font-size: 14px; background: var(--primary-dark); color: white; text-decoration: none;">Thêm địa chỉ giao hàng</a>
                                 </div>
                             <% 
                                 } else {
-                                    for (int i = 0; i < addressList.size(); i++) {
-                                        DeliveryAddress addr = addressList.get(i);
-                            %>
-                                <div class="address-card-option <%= addr.isDefault() ? "active" : "" %>" 
-                                     data-address-id="<%= addr.getAddressId() %>"
-                                     data-lat="<%= addr.getLatitude() %>"
-                                     data-lng="<%= addr.getLongitude() %>"
-                                     onclick="selectAddress(<%= addr.getAddressId() %>, <%= addr.getLatitude() %>, <%= addr.getLongitude() %>, this)">
-                                    <input type="radio" 
-                                           name="address_radio" 
-                                           class="address-radio" 
-                                           value="<%= addr.getAddressId() %>" 
-                                           <%= addr.isDefault() ? "checked" : "" %>>
+                                    String selectedParam = request.getParameter("selectedAddressId");
+                                    DeliveryAddress selectedAddr = addressList.get(0);
                                     
-                                    <div class="address-details">
-                                        <div class="address-name-tag">
-                                            <%= addr.getReceiverName() %>
-                                            <% if (addr.isDefault()) { %>
-                                                <span class="default-badge">Mặc định</span>
+                                    boolean foundParam = false;
+                                    if (selectedParam != null && !selectedParam.isEmpty()) {
+                                        for (DeliveryAddress addr : addressList) {
+                                            if (String.valueOf(addr.getAddressId()).equals(selectedParam)) {
+                                                selectedAddr = addr;
+                                                foundParam = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (!foundParam) {
+                                        for (DeliveryAddress addr : addressList) {
+                                            if (addr.isDefault()) {
+                                                selectedAddr = addr;
+                                                break;
+                                            }
+                                        }
+                                    }
+                            %>
+                                <div class="address-card-option active" 
+                                     id="finalSelectedAddressCard"
+                                     data-address-id="<%= selectedAddr.getAddressId() %>"
+                                     data-lat="<%= selectedAddr.getLatitude() %>"
+                                     data-lng="<%= selectedAddr.getLongitude() %>"
+                                     style="border: 2px solid var(--primary-dark); background-color: #f6f8f5; padding: 16px; border-radius: var(--radius-md); margin-bottom: 0; display: block; cursor: default;">
+                                    
+                                    <div class="address-details" style="display: flex; flex-direction: column; gap: 4px;">
+                                        <div class="address-name-tag" style="font-weight: 700; font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
+                                            <%= selectedAddr.getReceiverName() %>
+                                            <% if (selectedAddr.isDefault()) { %>
+                                                <span class="default-badge" style="font-size: 11px; font-weight: 600; color: var(--primary-dark); background-color: #e2ece5; padding: 2px 8px; border-radius: 4px;">Mặc định</span>
                                             <% } %>
                                         </div>
-                                        <div class="address-text">
-                                            <%= addr.getAddressDetail() %>
+                                        <div class="address-text" style="font-size: 14px; color: var(--text-muted); line-height: 1.5; margin-bottom: 6px;">
+                                            <%= selectedAddr.getAddressDetail() %>
                                         </div>
-                                        <div class="address-text" style="font-weight: 600;">
-                                            SĐT: <%= addr.getReceiverPhone() %>
+                                        <div class="address-text" style="font-weight: 600; font-size: 14px; color: var(--text-muted);">
+                                            SĐT: <%= selectedAddr.getReceiverPhone() %>
                                         </div>
                                     </div>
                                 </div>
                             <% 
-                                    }
                                 }
                             %>
                         </div>
@@ -867,52 +871,14 @@
                 deliveryDateInput.value = tyyyy + '-' + tmm + '-' + tdd;
             }
 
-            // Sync the selected address display initially
-            syncSelectedAddressDisplay();
-
+            // We render the address directly via JSP now, no need to sync display via JS
             // Clear cart upon successful order placement
             document.getElementById("checkoutForm").addEventListener("submit", function() {
                 localStorage.removeItem("cart");
             });
         });
 
-        function syncSelectedAddressDisplay() {
-            const activeCard = document.querySelector("#addressListContainer .address-card-option.active");
-            const wrapper = document.getElementById("selectedAddressWrapper");
-            const toggleBtn = document.getElementById("btnToggleAddressList");
-            if (!activeCard) {
-                if (wrapper) wrapper.innerHTML = "";
-                if (toggleBtn) toggleBtn.style.display = "none";
-                document.getElementById("addressListContainer").style.display = "block";
-                return;
-            }
-            if (toggleBtn) toggleBtn.style.display = "flex";
-            
-            const clone = activeCard.cloneNode(true);
-            clone.removeAttribute("onclick");
-            clone.style.cursor = "default";
-            clone.style.borderColor = "var(--primary-dark)";
-            clone.style.borderWidth = "2px";
-            clone.style.backgroundColor = "#f6f8f5";
-            
-            const radio = clone.querySelector(".address-radio");
-            if (radio) radio.style.display = "none";
-            
-            wrapper.innerHTML = "";
-            wrapper.appendChild(clone);
-        }
-
-        function toggleAddressList() {
-            const container = document.getElementById("addressListContainer");
-            const btn = document.getElementById("btnToggleAddressList");
-            if (container.style.display === "none") {
-                container.style.display = "flex";
-                if (btn) btn.innerHTML = `<i class="fa fa-times"></i> Đóng danh sách địa chỉ`;
-            } else {
-                container.style.display = "none";
-                if (btn) btn.innerHTML = `<i class="fa fa-exchange-alt"></i> Thay đổi địa chỉ nhận hàng`;
-            }
-        }
+        // toggleAddressList function removed as there is no list to toggle
 
         function loadCartItems() {
             let localCartStr = localStorage.getItem("cart");
@@ -1060,16 +1026,6 @@
 
             currentShippingFee = Math.max(15000, Math.round(finalDistance) * 5000);
             updateSummary();
-
-            // Sync with display card
-            syncSelectedAddressDisplay();
-
-            // Auto-hide the list container
-            document.getElementById("addressListContainer").style.display = "none";
-            const btn = document.getElementById("btnToggleAddressList");
-            if (btn) {
-                btn.innerHTML = `<i class="fa fa-exchange-alt"></i> Thay đổi địa chỉ nhận hàng`;
-            }
         }
 
         function selectTimeSlot(slot, element) {
