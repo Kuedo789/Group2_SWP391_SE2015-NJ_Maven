@@ -938,7 +938,7 @@
                 const slotHour = parseInt(slotText.substring(0, 2), 10);
                 
                 // Khóa những khung giờ đã qua trong ngày hôm nay hoặc ngày trong quá khứ
-                if (isPastDate || (isToday && slotHour <= currentHour)) {
+                if (isPastDate || (isToday && slotHour < currentHour)) {
                     pill.classList.add("disabled");
                     const statusSpan = pill.querySelector(".slot-status");
                     if (statusSpan) statusSpan.innerText = "Hết chỗ/Quá hạn";
@@ -1026,22 +1026,22 @@
                 const priceFormatted = (parseFloat(item.price) || 0).toLocaleString("vi-VN") + "đ";
                 
                 const itemHtml = `
-                    <div class="product-item-row" id="cart-item-${item.id}">
+                    <div class="product-item-row" id="cart-item-\${item.id}">
                         <div class="product-item-left">
-                            <img src="${imgUrl}" class="product-img" alt="${item.name || ''}" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=120'">
+                            <img src="\${imgUrl}" class="product-img" alt="\${item.name || ''}" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=120'">
                             <div class="product-details-text">
-                                <span class="product-title">${item.name || ''}</span>
-                                <span class="product-desc">${item.desc || 'Bánh ngọt thủ công cao cấp'}</span>
+                                <span class="product-title">\${item.name || ''}</span>
+                                <span class="product-desc">\${item.desc || 'Bánh ngọt thủ công cao cấp'}</span>
                             </div>
                         </div>
                         <div class="product-item-right-actions">
-                            <span class="product-price">${priceFormatted}</span>
+                            <span class="product-price">\${priceFormatted}</span>
                             <div class="qty-adjust-box">
-                                <button type="button" class="btn-qty" onclick="adjustItemQty('${item.id}', -1)">−</button>
-                                <span class="qty-display">${parseInt(item.qty) || 1}</span>
-                                <button type="button" class="btn-qty" onclick="adjustItemQty('${item.id}', 1)">+</button>
+                                <button type="button" class="btn-qty" onclick="adjustItemQty('\${item.id}', -1)">−</button>
+                                <span class="qty-display">\${parseInt(item.qty) || 1}</span>
+                                <button type="button" class="btn-qty" onclick="adjustItemQty('\${item.id}', 1)">+</button>
                             </div>
-                            <button type="button" class="btn-delete-item" onclick="deleteItem('${item.id}')" title="Xóa sản phẩm">
+                            <button type="button" class="btn-delete-item" onclick="deleteItem('\${item.id}')" title="Xóa sản phẩm">
                                 <i class="fa fa-trash"></i>
                             </button>
                         </div>
@@ -1183,9 +1183,9 @@
 
             const finalTotal = productTotal > 0 ? (productTotal + currentShippingFee) : 0;
 
-            const subtotalEl = document.getElementById("subtotalDisplay");
-            const shippingEl = document.getElementById("shippingFeeDisplay");
-            const totalEl = document.getElementById("totalDisplay");
+            const subtotalEl = document.getElementById("productTotalSum");
+            const shippingEl = document.getElementById("shippingFeeSum");
+            const totalEl = document.getElementById("finalTotalSum");
             
             if (subtotalEl) subtotalEl.innerText = productTotal.toLocaleString("vi-VN") + "đ";
             if (shippingEl) shippingEl.innerText = currentShippingFee.toLocaleString("vi-VN") + "đ";
