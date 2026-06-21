@@ -52,7 +52,7 @@
     <div class="nav-section-title">Hệ thống</div>
     <ul class="sidebar-menu">
         <li class="menu-item ${param.activeMenu == 'users' ? 'active' : ''}">
-            <a href="staff?action=list"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
+            <a href="${pageContext.request.contextPath}/admin/userList?action=list"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'roles' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a>
