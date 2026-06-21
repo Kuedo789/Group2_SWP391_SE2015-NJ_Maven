@@ -2,73 +2,47 @@
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
     <!-- ================= SERVLETS ================= -->
     <servlet>
-        <servlet-name>UserDetailServlet</servlet-name>
-        <servlet-class>com.bakeryzone.admin.controller.UserDetailServlet</servlet-class>
-    </servlet>
- 
-    <servlet>
         <servlet-name>RegisterServlet</servlet-name>
-        <servlet-class>com.bakeryzone.auth.controller.RegisterServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.auth.RegisterServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>com.bakeryzone.auth.controller.LoginServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.auth.LoginServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>VerifyOtpServlet</servlet-name>
-        <servlet-class>com.bakeryzone.auth.controller.VerifyOtpServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.auth.VerifyOtpServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>ForgotPasswordServlet</servlet-name>
-        <servlet-class>com.bakeryzone.auth.controller.ForgotPasswordServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.auth.ForgotPasswordServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>VerifyForgotOtpServlet</servlet-name>
-        <servlet-class>com.bakeryzone.auth.controller.VerifyForgotOtpServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.auth.VerifyForgotOtpServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>ResetPasswordServlet</servlet-name>
-        <servlet-class>com.bakeryzone.auth.controller.ResetPasswordServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.auth.ResetPasswordServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>LogoutServlet</servlet-name>
-        <servlet-class>com.bakeryzone.auth.controller.LogoutServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.auth.LogoutServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>HomeServlet</servlet-name>
-        <servlet-class>com.bakeryzone.auth.controller.HomeServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>CustomerListServlet</servlet-name>
-        <servlet-class>com.bakeryzone.admin.controller.CustomerListServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>CustomerDetailServlet</servlet-name>
-        <servlet-class>com.bakeryzone.admin.controller.CustomerDetailServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.auth.HomeServlet</servlet-class>
     </servlet>
     <!-- ================= FILTERS ================= -->
     <filter>
         <filter-name>AuthorizationFilter</filter-name>
-        <filter-class>com.bakeryzone.auth.controller.AuthorizationFilter</filter-class>
+        <filter-class>com.bakeryzone.controller.auth.AuthorizationFilter</filter-class>
     </filter>
     <!-- ================= SERVLET MAPPINGS ================= -->
     <servlet>
         <servlet-name>CustomerCheckoutServlet</servlet-name>
-        <servlet-class>com.bakeryzone.customer.controller.CustomerCheckoutServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.customer.CustomerCheckoutServlet</servlet-class>
     </servlet>
-    <servlet>
-        <servlet-name>CustomerServlet</servlet-name>
-        <servlet-class>com.bakeryzone.admin.controller.CustomerServlet</servlet-class>
-    </servlet>
-    <servlet>
-        <servlet-name>StaffServlet</servlet-name>
-        <servlet-class>com.bakeryzone.admin.controller.StaffServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>UserDetailServlet</servlet-name>
-        <url-pattern>/userDetail</url-pattern>
-    </servlet-mapping>
-
     <servlet-mapping>
         <servlet-name>RegisterServlet</servlet-name>
         <url-pattern>/register</url-pattern>
@@ -101,40 +75,20 @@
         <servlet-name>HomeServlet</servlet-name>
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>CustomerListServlet</servlet-name>
-        <url-pattern>/customerList</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>CustomerDetailServlet</servlet-name>
-        <url-pattern>/customerDetail</url-pattern>
-    </servlet-mapping>
     <!-- ================= FILTER MAPPINGS ================= -->
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
-        <url-pattern>/userList</url-pattern>
+        <url-pattern>/admin/*</url-pattern>
     </filter-mapping>
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
-        <url-pattern>/userDetail</url-pattern>
+        <url-pattern>/staff</url-pattern>
     </filter-mapping>
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
-        <url-pattern>/customerList</url-pattern>
-    </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthorizationFilter</filter-name>
-        <url-pattern>/customerDetail</url-pattern>
+        <url-pattern>/customer</url-pattern>
     </filter-mapping>
     <!-- ================= SESSION CONFIG ================= -->
-    <servlet-mapping>
-        <servlet-name>CustomerServlet</servlet-name>
-        <url-pattern>/customer</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>StaffServlet</servlet-name>
-        <url-pattern>/staff</url-pattern>
-    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>CustomerCheckoutServlet</servlet-name>
         <url-pattern>/checkout</url-pattern>

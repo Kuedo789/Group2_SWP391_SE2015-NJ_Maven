@@ -4,13 +4,13 @@
 <div class="sidebar">
     <div class="sidebar-brand">
         <i class="fa-solid fa-cake-candles"></i>
-        <span>Cake<span>Zone</span> Admin</span>
+        <span>Bakery<span>Zone</span> Admin</span>
     </div>
     
     <div class="nav-section-title">Hệ thống chính</div>
     <ul class="sidebar-menu">
         <li class="menu-item ${param.activeMenu == 'dashboard' ? 'active' : ''}">
-            <a href="#"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
+            <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
         </li>
     </ul>
 
@@ -33,7 +33,7 @@
             <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Thuộc tính</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'customers' ? 'active' : ''}">
-            <a href="customer?action=list"><i class="fa-solid fa-users"></i> Khách hàng</a>
+            <a href="<%= request.getContextPath() %>/customer"><i class="fa-solid fa-users"></i> Khách hàng</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'promotions' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi <i class="fa-solid fa-chevron-down arrow"></i></a>

@@ -13,7 +13,7 @@
         <meta charset="UTF-8">
         <title>CakeZone Admin - Chỉnh Sửa Danh Mục</title>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-        <link href="${pageContext.request.contextPath}/assets/css/admin-global.css" rel="stylesheet">
+        <link href="${pageContext.request.contextPath}/assets/css/admin-global.css?v=1.1" rel="stylesheet">
         <style>
             .form-card { background-color: var(--surface-white); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--border-soft); padding: 40px; max-width: 800px; margin: 0 auto; }
             .form-group { margin-bottom: 24px; }

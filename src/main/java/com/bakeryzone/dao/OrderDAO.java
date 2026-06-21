@@ -165,8 +165,8 @@ public class OrderDAO {
     }
 
     public boolean insertOrder(Order order) {
-        String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Total_Cost, OrderStatus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        String sqlCake = "INSERT INTO `custom_cake` (Custom_Cake_ID, Template_ID, Greeting_Text, Canvas_Image_URL) VALUES (?, ?, ?, ?)";
+        String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sqlCake = "INSERT INTO `custom_cake` (Custom_Cake_ID, Template_ID, Greeting_Text, Canvas_Image_URL, Total_Layers, Calculated_Price) VALUES (?, ?, ?, ?, ?, ?)";
         String sqlItem = "INSERT INTO `order_item` (Order_Item_ID, Order_No, Custom_Cake_ID, Accessory_ID, Quantity, Price_At_Purchase) VALUES (?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;

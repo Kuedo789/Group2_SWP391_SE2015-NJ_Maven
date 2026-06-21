@@ -22,31 +22,31 @@ public class AuthorizationFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
-
-        User user = (User) request.getSession().getAttribute("user");
-
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-
-        String uri = request.getRequestURI();
-        String roleId = user.getRoleId();
-
-        // Chỉ chặn /admin/ và /staff/ — KHÔNG chặn /customer/ (khách hàng có quyền vào)
-        if (uri.contains("/admin/") || uri.contains("/staff/")) {
-            if (!"ADMIN".equalsIgnoreCase(roleId) && !"STAFF".equalsIgnoreCase(roleId)) {
-                response.sendRedirect(request.getContextPath() + "/home");
-                return;
-            }
-        }
-
-        if (uri.contains("/shipper/")) {
-            if (!"SHIPPER".equalsIgnoreCase(roleId)) {
-                response.sendRedirect(request.getContextPath() + "/home");
-                return;
-            }
-        }
+//
+//        User user = (User) request.getSession().getAttribute("user");
+//
+//        if (user == null) {
+//            response.sendRedirect(request.getContextPath() + "/login");
+//            return;
+//        }
+//
+//        String uri = request.getRequestURI();
+//        String roleId = user.getRoleId();
+//
+//        // Chỉ chặn /admin/ và /staff/ — KHÔNG chặn /customer/ (khách hàng có quyền vào)
+//        if (uri.contains("/admin/") || uri.contains("/staff/")) {
+//            if (!"ADMIN".equalsIgnoreCase(roleId) && !"STAFF".equalsIgnoreCase(roleId)) {
+//                response.sendRedirect(request.getContextPath() + "/home");
+//                return;
+//            }
+//        }
+//
+//        if (uri.contains("/shipper/")) {
+//            if (!"SHIPPER".equalsIgnoreCase(roleId)) {
+//                response.sendRedirect(request.getContextPath() + "/home");
+//                return;
+//            }
+//        }
 
         chain.doFilter(servletRequest, servletResponse);
     }
