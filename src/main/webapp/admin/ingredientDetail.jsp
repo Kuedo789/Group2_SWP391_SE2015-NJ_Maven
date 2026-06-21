@@ -95,11 +95,11 @@
                                  <div class="col-md-6">
                                      <label class="form-label-cz">Đơn vị đo <span>*</span></label>
                                      <select class="form-select-cz" id="unitMeasure" name="unitMeasure" required style="height: 48px; border-radius: 8px;">
-                                         <option value="gram" ${ingredient.unitMeasure eq 'gram' ? 'selected' : ''}>gram (g)</option>
-                                         <option value="ml" ${ingredient.unitMeasure eq 'ml' ? 'selected' : ''}>mililit (ml)</option>
-                                         <option value="cái" ${ingredient.unitMeasure eq 'cái' ? 'selected' : ''}>cái / chiếc</option>
-                                         <option value="hộp" ${ingredient.unitMeasure eq 'hộp' ? 'selected' : ''}>hộp</option>
-                                         <option value="quả" ${ingredient.unitMeasure eq 'quả' ? 'selected' : ''}>quả / trái</option>
+                                         <c:forEach var="u" items="${unitMeasures}">
+                                             <option value="${u.unitId}" ${ingredient.unitMeasure eq u.unitId ? 'selected' : ''}>
+                                                 ${u.unitName} (${u.unitId})
+                                             </option>
+                                         </c:forEach>
                                      </select>
                                  </div>
 

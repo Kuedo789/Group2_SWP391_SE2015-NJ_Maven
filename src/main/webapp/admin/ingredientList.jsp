@@ -122,7 +122,7 @@
                                         <td>${((currentPage - 1) * pageSize) + status.index + 1}</td>
                                         <td><strong>${i.ingredientId}</strong></td>
                                         <td>${i.ingredientName}</td>
-                                         <td>${i.unitMeasure}</td>
+                                         <td>${i.unitName}</td>
                                          <td>
                                              <c:if test="${not empty i.imageUrl}">
                                                  <img src="${i.imageUrl}" alt="${i.ingredientName}" style="max-height: 40px; max-width: 60px; border-radius: 4px; border: 1px solid #ddd; object-fit: cover;">
@@ -133,7 +133,7 @@
                                          </td>
                                          <td>
                                              <span style="font-weight: 600; color: var(--cz-primary);">
-                                                 <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0.00"/> đ / ${i.unitMeasure}
+                                                 <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0.00"/> đ / ${i.unitName}
                                              </span>
                                          </td>
                                         <td>

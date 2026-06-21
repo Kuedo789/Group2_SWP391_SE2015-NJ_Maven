@@ -17,10 +17,11 @@ public class IngredientDAO {
 
     public List<Ingredient> getAllIngredients() {
         List<Ingredient> list = new ArrayList<>();
-        String sql = "SELECT Ingredient_ID, Ingredient_Name, Price_Per_Unit, Unit_Measure, Image_URL, enable " +
-                     "FROM ingredients " +
-                     "WHERE enable = 1 " +
-                     "ORDER BY Ingredient_ID DESC";
+        String sql = "SELECT i.Ingredient_ID, i.Ingredient_Name, i.Price_Per_Unit, i.Unit_ID, u.Unit_Name, i.Image_URL, i.enable " +
+                     "FROM ingredients i " +
+                     "LEFT JOIN unit_measure u ON i.Unit_ID = u.Unit_ID " +
+                     "WHERE i.enable = 1 " +
+                     "ORDER BY i.Ingredient_ID DESC";
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -29,7 +30,8 @@ public class IngredientDAO {
                     rs.getString("Ingredient_ID"),
                     rs.getString("Ingredient_Name"),
                     rs.getDouble("Price_Per_Unit"),
-                    rs.getString("Unit_Measure"),
+                    rs.getString("Unit_ID"),
+                    rs.getString("Unit_Name"),
                     rs.getString("Image_URL"),
                     rs.getBoolean("enable")
                 );
@@ -44,15 +46,16 @@ public class IngredientDAO {
     public List<Ingredient> getIngredientsFiltered(String search, int page, int pageSize) {
         List<Ingredient> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT Ingredient_ID, Ingredient_Name, Price_Per_Unit, Unit_Measure, Image_URL, enable " +
-            "FROM ingredients " +
-            "WHERE enable = 1 "
+            "SELECT i.Ingredient_ID, i.Ingredient_Name, i.Price_Per_Unit, i.Unit_ID, u.Unit_Name, i.Image_URL, i.enable " +
+            "FROM ingredients i " +
+            "LEFT JOIN unit_measure u ON i.Unit_ID = u.Unit_ID " +
+            "WHERE i.enable = 1 "
         );
         
         if (search != null && !search.trim().isEmpty()) {
-            sql.append("AND (Ingredient_Name LIKE ? OR Ingredient_ID LIKE ?) ");
+            sql.append("AND (i.Ingredient_Name LIKE ? OR i.Ingredient_ID LIKE ?) ");
         }
-        sql.append("ORDER BY Ingredient_ID DESC ");
+        sql.append("ORDER BY i.Ingredient_ID DESC ");
         sql.append("LIMIT ? OFFSET ?");
 
         try (Connection conn = DBContext.getJDBCConnection();
@@ -75,7 +78,8 @@ public class IngredientDAO {
                         rs.getString("Ingredient_ID"),
                         rs.getString("Ingredient_Name"),
                         rs.getDouble("Price_Per_Unit"),
-                        rs.getString("Unit_Measure"),
+                        rs.getString("Unit_ID"),
+                        rs.getString("Unit_Name"),
                         rs.getString("Image_URL"),
                         rs.getBoolean("enable")
                     );
@@ -120,9 +124,10 @@ public class IngredientDAO {
 
     public Ingredient getIngredientById(String id) {
         if (id == null || id.trim().isEmpty()) return null;
-        String sql = "SELECT Ingredient_ID, Ingredient_Name, Price_Per_Unit, Unit_Measure, Image_URL, enable " +
-                     "FROM ingredients " +
-                     "WHERE Ingredient_ID = ?";
+        String sql = "SELECT i.Ingredient_ID, i.Ingredient_Name, i.Price_Per_Unit, i.Unit_ID, u.Unit_Name, i.Image_URL, i.enable " +
+                     "FROM ingredients i " +
+                     "LEFT JOIN unit_measure u ON i.Unit_ID = u.Unit_ID " +
+                     "WHERE i.Ingredient_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
@@ -132,7 +137,8 @@ public class IngredientDAO {
                         rs.getString("Ingredient_ID"),
                         rs.getString("Ingredient_Name"),
                         rs.getDouble("Price_Per_Unit"),
-                        rs.getString("Unit_Measure"),
+                        rs.getString("Unit_ID"),
+                        rs.getString("Unit_Name"),
                         rs.getString("Image_URL"),
                         rs.getBoolean("enable")
                     );
@@ -157,23 +163,23 @@ public class IngredientDAO {
             }
 
             if (exists) {
-                String sql = "UPDATE ingredients SET Ingredient_Name = ?, Price_Per_Unit = ?, Unit_Measure = ?, Image_URL = ?, enable = ? WHERE Ingredient_ID = ?";
+                String sql = "UPDATE ingredients SET Ingredient_Name = ?, Price_Per_Unit = ?, Unit_ID = ?, Image_URL = ?, enable = ? WHERE Ingredient_ID = ?";
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setString(1, ingredient.getIngredientName());
                     ps.setDouble(2, ingredient.getPricePerUnit());
-                    ps.setString(3, ingredient.getUnitMeasure());
+                    ps.setString(3, ingredient.getUnitId());
                     ps.setString(4, ingredient.getImageUrl());
                     ps.setInt(5, ingredient.isEnable() ? 1 : 0);
                     ps.setString(6, ingredient.getIngredientId());
                     return ps.executeUpdate() > 0;
                 }
             } else {
-                String sql = "INSERT INTO ingredients (Ingredient_ID, Ingredient_Name, Price_Per_Unit, Unit_Measure, Image_URL, enable) VALUES (?, ?, ?, ?, ?, ?)";
+                String sql = "INSERT INTO ingredients (Ingredient_ID, Ingredient_Name, Price_Per_Unit, Unit_ID, Image_URL, enable) VALUES (?, ?, ?, ?, ?, ?)";
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setString(1, ingredient.getIngredientId());
                     ps.setString(2, ingredient.getIngredientName());
                     ps.setDouble(3, ingredient.getPricePerUnit());
-                    ps.setString(4, ingredient.getUnitMeasure());
+                    ps.setString(4, ingredient.getUnitId());
                     ps.setString(5, ingredient.getImageUrl());
                     ps.setInt(6, ingredient.isEnable() ? 1 : 0);
                     return ps.executeUpdate() > 0;

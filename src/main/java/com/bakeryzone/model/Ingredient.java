@@ -4,20 +4,31 @@ public class Ingredient {
     private String ingredientId;
     private String ingredientName;
     private double pricePerUnit;
-    private String unitMeasure;
+    private String unitId;
+    private String unitName;
     private String imageUrl;
     private boolean enable;
 
     public Ingredient() {
-        this.unitMeasure = "gram";
+        this.unitId = "G";
         this.enable = true;
     }
 
-    public Ingredient(String ingredientId, String ingredientName, double pricePerUnit, String unitMeasure, String imageUrl, boolean enable) {
+    public Ingredient(String ingredientId, String ingredientName, double pricePerUnit, String unitId, String imageUrl, boolean enable) {
         this.ingredientId = ingredientId;
         this.ingredientName = ingredientName;
         this.pricePerUnit = pricePerUnit;
-        this.unitMeasure = unitMeasure;
+        this.unitId = unitId;
+        this.imageUrl = imageUrl;
+        this.enable = enable;
+    }
+
+    public Ingredient(String ingredientId, String ingredientName, double pricePerUnit, String unitId, String unitName, String imageUrl, boolean enable) {
+        this.ingredientId = ingredientId;
+        this.ingredientName = ingredientName;
+        this.pricePerUnit = pricePerUnit;
+        this.unitId = unitId;
+        this.unitName = unitName;
         this.imageUrl = imageUrl;
         this.enable = enable;
     }
@@ -46,12 +57,30 @@ public class Ingredient {
         this.pricePerUnit = pricePerUnit;
     }
 
+    // Deprecated but kept for backward compatibility in JSPs
     public String getUnitMeasure() {
-        return unitMeasure;
+        return unitId;
     }
 
+    // Deprecated but kept for backward compatibility in JSPs
     public void setUnitMeasure(String unitMeasure) {
-        this.unitMeasure = unitMeasure;
+        this.unitId = unitMeasure;
+    }
+
+    public String getUnitId() {
+        return unitId;
+    }
+
+    public void setUnitId(String unitId) {
+        this.unitId = unitId;
+    }
+
+    public String getUnitName() {
+        return unitName;
+    }
+
+    public void setUnitName(String unitName) {
+        this.unitName = unitName;
     }
 
     public String getImageUrl() {
