@@ -342,7 +342,7 @@ public class ProductDAO {
                 + "    t.Default_Service_Percent AS Default_Service_Percent, "
                 + "    t.Instruction_Steps AS Instruction_Steps, "
                 + "    t.Base_Price AS Base_Price, "
-                + "    (SELECT COALESCE(SUM(d.Standard_Gram * i.Price_Per_Unit), 0) "
+                + "    (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0) "
                 + "     FROM template_ingredient_detail d "
                 + "     JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
                 + "     WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost "
@@ -473,11 +473,13 @@ public class ProductDAO {
         return products;
     }
 
+
     public List<Map<String, Object>> getProductIngredients(String templateId) {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT d.Ingredient_ID, d.Standard_Gram, i.Ingredient_Name, i.Price_Per_Unit "
+        String sql = "SELECT d.Ingredient_ID, d.Quantity, i.Ingredient_Name, i.Price_Per_Unit, u.Unit_Name, i.Unit_ID "
                 + "FROM template_ingredient_detail d "
                 + "JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
+                + "LEFT JOIN unit_measure u ON i.Unit_ID = u.Unit_ID "
                 + "WHERE d.Template_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, templateId);
@@ -486,8 +488,10 @@ public class ProductDAO {
                     Map<String, Object> map = new HashMap<>();
                     map.put("ingredientId", rs.getString("Ingredient_ID"));
                     map.put("ingredientName", rs.getString("Ingredient_Name"));
-                    map.put("standardGram", rs.getDouble("Standard_Gram"));
+                    map.put("standardGram", rs.getDouble("Quantity"));
                     map.put("pricePerUnit", rs.getDouble("Price_Per_Unit"));
+                    map.put("unitMeasure", rs.getString("Unit_Name"));
+                    map.put("unitId", rs.getString("Unit_ID"));
                     list.add(map);
                 }
             }
@@ -510,7 +514,7 @@ public class ProductDAO {
 
                 // 2. Insert new batch
                 if (ingredientIds != null && standardGrams != null) {
-                    String insertSql = "INSERT INTO template_ingredient_detail (Template_ID, Ingredient_ID, Standard_Gram) VALUES (?, ?, ?)";
+                    String insertSql = "INSERT INTO template_ingredient_detail (Template_ID, Ingredient_ID, Quantity) VALUES (?, ?, ?)";
                     try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
                         for (int i = 0; i < ingredientIds.length; i++) {
                             if (ingredientIds[i] != null && !ingredientIds[i].trim().isEmpty()) {
