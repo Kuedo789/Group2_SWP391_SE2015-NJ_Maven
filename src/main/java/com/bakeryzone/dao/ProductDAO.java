@@ -303,7 +303,7 @@ public class ProductDAO {
         List<Map<String, String>> categories = new ArrayList<>();
 
         String sql = """
-                     SELECT Category_ID, Category_Name, image_url AS Icon_URL
+                     SELECT Category_ID, Category_Name, Icon_URL
                      FROM product_category
                      WHERE enable = 1
                      ORDER BY Category_Name ASC
@@ -341,6 +341,7 @@ public class ProductDAO {
                 + "    t.Default_Margin_Percent AS Default_Margin_Percent, "
                 + "    t.Default_Service_Percent AS Default_Service_Percent, "
                 + "    t.Instruction_Steps AS Instruction_Steps, "
+                + "    t.Base_Price AS Base_Price, "
                 + "    (SELECT COALESCE(SUM(d.Standard_Gram * i.Price_Per_Unit), 0) "
                 + "     FROM template_ingredient_detail d "
                 + "     JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
@@ -389,19 +390,23 @@ public class ProductDAO {
         }
 
         // Handle both: dynamic validation fallback logic from main AND actual saved Base_Price fallback
-        double ingredientCost = rs.getDouble("Ingredient_Cost");
-        double margin = rs.getDouble("Default_Margin_Percent");
-        double service = rs.getDouble("Default_Service_Percent");
-        double divisor = 1.0 - ((margin + service) / 100.0);
-
-        double calculatedBasePrice = 0.0;
-        if (divisor > 0.0) {
-            calculatedBasePrice = ingredientCost / divisor;
+        double savedBasePrice = rs.getDouble("Base_Price");
+        if (!rs.wasNull() && savedBasePrice > 0) {
+            p.setBasePrice(savedBasePrice);
         } else {
-            calculatedBasePrice = ingredientCost;
-        }
+            double ingredientCost = rs.getDouble("Ingredient_Cost");
+            double margin = rs.getDouble("Default_Margin_Percent");
+            double service = rs.getDouble("Default_Service_Percent");
+            double divisor = 1.0 - ((margin + service) / 100.0);
 
-        p.setBasePrice(calculatedBasePrice);
+            double calculatedBasePrice = 0.0;
+            if (divisor > 0.0) {
+                calculatedBasePrice = ingredientCost / divisor;
+            } else {
+                calculatedBasePrice = ingredientCost;
+            }
+            p.setBasePrice(calculatedBasePrice);
+        }
         return p;
     }
 

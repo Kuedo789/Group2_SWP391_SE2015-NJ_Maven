@@ -50,7 +50,7 @@
     </filter>
     <servlet>
         <servlet-name>CustomerCheckoutServlet</servlet-name>
-        <servlet-class>com.bakeryzone.customer.controller.CustomerCheckoutServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.customer.CustomerCheckoutServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>CustomerServlet</servlet-name>
@@ -62,7 +62,7 @@
     </servlet>
     <servlet>
         <servlet-name>DeliveryAddressServlet</servlet-name>
-        <servlet-class>com.bakeryzone.customer.controller.DeliveryAddressServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.customer.DeliveryAddressServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>ReviewManagementServlet</servlet-name>

@@ -14,9 +14,25 @@ import java.math.BigDecimal;
 
 public class OrderDAO {
 
+    public String getCustomerIdByUserId(String userId) {
+        String sql = "SELECT Customer_ID FROM customer WHERE User_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("Customer_ID");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return userId;
+    }
+
     public List<Order> getOrdersByCustomerId(String customerId) {
         List<Order> orders = new ArrayList<>();
-        String sql = "SELECT * FROM `order` WHERE Customer_ID = ? ORDER BY Order_Time DESC";
+        String sql = "SELECT * FROM `orders` WHERE Customer_ID = ? ORDER BY Order_Time DESC";
 
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -36,7 +52,7 @@ public class OrderDAO {
     }
 
     public Order getOrderByNo(String orderNo) {
-        String sql = "SELECT * FROM `order` WHERE Order_No = ?";
+        String sql = "SELECT * FROM `orders` WHERE Order_No = ?";
 
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -153,7 +169,7 @@ public class OrderDAO {
     }
 
     public boolean updateOrderStatus(String orderNo, String status) {
-        String sql = "UPDATE `order` SET OrderStatus = ? WHERE Order_No = ?";
+        String sql = "UPDATE `orders` SET OrderStatus = ? WHERE Order_No = ?";
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
@@ -166,7 +182,7 @@ public class OrderDAO {
     }
 
     public boolean insertOrder(Order order) {
-        String sqlOrder = "INSERT INTO `order` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String sqlCake = "INSERT INTO `custom_cake` (Custom_Cake_ID, Template_ID, Greeting_Text, Canvas_Image_URL, Total_Layers, Calculated_Price) VALUES (?, ?, ?, ?, ?, ?)";
         String sqlItem = "INSERT INTO `order_item` (Order_Item_ID, Order_No, Custom_Cake_ID, Accessory_ID, Quantity, Price_At_Purchase) VALUES (?, ?, ?, ?, ?, ?)";
 

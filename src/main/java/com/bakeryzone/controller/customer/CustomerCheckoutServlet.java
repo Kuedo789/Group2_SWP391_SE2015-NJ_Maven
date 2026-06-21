@@ -115,7 +115,8 @@ public class CustomerCheckoutServlet extends HttpServlet {
             Order order = new Order();
             String orderNo = "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             order.setOrderNo(orderNo);
-            order.setCustomerId(currentUser.getUserId());
+            String customerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
+            order.setCustomerId(customerId);
             order.setOrderTime(orderTime);
             order.setDeliveryWindowStart(deliveryWindowStart);
             order.setDeliveryWindowEnd(deliveryWindowEnd);
