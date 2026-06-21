@@ -29,6 +29,9 @@
         <li class="menu-item ${param.activeMenu == 'ingredients' ? 'active' : ''}" style="padding-left: 20px;">
             <a href="${pageContext.request.contextPath}/admin/ingredient?action=list" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Nguyên liệu</a>
         </li>
+        <li class="menu-item ${param.activeMenu == 'units' ? 'active' : ''}" style="padding-left: 20px;">
+            <a href="${pageContext.request.contextPath}/admin/unit?action=list" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Đơn vị tính</a>
+        </li>
         <li class="menu-item ${param.activeMenu == 'attributes' ? 'active' : ''}" style="padding-left: 20px;">
             <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Thuộc tính</a>
         </li>
