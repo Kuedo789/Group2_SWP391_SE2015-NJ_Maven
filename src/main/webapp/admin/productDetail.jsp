@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,11 +11,11 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <!-- FontAwesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
     <!-- Quill Rich Text Editor CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" crossorigin="anonymous">
     <!-- Custom styling -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductDetail.css?v=1.4">
     <style>
@@ -271,9 +272,169 @@
         .lightbox-close:hover {
             color: #f97316;
         }
+        
+        /* Custom modal overrides to bypass Bootstrap JS backdrop bugs */
+        .modal.custom-active {
+            display: block !important;
+            background: rgba(0, 0, 0, 0.5) !important;
+            opacity: 1 !important;
+        }
+        .modal.custom-active .modal-dialog {
+            transform: none !important;
+        }
+        
+        /* New premium design system overrides to match mockups */
+        .pricing-suggested-card {
+            background-color: #0f2d1e;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(15, 45, 30, 0.2);
+            border: 1px solid #1e4d35;
+            margin-top: 5px;
+            height: 100%;
+            justify-content: center;
+        }
+        .pricing-suggested-card .pricing-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #a3b899;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .pricing-suggested-card .pricing-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #eab308;
+            margin-bottom: 6px;
+        }
+        .pricing-suggested-card .pricing-formula {
+            font-size: 11px;
+            color: #8fae85;
+        }
+        
+        .input-group-cz {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .input-group-cz .form-control-cz {
+            padding-right: 35px;
+        }
+        .input-group-cz .input-group-addon {
+            position: absolute;
+            right: 15px;
+            color: #7c8b74;
+            font-weight: 600;
+            font-size: 13.5px;
+            pointer-events: none;
+        }
+        
+        .btn-modern-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            width: calc(50% - 8px);
+            text-align: center;
+            min-height: 100px;
+            border: none;
+        }
+        .btn-modern-card.btn-bom {
+            background-color: #0f2d1e;
+            border: 1px solid #0f2d1e;
+            color: #ffffff;
+        }
+        .btn-modern-card.btn-bom:hover {
+            background-color: #17472f;
+            border-color: #17472f;
+            box-shadow: 0 6px 18px rgba(15, 45, 30, 0.25);
+        }
+        .btn-modern-card.btn-recipe {
+            background-color: #ffffff;
+            border: 1.5px solid #0f2d1e;
+            color: #0f2d1e;
+        }
+        .btn-modern-card.btn-recipe:hover {
+            background-color: #f4f7f5;
+            box-shadow: 0 6px 18px rgba(15, 45, 30, 0.1);
+        }
+        .btn-modern-card .card-icon {
+            font-size: 20px;
+        }
+        
+        .alert-info-cz {
+            background-color: #eff6ff;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .alert-info-cz .info-icon {
+            color: #2563eb;
+            font-size: 16px;
+            margin-top: 2px;
+        }
+        .alert-info-cz .info-text {
+            color: #1e3a8a;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+        
+        .btn-delete-bom-row {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            margin: 0 auto;
+        }
+        .btn-delete-bom-row:hover {
+            color: #b91c1c;
+            transform: scale(1.15);
+        }
+        .modal-header-cz {
+            background-color: #0f2d1e !important;
+            color: white !important;
+        }
     </style>
 </head>
 <body>
+    <script>
+        window.addEventListener('error', function(e) {
+            let errDiv = document.getElementById('js-debug-errors');
+            if (!errDiv) {
+                errDiv = document.createElement('div');
+                errDiv.id = 'js-debug-errors';
+                errDiv.style = 'position:fixed; bottom:10px; right:10px; background:rgba(255,0,0,0.9); color:white; padding:15px; border-radius:5px; z-index:99999; max-width:500px; font-family:monospace; font-size:12px; white-space:pre-wrap;';
+                document.body.appendChild(errDiv);
+            }
+            errDiv.textContent += e.message + ' at ' + e.filename + ':' + e.lineno + '\n';
+        });
+    </script>
 
     <!-- Left Sidebar -->
     <jsp:include page="../common/sidebar.jsp">
@@ -447,19 +608,30 @@
                                      <div id="error-estimatedLaborHours" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
 
-                                 <div class="col-md-4">
-                                     <label class="form-label-cz">Biên Lợi Nhuận (%) <span>*</span></label>
-                                     <input type="number" step="0.01" class="form-control-cz" id="defaultMarginPercent" name="defaultMarginPercent" value="${product.defaultMarginPercent}" required>
-                                 </div>
-                                 <div class="col-md-4">
-                                     <label class="form-label-cz">Phí Dịch Vụ / Bếp (%) <span>*</span></label>
-                                     <input type="number" step="0.01" class="form-control-cz" id="defaultServicePercent" name="defaultServicePercent" value="${product.defaultServicePercent}" required>
-                                 </div>
-                                 <div class="col-md-4">
-                                     <label class="form-label-cz">Giá Bán Đề Xuất (VND)</label>
-                                     <input type="text" class="form-control-cz" id="productBasePrice" value="${product.basePrice}" readonly style="background-color: #f5f5f5; font-weight: bold; color: var(--cz-primary);">
-                                     <span class="small text-muted">Giá đề xuất = Chi phí NL / (1 - (Lãi + Dịch vụ)/100)</span>
-                                 </div>
+                                  <div class="col-md-4">
+                                      <label class="form-label-cz">Biên Lợi Nhuận (%) <span>*</span></label>
+                                      <div class="input-group-cz">
+                                          <input type="number" step="0.01" class="form-control-cz" id="defaultMarginPercent" name="defaultMarginPercent" value="${product.defaultMarginPercent}" required>
+                                          <span class="input-group-addon">%</span>
+                                      </div>
+                                  </div>
+                                  <div class="col-md-4">
+                                      <label class="form-label-cz">Phí Dịch Vụ / Bếp (%) <span>*</span></label>
+                                      <div class="input-group-cz">
+                                          <input type="number" step="0.01" class="form-control-cz" id="defaultServicePercent" name="defaultServicePercent" value="${product.defaultServicePercent}" required>
+                                          <span class="input-group-addon">%</span>
+                                      </div>
+                                  </div>
+                                  <div class="col-md-4">
+                                      <div class="pricing-suggested-card">
+                                          <span class="pricing-title">Giá Bán Đề Xuất (VND)</span>
+                                          <span class="pricing-value" id="productBasePriceText">
+                                              <fmt:formatNumber value="${product.basePrice}" type="number" pattern="#,##0"/> đ
+                                          </span>
+                                          <span class="pricing-formula">Giá = Chi phí / (1 - Tổng phí %)</span>
+                                          <input type="hidden" id="productBasePrice" value="${product.basePrice}">
+                                      </div>
+                                  </div>
 
                                  <div class="col-md-12">
                                      <label class="form-label-cz">Cho Phép Ghi Chữ</label>
@@ -496,19 +668,114 @@
                         <!-- Quick Links / Detailed Settings Card -->
                         <div class="detail-card mt-4">
                             <h5 class="card-header-title">Thiết Lập Quy Trình & Nguyên Liệu</h5>
-                            <p class="card-header-desc">Cấu hình định lượng nguyên liệu sản xuất bánh kem và ghi chú hướng dẫn thợ làm bếp thực hiện.</p>
+                            <p class="card-header-desc">Cấu hình định lượng chuẩn và hướng dẫn quy trình sản xuất chuyên nghiệp.</p>
                             <div class="d-flex flex-wrap gap-3">
-                                <button type="button" class="btn btn-cz-primary flex-grow-1" data-bs-toggle="modal" data-bs-target="#bomModal" style="padding: 12px 20px; font-weight: 600;">
-                                    <i class="fa-solid fa-calculator me-2"></i> Định Lượng Nguyên Liệu & BOM
+                                <button type="button" class="btn-modern-card btn-bom" id="btnOpenBom">
+                                    <i class="fa-solid fa-calculator card-icon"></i>
+                                    <span>Định Lượng Nguyên Liệu & BOM</span>
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary flex-grow-1" data-bs-toggle="modal" data-bs-target="#recipeModal" style="padding: 12px 20px; font-weight: 600;">
-                                    <i class="fa-solid fa-kitchen-set me-2"></i> Quy Trình & Hướng Dẫn Làm Bếp
+                                <button type="button" class="btn-modern-card btn-recipe" id="btnOpenRecipe">
+                                    <i class="fa-solid fa-kitchen-set card-icon"></i>
+                                    <span>Quy Trình & Hướng Dẫn Bếp</span>
                                 </button>
                             </div>
                         </div>
 
                     </div>
                 </div>
+    <!-- Modal Định Lượng Nguyên Liệu & Giá Thành (BOM) -->
+    <div class="modal fade" id="bomModal" tabindex="-1" aria-labelledby="bomModalLabel" aria-hidden="true" style="font-family: 'Be Vietnam Pro', sans-serif;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 12px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                <div class="modal-header modal-header-cz" style="padding: 18px 24px;">
+                    <h5 class="modal-title" id="bomModalLabel" style="font-weight: 700;"><i class="fa-solid fa-calculator me-2"></i> Định Lượng Nguyên Liệu (BOM)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <div class="alert-info-cz">
+                        <i class="fa-solid fa-circle-info info-icon"></i>
+                        <span class="info-text">Quản lý các nguyên liệu sử dụng để sản xuất bánh kem. Hệ thống sẽ tự động cập nhật giá thành dựa trên số lượng và đơn giá nguyên liệu hiện tại.</span>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table align-middle" id="bomTable" style="border-color: #f3f4f6;">
+                            <thead>
+                                <tr style="border-bottom: 2px solid #e5e7eb;">
+                                    <th style="font-size: 13px; font-weight: 700; color: #374151; padding-bottom: 12px;">Nguyên Liệu</th>
+                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 180px; padding-bottom: 12px;">Số Lượng (g)</th>
+                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 120px; padding-bottom: 12px;">Đơn Giá</th>
+                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 150px; padding-bottom: 12px;">Thành Tiền</th>
+                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 80px; padding-bottom: 12px; text-align: center;">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bomTableBody">
+                                <c:forEach var="item" items="${productIngredients}">
+                                    <tr data-price="${item.pricePerUnit}">
+                                        <td>
+                                            <select class="form-select-cz bom-select" name="bomIngredientId" onchange="updateBomRowPrice(this)" style="padding: 6px 12px; height: 38px;">
+                                                <c:forEach var="ing" items="${allIngredients}">
+                                                    <option value="${ing.ingredientId}" data-price="${ing.pricePerUnit}" ${item.ingredientId eq ing.ingredientId ? 'selected' : ''}>
+                                                        ${fn:escapeXml(ing.ingredientName)} (đ/g)
+                                                    </option>
+                                                </c:forEach>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px;" required>
+                                        </td>
+                                        <td class="bom-unit-price" style="font-size: 13.5px; color: #4b5563;">
+                                            <fmt:formatNumber value="${item.pricePerUnit}" type="number" pattern="#,##0"/> đ
+                                        </td>
+                                        <td class="bom-row-total" style="font-weight: 600; font-size: 14px; color: #1f2937;">
+                                            <fmt:formatNumber value="${item.standardGram * item.pricePerUnit}" type="number" pattern="#,##0"/> đ
+                                        </td>
+                                        <td style="text-align: center;">
+                                            <button type="button" class="btn-delete-bom-row" onclick="removeBomRow(this)" title="Xóa nguyên liệu này">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top: 1px dashed #e5e7eb;">
+                        <button type="button" class="btn btn-sm btn-cz-primary" onclick="addBomRow()" style="font-size: 13px; padding: 8px 18px; font-weight: 600;"><i class="fa-solid fa-plus me-1"></i> Thêm Nguyên Liệu</button>
+                        <div>
+                            <span style="color: #4b5563; font-weight: 500;">Tổng chi phí nguyên liệu:</span> 
+                            <span id="bomCostTotal" style="font-size: 18px; font-weight: 700; color: var(--cz-primary); margin-left: 10px;">0 đ</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background-color: #f9fafb; border-top: 1px solid #f3f4f6; padding: 15px 24px;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-weight: 600; padding: 8px 20px; border-radius: 6px;">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Hướng Dẫn Làm Bếp / Quy Trình Chế Biến -->
+    <div class="modal fade" id="recipeModal" tabindex="-1" aria-labelledby="recipeModalLabel" aria-hidden="true" style="font-family: 'Be Vietnam Pro', sans-serif;">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 12px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                <div class="modal-header modal-header-cz" style="padding: 18px 24px;">
+                    <h5 class="modal-title" id="recipeModalLabel" style="font-weight: 700;"><i class="fa-solid fa-kitchen-set me-2"></i> Quy Trình & Hướng Dẫn Làm Bếp</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="padding: 24px;">
+                    <p class="text-muted" style="font-size: 13.5px; margin-bottom: 20px;">Nhập quy trình, các bước chế biến cụ thể dành cho thợ làm bếp.</p>
+                    
+                    <div id="recipe-editor-container" style="height: 300px; font-family: 'Be Vietnam Pro', sans-serif; background-color: #fff; border-radius: 8px;">
+                        ${product.instructionSteps}
+                    </div>
+                    <input type="hidden" name="instructionSteps" id="instructionSteps">
+                </div>
+                <div class="modal-footer" style="background-color: #f9fafb; border-top: 1px solid #f3f4f6; padding: 15px 24px;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-weight: 600; padding: 8px 20px; border-radius: 6px;">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
             </form>
 
         </div>
@@ -520,7 +787,7 @@
     </form>
 
     <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     
     <script>
         document.getElementById('imageFileInput').addEventListener('change', function(event) {
@@ -667,7 +934,7 @@
     </script>
     
     <!-- Quill Library -->
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js" crossorigin="anonymous"></script>
     <script>
         let quill;
         let recipeQuill;
@@ -760,30 +1027,46 @@
                     const rowTotal = price * grams;
                     totalCost += rowTotal;
                     
-                    row.querySelector('.bom-unit-price').textContent = price.toLocaleString('vi-VN', {minimumFractionDigits: 2}) + ' đ';
-                    row.querySelector('.bom-row-total').textContent = rowTotal.toLocaleString('vi-VN', {minimumFractionDigits: 2}) + ' đ';
+                    const unitPriceEl = row.querySelector('.bom-unit-price');
+                    const rowTotalEl = row.querySelector('.bom-row-total');
+                    if (unitPriceEl) {
+                        unitPriceEl.textContent = Math.round(price).toLocaleString('vi-VN') + ' đ';
+                    }
+                    if (rowTotalEl) {
+                        rowTotalEl.textContent = Math.round(rowTotal).toLocaleString('vi-VN') + ' đ';
+                    }
                 }
             });
             
-            document.getElementById('bomCostTotal').textContent = totalCost.toLocaleString('vi-VN') + ' đ';
+            const bomCostTotalEl = document.getElementById('bomCostTotal');
+            if (bomCostTotalEl) {
+                bomCostTotalEl.textContent = Math.round(totalCost).toLocaleString('vi-VN') + ' đ';
+            }
             
             // Recalculate Proposed Base Price
             const marginInput = document.getElementById('defaultMarginPercent');
             const serviceInput = document.getElementById('defaultServicePercent');
             const priceInput = document.getElementById('productBasePrice');
             
-            const margin = parseFloat(marginInput.value) || 0.0;
-            const service = parseFloat(serviceInput.value) || 0.0;
-            
-            const divisor = 1.0 - ((margin + service) / 100.0);
-            let proposedPrice = 0.0;
-            if (divisor > 0.0) {
-                proposedPrice = totalCost / divisor;
-            } else {
-                proposedPrice = totalCost;
+            if (marginInput && serviceInput && priceInput) {
+                const margin = parseFloat(marginInput.value) || 0.0;
+                const service = parseFloat(serviceInput.value) || 0.0;
+                
+                const divisor = 1.0 - ((margin + service) / 100.0);
+                let proposedPrice = 0.0;
+                if (divisor > 0.0) {
+                    proposedPrice = totalCost / divisor;
+                } else {
+                    proposedPrice = totalCost;
+                }
+                
+                const formatted = Math.round(proposedPrice).toLocaleString('vi-VN') + ' đ';
+                priceInput.value = Math.round(proposedPrice); // Set value as numeric
+                const textEl = document.getElementById('productBasePriceText');
+                if (textEl) {
+                    textEl.textContent = formatted;
+                }
             }
-            
-            priceInput.value = Math.round(proposedPrice).toLocaleString('vi-VN') + ' đ';
         }
 
         function updateBomRowPrice(select) {
@@ -801,7 +1084,7 @@
             
             let optionsHtml = '';
             <c:forEach var="ing" items="${allIngredients}">
-                optionsHtml += '<option value="${ing.ingredientId}" data-price="${ing.pricePerUnit}">${ing.ingredientName} (${ing.pricePerUnit}đ/g)</option>';
+                optionsHtml += '<option value="${ing.ingredientId}" data-price="${ing.pricePerUnit}">${fn:escapeXml(ing.ingredientName)} (${ing.pricePerUnit}đ/g)</option>';
             </c:forEach>
             
             tr.innerHTML = `
@@ -813,10 +1096,10 @@
                 <td>
                     <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="100" oninput="recalculateBom()" style="padding: 5px 10px; height: 38px;" required>
                 </td>
-                <td class="bom-unit-price">0.00 đ</td>
-                <td class="bom-row-total" style="font-weight: 600;">0.00 đ</td>
+                <td class="bom-unit-price">0 đ</td>
+                <td class="bom-row-total" style="font-weight: 600;">0 đ</td>
                 <td>
-                    <button type="button" class="btn-action-delete" onclick="removeBomRow(this)" style="width: 32px; height: 32px;">
+                    <button type="button" class="btn-delete-bom-row" onclick="removeBomRow(this)" title="Xóa nguyên liệu này">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
                 </td>
@@ -827,34 +1110,40 @@
         
         window.addEventListener('load', () => {
             // Initialize Quill editor for description
-            quill = new Quill('#editor-container', {
-                theme: 'snow',
-                placeholder: 'Nhập mô tả chi tiết bánh kem...',
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'align': [] }],
-                        ['link', 'image'],
-                        ['clean']
-                    ]
-                }
-            });
+            const editorEl = document.getElementById('editor-container');
+            if (editorEl) {
+                quill = new Quill(editorEl, {
+                    theme: 'snow',
+                    placeholder: 'Nhập mô tả chi tiết bánh kem...',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'align': [] }],
+                            ['link', 'image'],
+                            ['clean']
+                        ]
+                    }
+                });
+            }
 
             // Initialize Quill editor for recipe instructions
-            recipeQuill = new Quill('#recipe-editor-container', {
-                theme: 'snow',
-                placeholder: 'Nhập các bước thực hiện chế biến cụ thể...',
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'align': [] }],
-                        ['link', 'image'],
-                        ['clean']
-                    ]
-                }
-            });
+            const recipeEditorEl = document.getElementById('recipe-editor-container');
+            if (recipeEditorEl) {
+                recipeQuill = new Quill(recipeEditorEl, {
+                    theme: 'snow',
+                    placeholder: 'Nhập các bước thực hiện chế biến cụ thể...',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'align': [] }],
+                            ['link', 'image'],
+                            ['clean']
+                        ]
+                    }
+                });
+            }
 
             recalculateBom();
             
@@ -862,13 +1151,36 @@
             const serviceEl = document.getElementById('defaultServicePercent');
             if (marginEl) marginEl.addEventListener('input', recalculateBom);
             if (serviceEl) serviceEl.addEventListener('input', recalculateBom);
+
+            // Custom Modal Toggling (Bypasses Bootstrap JS backdrop issues)
+            document.getElementById('btnOpenBom').addEventListener('click', () => {
+                document.getElementById('bomModal').classList.add('custom-active');
+            });
+
+            document.getElementById('btnOpenRecipe').addEventListener('click', () => {
+                document.getElementById('recipeModal').classList.add('custom-active');
+                if (recipeQuill) {
+                    recipeQuill.update();
+                    recipeQuill.focus();
+                }
+            });
+
+            // Close actions for BOM Modal
+            document.querySelectorAll('#bomModal [data-bs-dismiss="modal"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('bomModal').classList.remove('custom-active');
+                });
+            });
+
+            // Close actions for Recipe Modal
+            document.querySelectorAll('#recipeModal [data-bs-dismiss="modal"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.getElementById('recipeModal').classList.remove('custom-active');
+                });
+            });
         });
     </script>
     
-    <!-- Hidden delete form for POST request -->
-    <form id="deleteProductForm" action="${pageContext.request.contextPath}/admin/product?action=delete" method="post" style="display:none;">
-        <input type="hidden" name="id" id="deleteProductId">
-    </form>
     <!-- Lightbox Modal for viewing large images -->
     <div id="imageLightbox" class="lightbox-modal" onclick="closeLightbox()">
         <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
@@ -891,105 +1203,6 @@
             document.getElementById('lightboxImg').src = '';
             lightbox.classList.remove('show');
         }
-
-        // Trigger updates when modals show to handle Quill resize properly
-        document.getElementById('recipeModal').addEventListener('shown.bs.modal', function () {
-            if (recipeQuill) {
-                recipeQuill.update();
-                recipeQuill.focus();
-            }
-        });
     </script>
-
-    <!-- Modal Định Lượng Nguyên Liệu & Giá Thành (BOM) -->
-    <div class="modal fade" id="bomModal" tabindex="-1" aria-labelledby="bomModalLabel" aria-hidden="true" style="font-family: 'Be Vietnam Pro', sans-serif;">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content" style="border-radius: 12px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="background-color: #f97316; color: white; padding: 18px 24px;">
-                    <h5 class="modal-title" id="bomModalLabel" style="font-weight: 700;"><i class="fa-solid fa-calculator me-2"></i> Định Lượng Nguyên Liệu (BOM)</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" style="padding: 24px;">
-                    <p class="text-muted" style="font-size: 13.5px; margin-bottom: 20px;">Quản lý các nguyên liệu sử dụng để sản xuất bánh kem và tự động cập nhật giá thành.</p>
-                    
-                    <div class="table-responsive">
-                        <table class="table align-middle" id="bomTable" style="border-color: #f3f4f6;">
-                            <thead>
-                                <tr style="border-bottom: 2px solid #e5e7eb;">
-                                    <th style="font-size: 13px; font-weight: 700; color: #374151; padding-bottom: 12px;">Nguyên Liệu</th>
-                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 180px; padding-bottom: 12px;">Số Lượng (g)</th>
-                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 120px; padding-bottom: 12px;">Đơn Giá</th>
-                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 150px; padding-bottom: 12px;">Thành Tiền</th>
-                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 80px; padding-bottom: 12px; text-align: center;">Xóa</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bomTableBody">
-                                <c:forEach var="item" items="${productIngredients}">
-                                    <tr data-price="${item.pricePerUnit}">
-                                        <td>
-                                            <select class="form-select-cz bom-select" name="bomIngredientId" onchange="updateBomRowPrice(this)" style="padding: 6px 12px; height: 38px;">
-                                                <c:forEach var="ing" items="${allIngredients}">
-                                                    <option value="${ing.ingredientId}" data-price="${ing.pricePerUnit}" ${item.ingredientId eq ing.ingredientId ? 'selected' : ''}>
-                                                        ${ing.ingredientName} (đ/g)
-                                                    </option>
-                                                </c:forEach>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px;" required>
-                                        </td>
-                                        <td class="bom-unit-price" style="font-size: 13.5px; color: #4b5563;">
-                                            <fmt:formatNumber value="${item.pricePerUnit}" type="number" pattern="#,##0.00"/> đ
-                                        </td>
-                                        <td class="bom-row-total" style="font-weight: 600; font-size: 14px; color: #1f2937;">
-                                            <fmt:formatNumber value="${item.standardGram * item.pricePerUnit}" type="number" pattern="#,##0.00"/> đ
-                                        </td>
-                                        <td style="text-align: center;">
-                                            <button type="button" class="btn-action-delete" onclick="removeBomRow(this)" style="width: 34px; height: 34px; border-radius: 6px;">
-                                                <i class="fa-regular fa-trash-can"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top: 1px dashed #e5e7eb;">
-                        <button type="button" class="btn btn-sm btn-cz-primary" onclick="addBomRow()" style="font-size: 13px; padding: 8px 18px; font-weight: 600;"><i class="fa-solid fa-plus me-1"></i> Thêm Nguyên Liệu</button>
-                        <div>
-                            <span style="color: #4b5563; font-weight: 500;">Tổng chi phí nguyên liệu:</span> 
-                            <span id="bomCostTotal" style="font-size: 18px; font-weight: 700; color: var(--cz-primary); margin-left: 10px;">0 đ</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer" style="background-color: #f9fafb; border-top: 1px solid #f3f4f6; padding: 15px 24px;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-weight: 600; padding: 8px 20px; border-radius: 6px;">Đóng</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Hướng Dẫn Làm Bếp / Quy Trình Chế Biến -->
-    <div class="modal fade" id="recipeModal" tabindex="-1" aria-labelledby="recipeModalLabel" aria-hidden="true" style="font-family: 'Be Vietnam Pro', sans-serif;">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content" style="border-radius: 12px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="background-color: #f97316; color: white; padding: 18px 24px;">
-                    <h5 class="modal-title" id="recipeModalLabel" style="font-weight: 700;"><i class="fa-solid fa-kitchen-set me-2"></i> Quy Trình & Hướng Dẫn Làm Bếp</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" style="padding: 24px;">
-                    <p class="text-muted" style="font-size: 13.5px; margin-bottom: 20px;">Nhập quy trình, các bước chế biến cụ thể dành cho thợ làm bếp.</p>
-                    
-                    <div id="recipe-editor-container" style="height: 300px; font-family: 'Be Vietnam Pro', sans-serif; background-color: #fff; border-radius: 8px;">
-                        ${product.instructionSteps}
-                    </div>
-                    <input type="hidden" name="instructionSteps" id="instructionSteps">
-                </div>
-                <div class="modal-footer" style="background-color: #f9fafb; border-top: 1px solid #f3f4f6; padding: 15px 24px;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-weight: 600; padding: 8px 20px; border-radius: 6px;">Đóng</button>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>
