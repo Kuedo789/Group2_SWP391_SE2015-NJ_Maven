@@ -93,6 +93,10 @@
         <servlet-name>CustomerCheckoutServlet</servlet-name>
         <url-pattern>/checkout</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DeliveryAddressServlet</servlet-name>
+        <url-pattern>/delivery-address</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>
     </session-config>

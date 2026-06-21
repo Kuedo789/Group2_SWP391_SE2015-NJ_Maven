@@ -1,4 +1,4 @@
-package com.bakeryzone.admin.controller;
+package com.bakeryzone.controller.admin;
 
 import com.bakeryzone.dao.DashboardDAO;
 import com.bakeryzone.model.Order;

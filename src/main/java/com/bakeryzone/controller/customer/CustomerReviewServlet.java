@@ -1,4 +1,4 @@
-package com.bakeryzone.customer.controller;
+package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.ReviewDAO;
 import com.bakeryzone.model.User;

@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.math.BigDecimal;
 
 public class OrderDAO {
 
@@ -189,8 +190,10 @@ public class OrderDAO {
             psOrder.setTimestamp(6, order.getDeliveryWindowEnd());
             psOrder.setString(7, order.getDeliveryAddress());
             psOrder.setBigDecimal(8, order.getDepositAmount());
-            psOrder.setBigDecimal(9, order.getTotalCost());
-            psOrder.setString(10, order.getOrderStatus());
+            BigDecimal remainingCod = order.getTotalCost().subtract(order.getDepositAmount());
+            psOrder.setBigDecimal(9, remainingCod);
+            psOrder.setBigDecimal(10, order.getTotalCost());
+            psOrder.setString(11, order.getOrderStatus());
             psOrder.executeUpdate();
 
             // 2. Insert Items
@@ -206,9 +209,15 @@ public class OrderDAO {
                 if (item.getCustomCakeId() != null && !item.getCustomCakeId().trim().isEmpty()) {
                     // It's a custom cake template, insert custom_cake first
                     psCake.setString(1, item.getCustomCakeId());
-                    psCake.setString(2, item.getTemplateId());
+                    if (item.getTemplateId() != null && !item.getTemplateId().trim().isEmpty()) {
+                        psCake.setString(2, item.getTemplateId());
+                    } else {
+                        psCake.setNull(2, java.sql.Types.VARCHAR);
+                    }
                     psCake.setString(3, item.getGreetingText() != null ? item.getGreetingText() : "Chúc mừng sinh nhật!");
-                    psCake.setString(4, item.getItemImage());
+                    psCake.setString(4, item.getItemImage() != null ? item.getItemImage() : "assets/images/default-cake.png");
+                    psCake.setInt(5, 1); // Default Total_Layers
+                    psCake.setBigDecimal(6, item.getPriceAtPurchase()); // Default Calculated_Price
                     psCake.executeUpdate();
 
                     psItem.setString(3, item.getCustomCakeId());

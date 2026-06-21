@@ -257,31 +257,24 @@
             }
 
             .btn-address-manage {
-                min-width: 170px;
-                height: 46px;
-                border-radius: 9px;
-                background-color: var(--primary);
-                color: white;
+                color: var(--primary);
                 text-decoration: none;
                 font-weight: 700;
+                font-size: 15px;
                 display: flex;
                 align-items: center;
-                justify-content: center;
             }
 
             .btn-address-manage:hover {
-                color: white;
-                opacity: 0.9;
+                text-decoration: underline;
+                color: #104823;
             }
 
             @media (max-width: 768px) {
                 .address-profile-header {
                     flex-direction: column;
                     align-items: flex-start;
-                }
-
-                .btn-address-manage {
-                    width: 100%;
+                    gap: 10px;
                 }
             }
 
@@ -365,7 +358,7 @@
 
                             <a href="${pageContext.request.contextPath}/delivery-address"
                                class="btn-address-manage">
-                                Quản lý địa chỉ
+                                Đổi địa chỉ &rsaquo;
                             </a>
                         </div>
                     </div>           

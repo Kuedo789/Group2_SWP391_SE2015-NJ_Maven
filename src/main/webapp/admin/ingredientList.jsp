@@ -88,12 +88,7 @@
                     <!-- Maintain page size -->
                     <input type="hidden" name="pageSize" value="${pageSize}">
                     
-                    <select class="filter-select" name="category" onchange="this.form.submit()">
-                        <option value="" ${empty categoryId ? 'selected' : ''}>Tất cả danh mục</option>
-                        <c:forEach var="cat" items="${categories}">
-                            <option value="${cat.categoryId}" ${categoryId eq cat.categoryId ? 'selected' : ''}>${cat.categoryName}</option>
-                        </c:forEach>
-                    </select>
+                    <!-- Category filter removed -->
 
                     <div class="search-wrapper">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -110,12 +105,13 @@
                 <table class="cz-table">
                     <thead>
                         <tr>
-                            <th style="width: 80px;">STT</th>
-                            <th>Mã nguyên liệu</th>
-                            <th>Tên nguyên liệu</th>
-                            <th>Danh mục</th>
-                            <th>Giá trên mỗi đơn vị (g)</th>
-                            <th style="width: 180px;">Thao tác</th>
+                             <th style="width: 80px;">STT</th>
+                             <th>Mã nguyên liệu</th>
+                             <th>Tên nguyên liệu</th>
+                             <th>Đơn vị tính</th>
+                             <th>Ảnh</th>
+                             <th>Đơn giá</th>
+                             <th style="width: 180px;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -126,12 +122,20 @@
                                         <td>${((currentPage - 1) * pageSize) + status.index + 1}</td>
                                         <td><strong>${i.ingredientId}</strong></td>
                                         <td>${i.ingredientName}</td>
-                                        <td><span class="badge bg-secondary">${i.categoryName}</span></td>
-                                        <td>
-                                            <span style="font-weight: 600; color: var(--cz-primary);">
-                                                <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0.00"/> đ
-                                            </span>
-                                        </td>
+                                         <td>${i.unitMeasure}</td>
+                                         <td>
+                                             <c:if test="${not empty i.imageUrl}">
+                                                 <img src="${i.imageUrl}" alt="${i.ingredientName}" style="max-height: 40px; max-width: 60px; border-radius: 4px; border: 1px solid #ddd; object-fit: cover;">
+                                             </c:if>
+                                             <c:if test="${empty i.imageUrl}">
+                                                 <span class="text-muted">Không có ảnh</span>
+                                             </c:if>
+                                         </td>
+                                         <td>
+                                             <span style="font-weight: 600; color: var(--cz-primary);">
+                                                 <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0.00"/> đ / ${i.unitMeasure}
+                                             </span>
+                                         </td>
                                         <td>
                                             <div class="actions-cell">
                                                 <a href="${pageContext.request.contextPath}/admin/ingredient?action=edit&id=${i.ingredientId}" class="btn-action-edit" title="Chỉnh sửa">
@@ -146,12 +150,12 @@
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
-                                <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
-                                        <i class="fa-solid fa-warehouse d-block fs-2 mb-3" style="color: #ccc;"></i>
-                                        Không tìm thấy nguyên liệu nào phù hợp với bộ lọc.
-                                    </td>
-                                </tr>
+                                 <tr>
+                                     <td colspan="7" class="text-center py-5 text-muted">
+                                         <i class="fa-solid fa-warehouse d-block fs-2 mb-3" style="color: #ccc;"></i>
+                                         Không tìm thấy nguyên liệu nào phù hợp với bộ lọc.
+                                     </td>
+                                 </tr>
                             </c:otherwise>
                         </c:choose>
                     </tbody>
@@ -163,40 +167,39 @@
                     <div class="d-flex align-items-center gap-3">
                         <ul class="pagination-nav">
                             <!-- Prev page -->
-                            <c:if test="${currentPage > 1}">
-                                <li class="page-num-item">
-                                    <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage - 1}&category=${categoryId}&search=${search}&pageSize=${pageSize}">
-                                        <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
-                                    </a>
-                                </li>
-                            </c:if>
-                            
-                            <!-- Page Numbers -->
-                            <c:forEach var="i" begin="1" end="${totalPages}">
-                                <li class="page-num-item ${i == currentPage ? 'active' : ''}">
-                                    <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${i}&category=${categoryId}&search=${search}&pageSize=${pageSize}">${i}</a>
-                                </li>
-                            </c:forEach>
-                            
-                            <!-- Next page -->
-                            <c:if test="${currentPage < totalPages}">
-                                <li class="page-num-item">
-                                    <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage + 1}&category=${categoryId}&search=${search}&pageSize=${pageSize}">
-                                        <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
-                                    </a>
-                                </li>
-                            </c:if>
+                             <c:if test="${currentPage > 1}">
+                                 <li class="page-num-item">
+                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage - 1}&search=${search}&pageSize=${pageSize}">
+                                         <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
+                                     </a>
+                                 </li>
+                             </c:if>
+                             
+                             <!-- Page Numbers -->
+                             <c:forEach var="i" begin="1" end="${totalPages}">
+                                 <li class="page-num-item ${i == currentPage ? 'active' : ''}">
+                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${i}&search=${search}&pageSize=${pageSize}">${i}</a>
+                                 </li>
+                             </c:forEach>
+                             
+                             <!-- Next page -->
+                             <c:if test="${currentPage < totalPages}">
+                                 <li class="page-num-item">
+                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage + 1}&search=${search}&pageSize=${pageSize}">
+                                         <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
+                                     </a>
+                                 </li>
+                             </c:if>
                         </ul>
                         
                         <form action="${pageContext.request.contextPath}/admin/ingredient" method="get" class="d-inline">
                             <input type="hidden" name="action" value="list">
-                            <input type="hidden" name="category" value="${categoryId}">
-                            <input type="hidden" name="search" value="${search}">
-                            <select class="filter-select" name="pageSize" onchange="this.form.submit()" style="min-width: auto; padding: 5px 25px 5px 10px; font-size: 12.5px;">
-                                <option value="5" ${pageSize == 5 ? 'selected' : ''}>5 / trang</option>
-                                <option value="10" ${pageSize == 10 ? 'selected' : ''}>10 / trang</option>
-                                <option value="20" ${pageSize == 20 ? 'selected' : ''}>20 / trang</option>
-                            </select>
+                             <input type="hidden" name="search" value="${search}">
+                             <select class="filter-select" name="pageSize" onchange="this.form.submit()" style="min-width: auto; padding: 5px 25px 5px 10px; font-size: 12.5px;">
+                                 <option value="5" ${pageSize == 5 ? 'selected' : ''}>5 / trang</option>
+                                 <option value="10" ${pageSize == 10 ? 'selected' : ''}>10 / trang</option>
+                                 <option value="20" ${pageSize == 20 ? 'selected' : ''}>20 / trang</option>
+                             </select>
                         </form>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
-package com.bakeryzone.customer.controller;
+package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.DeliveryAddressDAO;
 import com.bakeryzone.model.DeliveryAddress;
@@ -43,6 +43,8 @@ public class DeliveryAddressServlet extends HttpServlet {
         }
 
         String action = request.getParameter("action");
+        String source = request.getParameter("source");
+        String redirectUrl = request.getContextPath() + "/delivery-address" + (source != null && !source.isEmpty() ? "?source=" + source : "");
         String view = "list"; // default view is the list of addresses
 
         if (action != null) {
@@ -61,7 +63,7 @@ public class DeliveryAddressServlet extends HttpServlet {
                 } catch (NumberFormatException e) {
                     session.setAttribute("errorMessage", "Mã địa chỉ không hợp lệ.");
                 }
-                response.sendRedirect(request.getContextPath() + "/delivery-address");
+                response.sendRedirect(redirectUrl);
                 return;
             } else if (action.equalsIgnoreCase("set-default")) {
                 String idStr = request.getParameter("id");
@@ -78,7 +80,7 @@ public class DeliveryAddressServlet extends HttpServlet {
                 } catch (NumberFormatException e) {
                     session.setAttribute("errorMessage", "Mã địa chỉ không hợp lệ.");
                 }
-                response.sendRedirect(request.getContextPath() + "/delivery-address");
+                response.sendRedirect(redirectUrl);
                 return;
             } else if (action.equalsIgnoreCase("add")) {
                 view = "form";
@@ -92,12 +94,12 @@ public class DeliveryAddressServlet extends HttpServlet {
                         view = "form";
                     } else {
                         session.setAttribute("errorMessage", "Không tìm thấy địa chỉ cần chỉnh sửa.");
-                        response.sendRedirect(request.getContextPath() + "/delivery-address");
+                        response.sendRedirect(redirectUrl);
                         return;
                     }
                 } catch (NumberFormatException e) {
                     session.setAttribute("errorMessage", "Mã địa chỉ không hợp lệ.");
-                    response.sendRedirect(request.getContextPath() + "/delivery-address");
+                    response.sendRedirect(redirectUrl);
                     return;
                 }
             }
@@ -124,6 +126,8 @@ public class DeliveryAddressServlet extends HttpServlet {
         User user = (User) session.getAttribute("user");
 
         String addressIdRaw = trim(request.getParameter("addressId"));
+        String source = request.getParameter("source");
+        String redirectUrl = request.getContextPath() + "/delivery-address" + (source != null && !source.isEmpty() ? "?source=" + source : "");
         String receiverName = trim(request.getParameter("receiverName"));
         String receiverPhone = trim(request.getParameter("receiverPhone"));
         String addressDetail = trim(request.getParameter("addressDetail"));
@@ -255,7 +259,7 @@ public class DeliveryAddressServlet extends HttpServlet {
         }
 
         // Post-Redirect-Get: Redirect back to the address list view
-        response.sendRedirect(request.getContextPath() + "/delivery-address");
+        response.sendRedirect(redirectUrl);
     }
 
     private void refetchAddresses(HttpServletRequest request, User user) {

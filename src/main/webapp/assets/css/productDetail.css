@@ -255,10 +255,10 @@
 }
 
 .buy-row {
-    display: grid;
-    grid-template-columns: 150px 1fr 54px 54px;
+    display: flex;
     gap: 14px;
     align-items: center;
+    flex-wrap: nowrap;
 }
 
 .quantity-box {
@@ -269,6 +269,7 @@
     border-radius: 14px;
     overflow: hidden;
     background-color: var(--white);
+    flex: 0 0 150px;
 }
 
 .quantity-box button {
@@ -297,6 +298,7 @@
     font-size: 16px;
     font-weight: 800;
     cursor: pointer;
+    flex: 1 1 auto;
 }
 
 .add-cart-btn i {
@@ -312,6 +314,7 @@
     font-size: 28px;
     cursor: pointer;
     line-height: 1;
+    flex: 0 0 54px;
 }
 
 .favorite-btn.active {
@@ -560,11 +563,22 @@
     }
 
     .buy-row {
-        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .quantity-box {
+        flex: 0 0 105px;
+    }
+
+    .add-cart-btn {
+        font-size: 14px;
+        padding: 0 4px;
     }
 
     .favorite-btn {
-        width: 100%;
+        flex: 0 0 48px;
+        width: 48px;
+        font-size: 22px;
     }
 
     .main-image {
