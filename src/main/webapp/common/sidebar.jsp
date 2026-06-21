@@ -45,7 +45,7 @@
             <a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
         <li class="menu-item ${param.activeMenu == 'reviews' ? 'active' : ''}">
-            <a href="#"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a>
+            <a href="reviews?action=list"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a>
         </li>
     </ul>
 

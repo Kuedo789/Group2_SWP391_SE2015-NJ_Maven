@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
-    
     <servlet>
         <servlet-name>UserDetailServlet</servlet-name>
         <servlet-class>com.bakeryzone.admin.controller.UserDetailServlet</servlet-class>
     </servlet>
- 
     <servlet>
         <servlet-name>RegisterServlet</servlet-name>
         <servlet-class>com.bakeryzone.controller.auth.RegisterServlet</servlet-class>
@@ -46,29 +44,30 @@
         <servlet-name>CustomerDetailServlet</servlet-name>
         <servlet-class>com.bakeryzone.admin.controller.CustomerDetailServlet</servlet-class>
     </servlet>
-    
     <filter>
         <filter-name>AuthorizationFilter</filter-name>
         <filter-class>com.bakeryzone.controller.auth.AuthorizationFilter</filter-class>
     </filter>
-    
     <servlet>
         <servlet-name>CustomerCheckoutServlet</servlet-name>
         <servlet-class>com.bakeryzone.customer.controller.CustomerCheckoutServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>CustomerServlet</servlet-name>
-        <servlet-class>com.bakeryzone.admin.controller.CustomerServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.admin.CustomerServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>StaffServlet</servlet-name>
-        <servlet-class>com.bakeryzone.admin.controller.StaffServlet</servlet-class>
+        <servlet-class>com.bakeryzone.controller.admin.StaffServlet</servlet-class>
     </servlet>
     <servlet>
         <servlet-name>DeliveryAddressServlet</servlet-name>
         <servlet-class>com.bakeryzone.customer.controller.DeliveryAddressServlet</servlet-class>
     </servlet>
-    
+    <servlet>
+        <servlet-name>ReviewManagementServlet</servlet-name>
+        <servlet-class>com.bakeryzone.controller.admin.ReviewManagementServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>UserDetailServlet</servlet-name>
         <url-pattern>/userDetail</url-pattern>
@@ -113,7 +112,6 @@
         <servlet-name>CustomerDetailServlet</servlet-name>
         <url-pattern>/customerDetail</url-pattern>
     </servlet-mapping>
-    
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
         <url-pattern>/userList</url-pattern>
@@ -130,7 +128,6 @@
         <filter-name>AuthorizationFilter</filter-name>
         <url-pattern>/customerDetail</url-pattern>
     </filter-mapping>
-    
     <servlet-mapping>
         <servlet-name>CustomerServlet</servlet-name>
         <url-pattern>/customer</url-pattern>
@@ -147,7 +144,10 @@
         <servlet-name>DeliveryAddressServlet</servlet-name>
         <url-pattern>/delivery-address</url-pattern>
     </servlet-mapping>
-    
+    <servlet-mapping>
+        <servlet-name>ReviewManagementServlet</servlet-name>
+        <url-pattern>/reviews</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>
     </session-config>
