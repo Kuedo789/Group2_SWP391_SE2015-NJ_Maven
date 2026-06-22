@@ -191,8 +191,8 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     + " | success=" + success + " | total=" + totalCost);
 
             if (success) {
-                // Redirect with success message
-                response.sendRedirect(request.getContextPath() + "/OrderList?msg=order_success&orderNo=" + orderNo);
+                // Redirect to Order Success page
+                response.sendRedirect(request.getContextPath() + "/order-success?orderNo=" + orderNo);
             } else {
                 // Pass error back to checkout page
                 response.sendRedirect(request.getContextPath() + "/checkout?error=save_failed");
