@@ -142,7 +142,20 @@ public class Order {
         return items;
     }
 
+    private BigDecimal remainingCodBalance;
+
+    public BigDecimal getRemainingCodBalance() {
+        return remainingCodBalance;
+    }
+
+    public void setRemainingCodBalance(BigDecimal remainingCodBalance) {
+        this.remainingCodBalance = remainingCodBalance;
+    }
+
     public BigDecimal getRemainingAmount() {
+        if (remainingCodBalance != null) {
+            return remainingCodBalance;
+        }
         BigDecimal total = totalCost == null ? BigDecimal.ZERO : totalCost;
         BigDecimal deposit = depositAmount == null ? BigDecimal.ZERO : depositAmount;
         return total.subtract(deposit);

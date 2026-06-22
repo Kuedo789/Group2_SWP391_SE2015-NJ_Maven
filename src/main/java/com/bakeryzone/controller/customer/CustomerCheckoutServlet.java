@@ -214,9 +214,11 @@ public class CustomerCheckoutServlet extends HttpServlet {
             BigDecimal shippingFee = BigDecimal.valueOf(25000);
             BigDecimal totalCost   = productTotal.add(shippingFee);
             BigDecimal deposit     = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
+            BigDecimal remainingCod = totalCost.subtract(deposit);
 
             order.setTotalCost(totalCost);
             order.setDepositAmount(deposit);
+            order.setRemainingCodBalance(remainingCod);
             order.setShippingFee(shippingFee);
 
             // ── 5. Persist order ───────────────────────────────────────────────────
