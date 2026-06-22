@@ -38,7 +38,7 @@
             .sidebar {
                 width: 260px;
                 background-color: var(--cz-dark-bg);
-                min-height: 100vh;
+                height: 100vh;
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -46,6 +46,21 @@
                 flex-direction: column;
                 padding: 20px 0;
                 z-index: 100;
+                overflow-y: auto;
+            }
+
+            .sidebar::-webkit-scrollbar {
+                width: 6px;
+            }
+            .sidebar::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .sidebar::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.25);
+                border-radius: 4px;
+            }
+            .sidebar::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.45);
             }
 
             .sidebar-brand {
