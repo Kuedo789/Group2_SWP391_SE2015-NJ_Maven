@@ -135,6 +135,22 @@
                                 <span class="slot-time">17:00 - 18:00</span>
                                 <span class="slot-status">Còn chỗ</span>
                             </div>
+                            <div class="time-slot-pill" data-slot="18:00 - 19:00" onclick="selectTimeSlot('18:00 - 19:00', this)">
+                                <span class="slot-time">18:00 - 19:00</span>
+                                <span class="slot-status">Còn chỗ</span>
+                            </div>
+                            <div class="time-slot-pill" data-slot="19:00 - 20:00" onclick="selectTimeSlot('19:00 - 20:00', this)">
+                                <span class="slot-time">19:00 - 20:00</span>
+                                <span class="slot-status">Còn chỗ</span>
+                            </div>
+                            <div class="time-slot-pill" data-slot="20:00 - 21:00" onclick="selectTimeSlot('20:00 - 21:00', this)">
+                                <span class="slot-time">20:00 - 21:00</span>
+                                <span class="slot-status">Còn chỗ</span>
+                            </div>
+                            <div class="time-slot-pill" data-slot="21:00 - 22:00" onclick="selectTimeSlot('21:00 - 22:00', this)">
+                                <span class="slot-time">21:00 - 22:00</span>
+                                <span class="slot-status">Còn chỗ</span>
+                            </div>
                         </div>
 
                         <div class="banner-info" id="slotConfirmationBanner" style="display: none;">
