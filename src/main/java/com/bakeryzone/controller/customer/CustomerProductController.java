@@ -54,8 +54,21 @@ public class CustomerProductController extends HttpServlet {
         List<Product> productList = result.list();
         List<Map<String, String>> categoryList = productDAO.getAllProductCategories();
 
-        request.setAttribute("productList", productList);
-        request.setAttribute("categoryList", categoryList);
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        String contextPath = request.getContextPath();
+
+        List<Map<String, Object>> productDtoList = new ArrayList<>();
+        for (Product p : productList) {
+            productDtoList.add(mapProductToDto(p, contextPath));
+        }
+
+        List<String> categoriesJsonList = new ArrayList<>();
+        for (Map<String, String> c : categoryList) {
+            categoriesJsonList.add(c.get("name"));
+        }
+
+        request.setAttribute("productsJson", gson.toJson(productDtoList));
+        request.setAttribute("categoriesJson", gson.toJson(categoriesJsonList));
 
         request.getRequestDispatcher("/customer/productList.jsp").forward(request, response);
     }
@@ -86,11 +99,14 @@ public class CustomerProductController extends HttpServlet {
                 4
         );
 
-        List<Product> relatedProducts = new ArrayList<>();
+        String contextPath = request.getContextPath();
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+
+        List<Map<String, Object>> relatedProductsDto = new ArrayList<>();
 
         for (Product p : result.list()) {
             if (!p.getId().equals(product.getId())) {
-                relatedProducts.add(p);
+                relatedProductsDto.add(mapProductToDto(p, contextPath));
             }
         }
 
@@ -99,21 +115,85 @@ public class CustomerProductController extends HttpServlet {
         User currentUser = (User) session.getAttribute("user");
         boolean hasBought = false;
         boolean hasReviewed = false;
+        String currentUserId = "";
         
         if (currentUser != null) {
+            currentUserId = currentUser.getUserId();
             hasBought = reviewDAO.hasBoughtProduct(currentUser.getUserId(), product.getId());
             hasReviewed = reviewDAO.hasReviewed(currentUser.getUserId(), product.getId());
         }
 
         // Load reviews
         List<Review> reviewsList = reviewDAO.getReviewsByProductId(product.getId());
+        List<Map<String, Object>> reviewsDtoList = new ArrayList<>();
+        for (Review r : reviewsList) {
+            Map<String, Object> rDto = new java.util.HashMap<>();
+            rDto.put("reviewId", r.getReviewId());
+            rDto.put("customCakeId", r.getCustomCakeId());
+            rDto.put("customerId", r.getCustomerId());
+            rDto.put("customerName", r.getCustomerName());
+            rDto.put("ratingStars", r.getRatingStars());
+            rDto.put("comment", r.getComment() != null ? r.getComment() : "");
+            rDto.put("variationName", r.getVariationName() != null ? r.getVariationName() : "");
+            rDto.put("greetingText", r.getGreetingText() != null ? r.getGreetingText() : "");
+            reviewsDtoList.add(rDto);
+        }
 
-        request.setAttribute("product", product);
-        request.setAttribute("relatedProducts", relatedProducts);
+        // Images logic
+        List<String> imageList = new ArrayList<>();
+        if (product.getImageUrl() != null && !product.getImageUrl().trim().isEmpty()) {
+            imageList.add(product.getImageUrl());
+        }
+        if (product.getAdditionalImages() != null) {
+            for (String img : product.getAdditionalImages()) {
+                if (img != null && !img.trim().isEmpty() && !imageList.contains(img)) {
+                    imageList.add(img);
+                }
+            }
+        }
+        if (imageList.isEmpty()) {
+            imageList.add("assets/images/products/basic.png");
+        }
+        
+        List<String> resolvedImages = new ArrayList<>();
+        for (String img : imageList) {
+            resolvedImages.add(resolveImageUrl(img, contextPath));
+        }
+
+        Map<String, Object> productDto = mapProductToDto(product, contextPath);
+        productDto.put("image", resolvedImages.get(0)); // override image with first resolved image
+
+        request.setAttribute("productJson", gson.toJson(productDto));
+        request.setAttribute("imagesJson", gson.toJson(resolvedImages));
+        request.setAttribute("relatedProductsJson", gson.toJson(relatedProductsDto));
+        request.setAttribute("reviewsJson", gson.toJson(reviewsDtoList));
+        
         request.setAttribute("hasBought", hasBought);
         request.setAttribute("hasReviewed", hasReviewed);
-        request.setAttribute("reviewsList", reviewsList);
+        request.setAttribute("currentUserId", currentUserId);
 
         request.getRequestDispatcher("/customer/productDetail.jsp").forward(request, response);
+    }
+    
+    private Map<String, Object> mapProductToDto(Product p, String contextPath) {
+        Map<String, Object> dto = new java.util.HashMap<>();
+        dto.put("id", p.getId());
+        dto.put("name", p.getName());
+        dto.put("category", p.getCategoryName());
+        dto.put("price", p.getBasePrice());
+        dto.put("desc", p.getFullDescription() != null ? p.getFullDescription() : "");
+        dto.put("image", resolveImageUrl(p.getImageUrl(), contextPath));
+        dto.put("featured", p.isFeatured());
+        return dto;
+    }
+    
+    private String resolveImageUrl(String url, String contextPath) {
+        if (url == null || url.trim().isEmpty()) {
+            return contextPath + "/assets/images/products/basic.png";
+        }
+        if (url.startsWith("http")) {
+            return url;
+        }
+        return contextPath + "/" + url;
     }
 }

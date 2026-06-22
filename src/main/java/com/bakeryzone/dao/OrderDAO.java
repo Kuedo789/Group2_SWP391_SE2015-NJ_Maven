@@ -211,6 +211,12 @@ public class OrderDAO {
             psOrder.executeUpdate();
 
             // 2. Insert Items
+            try (PreparedStatement psCat = conn.prepareStatement("INSERT IGNORE INTO ingredient_category (Category_ID, Category_Name, enable) VALUES ('CAT_FROSTING', 'Frosting', 1)");
+                 PreparedStatement psIng = conn.prepareStatement("INSERT IGNORE INTO ingredients (Ingredient_ID, Ingredient_Name, Category_ID, Price_Per_Unit) VALUES ('ING_CREAM', 'Kem cơ bản', 'CAT_FROSTING', 0)")) {
+                psCat.executeUpdate();
+                psIng.executeUpdate();
+            } catch (Exception ignored) {}
+
             psCake = conn.prepareStatement(sqlCake);
             psItem = conn.prepareStatement(sqlItem);
 
