@@ -237,7 +237,7 @@ public class ProductDAO {
                     String updateT = "UPDATE cake_template SET Template_Name = ?, "
                             + "Estimated_Labor_Hours = ?, Allows_Greeting = ?, Image_URL = ?, Status = ?, "
                             + "Is_Featured = ?, Full_Description = ?, Category_ID = ?, "
-                            + "Base_Price = ?, Default_Margin_Percent = ?, Default_Service_Percent = ?, Instruction_Steps = ? "
+                            + "Default_Margin_Percent = ?, Default_Service_Percent = ?, Instruction_Steps = ? "
                             + "WHERE Template_ID = ?";
                     try (PreparedStatement ps = conn.prepareStatement(updateT)) {
                         ps.setString(1, product.getName());
@@ -251,11 +251,10 @@ public class ProductDAO {
                         String cId = product.getCategoryId();
                         ps.setString(8, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
 
-                        ps.setDouble(9, product.getBasePrice());
-                        ps.setDouble(10, product.getDefaultMarginPercent());
-                        ps.setDouble(11, product.getDefaultServicePercent());
-                        ps.setString(12, product.getInstructionSteps());
-                        ps.setString(13, product.getId());
+                        ps.setDouble(9, product.getDefaultMarginPercent());
+                        ps.setDouble(10, product.getDefaultServicePercent());
+                        ps.setString(11, product.getInstructionSteps());
+                        ps.setString(12, product.getId());
 
                         success = ps.executeUpdate() > 0;
                     }
@@ -263,8 +262,8 @@ public class ProductDAO {
                     // Merged Insert query containing all fields
                     String insertT = "INSERT INTO cake_template (Template_ID, Template_Name, Estimated_Labor_Hours, "
                             + "Allows_Greeting, Image_URL, Status, Is_Featured, Full_Description, Category_ID, "
-                            + "Base_Price, Default_Margin_Percent, Default_Service_Percent, Instruction_Steps) "
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            + "Default_Margin_Percent, Default_Service_Percent, Instruction_Steps) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     try (PreparedStatement ps = conn.prepareStatement(insertT)) {
                         ps.setString(1, product.getId());
                         ps.setString(2, product.getName());
@@ -278,10 +277,9 @@ public class ProductDAO {
                         String cId = product.getCategoryId();
                         ps.setString(9, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
 
-                        ps.setDouble(10, product.getBasePrice());
-                        ps.setDouble(11, product.getDefaultMarginPercent());
-                        ps.setDouble(12, product.getDefaultServicePercent());
-                        ps.setString(13, product.getInstructionSteps());
+                        ps.setDouble(10, product.getDefaultMarginPercent());
+                        ps.setDouble(11, product.getDefaultServicePercent());
+                        ps.setString(12, product.getInstructionSteps());
 
                         success = ps.executeUpdate() > 0;
                     }
@@ -340,7 +338,6 @@ public class ProductDAO {
                 + "    t.Category_ID AS Category_ID, "
                 + "    c.Category_Name AS Category_Name, "
                 + "    t.Estimated_Labor_Hours AS Estimated_Labor_Hours, "
-                + "    t.Base_Price AS Base_Price, "
                 + "    t.Default_Margin_Percent AS Default_Margin_Percent, "
                 + "    t.Default_Service_Percent AS Default_Service_Percent, "
                 + "    t.Instruction_Steps AS Instruction_Steps, "
@@ -391,7 +388,7 @@ public class ProductDAO {
             p.setInstructionSteps(rs.getString("Instruction_Steps"));
         }
 
-        // Handle both: dynamic validation fallback logic from main AND actual saved Base_Price fallback
+        // Handle dynamic pricing logic
         double ingredientCost = rs.getDouble("Ingredient_Cost");
         double margin = rs.getDouble("Default_Margin_Percent");
         double service = rs.getDouble("Default_Service_Percent");
@@ -404,13 +401,7 @@ public class ProductDAO {
             calculatedBasePrice = ingredientCost;
         }
 
-        // If your DB explicitly has a static Base_Price set, use it. Otherwise, use calculated option.
-        double explicitBasePrice = rs.getDouble("Base_Price");
-        if (explicitBasePrice > 0) {
-            p.setBasePrice(explicitBasePrice);
-        } else {
-            p.setBasePrice(calculatedBasePrice);
-        }
+        p.setBasePrice(calculatedBasePrice);
 
         return p;
     }

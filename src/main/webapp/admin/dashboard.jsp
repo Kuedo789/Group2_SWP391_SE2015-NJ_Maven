@@ -29,10 +29,10 @@
     <main class="main-wrapper">
         
         <!-- Top Header Navbar -->
-        <nav class="navbar" style="border-bottom: 1px solid var(--border-soft);">
+        <nav class="navbar dashboard-navbar">
             <div class="breadcrumb">
-                <a href="${pageContext.request.contextPath}/admin/dashboard" style="color: var(--text-muted); text-decoration: none;"><i class="fa-solid fa-house"></i> Bảng điều khiển</a>
-                <span style="margin: 0 8px; color: var(--text-muted);">›</span>
+                <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-house"></i> Bảng điều khiển</a>
+                <span>›</span>
                 <strong>Tổng quan hệ thống</strong>
             </div>
             
@@ -56,9 +56,9 @@
         <div class="content">
             
             <!-- Page Title Area -->
-            <div class="page-header" style="margin-top: 30px;">
+            <div class="page-header dashboard-page-header">
                 <div class="page-title">
-                    <h2>Bảng điều khiển <span class="badge" style="background-color: var(--primary-green); color: white; font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 50px; margin-left: 8px; vertical-align: middle;">ADMIN</span></h2>
+                    <h2>Bảng điều khiển <span class="badge dashboard-badge-admin">ADMIN</span></h2>
                     <p>Xem báo cáo doanh thu, đơn hàng gần đây và quản lý hoạt động tiệm bánh.</p>
                 </div>
             </div>
@@ -85,23 +85,23 @@
                     </div>
                 </div>
 
-                <div class="stat-card stat-customers">
+                <a href="${pageContext.request.contextPath}/customer" class="stat-card stat-customers">
                     <div class="stat-trend trend-down">-2.1% <i class="fa-solid fa-arrow-trend-down"></i></div>
                     <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                     <div class="stat-info">
                         <div class="stat-label">Khách hàng</div>
                         <div class="stat-value">${totalCustomers}</div>
                     </div>
-                </div>
+                </a>
 
-                <div class="stat-card stat-products">
+                <a href="${pageContext.request.contextPath}/admin/product?action=list" class="stat-card stat-products">
                     <div class="stat-trend trend-up">+4% <i class="fa-solid fa-arrow-trend-up"></i></div>
                     <div class="stat-icon"><i class="fa-solid fa-cake-candles"></i></div>
                     <div class="stat-info">
                         <div class="stat-label">Mẫu bánh</div>
                         <div class="stat-value">${totalProducts}</div>
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- Charts Row -->
@@ -119,7 +119,7 @@
                     <div class="chart-title">
                         Trạng thái đơn hàng <span>Tỷ lệ phân bổ</span>
                     </div>
-                    <div class="chart-body" style="position: relative;">
+                    <div class="chart-body">
                         <canvas id="statusChart"></canvas>
                         <div class="chart-center-text">
                             <div class="chart-center-val">
@@ -140,10 +140,10 @@
 
             <!-- Recent Orders Table -->
             <div class="table-card">
-                <div class="table-controls" style="padding: 20px 25px; border-bottom: 1px solid var(--cz-border-color);">
-                    <h5 style="font-family: 'Playfair Display', serif; font-weight: 700; color: #241d18; margin: 0;">Đơn hàng mới nhận</h5>
-                    <a href="${pageContext.request.contextPath}/admin/orders" class="btn btn-outline-secondary btn-sm" style="font-size: 12.5px; border-radius: 6px; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
-                        Xem tất cả đơn hàng <i class="fa-solid fa-arrow-right-long" style="font-size: 11px;"></i>
+                <div class="dashboard-table-controls">
+                    <h5>Đơn hàng mới nhận</h5>
+                    <a href="${pageContext.request.contextPath}/admin/orders" class="btn btn-outline-secondary btn-sm dashboard-view-all-btn">
+                        Xem tất cả đơn hàng <i class="fa-solid fa-arrow-right-long"></i>
                     </a>
                 </div>
                 
@@ -163,14 +163,14 @@
                             <c:when test="${not empty recentOrders}">
                                 <c:forEach var="ord" items="${recentOrders}">
                                     <tr>
-                                        <td style="font-weight: 700; color: var(--cz-primary);">
+                                        <td class="dashboard-order-no">
                                             #${ord.orderNo.replace("ORD_", "")}
                                         </td>
                                         <td>
-                                            <div style="font-weight: 600; color: #241d18;">
+                                            <div class="dashboard-customer-name">
                                                 <c:out value="${not empty ord.customerName ? ord.customerName : 'Khách vãng lai'}" />
                                             </div>
-                                            <div style="font-size: 11.5px; color: var(--cz-text-muted); margin-top: 2px;">
+                                            <div class="dashboard-customer-id">
                                                 ID: ${ord.customerId}
                                             </div>
                                         </td>
@@ -178,7 +178,7 @@
                                             <fmt:formatDate value="${ord.orderTime}" pattern="dd/MM/yyyy HH:mm" />
                                         </td>
                                         <td>
-                                            <span style="font-weight: 700; color: var(--cz-primary);">
+                                            <span class="dashboard-order-cost">
                                                 <fmt:formatNumber value="${ord.totalCost}" type="number" pattern="#,##0"/>đ
                                             </span>
                                         </td>
@@ -205,7 +205,7 @@
                                             </c:choose>
                                         </td>
                                         <td class="text-center">
-                                            <a href="${pageContext.request.contextPath}/OrderDetail?orderNo=${ord.orderNo}" class="btn btn-sm btn-outline-success" style="border-radius: 6px; padding: 4px 10px; font-size: 12.5px; text-decoration: none;">
+                                            <a href="${pageContext.request.contextPath}/OrderDetail?orderNo=${ord.orderNo}" class="btn btn-sm btn-outline-success dashboard-btn-details">
                                                 Chi tiết
                                             </a>
                                         </td>
@@ -215,7 +215,7 @@
                             <c:otherwise>
                                 <tr>
                                     <td colspan="6" class="text-center py-5 text-muted">
-                                        <i class="fa-solid fa-box-open d-block fs-3 mb-3" style="color: #ccc;"></i>
+                                        <i class="fa-solid fa-box-open d-block fs-3 mb-3 dashboard-empty-icon"></i>
                                         Chưa có đơn hàng nào được ghi nhận trên hệ thống.
                                     </td>
                                 </tr>

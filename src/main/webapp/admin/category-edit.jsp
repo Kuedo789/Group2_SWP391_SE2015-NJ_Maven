@@ -26,7 +26,9 @@
         </style>
     </head>
     <body>
-        <jsp:include page="/common/admin-sidebar.jsp" />
+        <jsp:include page="/common/sidebar.jsp">
+            <jsp:param name="activeMenu" value="categories" />
+        </jsp:include>
         <main class="main-wrapper">
             <c:set var="pageTitle" value="Chỉnh Sửa Danh Mục" scope="request" />
             <jsp:include page="/common/admin-navbar.jsp" />

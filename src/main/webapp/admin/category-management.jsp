@@ -18,7 +18,9 @@
     </head>
     <body>
 
-        <jsp:include page="/common/admin-sidebar.jsp" />
+        <jsp:include page="/common/sidebar.jsp">
+            <jsp:param name="activeMenu" value="categories" />
+        </jsp:include>
 
         <main class="main-wrapper">
 

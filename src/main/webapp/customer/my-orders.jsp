@@ -66,16 +66,17 @@
             <button onclick="document.getElementById('orderSuccessBanner').style.display='none'"
                     style="margin-left:auto; background:none; border:none; color:rgba(255,255,255,0.6); font-size:22px; cursor:pointer; line-height:1;">&times;</button>
         </div>
-        <style>@keyframes slideDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }</style>
+        <style>@keyframes slideDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+        .active-filter { background-color: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }</style>
         <% } %>
 
         <!-- Filters Section -->
         <section class="orders-filter" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 25px;">
-            <a href="<%= request.getContextPath() %>/OrderList?status=all<%= dateParams %>" class="filter-btn <%= "all".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Tất cả</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=processing<%= dateParams %>" class="filter-btn <%= "processing".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang xử lý</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=shipping<%= dateParams %>" class="filter-btn <%= "shipping".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang giao</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=completed<%= dateParams %>" class="filter-btn <%= "completed".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Hoàn thành</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=cancelled<%= dateParams %>" class="filter-btn <%= "cancelled".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đã hủy</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=all<%= dateParams %>" class="filter-btn <%= "all".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Tất cả (<%= request.getAttribute("countAll") != null ? request.getAttribute("countAll") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=processing<%= dateParams %>" class="filter-btn <%= "processing".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang xử lý (<%= request.getAttribute("countProcessing") != null ? request.getAttribute("countProcessing") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=shipping<%= dateParams %>" class="filter-btn <%= "shipping".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang giao (<%= request.getAttribute("countShipping") != null ? request.getAttribute("countShipping") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=completed<%= dateParams %>" class="filter-btn <%= "completed".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Hoàn thành (<%= request.getAttribute("countCompleted") != null ? request.getAttribute("countCompleted") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=cancelled<%= dateParams %>" class="filter-btn <%= "cancelled".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đã hủy (<%= request.getAttribute("countCancelled") != null ? request.getAttribute("countCancelled") : 0 %>)</a>
         </section>
 
         <!-- Date Range Filter -->
@@ -89,6 +90,8 @@
                 <input type="date" id="endDate" name="endDate" value="<%= request.getAttribute("endDate") != null ? request.getAttribute("endDate") : "" %>" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; background: var(--bg-soft); color: var(--text);" />
                 
                 <button type="submit" class="btn btn-primary" style="padding: 8px 20px; border-radius: var(--radius-sm);">Lọc</button>
+                <button type="button" id="btn-7days" class="btn btn-outline" style="padding: 8px 15px; border-radius: var(--radius-sm); height: 38px; display: inline-flex; align-items: center; justify-content: center;" onclick="setQuickFilter(7)">7 ngày qua</button>
+                <button type="button" id="btn-30days" class="btn btn-outline" style="padding: 8px 15px; border-radius: var(--radius-sm); height: 38px; display: inline-flex; align-items: center; justify-content: center;" onclick="setQuickFilter(30)">1 tháng qua</button>
                 <% if ((request.getAttribute("startDate") != null && !request.getAttribute("startDate").toString().isEmpty()) || (request.getAttribute("endDate") != null && !request.getAttribute("endDate").toString().isEmpty())) { %>
                     <a href="<%= request.getContextPath() %>/OrderList" class="btn btn-outline" style="padding: 8px 20px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; height: 38px; border-radius: var(--radius-sm);">Xóa bộ lọc</a>
                 <% } %>
@@ -395,7 +398,49 @@
 
     <!-- Client side script for interaction, status filters are handled server side -->
     <script>
-        // No client-side show/hide is needed since list is filtered server-side
+        function setQuickFilter(days) {
+            const end = new Date();
+            const start = new Date();
+            start.setDate(end.getDate() - days);
+            
+            const formatDate = (date) => {
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                return `${yyyy}-${mm}-${dd}`;
+            };
+            
+            document.getElementById('startDate').value = formatDate(start);
+            document.getElementById('endDate').value = formatDate(end);
+            document.getElementById('startDate').form.submit();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const startVal = document.getElementById('startDate').value;
+            const endVal = document.getElementById('endDate').value;
+            if (startVal && endVal) {
+                const start = new Date(startVal);
+                const end = new Date(endVal);
+                start.setHours(0,0,0,0);
+                end.setHours(0,0,0,0);
+                
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                
+                if (end.getTime() === today.getTime()) {
+                    const diffTime = Math.abs(end - start);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (diffDays === 7) {
+                        const btn = document.getElementById('btn-7days');
+                        if (btn) btn.classList.add('active-filter');
+                    } else if (diffDays === 30) {
+                        const btn = document.getElementById('btn-30days');
+                        if (btn) btn.classList.add('active-filter');
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>
