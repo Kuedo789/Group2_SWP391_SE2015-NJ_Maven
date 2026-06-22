@@ -19,7 +19,7 @@
         <li class="menu-item ${param.activeMenu == 'orders' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
-        <c:set var="isProductActive" value="${param.activeMenu == 'products' || param.activeMenu == 'categories' || param.activeMenu == 'ingredients' || param.activeMenu == 'attributes'}" />
+        <c:set var="isProductActive" value="${param.activeMenu == 'products' || param.activeMenu == 'categories' || param.activeMenu == 'ingredients' || param.activeMenu == 'units' || param.activeMenu == 'attributes'}" />
         <li class="menu-item ${param.activeMenu == 'products' ? 'active' : ''}" id="product-parent-menu">
             <a href="${pageContext.request.contextPath}/admin/product?action=list" id="product-parent-link">
                 <i class="fa-solid fa-cookie-bite"></i> <span>Sản phẩm</span>
@@ -31,6 +31,9 @@
         </li>
         <li class="menu-item ${param.activeMenu == 'ingredients' ? 'active' : ''} product-child-item" style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
             <a href="${pageContext.request.contextPath}/admin/ingredient?action=list" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Nguyên liệu</a>
+        </li>
+        <li class="menu-item ${param.activeMenu == 'units' ? 'active' : ''} product-child-item" style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
+            <a href="${pageContext.request.contextPath}/admin/unit?action=list" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Đơn vị tính</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'attributes' ? 'active' : ''} product-child-item" style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
             <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Thuộc tính</a>
@@ -48,7 +51,7 @@
             <a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
         <li class="menu-item ${param.activeMenu == 'reviews' ? 'active' : ''}">
-            <a href="#"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a>
+            <a href="reviews?action=list"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a>
         </li>
     </ul>
 
@@ -115,7 +118,7 @@
         if (productParentLink) {
             productParentLink.addEventListener("click", function(e) {
                 const activeMenu = "${param.activeMenu}";
-                if (activeMenu === "products" || activeMenu === "categories" || activeMenu === "ingredients" || activeMenu === "attributes") {
+                if (activeMenu === "products" || activeMenu === "categories" || activeMenu === "ingredients" || activeMenu === "units" || activeMenu === "attributes") {
                     e.preventDefault();
                     toggleProductMenu();
                 }

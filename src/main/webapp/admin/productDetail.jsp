@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,11 +11,11 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <!-- FontAwesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous">
     <!-- Quill Rich Text Editor CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" crossorigin="anonymous">
     <!-- Custom styling -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductDetail.css?v=1.4">
     <style>
@@ -271,9 +272,211 @@
         .lightbox-close:hover {
             color: #f97316;
         }
+        
+        /* Custom modal overrides to bypass Bootstrap JS backdrop bugs */
+        .modal.custom-active {
+            display: block !important;
+            background: rgba(0, 0, 0, 0.5) !important;
+            opacity: 1 !important;
+        }
+        .modal.custom-active .modal-dialog {
+            transform: none !important;
+        }
+        
+        /* New premium design system overrides to match mockups */
+        .pricing-suggested-card {
+            background-color: #0f2d1e;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(15, 45, 30, 0.2);
+            border: 1px solid #1e4d35;
+            margin-top: 5px;
+            height: 100%;
+            justify-content: center;
+        }
+        .pricing-suggested-card .pricing-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #a3b899;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .pricing-suggested-card .pricing-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #eab308;
+            margin-bottom: 6px;
+        }
+        .pricing-suggested-card .pricing-formula {
+            font-size: 11px;
+            color: #8fae85;
+        }
+        
+        .input-group-cz {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .input-group-cz .form-control-cz {
+            padding-right: 35px;
+        }
+        .input-group-cz .input-group-addon {
+            position: absolute;
+            right: 15px;
+            color: #7c8b74;
+            font-weight: 600;
+            font-size: 13.5px;
+            pointer-events: none;
+        }
+        
+        .btn-modern-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 20px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            width: calc(50% - 8px);
+            text-align: center;
+            min-height: 100px;
+            border: none;
+        }
+        .btn-modern-card.btn-bom {
+            background-color: #0f2d1e;
+            border: 1px solid #0f2d1e;
+            color: #ffffff;
+        }
+        .btn-modern-card.btn-bom:hover {
+            background-color: #17472f;
+            border-color: #17472f;
+            box-shadow: 0 6px 18px rgba(15, 45, 30, 0.25);
+        }
+        .btn-modern-card.btn-recipe {
+            background-color: #ffffff;
+            border: 1.5px solid #0f2d1e;
+            color: #0f2d1e;
+        }
+        .btn-modern-card.btn-recipe:hover {
+            background-color: #f4f7f5;
+            box-shadow: 0 6px 18px rgba(15, 45, 30, 0.1);
+        }
+        .btn-modern-card .card-icon {
+            font-size: 20px;
+        }
+        
+        .alert-info-cz {
+            background-color: #eff6ff;
+            border: 1px solid #dbeafe;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .alert-info-cz .info-icon {
+            color: #2563eb;
+            font-size: 16px;
+            margin-top: 2px;
+        }
+        .alert-info-cz .info-text {
+            color: #1e3a8a;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+        
+        .btn-delete-bom-row {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            margin: 0 auto;
+        }
+        .btn-delete-bom-row:hover {
+            color: #b91c1c;
+            transform: scale(1.15);
+        }
+        .modal-header-cz {
+            background-color: #0f2d1e !important;
+            color: white !important;
+        }
     </style>
 </head>
 <body>
+    <!-- Floating Debug Console -->
+    <div id="cz-debug-console" style="position: fixed; bottom: 10px; right: 10px; width: 450px; height: 250px; background: rgba(0,0,0,0.85); color: #00ff00; font-family: monospace; font-size: 11px; padding: 10px; border-radius: 6px; z-index: 999999; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #333; line-height: 1.4;">
+        <div style="font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+            <span>CAKEZONE DEBUG CONSOLE</span>
+            <button type="button" onclick="document.getElementById('cz-debug-console').style.display='none'" style="background: none; border: none; color: #ff0000; font-weight: bold; cursor: pointer;">[X]</button>
+        </div>
+        <div id="cz-debug-log-list"></div>
+    </div>
+
+    <script>
+        (function() {
+            const logList = document.getElementById('cz-debug-log-list');
+            function addLog(msg, color = '#00ff00') {
+                if (logList) {
+                    const item = document.createElement('div');
+                    item.style.color = color;
+                    item.style.marginBottom = '4px';
+                    item.style.borderBottom = '1px solid #222';
+                    item.style.paddingBottom = '2px';
+                    item.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
+                    logList.appendChild(item);
+                    logList.scrollTop = logList.scrollHeight;
+                }
+            }
+            
+            // Override console methods
+            const _log = console.log;
+            const _err = console.error;
+            const _warn = console.warn;
+            
+            console.log = function(...args) {
+                _log.apply(console, args);
+                addLog(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), '#00ff00');
+            };
+            console.error = function(...args) {
+                _err.apply(console, args);
+                addLog(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), '#ff3333');
+            };
+            console.warn = function(...args) {
+                _warn.apply(console, args);
+                addLog(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), '#ffff00');
+            };
+            
+            window.addEventListener('error', function(e) {
+                addLog('Runtime Error: ' + e.message + ' at ' + e.filename + ':' + e.lineno, '#ff0000');
+            });
+            window.addEventListener('unhandledrejection', function(e) {
+                addLog('Promise Rejection: ' + e.reason, '#ff0000');
+            });
+            
+            addLog('Debug console initialized.', '#00ffff');
+            window.czAddLog = addLog;
+        })();
+    </script>
 
     <!-- Left Sidebar -->
     <jsp:include page="../common/sidebar.jsp">
@@ -421,89 +624,242 @@
 
                     <!-- Right Column -->
                     <div class="col-lg-7">
-                        
-                        <!-- Product Information Card -->
-                        <div class="detail-card">
-                            <h5 class="card-header-title">Thông Tin Bánh Kem</h5>
-                            
-                            <div class="row g-3">
-                                 <div class="col-md-12">
-                                     <label class="form-label-cz">Tên Bánh Kem <span>*</span></label>
-                                     <input type="text" class="form-control-cz" id="productName" name="name" value="${product.name}" required>
-                                     <div id="error-name" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
-                                 </div>
+                        <style>
+                            .cz-tabs {
+                                display: flex;
+                                border-bottom: 2px solid #e5e7eb;
+                                margin-bottom: 20px;
+                                gap: 6px;
+                                flex-wrap: wrap;
+                            }
+                            .cz-tab-btn {
+                                background: none;
+                                border: none;
+                                padding: 12px 20px;
+                                font-size: 14.5px;
+                                font-weight: 600;
+                                color: #4b5563;
+                                border-bottom: 3px solid transparent;
+                                cursor: pointer;
+                                transition: all 0.2s;
+                                display: flex;
+                                align-items: center;
+                                gap: 8px;
+                                border-radius: 6px 6px 0 0;
+                            }
+                            .cz-tab-btn:hover {
+                                color: var(--cz-primary);
+                                background-color: rgba(30, 58, 36, 0.04);
+                            }
+                            .cz-tab-btn.active {
+                                color: var(--cz-primary) !important;
+                                border-bottom-color: var(--cz-primary) !important;
+                                background-color: rgba(30, 58, 36, 0.08);
+                            }
+                            div.cz-tab-pane {
+                                display: none;
+                                animation: tabFadeIn 0.3s ease;
+                            }
+                            div.cz-tab-pane.active {
+                                display: block !important;
+                            }
+                            @keyframes tabFadeIn {
+                                from { opacity: 0; transform: translateY(4px); }
+                                to { opacity: 1; transform: translateY(0); }
+                            }
+                            .pricing-suggested-card-tab {
+                                background: #f0fdf4;
+                                border: 1px solid #bbf7d0;
+                                border-radius: 8px;
+                                padding: 16px;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                            }
+                        </style>
 
-                                 <div class="col-md-6">
-                                     <label class="form-label-cz">Danh mục <span>*</span></label>
-                                     <select class="form-select-cz" name="categoryId">
-                                         <c:forEach var="cat" items="${productCategories}">
-                                             <option value="${cat.id}" ${product.categoryId eq cat.id ? 'selected' : ''}>${cat.name}</option>
-                                         </c:forEach>
-                                     </select>
-                                 </div>
-                                 <div class="col-md-6">
-                                     <label class="form-label-cz">Thời Gian Làm Việc Ước Tính (giờ) <span>*</span></label>
-                                     <input type="number" step="0.01" class="form-control-cz" id="productEstimatedLaborHours" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required>
-                                     <div id="error-estimatedLaborHours" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
-                                 </div>
+                        <!-- Navigation Tabs -->
+                        <div class="cz-tabs">
+                            <button type="button" class="cz-tab-btn active" data-tab="basic" onclick="switchTab('basic')">
+                                <i class="fa-solid fa-circle-info me-1"></i> Thong Tin Co Ban
+                            </button>
+                            <button type="button" class="cz-tab-btn" data-tab="bom" onclick="switchTab('bom')">
+                                <i class="fa-solid fa-calculator me-1"></i> Dinh Luong & BOM
+                            </button>
+                            <button type="button" class="cz-tab-btn" data-tab="recipe" onclick="switchTab('recipe')">
+                                <i class="fa-solid fa-kitchen-set me-1"></i> Quy Trinh Huong Dan
+                            </button>
+                        </div>
 
-                                 <div class="col-md-4">
-                                     <label class="form-label-cz">Biên Lợi Nhuận (%) <span>*</span></label>
-                                     <input type="number" step="0.01" class="form-control-cz" id="defaultMarginPercent" name="defaultMarginPercent" value="${product.defaultMarginPercent}" required>
-                                 </div>
-                                 <div class="col-md-4">
-                                     <label class="form-label-cz">Phí Dịch Vụ / Bếp (%) <span>*</span></label>
-                                     <input type="number" step="0.01" class="form-control-cz" id="defaultServicePercent" name="defaultServicePercent" value="${product.defaultServicePercent}" required>
-                                 </div>
-                                 <div class="col-md-4">
-                                     <label class="form-label-cz">Giá Bán Đề Xuất (VND)</label>
-                                     <input type="text" class="form-control-cz" id="productBasePrice" value="${product.basePrice}" readonly style="background-color: #f5f5f5; font-weight: bold; color: var(--cz-primary);">
-                                     <span class="small text-muted">Giá đề xuất = Chi phí NL / (1 - (Lãi + Dịch vụ)/100)</span>
-                                 </div>
-
-                                 <div class="col-md-12">
-                                     <label class="form-label-cz">Cho Phép Ghi Chữ</label>
-                                     <div class="switch-container">
-                                         <span class="switch-label-text">Cho phép khách ghi chữ chúc mừng lên mặt bánh</span>
-                                         <input type="checkbox" class="switch-input" name="allowsGreeting" value="true" ${product.allowsGreeting ? 'checked' : ''}>
+                        <!-- Tab 1: Basic Info -->
+                        <div id="tab-basic" class="cz-tab-pane active">
+                            <!-- Product Information Card -->
+                            <div class="detail-card">
+                                <h5 class="card-header-title">Thong Tin Banh Kem</h5>
+                                
+                                <div class="row g-3">
+                                     <div class="col-md-12">
+                                         <label class="form-label-cz">Ten Banh Kem <span>*</span></label>
+                                         <input type="text" class="form-control-cz" id="productName" name="name" value="${product.name}" required>
+                                         <div id="error-name" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                      </div>
-                                 </div>
 
-                                 <div class="col-md-12">
-                                     <label class="form-label-cz">Trạng Thái Kinh Doanh <span>*</span></label>
-                                     <div class="status-radio-group">
-                                         <label class="status-radio-label">
-                                             <input type="radio" name="status" class="status-radio-input" value="Active" ${product.status eq 'Active' ? 'checked' : ''}>
-                                             Đang hoạt động
-                                         </label>
-                                         <label class="status-radio-label">
-                                             <input type="radio" name="status" class="status-radio-input" value="Inactive" ${product.status eq 'Inactive' ? 'checked' : ''}>
-                                             Tạm ngưng bán
-                                         </label>
+                                     <div class="col-md-6">
+                                         <label class="form-label-cz">Danh muc <span>*</span></label>
+                                         <select class="form-select-cz" name="categoryId">
+                                             <c:forEach var="cat" items="${productCategories}">
+                                                 <option value="${cat.id}" ${product.categoryId eq cat.id ? 'selected' : ''}>${cat.name}</option>
+                                             </c:forEach>
+                                         </select>
                                      </div>
-                                 </div>
+                                     <div class="col-md-6">
+                                         <label class="form-label-cz">Thoi Gian Lam Viec Uoc Tinh (gio) <span>*</span></label>
+                                         <input type="number" step="0.01" class="form-control-cz" id="productEstimatedLaborHours" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required>
+                                         <div id="error-estimatedLaborHours" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
+                                     </div>
 
-                                <div class="col-md-12">
-                                    <label class="form-label-cz" style="display: block; margin-bottom: 8px;">Mô Tả Chi Tiết</label>
-                                    <div id="editor-container" style="height: 200px; font-family: 'Be Vietnam Pro', sans-serif; background-color: #fff;">
-                                        ${product.fullDescription}
+                                     <div class="col-md-12">
+                                         <label class="form-label-cz">Cho Phep Ghi Chu</label>
+                                         <div class="switch-container">
+                                             <span class="switch-label-text">Cho phep khach ghi chu chuc mung len mat banh</span>
+                                             <input type="checkbox" class="switch-input" name="allowsGreeting" value="true" ${product.allowsGreeting ? 'checked' : ''}>
+                                         </div>
+                                     </div>
+
+                                     <div class="col-md-12">
+                                         <label class="form-label-cz">Trang Thai Kinh Doanh <span>*</span></label>
+                                         <div class="status-radio-group">
+                                             <label class="status-radio-label">
+                                                 <input type="radio" name="status" class="status-radio-input" value="Active" ${product.status eq 'Active' ? 'checked' : ''}>
+                                                 Dang hoat dong
+                                             </label>
+                                             <label class="status-radio-label">
+                                                 <input type="radio" name="status" class="status-radio-input" value="Inactive" ${product.status eq 'Inactive' ? 'checked' : ''}>
+                                                 Tam ngung ban
+                                             </label>
+                                         </div>
+                                     </div>
+
+                                    <div class="col-md-12">
+                                        <label class="form-label-cz" style="display: block; margin-bottom: 8px;">Mo Ta Chi Tiet</label>
+                                        <div id="editor-container" style="height: 200px; font-family: 'Be Vietnam Pro', sans-serif; background-color: #fff;">
+                                            ${product.fullDescription}
+                                        </div>
+                                        <input type="hidden" name="fullDescription" id="fullDescription">
                                     </div>
-                                    <input type="hidden" name="fullDescription" id="fullDescription">
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Quick Links / Detailed Settings Card -->
-                        <div class="detail-card mt-4">
-                            <h5 class="card-header-title">Thiết Lập Quy Trình & Nguyên Liệu</h5>
-                            <p class="card-header-desc">Cấu hình định lượng nguyên liệu sản xuất bánh kem và ghi chú hướng dẫn thợ làm bếp thực hiện.</p>
-                            <div class="d-flex flex-wrap gap-3">
-                                <button type="button" class="btn btn-cz-primary flex-grow-1" data-bs-toggle="modal" data-bs-target="#bomModal" style="padding: 12px 20px; font-weight: 600;">
-                                    <i class="fa-solid fa-calculator me-2"></i> Định Lượng Nguyên Liệu & BOM
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary flex-grow-1" data-bs-toggle="modal" data-bs-target="#recipeModal" style="padding: 12px 20px; font-weight: 600;">
-                                    <i class="fa-solid fa-kitchen-set me-2"></i> Quy Trình & Hướng Dẫn Làm Bếp
-                                </button>
+                        <!-- Tab 2: BOM Settings -->
+                        <div id="tab-bom" class="cz-tab-pane">
+                            <!-- BOM Ingredients Table Card -->
+                            <div class="detail-card">
+                                <h5 class="card-header-title">Dinh Luong Nguyen Lieu (BOM)</h5>
+                                <p class="card-header-desc" style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">Quan ly cac nguyen lieu su dung de san xuat banh kem nay. He thong se tu dong cap nhat gia thanh.</p>
+                                
+                                <!-- Template for JS options -->
+                                <template id="bom-options-template">
+                                    <c:forEach var="ing" items="${allIngredients}">
+                                        <option value="${ing.ingredientId}" data-price="${ing.pricePerUnit}" data-unit="${ing.unitName}">${fn:escapeXml(ing.ingredientName)} (đ/${ing.unitName})</option>
+                                    </c:forEach>
+                                </template>
+
+                                <div class="table-responsive">
+                                    <table class="table align-middle" id="bomTable" style="border-color: #f3f4f6;">
+                                        <thead>
+                                            <tr style="border-bottom: 2px solid #e5e7eb;">
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; padding-bottom: 12px;">Nguyen Lieu</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 180px; padding-bottom: 12px;">So Luong</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 120px; padding-bottom: 12px;">Don Gia</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 120px; padding-bottom: 12px;">Thanh Tien</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 60px; padding-bottom: 12px; text-align: center;">Xoa</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="bomTableBody">
+                                            <c:forEach var="item" items="${productIngredients}">
+                                                <tr data-price="${item.pricePerUnit}">
+                                                    <td>
+                                                        <select class="form-select-cz bom-select" name="bomIngredientId" onchange="updateBomRowPrice(this)" style="padding: 6px 12px; height: 38px;">
+                                                            <c:forEach var="ing" items="${allIngredients}">
+                                                                <option value="${ing.ingredientId}" data-price="${ing.pricePerUnit}" data-unit="${ing.unitName}" ${item.ingredientId eq ing.ingredientId ? 'selected' : ''}>
+                                                                    ${fn:escapeXml(ing.ingredientName)} (d/${ing.unitName})
+                                                                </option>
+                                                            </c:forEach>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px;" required>
+                                                            <span class="bom-unit-label text-muted small" style="min-width: 45px; text-align: left; font-weight: 500;">${item.unitMeasure}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="bom-unit-price" style="font-size: 13px; color: #4b5563;">
+                                                        <fmt:formatNumber value="${item.pricePerUnit}" type="number" pattern="#,##0"/> d/${item.unitMeasure}
+                                                    </td>
+                                                    <td class="bom-row-total" style="font-weight: 600; font-size: 13.5px; color: #1f2937;">
+                                                        <fmt:formatNumber value="${item.standardGram * item.pricePerUnit}" type="number" pattern="#,##0"/> d
+                                                    </td>
+                                                    <td style="text-align: center;">
+                                                        <button type="button" class="btn-delete-bom-row" onclick="removeBomRow(this)" title="Xoa nguyen lieu">
+                                                            <i class="fa-regular fa-trash-can"></i>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top: 1px dashed #e5e7eb; margin-bottom: 25px;">
+                                    <button type="button" class="btn btn-sm btn-cz-primary" onclick="addBomRow()" style="font-size: 13px; padding: 8px 18px; font-weight: 600;"><i class="fa-solid fa-plus me-1"></i> Them Nguyen Lieu</button>
+                                    <div>
+                                        <span style="color: #4b5563; font-weight: 500;">Tong chi phi nguyen lieu:</span> 
+                                        <span id="bomCostTotal" style="font-size: 18px; font-weight: 700; color: var(--cz-primary); margin-left: 10px;">0 d</span>
+                                    </div>
+                                </div>
+
+                                <!-- Financial markup and pricing suggest cards -->
+                                <h5 class="card-header-title mt-4" style="border-top: 1px solid #e5e7eb; padding-top: 20px;">Co Cau Gia Ban De Xuat</h5>
+                                <div class="row g-3 mt-1">
+                                    <div class="col-md-4">
+                                        <label class="form-label-cz">Bien Loi Nhuan (%) <span>*</span></label>
+                                        <div class="input-group-cz">
+                                            <input type="number" step="0.01" class="form-control-cz" id="defaultMarginPercent" name="defaultMarginPercent" value="${product.defaultMarginPercent}" required>
+                                            <span class="input-group-addon">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label-cz">Phi Dich Vu / Bep (%) <span>*</span></label>
+                                        <div class="input-group-cz">
+                                            <input type="number" step="0.01" class="form-control-cz" id="defaultServicePercent" name="defaultServicePercent" value="${product.defaultServicePercent}" required>
+                                            <span class="input-group-addon">%</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="pricing-suggested-card-tab">
+                                            <span class="pricing-title" style="font-size: 11px; font-weight: 600; color: #166534; text-transform: uppercase;">Gia Ban De Xuat</span>
+                                            <span class="pricing-value" id="productBasePriceText" style="font-size: 22px; font-weight: 700; color: #15803d; margin: 2px 0;">
+                                                <fmt:formatNumber value="${product.basePrice}" type="number" pattern="#,##0"/> d
+                                            </span>
+                                            <span class="pricing-formula" style="font-size: 10px; color: #166534; opacity: 0.8;">Gia = Chi phi / (1 - Tong phi %)</span>
+                                            <input type="hidden" id="productBasePrice" value="${product.basePrice}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 3: Recipe Steps -->
+                        <div id="tab-recipe" class="cz-tab-pane">
+                            <!-- Recipe Instructions Card -->
+                            <div class="detail-card">
+                                <h5 class="card-header-title">Quy Trinh & Huong Dan Lam Bep</h5>
+                                <p class="card-header-desc" style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">Nhap chi tiet cac buoc che bien danh rieng cho nhan vien bep san xuat.</p>
+                                
+                                <div id="recipe-editor-container" style="height: 300px; font-family: 'Be Vietnam Pro', sans-serif; background-color: #fff; border-radius: 8px;">
+                                    ${product.instructionSteps}
+                                </div>
+                                <input type="hidden" name="instructionSteps" id="instructionSteps">
                             </div>
                         </div>
 
@@ -520,7 +876,7 @@
     </form>
 
     <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
     
     <script>
         document.getElementById('imageFileInput').addEventListener('change', function(event) {
@@ -586,7 +942,7 @@
                 const file = files[i];
                 // Validate size (5MB = 5 * 1024 * 1024)
                 if (file.size > 5 * 1024 * 1024) {
-                    errorDiv.textContent = `Dung lượng tệp "${file.name}" vượt quá giới hạn cho phép (tối đa 5MB).`;
+                    errorDiv.textContent = 'Dung lượng tệp "' + file.name + '" vượt quá giới hạn cho phép (tối đa 5MB).';
                     errorDiv.style.display = 'block';
                     event.target.value = '';
                     return;
@@ -595,7 +951,7 @@
                 // Validate extension
                 const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
                 if (!allowedExtensions.exec(file.name)) {
-                    errorDiv.textContent = `Định dạng tệp "${file.name}" không hợp lệ. Chỉ chấp nhận các đuôi .jpg, .jpeg, .png.`;
+                    errorDiv.textContent = 'Định dạng tệp "' + file.name + '" không hợp lệ. Chỉ chấp nhận các đuôi .jpg, .jpeg, .png.';
                     errorDiv.style.display = 'block';
                     event.target.value = '';
                     return;
@@ -667,10 +1023,40 @@
     </script>
     
     <!-- Quill Library -->
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js" crossorigin="anonymous"></script>
     <script>
         let quill;
         let recipeQuill;
+
+        // Custom Tab Switching function
+        function switchTab(tabId) {
+            console.log("switchTab called for tab:", tabId);
+            try {
+                document.querySelectorAll('.cz-tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.cz-tab-pane').forEach(pane => pane.classList.remove('active'));
+                
+                const activeBtn = document.querySelector('.cz-tab-btn[data-tab="' + tabId + '"]');
+                const activePane = document.getElementById('tab-' + tabId);
+                
+                console.log("switchTab targets: btn=", activeBtn, "pane=", activePane);
+                
+                if (activeBtn && activePane) {
+                    activeBtn.classList.add('active');
+                    activePane.classList.add('active');
+                    console.log("switchTab successfully activated tab:", tabId);
+                    
+                    // Refresh Quill editor inside recipe if visible
+                    if (tabId === 'recipe' && recipeQuill) {
+                        recipeQuill.update();
+                    }
+                } else {
+                    console.error("switchTab failed: activeBtn or activePane is null for tabId:", tabId);
+                }
+            } catch (err) {
+                console.error("Exception in switchTab:", err);
+                alert("Lỗi khi chuyển tab: " + err.message);
+            }
+        }
 
         // Sync Quill HTML contents on form submit
         const form = document.querySelector('form');
@@ -680,53 +1066,63 @@
             const errorName = document.getElementById('error-name');
             const errorLabor = document.getElementById('error-estimatedLaborHours');
             
-            errorName.style.display = 'none';
-            errorLabor.style.display = 'none';
+            if (errorName) errorName.style.display = 'none';
+            if (errorLabor) errorLabor.style.display = 'none';
             
             const nameInput = document.getElementById('productName');
             const laborInput = document.getElementById('productEstimatedLaborHours');
             const marginInput = document.getElementById('defaultMarginPercent');
             const serviceInput = document.getElementById('defaultServicePercent');
             
-            nameInput.classList.remove('is-invalid');
-            laborInput.classList.remove('is-invalid');
-            marginInput.classList.remove('is-invalid');
-            serviceInput.classList.remove('is-invalid');
+            if (nameInput) nameInput.classList.remove('is-invalid');
+            if (laborInput) laborInput.classList.remove('is-invalid');
+            if (marginInput) marginInput.classList.remove('is-invalid');
+            if (serviceInput) serviceInput.classList.remove('is-invalid');
 
             // 1. Validate name
-            const nameVal = nameInput.value.trim();
-            if (nameVal.length === 0) {
-                errorName.textContent = 'Tên bánh kem không được để trống.';
-                errorName.style.display = 'block';
-                nameInput.classList.add('is-invalid');
-                hasError = true;
+            if (nameInput) {
+                const nameVal = nameInput.value.trim();
+                if (nameVal.length === 0) {
+                    if (errorName) {
+                        errorName.textContent = 'Ten banh kem khong duoc de trong.';
+                        errorName.style.display = 'block';
+                    }
+                    nameInput.classList.add('is-invalid');
+                    hasError = true;
+                }
             }
 
             // 2. Validate estimated labor hours
-            const laborVal = parseFloat(laborInput.value);
-            if (isNaN(laborVal) || laborVal < 0) {
-                errorLabor.textContent = 'Thời gian làm việc phải lớn hơn hoặc bằng 0.';
-                errorLabor.style.display = 'block';
-                laborInput.classList.add('is-invalid');
-                hasError = true;
+            if (laborInput) {
+                const laborVal = parseFloat(laborInput.value);
+                if (isNaN(laborVal) || laborVal < 0) {
+                    if (errorLabor) {
+                        errorLabor.textContent = 'Thoi gian lam viec phai lon hon hoac bang 0.';
+                        errorLabor.style.display = 'block';
+                    }
+                    laborInput.classList.add('is-invalid');
+                    hasError = true;
+                }
             }
 
             // 3. Validate financial percents
-            const marginVal = parseFloat(marginInput.value);
-            const serviceVal = parseFloat(serviceInput.value);
-            if (isNaN(marginVal) || marginVal < 0 || marginVal >= 100) {
-                marginInput.classList.add('is-invalid');
-                hasError = true;
-            }
-            if (isNaN(serviceVal) || serviceVal < 0 || serviceVal >= 100) {
-                serviceInput.classList.add('is-invalid');
-                hasError = true;
-            }
-            if (!hasError && (marginVal + serviceVal >= 100)) {
-                marginInput.classList.add('is-invalid');
-                serviceInput.classList.add('is-invalid');
-                alert('Tổng tỷ lệ Biên lãi và Phí dịch vụ phải nhỏ hơn 100%.');
-                hasError = true;
+            if (marginInput && serviceInput) {
+                const marginVal = parseFloat(marginInput.value);
+                const serviceVal = parseFloat(serviceInput.value);
+                if (isNaN(marginVal) || marginVal < 0 || marginVal >= 100) {
+                    marginInput.classList.add('is-invalid');
+                    hasError = true;
+                }
+                if (isNaN(serviceVal) || serviceVal < 0 || serviceVal >= 100) {
+                    serviceInput.classList.add('is-invalid');
+                    hasError = true;
+                }
+                if (!hasError && (marginVal + serviceVal >= 100)) {
+                    marginInput.classList.add('is-invalid');
+                    serviceInput.classList.add('is-invalid');
+                    alert('Tong ty le Bien lai va Phi dich vu phai nho hon 100%.');
+                    hasError = true;
+                }
             }
 
             if (hasError) {
@@ -745,45 +1141,76 @@
 
         // BOM Dynamism
         function recalculateBom() {
-            let totalCost = 0.0;
-            const rows = document.querySelectorAll('#bomTableBody tr');
-            
-            rows.forEach(row => {
-                const select = row.querySelector('.bom-select');
-                const gramsInput = row.querySelector('.bom-grams');
+            console.log("recalculateBom starting...");
+            try {
+                let totalCost = 0.0;
+                const rows = document.querySelectorAll('#bomTableBody tr');
+                console.log("recalculateBom: found BOM table rows:", rows.length);
                 
-                if (select && gramsInput) {
-                    const option = select.options[select.selectedIndex];
-                    const price = option ? (parseFloat(option.getAttribute('data-price')) || 0.0) : 0.0;
-                    const grams = parseFloat(gramsInput.value) || 0.0;
+                rows.forEach((row, index) => {
+                    const select = row.querySelector('.bom-select');
+                    const gramsInput = row.querySelector('.bom-grams');
                     
-                    const rowTotal = price * grams;
-                    totalCost += rowTotal;
-                    
-                    row.querySelector('.bom-unit-price').textContent = price.toLocaleString('vi-VN', {minimumFractionDigits: 2}) + ' đ';
-                    row.querySelector('.bom-row-total').textContent = rowTotal.toLocaleString('vi-VN', {minimumFractionDigits: 2}) + ' đ';
+                    if (select && gramsInput) {
+                        const option = select.options[select.selectedIndex];
+                        const price = option ? (parseFloat(option.getAttribute('data-price')) || 0.0) : 0.0;
+                        const unit = option ? (option.getAttribute('data-unit') || '') : '';
+                        const grams = parseFloat(gramsInput.value) || 0.0;
+                        
+                        const rowTotal = price * grams;
+                        totalCost += rowTotal;
+                        
+                        const unitPriceEl = row.querySelector('.bom-unit-price');
+                        const rowTotalEl = row.querySelector('.bom-row-total');
+                        const unitLabel = row.querySelector('.bom-unit-label');
+                        if (unitPriceEl) {
+                            unitPriceEl.textContent = Math.round(price).toLocaleString('vi-VN') + ' đ/' + unit;
+                        }
+                        if (rowTotalEl) {
+                            rowTotalEl.textContent = Math.round(rowTotal).toLocaleString('vi-VN') + ' đ';
+                        }
+                        if (unitLabel) {
+                            unitLabel.textContent = unit;
+                        }
+                    }
+                });
+                
+                const bomCostTotalEl = document.getElementById('bomCostTotal');
+                if (bomCostTotalEl) {
+                    bomCostTotalEl.textContent = Math.round(totalCost).toLocaleString('vi-VN') + ' đ';
                 }
-            });
-            
-            document.getElementById('bomCostTotal').textContent = totalCost.toLocaleString('vi-VN') + ' đ';
-            
-            // Recalculate Proposed Base Price
-            const marginInput = document.getElementById('defaultMarginPercent');
-            const serviceInput = document.getElementById('defaultServicePercent');
-            const priceInput = document.getElementById('productBasePrice');
-            
-            const margin = parseFloat(marginInput.value) || 0.0;
-            const service = parseFloat(serviceInput.value) || 0.0;
-            
-            const divisor = 1.0 - ((margin + service) / 100.0);
-            let proposedPrice = 0.0;
-            if (divisor > 0.0) {
-                proposedPrice = totalCost / divisor;
-            } else {
-                proposedPrice = totalCost;
+                
+                // Recalculate Proposed Base Price
+                const marginInput = document.getElementById('defaultMarginPercent');
+                const serviceInput = document.getElementById('defaultServicePercent');
+                const priceInput = document.getElementById('productBasePrice');
+                
+                console.log("recalculateBom financials: marginInput=", marginInput, "serviceInput=", serviceInput, "priceInput=", priceInput);
+                
+                if (marginInput && serviceInput && priceInput) {
+                    const margin = parseFloat(marginInput.value) || 0.0;
+                    const service = parseFloat(serviceInput.value) || 0.0;
+                    
+                    const divisor = 1.0 - ((margin + service) / 100.0);
+                    let proposedPrice = 0.0;
+                    if (divisor > 0.0) {
+                        proposedPrice = totalCost / divisor;
+                    } else {
+                        proposedPrice = totalCost;
+                    }
+                    
+                    const formatted = Math.round(proposedPrice).toLocaleString('vi-VN') + ' đ';
+                    priceInput.value = Math.round(proposedPrice);
+                    const textEl = document.getElementById('productBasePriceText');
+                    if (textEl) {
+                        textEl.textContent = formatted;
+                    }
+                }
+                console.log("recalculateBom finished. totalCost:", totalCost);
+            } catch (err) {
+                console.error("Exception in recalculateBom:", err);
+                alert("Lỗi khi tính toán định lượng: " + err.message);
             }
-            
-            priceInput.value = Math.round(proposedPrice).toLocaleString('vi-VN') + ' đ';
         }
 
         function updateBomRowPrice(select) {
@@ -796,79 +1223,96 @@
         }
 
         function addBomRow() {
-            const tbody = document.getElementById('bomTableBody');
-            const tr = document.createElement('tr');
-            
-            let optionsHtml = '';
-            <c:forEach var="ing" items="${allIngredients}">
-                optionsHtml += '<option value="${ing.ingredientId}" data-price="${ing.pricePerUnit}">${ing.ingredientName} (${ing.pricePerUnit}đ/g)</option>';
-            </c:forEach>
-            
-            tr.innerHTML = `
-                <td>
-                    <select class="form-select-cz bom-select" name="bomIngredientId" onchange="updateBomRowPrice(this)" style="padding: 5px 10px; height: 38px;">
-                        ` + optionsHtml + `
-                    </select>
-                </td>
-                <td>
-                    <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="100" oninput="recalculateBom()" style="padding: 5px 10px; height: 38px;" required>
-                </td>
-                <td class="bom-unit-price">0.00 đ</td>
-                <td class="bom-row-total" style="font-weight: 600;">0.00 đ</td>
-                <td>
-                    <button type="button" class="btn-action-delete" onclick="removeBomRow(this)" style="width: 32px; height: 32px;">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-            recalculateBom();
+            try {
+                const tbody = document.getElementById('bomTableBody');
+                const tr = document.createElement('tr');
+                
+                const templateEl = document.getElementById('bom-options-template');
+                const optionsHtml = templateEl ? templateEl.innerHTML : '';
+                
+                tr.innerHTML = `
+                    <td>
+                        <select class="form-select-cz bom-select" name="bomIngredientId" onchange="updateBomRowPrice(this)" style="padding: 5px 10px; height: 38px;">
+                            ` + optionsHtml + `
+                        </select>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="100" oninput="recalculateBom()" style="padding: 5px 10px; height: 38px;" required>
+                            <span class="bom-unit-label text-muted small" style="min-width: 45px; text-align: left; font-weight: 500;"></span>
+                        </div>
+                    </td>
+                    <td class="bom-unit-price">0 đ</td>
+                    <td class="bom-row-total" style="font-weight: 600;">0 đ</td>
+                    <td style="text-align: center;">
+                        <button type="button" class="btn-delete-bom-row" onclick="removeBomRow(this)" title="Xóa nguyên liệu này">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+                recalculateBom();
+            } catch (err) {
+                console.error("Exception in addBomRow:", err);
+            }
         }
         
         window.addEventListener('load', () => {
-            // Initialize Quill editor for description
-            quill = new Quill('#editor-container', {
-                theme: 'snow',
-                placeholder: 'Nhập mô tả chi tiết bánh kem...',
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'align': [] }],
-                        ['link', 'image'],
-                        ['clean']
-                    ]
+            console.log("Window load listener started");
+            try {
+                // Initialize Quill editor for description
+                const editorEl = document.getElementById('editor-container');
+                if (editorEl) {
+                    quill = new Quill(editorEl, {
+                        theme: 'snow',
+                        placeholder: 'Nhập mô tả chi tiết bánh kem...',
+                        modules: {
+                            toolbar: [
+                                ['bold', 'italic', 'underline', 'strike'],
+                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                [{ 'align': [] }],
+                                ['link', 'image'],
+                                ['clean']
+                            ]
+                        }
+                    });
                 }
-            });
 
-            // Initialize Quill editor for recipe instructions
-            recipeQuill = new Quill('#recipe-editor-container', {
-                theme: 'snow',
-                placeholder: 'Nhập các bước thực hiện chế biến cụ thể...',
-                modules: {
-                    toolbar: [
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                        [{ 'align': [] }],
-                        ['link', 'image'],
-                        ['clean']
-                    ]
+                // Initialize Quill editor for recipe instructions
+                const recipeEditorEl = document.getElementById('recipe-editor-container');
+                if (recipeEditorEl) {
+                    recipeQuill = new Quill(recipeEditorEl, {
+                        theme: 'snow',
+                        placeholder: 'Nhập các bước thực hiện chế biến cụ thể...',
+                        modules: {
+                            toolbar: [
+                                ['bold', 'italic', 'underline', 'strike'],
+                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                [{ 'align': [] }],
+                                ['link', 'image'],
+                                ['clean']
+                            ]
+                        }
+                    });
                 }
-            });
 
-            recalculateBom();
-            
-            const marginEl = document.getElementById('defaultMarginPercent');
-            const serviceEl = document.getElementById('defaultServicePercent');
-            if (marginEl) marginEl.addEventListener('input', recalculateBom);
-            if (serviceEl) serviceEl.addEventListener('input', recalculateBom);
+                recalculateBom();
+                
+                const marginEl = document.getElementById('defaultMarginPercent');
+                const serviceEl = document.getElementById('defaultServicePercent');
+                if (marginEl) marginEl.addEventListener('input', recalculateBom);
+                if (serviceEl) serviceEl.addEventListener('input', recalculateBom);
+                
+                // Programmatically switch to basic tab on load to ensure classes are synced
+                switchTab('basic');
+                console.log("Window load listener completed successfully");
+            } catch (err) {
+                console.error("Exception in window load:", err);
+                alert("Lỗi tải trang: " + err.message);
+            }
         });
     </script>
     
-    <!-- Hidden delete form for POST request -->
-    <form id="deleteProductForm" action="${pageContext.request.contextPath}/admin/product?action=delete" method="post" style="display:none;">
-        <input type="hidden" name="id" id="deleteProductId">
-    </form>
     <!-- Lightbox Modal for viewing large images -->
     <div id="imageLightbox" class="lightbox-modal" onclick="closeLightbox()">
         <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
@@ -891,105 +1335,6 @@
             document.getElementById('lightboxImg').src = '';
             lightbox.classList.remove('show');
         }
-
-        // Trigger updates when modals show to handle Quill resize properly
-        document.getElementById('recipeModal').addEventListener('shown.bs.modal', function () {
-            if (recipeQuill) {
-                recipeQuill.update();
-                recipeQuill.focus();
-            }
-        });
     </script>
-
-    <!-- Modal Định Lượng Nguyên Liệu & Giá Thành (BOM) -->
-    <div class="modal fade" id="bomModal" tabindex="-1" aria-labelledby="bomModalLabel" aria-hidden="true" style="font-family: 'Be Vietnam Pro', sans-serif;">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content" style="border-radius: 12px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="background-color: #f97316; color: white; padding: 18px 24px;">
-                    <h5 class="modal-title" id="bomModalLabel" style="font-weight: 700;"><i class="fa-solid fa-calculator me-2"></i> Định Lượng Nguyên Liệu (BOM)</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" style="padding: 24px;">
-                    <p class="text-muted" style="font-size: 13.5px; margin-bottom: 20px;">Quản lý các nguyên liệu sử dụng để sản xuất bánh kem và tự động cập nhật giá thành.</p>
-                    
-                    <div class="table-responsive">
-                        <table class="table align-middle" id="bomTable" style="border-color: #f3f4f6;">
-                            <thead>
-                                <tr style="border-bottom: 2px solid #e5e7eb;">
-                                    <th style="font-size: 13px; font-weight: 700; color: #374151; padding-bottom: 12px;">Nguyên Liệu</th>
-                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 180px; padding-bottom: 12px;">Số Lượng (g)</th>
-                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 120px; padding-bottom: 12px;">Đơn Giá</th>
-                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 150px; padding-bottom: 12px;">Thành Tiền</th>
-                                    <th style="font-size: 13px; font-weight: 700; color: #374151; width: 80px; padding-bottom: 12px; text-align: center;">Xóa</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bomTableBody">
-                                <c:forEach var="item" items="${productIngredients}">
-                                    <tr data-price="${item.pricePerUnit}">
-                                        <td>
-                                            <select class="form-select-cz bom-select" name="bomIngredientId" onchange="updateBomRowPrice(this)" style="padding: 6px 12px; height: 38px;">
-                                                <c:forEach var="ing" items="${allIngredients}">
-                                                    <option value="${ing.ingredientId}" data-price="${ing.pricePerUnit}" ${item.ingredientId eq ing.ingredientId ? 'selected' : ''}>
-                                                        ${ing.ingredientName} (đ/g)
-                                                    </option>
-                                                </c:forEach>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px;" required>
-                                        </td>
-                                        <td class="bom-unit-price" style="font-size: 13.5px; color: #4b5563;">
-                                            <fmt:formatNumber value="${item.pricePerUnit}" type="number" pattern="#,##0.00"/> đ
-                                        </td>
-                                        <td class="bom-row-total" style="font-weight: 600; font-size: 14px; color: #1f2937;">
-                                            <fmt:formatNumber value="${item.standardGram * item.pricePerUnit}" type="number" pattern="#,##0.00"/> đ
-                                        </td>
-                                        <td style="text-align: center;">
-                                            <button type="button" class="btn-action-delete" onclick="removeBomRow(this)" style="width: 34px; height: 34px; border-radius: 6px;">
-                                                <i class="fa-regular fa-trash-can"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </c:forEach>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top: 1px dashed #e5e7eb;">
-                        <button type="button" class="btn btn-sm btn-cz-primary" onclick="addBomRow()" style="font-size: 13px; padding: 8px 18px; font-weight: 600;"><i class="fa-solid fa-plus me-1"></i> Thêm Nguyên Liệu</button>
-                        <div>
-                            <span style="color: #4b5563; font-weight: 500;">Tổng chi phí nguyên liệu:</span> 
-                            <span id="bomCostTotal" style="font-size: 18px; font-weight: 700; color: var(--cz-primary); margin-left: 10px;">0 đ</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer" style="background-color: #f9fafb; border-top: 1px solid #f3f4f6; padding: 15px 24px;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-weight: 600; padding: 8px 20px; border-radius: 6px;">Đóng</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Hướng Dẫn Làm Bếp / Quy Trình Chế Biến -->
-    <div class="modal fade" id="recipeModal" tabindex="-1" aria-labelledby="recipeModalLabel" aria-hidden="true" style="font-family: 'Be Vietnam Pro', sans-serif;">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content" style="border-radius: 12px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="background-color: #f97316; color: white; padding: 18px 24px;">
-                    <h5 class="modal-title" id="recipeModalLabel" style="font-weight: 700;"><i class="fa-solid fa-kitchen-set me-2"></i> Quy Trình & Hướng Dẫn Làm Bếp</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body" style="padding: 24px;">
-                    <p class="text-muted" style="font-size: 13.5px; margin-bottom: 20px;">Nhập quy trình, các bước chế biến cụ thể dành cho thợ làm bếp.</p>
-                    
-                    <div id="recipe-editor-container" style="height: 300px; font-family: 'Be Vietnam Pro', sans-serif; background-color: #fff; border-radius: 8px;">
-                        ${product.instructionSteps}
-                    </div>
-                    <input type="hidden" name="instructionSteps" id="instructionSteps">
-                </div>
-                <div class="modal-footer" style="background-color: #f9fafb; border-top: 1px solid #f3f4f6; padding: 15px 24px;">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-weight: 600; padding: 8px 20px; border-radius: 6px;">Đóng</button>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

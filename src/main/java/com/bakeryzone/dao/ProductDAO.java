@@ -171,7 +171,7 @@ public class ProductDAO {
      */
     public void deleteProduct(String id) throws SQLException {
         try (Connection conn = DBContext.getJDBCConnection()) {
-            String deleteTemplate = "DELETE FROM cake_template WHERE Template_ID = ?";
+            String deleteTemplate = "UPDATE cake_template SET Status = 'Inactive' WHERE Template_ID = ?";
             try (PreparedStatement ps = conn.prepareStatement(deleteTemplate)) {
                 ps.setString(1, id);
                 ps.executeUpdate();
@@ -303,7 +303,7 @@ public class ProductDAO {
         List<Map<String, String>> categories = new ArrayList<>();
 
         String sql = """
-                     SELECT Category_ID, Category_Name, image_url AS Icon_URL
+                     SELECT Category_ID, Category_Name, Icon_URL
                      FROM product_category
                      WHERE enable = 1
                      ORDER BY Category_Name ASC
@@ -400,9 +400,7 @@ public class ProductDAO {
         } else {
             calculatedBasePrice = ingredientCost;
         }
-
         p.setBasePrice(calculatedBasePrice);
-
         return p;
     }
 
@@ -469,11 +467,13 @@ public class ProductDAO {
         return products;
     }
 
+
     public List<Map<String, Object>> getProductIngredients(String templateId) {
         List<Map<String, Object>> list = new ArrayList<>();
-        String sql = "SELECT d.Ingredient_ID, d.Standard_Gram, i.Ingredient_Name, i.Price_Per_Unit "
+        String sql = "SELECT d.Ingredient_ID, d.Standard_Gram AS Quantity, i.Ingredient_Name, i.Price_Per_Unit, u.Unit_Name, i.Unit_ID "
                 + "FROM template_ingredient_detail d "
                 + "JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
+                + "LEFT JOIN unit_measure u ON i.Unit_ID = u.Unit_ID "
                 + "WHERE d.Template_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, templateId);
@@ -482,8 +482,10 @@ public class ProductDAO {
                     Map<String, Object> map = new HashMap<>();
                     map.put("ingredientId", rs.getString("Ingredient_ID"));
                     map.put("ingredientName", rs.getString("Ingredient_Name"));
-                    map.put("standardGram", rs.getDouble("Standard_Gram"));
+                    map.put("standardGram", rs.getDouble("Quantity"));
                     map.put("pricePerUnit", rs.getDouble("Price_Per_Unit"));
+                    map.put("unitMeasure", rs.getString("Unit_Name"));
+                    map.put("unitId", rs.getString("Unit_ID"));
                     list.add(map);
                 }
             }

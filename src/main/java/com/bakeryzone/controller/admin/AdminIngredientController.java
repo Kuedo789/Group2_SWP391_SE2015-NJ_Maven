@@ -1,8 +1,9 @@
 package com.bakeryzone.controller.admin;
 
 import com.bakeryzone.dao.IngredientDAO;
+import com.bakeryzone.dao.UnitMeasureDAO;
 import com.bakeryzone.model.Ingredient;
-import com.bakeryzone.model.IngredientCategory;
+import com.bakeryzone.model.UnitMeasure;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -18,6 +19,7 @@ import java.util.UUID;
 public class AdminIngredientController extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private final IngredientDAO ingredientDAO = new IngredientDAO();
+    private final UnitMeasureDAO unitMeasureDAO = new UnitMeasureDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -89,7 +91,7 @@ public class AdminIngredientController extends HttpServlet {
         String pageSizeParam = request.getParameter("pageSize");
         if (pageSizeParam != null && !pageSizeParam.trim().isEmpty()) {
             try {
-                pageSize = Integer.parseInt(pageSizeParam);
+                page = Integer.parseInt(pageSizeParam);
                 if (pageSize < 1) pageSize = 10;
             } catch (NumberFormatException e) {
                 pageSize = 10;
@@ -123,6 +125,7 @@ public class AdminIngredientController extends HttpServlet {
         ing.setIngredientId("new");
         
         request.setAttribute("ingredient", ing);
+        request.setAttribute("unitMeasures", unitMeasureDAO.getAllUnitMeasures());
         request.setAttribute("formAction", "create");
         
         request.getRequestDispatcher("/admin/ingredientDetail.jsp").forward(request, response);
@@ -139,6 +142,7 @@ public class AdminIngredientController extends HttpServlet {
         }
 
         request.setAttribute("ingredient", ing);
+        request.setAttribute("unitMeasures", unitMeasureDAO.getAllUnitMeasures());
         request.setAttribute("formAction", "update");
         
         request.getRequestDispatcher("/admin/ingredientDetail.jsp").forward(request, response);
@@ -174,7 +178,7 @@ public class AdminIngredientController extends HttpServlet {
         String id = request.getParameter("ingredientId");
         String name = request.getParameter("ingredientName");
         String priceParam = request.getParameter("pricePerUnit");
-        String unitMeasure = request.getParameter("unitMeasure");
+        String unitId = request.getParameter("unitMeasure");
         String imageUrl = request.getParameter("imageUrl");
 
         double price = 0.0;
@@ -192,13 +196,14 @@ public class AdminIngredientController extends HttpServlet {
 
         boolean nameValid = name != null && !name.trim().isEmpty() && name.trim().length() >= 2;
 
-        if (unitMeasure == null || unitMeasure.trim().isEmpty()) {
-            unitMeasure = "gram";
+        if (unitId == null || unitId.trim().isEmpty()) {
+            unitId = "G";
         }
 
         if (!nameValid || !priceValid) {
-            Ingredient ing = new Ingredient(id, name, price, unitMeasure, imageUrl, true);
+            Ingredient ing = new Ingredient(id, name, price, unitId, imageUrl, true);
             request.setAttribute("ingredient", ing);
+            request.setAttribute("unitMeasures", unitMeasureDAO.getAllUnitMeasures());
             request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Tên nguyên liệu tối thiểu 2 ký tự, đơn giá phải lớn hơn hoặc bằng 0.");
             request.setAttribute("formAction", isNew ? "create" : "update");
             request.getRequestDispatcher("/admin/ingredientDetail.jsp").forward(request, response);
@@ -209,13 +214,14 @@ public class AdminIngredientController extends HttpServlet {
             id = "ING-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         }
 
-        Ingredient ingredient = new Ingredient(id, name, price, unitMeasure, imageUrl, true);
+        Ingredient ingredient = new Ingredient(id, name, price, unitId, imageUrl, true);
         boolean success = ingredientDAO.saveIngredient(ingredient);
 
         if (success) {
             response.sendRedirect(request.getContextPath() + "/admin/ingredient?action=list&msg=" + (isNew ? "add_success" : "edit_success"));
         } else {
             request.setAttribute("ingredient", ingredient);
+            request.setAttribute("unitMeasures", unitMeasureDAO.getAllUnitMeasures());
             request.setAttribute("error", "Lỗi hệ thống khi lưu nguyên liệu.");
             request.setAttribute("formAction", isNew ? "create" : "update");
             request.getRequestDispatcher("/admin/ingredientDetail.jsp").forward(request, response);

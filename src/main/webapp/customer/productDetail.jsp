@@ -384,6 +384,7 @@
 
                 const item = {
                     id: product.id + "_" + selectedVariant,
+                    templateId: product.id,
                     name: selectedVar.name,
                     desc: selectedVar.note,
                     price: selectedVar.price,
@@ -445,6 +446,7 @@
 
                 const item = {
                     id: product.id + "_" + selectedVariant,
+                    templateId: product.id,
                     name: selectedVar.name,
                     desc: selectedVar.note,
                     price: selectedVar.price,

@@ -115,7 +115,8 @@ public class CustomerCheckoutServlet extends HttpServlet {
             Order order = new Order();
             String orderNo = "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             order.setOrderNo(orderNo);
-            order.setCustomerId(currentUser.getUserId());
+            String customerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
+            order.setCustomerId(customerId);
             order.setOrderTime(orderTime);
             order.setDeliveryWindowStart(deliveryWindowStart);
             order.setDeliveryWindowEnd(deliveryWindowEnd);
@@ -190,8 +191,8 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     + " | success=" + success + " | total=" + totalCost);
 
             if (success) {
-                // Redirect with success message
-                response.sendRedirect(request.getContextPath() + "/OrderList?msg=order_success&orderNo=" + orderNo);
+                // Redirect to Order Success page
+                response.sendRedirect(request.getContextPath() + "/order-success?orderNo=" + orderNo);
             } else {
                 // Pass error back to checkout page
                 response.sendRedirect(request.getContextPath() + "/checkout?error=save_failed");

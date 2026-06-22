@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="6.0" xmlns="https://jakarta.ee/xml/ns/jakartaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
-    <!-- ================= SERVLETS ================= -->
     <servlet>
         <servlet-name>RegisterServlet</servlet-name>
         <servlet-class>com.bakeryzone.controller.auth.RegisterServlet</servlet-class>
@@ -33,12 +32,10 @@
         <servlet-name>HomeServlet</servlet-name>
         <servlet-class>com.bakeryzone.controller.auth.HomeServlet</servlet-class>
     </servlet>
-    <!-- ================= FILTERS ================= -->
     <filter>
         <filter-name>AuthorizationFilter</filter-name>
         <filter-class>com.bakeryzone.controller.auth.AuthorizationFilter</filter-class>
     </filter>
-    <!-- ================= SERVLET MAPPINGS ================= -->
     <servlet>
         <servlet-name>CustomerCheckoutServlet</servlet-name>
         <servlet-class>com.bakeryzone.controller.customer.CustomerCheckoutServlet</servlet-class>
@@ -75,7 +72,6 @@
         <servlet-name>HomeServlet</servlet-name>
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
-    <!-- ================= FILTER MAPPINGS ================= -->
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
         <url-pattern>/admin/*</url-pattern>
@@ -88,14 +84,9 @@
         <filter-name>AuthorizationFilter</filter-name>
         <url-pattern>/customer</url-pattern>
     </filter-mapping>
-    <!-- ================= SESSION CONFIG ================= -->
     <servlet-mapping>
         <servlet-name>CustomerCheckoutServlet</servlet-name>
         <url-pattern>/checkout</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>DeliveryAddressServlet</servlet-name>
-        <url-pattern>/delivery-address</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>

@@ -14,6 +14,22 @@ import java.math.BigDecimal;
 
 public class OrderDAO {
 
+    public String getCustomerIdByUserId(String userId) {
+        String sql = "SELECT Customer_ID FROM customer WHERE User_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("Customer_ID");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return userId;
+    }
+
     public List<Order> getOrdersByCustomerId(String customerId) {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT * FROM `orders` WHERE Customer_ID = ? ORDER BY Order_Time DESC";
@@ -166,8 +182,8 @@ public class OrderDAO {
     }
 
     public boolean insertOrder(Order order) {
-        String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        String sqlCake = "INSERT INTO `custom_cake` (Custom_Cake_ID, Template_ID, Greeting_Text, Canvas_Image_URL, Total_Layers, Calculated_Price) VALUES (?, ?, ?, ?, ?, ?)";
+        String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Total_Cost, OrderStatus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sqlCake = "INSERT INTO `custom_cake` (Custom_Cake_ID, Template_ID, Greeting_Text, Canvas_Image_URL, Frosting_Ingredient_ID, Cake_Hash_Structure, Calculated_Price) VALUES (?, ?, ?, ?, ?, ?, ?)";
         String sqlItem = "INSERT INTO `order_item` (Order_Item_ID, Order_No, Custom_Cake_ID, Accessory_ID, Quantity, Price_At_Purchase) VALUES (?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
@@ -190,10 +206,8 @@ public class OrderDAO {
             psOrder.setTimestamp(6, order.getDeliveryWindowEnd());
             psOrder.setString(7, order.getDeliveryAddress());
             psOrder.setBigDecimal(8, order.getDepositAmount());
-            BigDecimal remainingCod = order.getTotalCost().subtract(order.getDepositAmount());
-            psOrder.setBigDecimal(9, remainingCod);
-            psOrder.setBigDecimal(10, order.getTotalCost());
-            psOrder.setString(11, order.getOrderStatus());
+            psOrder.setBigDecimal(9, order.getTotalCost());
+            psOrder.setString(10, order.getOrderStatus());
             psOrder.executeUpdate();
 
             // 2. Insert Items
@@ -216,8 +230,9 @@ public class OrderDAO {
                     }
                     psCake.setString(3, item.getGreetingText() != null ? item.getGreetingText() : "Chúc mừng sinh nhật!");
                     psCake.setString(4, item.getItemImage() != null ? item.getItemImage() : "assets/images/default-cake.png");
-                    psCake.setInt(5, 1); // Default Total_Layers
-                    psCake.setBigDecimal(6, item.getPriceAtPurchase()); // Default Calculated_Price
+                    psCake.setString(5, "ING_CREAM"); // Default Frosting_Ingredient_ID
+                    psCake.setString(6, "DEFAULT_HASH"); // Default Cake_Hash_Structure
+                    psCake.setBigDecimal(7, item.getPriceAtPurchase()); // Default Calculated_Price
                     psCake.executeUpdate();
 
                     psItem.setString(3, item.getCustomCakeId());

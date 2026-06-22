@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet(name = "CustomerOrderController", urlPatterns = {"/OrderList", "/OrderDetail"})
+@WebServlet(name = "CustomerOrderController", urlPatterns = {"/OrderList", "/OrderDetail", "/order-success"})
 public class CustomerOrderController extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
@@ -39,6 +39,8 @@ public class CustomerOrderController extends HttpServlet {
 
         if ("/OrderDetail".equals(path)) {
             handleDetail(request, response, currentUser);
+        } else if ("/order-success".equals(path)) {
+            handleSuccess(request, response, currentUser);
         } else {
             handleList(request, response, currentUser);
         }
@@ -192,6 +194,26 @@ public class CustomerOrderController extends HttpServlet {
         request.getRequestDispatcher("/customer/my-orders.jsp").forward(request, response);
     }
 
+    private void handleSuccess(HttpServletRequest request, HttpServletResponse response, User currentUser)
+            throws ServletException, IOException {
+        String orderNo = request.getParameter("orderNo");
+        if (orderNo == null || orderNo.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/OrderList");
+            return;
+        }
+
+        Order order = orderDAO.getOrderByNo(orderNo);
+
+        String actualCustomerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
+        if (order == null || !order.getCustomerId().equals(actualCustomerId)) {
+            response.sendRedirect(request.getContextPath() + "/OrderList");
+            return;
+        }
+
+        request.setAttribute("order", order);
+        request.getRequestDispatcher("/customer/order-success.jsp").forward(request, response);
+    }
+
     private void handleDetail(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
         String orderNo = request.getParameter("orderNo");
@@ -209,7 +231,8 @@ public class CustomerOrderController extends HttpServlet {
         }
 
         // Đảm bảo khách hàng chỉ xem được đơn hàng của chính mình (Bảo mật)
-        if (!order.getCustomerId().equals(currentUser.getUserId())) {
+        String actualCustomerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
+        if (!order.getCustomerId().equals(actualCustomerId)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập thông tin đơn hàng này.");
             return;
         }
