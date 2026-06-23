@@ -90,7 +90,7 @@
                                 <p>${not empty sessionScope.user.defaultAddress ? sessionScope.user.defaultAddress : 'Chưa thiết lập địa chỉ mặc định. Vui lòng thêm địa chỉ.'}</p>
                             </div>
 
-                            <a href="${pageContext.request.contextPath}/delivery-address"
+                            <a href="${pageContext.request.contextPath}/delivery-address?action=profile"
                                class="btn-address-manage">
                                 Đổi địa chỉ &rsaquo;
                             </a>

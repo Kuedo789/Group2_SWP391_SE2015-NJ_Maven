@@ -31,6 +31,7 @@
             <c:set var="isEditMode" value="${not empty requestScope.addressToEdit}" />
             <c:set var="addressToEdit" value="${requestScope.addressToEdit}" />
             <c:set var="addressList" value="${requestScope.addressList}" />
+            <c:set var="isProfileMode" value="${empty param.source}" />
 
             <c:choose>
             <c:when test="${empty requestScope.view or requestScope.view == 'list'}">
@@ -108,7 +109,7 @@
                                                     <a href="${pageContext.request.contextPath}/delivery-address?action=edit&id=${addr.addressId}${sourceParam}" class="action-link">Cập nhật</a>
                                                     <a href="${pageContext.request.contextPath}/delivery-address?action=delete&id=${addr.addressId}${sourceParam}" class="action-link delete-link" onclick="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')">Xóa</a>
                                                 </div>
-                                                <c:if test="${not addr.isDefault()}">
+                                                <c:if test="${not addr.isDefault() and param.source != 'checkout'}">
                                                     <a href="${pageContext.request.contextPath}/delivery-address?action=set-default&id=${addr.addressId}${sourceParam}" class="btn-set-default">Thiết lập mặc định</a>
                                                 </c:if>
                                             </div>
@@ -141,6 +142,12 @@
                             <input type="hidden" name="addressId" value="${isEditMode ? addressToEdit.addressId : ''}">
                             <input type="hidden" name="source" value="${not empty param.source ? param.source : ''}">
 
+                            <c:choose>
+                            <c:when test="${isProfileMode}">
+                                <input type="hidden" name="receiverName" value="${sessionScope.user.fullName}">
+                                <input type="hidden" name="receiverPhone" value="${sessionScope.user.phone}">
+                            </c:when>
+                            <c:otherwise>
                             <div class="form-field-group">
                                 <label class="form-field-label">Tên người nhận <span class="required">*</span></label>
                                 <input type="text"
@@ -160,6 +167,8 @@
                                        placeholder="Số điện thoại người nhận"
                                        value="${isEditMode ? addressToEdit.receiverPhone : ''}">
                             </div>
+                            </c:otherwise>
+                            </c:choose>
 
                             <div class="form-field-group">
                                 <label class="form-field-label">Địa chỉ <span class="required">*</span></label>
@@ -189,6 +198,11 @@
                             <input type="hidden" id="latitudeInput" name="latitude" value="${isEditMode ? addressToEdit.latitude : ''}">
                             <input type="hidden" id="longitudeInput" name="longitude" value="${isEditMode ? addressToEdit.longitude : ''}">
 
+                            <c:choose>
+                            <c:when test="${isProfileMode}">
+                                <input type="hidden" name="isDefault" value="on">
+                            </c:when>
+                            <c:otherwise>
                             <label class="checkbox-row">
                                 <input type="checkbox" name="isDefault" ${(isEditMode and addressToEdit.isDefault()) ? 'checked disabled' : ''} ${(!isEditMode and empty addressList) ? 'checked disabled' : ''}>
                                 Đặt làm địa chỉ mặc định
@@ -199,6 +213,8 @@
                             <c:if test="${!isEditMode and empty addressList}">
                                 <input type="hidden" name="isDefault" value="on">
                             </c:if>
+                            </c:otherwise>
+                            </c:choose>
 
                             <div class="button-row">
                                 <button type="button"
@@ -212,9 +228,18 @@
                                     Lưu địa chỉ
                                 </button>
 
-                                <a href="${pageContext.request.contextPath}/delivery-address${sourceQuery}" class="btn-back">
-                                    Trở lại
-                                </a>
+                                <c:choose>
+                                <c:when test="${isProfileMode}">
+                                    <a href="${pageContext.request.contextPath}/profile" class="btn-back">
+                                        Trở lại
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="${pageContext.request.contextPath}/delivery-address${sourceQuery}" class="btn-back">
+                                        Trở lại
+                                    </a>
+                                </c:otherwise>
+                                </c:choose>
                             </div>
 
                         </form>
@@ -251,6 +276,7 @@
         <script>
             <c:set var="escapedAddress" value="${isEditMode ? addressToEdit.addressDetail : ''}" />
             const isEditMode = ${isEditMode};
+            const isProfileModeJs = ${isProfileMode};
             const editLat = ${isEditMode ? addressToEdit.latitude : 'null'};
             const editLng = ${isEditMode ? addressToEdit.longitude : 'null'};
             const editAddress = "${escapedAddress}";
@@ -518,42 +544,44 @@
                     const latInput = document.getElementById("latitudeInput");
                     const lngInput = document.getElementById("longitudeInput");
 
-                    const nameVal = nameInput ? nameInput.value.trim() : "";
-                    if (nameVal === "") {
-                        alert("Vui lòng nhập tên người nhận.");
-                        if (nameInput) nameInput.focus();
-                        e.preventDefault();
-                        return;
-                    }
-                    if (nameVal.length > 30) {
-                        alert("Tên người nhận không được dài quá 30 ký tự.");
-                        if (nameInput) nameInput.focus();
-                        e.preventDefault();
-                        return;
-                    }
-                    // Validate name format: no numbers or special characters (except spaces)
-                    const specialCharOrNum = /[0-9!@#$%^&*(),.?":{}|<>_\[\]\\\/+=~`-]/;
-                    if (specialCharOrNum.test(nameVal)) {
-                        alert("Tên người nhận không hợp lệ (chỉ chứa chữ cái và khoảng trắng, không chứa số hay ký tự đặc biệt).");
-                        if (nameInput) nameInput.focus();
-                        e.preventDefault();
-                        return;
-                    }
+                    if (!isProfileModeJs) {
+                        const nameVal = nameInput ? nameInput.value.trim() : "";
+                        if (nameVal === "") {
+                            alert("Vui lòng nhập tên người nhận.");
+                            if (nameInput) nameInput.focus();
+                            e.preventDefault();
+                            return;
+                        }
+                        if (nameVal.length > 30) {
+                            alert("Tên người nhận không được dài quá 30 ký tự.");
+                            if (nameInput) nameInput.focus();
+                            e.preventDefault();
+                            return;
+                        }
+                        // Validate name format: no numbers or special characters (except spaces)
+                        const specialCharOrNum = /[0-9!@#$%^&*(),.?":{}|<>_\[\]\\\/+=~`-]/;
+                        if (specialCharOrNum.test(nameVal)) {
+                            alert("Tên người nhận không hợp lệ (chỉ chứa chữ cái và khoảng trắng, không chứa số hay ký tự đặc biệt).");
+                            if (nameInput) nameInput.focus();
+                            e.preventDefault();
+                            return;
+                        }
 
-                    const phoneVal = phoneInput ? phoneInput.value.trim() : "";
-                    if (phoneVal === "") {
-                        alert("Vui lòng nhập số điện thoại người nhận.");
-                        if (phoneInput) phoneInput.focus();
-                        e.preventDefault();
-                        return;
-                    }
-                    // Vietnamese phone regex: starts with 03, 05, 07, 08, 09, exactly 10 digits
-                    const phoneRegex = /^0(3|5|7|8|9)\d{8}$/;
-                    if (!phoneRegex.test(phoneVal)) {
-                        alert("Số điện thoại không hợp lệ (phải đủ 10 chữ số và bắt đầu bằng 03, 05, 07, 08 hoặc 09).");
-                        if (phoneInput) phoneInput.focus();
-                        e.preventDefault();
-                        return;
+                        const phoneVal = phoneInput ? phoneInput.value.trim() : "";
+                        if (phoneVal === "") {
+                            alert("Vui lòng nhập số điện thoại người nhận.");
+                            if (phoneInput) phoneInput.focus();
+                            e.preventDefault();
+                            return;
+                        }
+                        // Vietnamese phone regex: starts with 03, 05, 07, 08, 09, exactly 10 digits
+                        const phoneRegex = /^0(3|5|7|8|9)\d{8}$/;
+                        if (!phoneRegex.test(phoneVal)) {
+                            alert("Số điện thoại không hợp lệ (phải đủ 10 chữ số và bắt đầu bằng 03, 05, 07, 08 hoặc 09).");
+                            if (phoneInput) phoneInput.focus();
+                            e.preventDefault();
+                            return;
+                        }
                     }
 
                     const addrVal = addressInput ? addressInput.value.trim() : "";
