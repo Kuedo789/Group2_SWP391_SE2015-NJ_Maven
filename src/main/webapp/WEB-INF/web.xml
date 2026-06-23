@@ -40,6 +40,10 @@
         <servlet-name>CustomerCheckoutServlet</servlet-name>
         <servlet-class>com.bakeryzone.controller.customer.CustomerCheckoutServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>RolePermissionServlet</servlet-name>
+        <servlet-class>com.bakeryzone.controller.admin.RolePermissionServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>RegisterServlet</servlet-name>
         <url-pattern>/register</url-pattern>
@@ -87,6 +91,10 @@
     <servlet-mapping>
         <servlet-name>CustomerCheckoutServlet</servlet-name>
         <url-pattern>/checkout</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RolePermissionServlet</servlet-name>
+        <url-pattern>/admin/role-permissions</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>

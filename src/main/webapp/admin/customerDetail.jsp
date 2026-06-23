@@ -276,7 +276,7 @@
                     <div class="breadcrumbs">
                         <a href="#">Dashboard</a>
                         <span>&gt;</span>
-                        <a href="${pageContext.request.contextPath}/customer?action=list">Customer System</a>
+                        <a href="${pageContext.request.contextPath}/admin/customer?action=list">Customer System</a>
                         <span>&gt;</span>
                         <a href="#" class="active text-dark font-weight-bold">
                             <c:set var="cusId" value="${CUSTOMER_DATA.customerId}" />
@@ -309,7 +309,7 @@
                         </div>
                     </c:if>
 
-                    <form action="customer" method="POST">  
+                    <form action="${pageContext.request.contextPath}/admin/customer" method="POST">  
                         <input type="hidden" name="action" value="${not empty param.action ? param.action : (CUSTOMER_DATA.customerId != null ? 'edit' : 'add')}">
                         <input type="hidden" name="isEdit" value="${CUSTOMER_DATA != null ? 'true' : 'false'}">                      
                         <input type="hidden" name="customerId" value="${cusId}">
@@ -351,7 +351,7 @@
 
 
                             <div class="col-12 d-flex justify-content-end gap-3 mt-5">
-                                <a href="${pageContext.request.contextPath}/customer?action=list" class="btn-cz-secondary">
+                                <a href="${pageContext.request.contextPath}/admin/customer?action=list" class="btn-cz-secondary">
                                     <i class="fa-solid fa-arrow-left"></i> Trở về danh sách
                                 </a>
                                 <button class="btn-cz-primary" type="submit">

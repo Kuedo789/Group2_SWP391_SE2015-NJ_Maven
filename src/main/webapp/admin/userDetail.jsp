@@ -299,7 +299,7 @@
                     <div class="breadcrumbs">
                         <a href="#">Dashboard</a>
                         <span>&gt;</span>
-                        <a href="${pageContext.request.contextPath}/staff?action=list">System</a>
+                        <a href="${pageContext.request.contextPath}/admin/staff?action=list">System</a>
                         <span>&gt;</span>
                         <a href="#" class="active text-dark font-weight-bold">
                             <c:if test="${USER_DATA.staffId != null}">Cập nhật tài khoản</c:if>
@@ -331,7 +331,7 @@
                         </div>
                     </c:if>
 
-                    <form action="staff" method="POST">
+                    <form action="${pageContext.request.contextPath}/admin/staff" method="POST">
                         <input type="hidden" name="action" value="${not empty param.action ? param.action : (USER_DATA.staffId != null ? 'edit' : 'add')}">
                         <input type="hidden" name="isEdit" value="${USER_DATA.staffId != null ? 'true' : 'false'}">
                         <input type="hidden" name="userId" value="${USER_DATA.staffId}">
@@ -376,7 +376,7 @@
                             </div>
 
                             <div class="col-12 d-flex justify-content-end gap-3 mt-5">
-                                <a href="${pageContext.request.contextPath}/staff?action=list" class="btn-cz-secondary">
+                                <a href="${pageContext.request.contextPath}/admin/staff?action=list" class="btn-cz-secondary">
                                     <i class="fa-solid fa-arrow-left"></i> Trở về danh sách
                                 </a>
                                 <button class="btn-cz-primary" type="submit">
