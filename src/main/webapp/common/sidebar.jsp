@@ -20,7 +20,7 @@
             <a href="${pageContext.request.contextPath}/admin/orders"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
         </li>
         <c:set var="isProductActive" value="${param.activeMenu == 'products' || param.activeMenu == 'categories' || param.activeMenu == 'ingredients' || param.activeMenu == 'units' || param.activeMenu == 'attributes'}" />
-        <li class="menu-item ${param.activeMenu == 'products' ? 'active' : ''}" id="product-parent-menu">
+        <li class="menu-item ${isProductActive ? 'active' : ''}" id="product-parent-menu">
             <a href="${pageContext.request.contextPath}/admin/product?action=list" id="product-parent-link">
                 <i class="fa-solid fa-cookie-bite"></i> <span>Sản phẩm</span>
                 <i class="fa-solid ${isProductActive ? 'fa-chevron-up' : 'fa-chevron-down'} arrow" id="product-chevron"></i>
@@ -88,7 +88,7 @@
         function toggleProductMenu() {
             let isExpanded = false;
             childItems.forEach(item => {
-                if (item.style.display === "none") {
+                if (item.style.display === "none" || item.style.display === "") {
                     item.style.display = "block";
                     isExpanded = true;
                 } else {
@@ -107,6 +107,7 @@
             }
         }
 
+        // Toggle when clicking the chevron
         if (productChevron) {
             productChevron.addEventListener("click", function(e) {
                 e.preventDefault();
@@ -115,10 +116,13 @@
             });
         }
 
+        // Allow clicking the parent link to ALWAYS navigate to the product list page
+        // (This ensures clicking 'Sản phẩm' will work even when viewing submenus like 'Danh mục' or 'Đơn vị tính')
         if (productParentLink) {
             productParentLink.addEventListener("click", function(e) {
                 const activeMenu = "${param.activeMenu}";
-                if (activeMenu === "products" || activeMenu === "categories" || activeMenu === "ingredients" || activeMenu === "units" || activeMenu === "attributes") {
+                // If we are already on the main products list page, toggle the submenu instead of reloading
+                if (activeMenu === "products") {
                     e.preventDefault();
                     toggleProductMenu();
                 }
