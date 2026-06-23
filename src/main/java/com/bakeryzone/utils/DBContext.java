@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class DBContext {
 
     public static Connection getJDBCConnection() {
-        String url = "jdbc:mysql://localhost:3306/bakery";
+        String url = "jdbc:mysql://localhost:3306/bakery_1";
         String user = "root"; 
         String password = "1234";
         
@@ -29,7 +29,7 @@ public class DBContext {
 
 
     }
-    public static void main(String[] args) {
+    public static void main(String[] args) {                                                                                    
         Connection conn = getJDBCConnection();
         if(conn!= null){
             System.out.println("Thanh cong");
