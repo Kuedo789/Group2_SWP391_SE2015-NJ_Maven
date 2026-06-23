@@ -48,7 +48,7 @@ public class CustomerOrderController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
-        String customerId = currentUser.getUserId();
+        String customerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
         List<Order> ordersList = orderDAO.getOrdersByCustomerId(customerId);
 
 
@@ -130,6 +130,42 @@ public class CustomerOrderController extends HttpServlet {
         int pageSize = 6;
         int totalPages = (int) Math.ceil((double) totalOrders / pageSize);
         
+        // Count orders for each status matching the date range
+        int countAll = 0;
+        int countProcessing = 0;
+        int countShipping = 0;
+        int countCompleted = 0;
+        int countCancelled = 0;
+
+        for (Order order : ordersList) {
+            boolean dateMatch = true;
+            if (order.getOrderTime() == null) {
+                dateMatch = false;
+            } else {
+                if (startDate != null && order.getOrderTime().before(startDate)) {
+                    dateMatch = false;
+                }
+                if (endDate != null && order.getOrderTime().after(endDate)) {
+                    dateMatch = false;
+                }
+            }
+            if (dateMatch) {
+                countAll++;
+                String dbStatus = order.getOrderStatus();
+                if (dbStatus != null) {
+                    if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing")) {
+                        countProcessing++;
+                    } else if (dbStatus.equalsIgnoreCase("Delivering")) {
+                        countShipping++;
+                    } else if (dbStatus.equalsIgnoreCase("Completed")) {
+                        countCompleted++;
+                    } else if (dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled")) {
+                        countCancelled++;
+                    }
+                }
+            }
+        }
+
         int currentPage = 1;
         String pageParam = request.getParameter("page");
         if (pageParam != null) {
@@ -150,6 +186,11 @@ public class CustomerOrderController extends HttpServlet {
         request.setAttribute("startDate", startDateStr);
         request.setAttribute("endDate", endDateStr);
         request.setAttribute("status", status);
+        request.setAttribute("countAll", countAll);
+        request.setAttribute("countProcessing", countProcessing);
+        request.setAttribute("countShipping", countShipping);
+        request.setAttribute("countCompleted", countCompleted);
+        request.setAttribute("countCancelled", countCancelled);
         request.getRequestDispatcher("/customer/my-orders.jsp").forward(request, response);
     }
 
