@@ -341,6 +341,7 @@ public class ProductDAO {
                 + "    t.Default_Margin_Percent AS Default_Margin_Percent, "
                 + "    t.Default_Service_Percent AS Default_Service_Percent, "
                 + "    t.Instruction_Steps AS Instruction_Steps, "
+                + "    0 AS Base_Price, "
                 + "    (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0) "
                 + "     FROM template_ingredient_detail d "
                 + "     JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
@@ -482,7 +483,7 @@ public class ProductDAO {
                     Map<String, Object> map = new HashMap<>();
                     map.put("ingredientId", rs.getString("Ingredient_ID"));
                     map.put("ingredientName", rs.getString("Ingredient_Name"));
-                    map.put("standardGram", rs.getDouble("Quantity"));
+                    map.put("standardGram", rs.getDouble("Quantity")); // DB column is Quantity
                     map.put("pricePerUnit", rs.getDouble("Price_Per_Unit"));
                     map.put("unitMeasure", rs.getString("Unit_Name"));
                     map.put("unitId", rs.getString("Unit_ID"));
