@@ -268,8 +268,9 @@ public class CustomerOrderController extends HttpServlet {
 
             if ("cancel".equalsIgnoreCase(action) && orderNo != null && !orderNo.trim().isEmpty()) {
                 Order order = orderDAO.getOrderByNo(orderNo);
+                String actualCustomerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
 
-                if (order != null && order.getCustomerId().equals(currentUser.getUserId())) {
+                if (order != null && order.getCustomerId().equals(actualCustomerId)) {
                     String dbStatus = order.getOrderStatus();
                     if (dbStatus != null && (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing"))) {
                         orderDAO.updateOrderStatus(orderNo, "Cancelled");
