@@ -154,15 +154,6 @@ public class Order {
         return items;
     }
 
-    private BigDecimal remainingCodBalance;
-
-    public BigDecimal getRemainingCodBalance() {
-        return remainingCodBalance;
-    }
-
-    public void setRemainingCodBalance(BigDecimal remainingCodBalance) {
-        this.remainingCodBalance = remainingCodBalance;
-    }
 
     public BigDecimal getRemainingAmount() {
         if (remainingCodBalance != null) {
