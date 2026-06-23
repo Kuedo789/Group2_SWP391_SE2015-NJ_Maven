@@ -39,6 +39,9 @@
             </div>
             
             <div class="header-right">
+                <button class="header-icon-btn"><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
+                <button class="header-icon-btn"><i class="fa-regular fa-circle-question"></i></button>
+
                 <div class="profile-section">
                     <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
                     <div class="profile-info">
