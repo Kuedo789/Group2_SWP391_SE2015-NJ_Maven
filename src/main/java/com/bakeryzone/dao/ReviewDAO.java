@@ -24,7 +24,7 @@ public class ReviewDAO {
                 cc.Calculated_Price,
                 cc.Greeting_Text,
                 t.Template_Name,
-                (SELECT COALESCE(SUM(d.Standard_Gram * i.Price_Per_Unit), 0) 
+                (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0) 
                  FROM template_ingredient_detail d 
                  JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID 
                  WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost,
@@ -313,7 +313,7 @@ public class ReviewDAO {
         String query = """
             SELECT 
                 r.*, c.Full_Name AS Customer_Name, cc.Calculated_Price, cc.Greeting_Text, t.Template_Name,
-                (SELECT COALESCE(SUM(d.Standard_Gram * i.Price_Per_Unit), 0) 
+                (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0) 
                  FROM template_ingredient_detail d 
                  JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID 
                  WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost,

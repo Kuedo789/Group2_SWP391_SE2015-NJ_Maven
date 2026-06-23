@@ -25,7 +25,7 @@ public class CategoryDAO {
 
         String sql
                 = "SELECT Category_ID, Category_Name, Description, "
-                + "CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable, Icon_URL "
+                + "CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable, image_url "
                 + "FROM product_category "
                 + "ORDER BY Category_ID";
 
@@ -41,7 +41,7 @@ public class CategoryDAO {
                         rs.getString("Description"),
                         rs.getString("Category_Type"),
                         rs.getBoolean("enable"),
-                        rs.getString("Icon_URL")
+                        rs.getString("image_url")
                 );
                 list.add(cat);
             }
@@ -69,7 +69,7 @@ public class CategoryDAO {
             conn = DBContext.getJDBCConnection();
 
             // Route "Sản phẩm chính" and "Phụ kiện" to product_category
-            String sql = "INSERT INTO product_category (Category_ID, Category_Name, Description, Icon_URL) VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO product_category (Category_ID, Category_Name, Description, image_url) VALUES (?, ?, ?, ?)";
             ps = conn.prepareStatement(sql);
             ps.setString(1, cat.getCategoryId());
             ps.setString(2, cat.getCategoryName());
@@ -155,8 +155,8 @@ public class CategoryDAO {
         String searchPattern = "%" + (search != null ? search : "") + "%";
 
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT Category_ID, Category_Name, Description, Category_Type, enable, Icon_URL FROM ( ");
-        sql.append("SELECT Category_ID, Category_Name, Description, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable, Icon_URL FROM product_category ");
+        sql.append("SELECT Category_ID, Category_Name, Description, Category_Type, enable, image_url FROM ( ");
+        sql.append("SELECT Category_ID, Category_Name, Description, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable, image_url FROM product_category ");
         sql.append(") AS combined ");
         sql.append("WHERE (Category_ID LIKE ? OR Category_Name LIKE ?) ");
 
@@ -187,7 +187,7 @@ public class CategoryDAO {
                         rs.getString("Description"),
                         rs.getString("Category_Type"),
                         rs.getBoolean("enable"),
-                        rs.getString("Icon_URL")
+                        rs.getString("image_url")
                 );
                 list.add(cat);
             }
@@ -246,7 +246,7 @@ public class CategoryDAO {
         ResultSet rs = null;
 
         String sql
-                = "SELECT Category_ID, Category_Name, Description, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable, Icon_URL FROM product_category WHERE Category_ID = ?";
+                = "SELECT Category_ID, Category_Name, Description, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable, image_url FROM product_category WHERE Category_ID = ?";
 
         try {
             conn = DBContext.getJDBCConnection();
@@ -261,7 +261,7 @@ public class CategoryDAO {
                         rs.getString("Description"),
                         rs.getString("Category_Type"),
                         rs.getBoolean("enable"),
-                        rs.getString("Icon_URL")
+                        rs.getString("image_url")
                 );
             }
         } finally {
@@ -288,7 +288,7 @@ public class CategoryDAO {
             conn = DBContext.getJDBCConnection();
 
             // Route "Sản phẩm chính" and "Phụ kiện" to product_category
-            String sql = "UPDATE product_category SET Category_Name = ?, Description = ?, Icon_URL = ? WHERE Category_ID = ?";
+            String sql = "UPDATE product_category SET Category_Name = ?, Description = ?, image_url = ? WHERE Category_ID = ?";
             ps = conn.prepareStatement(sql);
             ps.setString(1, cat.getCategoryName());
             ps.setString(2, cat.getDescription());

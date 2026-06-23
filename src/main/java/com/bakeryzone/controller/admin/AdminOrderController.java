@@ -25,14 +25,7 @@ public class AdminOrderController extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
         
-        // Security check
-        if (user == null || (!"ADMIN".equalsIgnoreCase(user.getRoleId()) && !"STAFF".equalsIgnoreCase(user.getRoleId()))) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
 
         String action = request.getParameter("action");
         if (action == null || action.trim().isEmpty()) {
@@ -55,14 +48,7 @@ public class AdminOrderController extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
         
-        // Security check
-        if (user == null || (!"ADMIN".equalsIgnoreCase(user.getRoleId()) && !"STAFF".equalsIgnoreCase(user.getRoleId()))) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
 
         String action = request.getParameter("action");
         if ("update-status".equals(action)) {

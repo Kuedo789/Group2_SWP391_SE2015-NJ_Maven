@@ -48,7 +48,7 @@ public class CustomerOrderController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
-        String customerId = currentUser.getUserId();
+        String customerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
         List<Order> ordersList = orderDAO.getOrdersByCustomerId(customerId);
 
 
