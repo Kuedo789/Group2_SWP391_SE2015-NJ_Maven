@@ -113,7 +113,7 @@
                 <span class="material-symbols-outlined" style="font-size: 64px; margin-bottom: 16px; display: block; color: var(--primary); opacity: 0.7;">shopping_bag</span>
                 <h3 style="font-family: 'Playfair Display', serif; font-size: 22px; color: var(--text); margin-bottom: 8px;">Chưa có đơn hàng nào</h3>
                 <p>Những chiếc bánh ngọt ngào đang chờ bạn đặt tại tiệm.</p>
-                <a href="<%= request.getContextPath() %>/home" class="btn btn-primary" style="margin-top: 20px; display: inline-block; text-decoration: none;">Đặt bánh ngay</a>
+                <a href="<%= request.getContextPath() %>/home" class="btn btn-primary" style="margin-top: 20px; text-decoration: none;">Đặt bánh ngay</a>
             </div>
         <%
             } else {

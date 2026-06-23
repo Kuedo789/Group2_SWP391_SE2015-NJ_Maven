@@ -14,6 +14,8 @@ $filesToCopy = @(
     "admin/ingredientDetail.jsp",
     "admin/unitList.jsp",
     "admin/unitDetail.jsp",
+    "admin/orderList.jsp",
+    "admin/orderDetail.jsp",
     "common/sidebar.jsp"
 )
 
