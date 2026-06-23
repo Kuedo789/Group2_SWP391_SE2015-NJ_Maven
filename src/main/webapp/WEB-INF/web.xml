@@ -36,6 +36,22 @@
         <filter-name>AuthorizationFilter</filter-name>
         <filter-class>com.bakeryzone.controller.auth.AuthorizationFilter</filter-class>
     </filter>
+    <filter>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <filter-class>org.apache.catalina.filters.SetCharacterEncodingFilter</filter-class>
+        <init-param>
+            <param-name>encoding</param-name>
+            <param-value>UTF-8</param-value>
+        </init-param>
+        <init-param>
+            <param-name>ignore</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
     <servlet>
         <servlet-name>CustomerCheckoutServlet</servlet-name>
         <servlet-class>com.bakeryzone.controller.customer.CustomerCheckoutServlet</servlet-class>

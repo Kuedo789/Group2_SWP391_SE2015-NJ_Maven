@@ -119,8 +119,9 @@ public class CustomerProductController extends HttpServlet {
         
         if (currentUser != null) {
             currentUserId = currentUser.getUserId();
-            hasBought = reviewDAO.hasBoughtProduct(currentUser.getUserId(), product.getId());
-            hasReviewed = reviewDAO.hasReviewed(currentUser.getUserId(), product.getId());
+            String customerId = new com.bakeryzone.dao.OrderDAO().getCustomerIdByUserId(currentUser.getUserId());
+            hasBought = reviewDAO.hasBoughtProduct(customerId, product.getId());
+            hasReviewed = reviewDAO.hasReviewed(customerId, product.getId());
         }
 
         // Load reviews

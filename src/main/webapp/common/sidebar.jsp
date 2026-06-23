@@ -17,7 +17,7 @@
     <div class="nav-section-title">Quản lý</div>
     <ul class="sidebar-menu">
         <li class="menu-item ${param.activeMenu == 'orders' ? 'active' : ''}">
-            <a href="#"><i class="fa-solid fa-receipt"></i> Đơn hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
+            <a href="${pageContext.request.contextPath}/admin/orders"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
         </li>
         <c:set var="isProductActive" value="${param.activeMenu == 'products' || param.activeMenu == 'categories' || param.activeMenu == 'ingredients' || param.activeMenu == 'units' || param.activeMenu == 'attributes'}" />
         <li class="menu-item ${param.activeMenu == 'products' ? 'active' : ''}" id="product-parent-menu">

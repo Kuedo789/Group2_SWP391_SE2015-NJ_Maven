@@ -21,9 +21,21 @@ public class Order {
     private BigDecimal shippingFee;
     private String productionStatus;
     private String shipperName;
+    private BigDecimal remainingCodBalance;
     private final List<OrderItem> items = new ArrayList<>();
 
     public Order() {
+    }
+
+    public BigDecimal getRemainingCodBalance() {
+        if (remainingCodBalance != null) {
+            return remainingCodBalance;
+        }
+        return getRemainingAmount();
+    }
+
+    public void setRemainingCodBalance(BigDecimal remainingCodBalance) {
+        this.remainingCodBalance = remainingCodBalance;
     }
 
     public String getOrderNo() {

@@ -40,7 +40,7 @@
             </form>
 
             <!-- Cart -->
-            <button type="button" title="Giỏ hàng" onclick="#'">
+            <button type="button" title="Giỏ hàng" onclick="window.location.href='<%= contextPath %>/cart'">
                 <span class="material-symbols-outlined">shopping_cart</span>
                 <span class="cart-count" id="navCartCount">0</span>
             </button>
