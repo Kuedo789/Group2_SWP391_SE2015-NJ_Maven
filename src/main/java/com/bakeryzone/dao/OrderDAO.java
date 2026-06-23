@@ -32,7 +32,7 @@ public class OrderDAO {
 
     public List<Order> getOrdersByCustomerId(String customerId) {
         List<Order> orders = new ArrayList<>();
-        String sql = "SELECT * FROM `orders` WHERE Customer_ID = ? ORDER BY Order_Time DESC";
+        String sql = "SELECT * FROM `order` WHERE Customer_ID = ? ORDER BY Order_Time DESC";
 
         try (Connection conn = DBContext.getJDBCConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -52,7 +52,7 @@ public class OrderDAO {
     }
 
     public Order getOrderByNo(String orderNo) {
-        String sql = "SELECT * FROM `orders` WHERE Order_No = ?";
+        String sql = "SELECT * FROM `order` WHERE Order_No = ?";
 
         try (Connection conn = DBContext.getJDBCConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -183,7 +183,7 @@ public class OrderDAO {
     }
 
     public boolean updateOrderStatus(String orderNo, String status) {
-        String sql = "UPDATE `orders` SET OrderStatus = ? WHERE Order_No = ?";
+        String sql = "UPDATE `order` SET OrderStatus = ? WHERE Order_No = ?";
         try (Connection conn = DBContext.getJDBCConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);

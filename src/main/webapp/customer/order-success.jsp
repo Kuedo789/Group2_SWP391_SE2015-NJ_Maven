@@ -40,7 +40,8 @@
         }
 
         .success-icon {
-            margin-bottom: 24px;
+            margin-top: 40px;
+            margin-bottom: 16px;
         }
 
         .success-title {
@@ -207,7 +208,7 @@
 
     <main class="order-success-page">
         <div class="success-icon">
-            <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="160" height="160" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <!-- Star -->
                 <path d="M60 25L63 35H73L65 41L68 51L60 45L52 51L55 41L47 35H57L60 25Z" fill="#a8d08d" stroke="#365e2e" stroke-width="4" stroke-linejoin="round"/>
                 <!-- Cake Top -->
@@ -230,9 +231,10 @@
         </div>
 
         <h1 class="success-title">Đặt hàng thành công!</h1>
-        <p class="success-desc">
-            Cảm ơn bạn đã tin tưởng Tiệm Bánh Thủ Công. Đơn hàng của bạn đang được<br/>
-            chúng mình chuẩn bị rồi nhé! Một chút ngọt ngào sẽ sớm gõ cửa nhà bạn.
+        <p class="success-desc" style="max-width: 600px; font-size: 17px;">
+            Cảm ơn bạn đã tin tưởng Tiệm Bánh Thủ Công.<br/>
+            Đơn hàng của bạn đang được chúng mình chuẩn bị rồi nhé!<br/>
+            Một chút ngọt ngào sẽ sớm gõ cửa nhà bạn.
         </p>
 
         <div class="order-info-card">
@@ -267,6 +269,9 @@
     <jsp:include page="../common/scripts.jsp" />
     
     <script>
+        // Clear cart after successful checkout
+        localStorage.removeItem("cart");
+        
         function copyOrderNo() {
             var textToCopy = "<%= order.getOrderNo() %>";
             navigator.clipboard.writeText(textToCopy).then(function() {

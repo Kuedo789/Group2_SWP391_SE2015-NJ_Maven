@@ -39,7 +39,7 @@
             <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Thuộc tính</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'customers' ? 'active' : ''}">
-            <a href="<%= request.getContextPath() %>/customer"><i class="fa-solid fa-users"></i> Khách hàng</a>
+            <a href="${pageContext.request.contextPath}/admin/customer?action=list"><i class="fa-solid fa-users"></i> Khách hàng</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'promotions' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi <i class="fa-solid fa-chevron-down arrow"></i></a>
@@ -51,17 +51,17 @@
             <a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
         <li class="menu-item ${param.activeMenu == 'reviews' ? 'active' : ''}">
-            <a href="reviews?action=list"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a>
+            <a href="${pageContext.request.contextPath}/admin/reviews?action=list"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a>
         </li>
     </ul>
 
     <div class="nav-section-title">Hệ thống</div>
     <ul class="sidebar-menu">
         <li class="menu-item ${param.activeMenu == 'users' ? 'active' : ''}">
-            <a href="staff?action=list"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
+            <a href="${pageContext.request.contextPath}/admin/staff?action=list"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'roles' ? 'active' : ''}">
-            <a href="#"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a>
+            <a href="${pageContext.request.contextPath}/admin/role-permissions?action=list"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a>
         </li>
         <li class="menu-item ${param.activeMenu == 'settings' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a>

@@ -316,7 +316,7 @@
                     <div class="breadcrumbs">
                         <a href="#">Dashboard</a>
                         <span>&gt;</span>
-                        <a href="reviews?action=list">Quản lý đánh giá</a>
+                        <a href="${pageContext.request.contextPath}/admin/reviews?action=list">Quản lý đánh giá</a>
                         <span>&gt;</span>
                         <a href="#" class="active text-dark font-weight-bold">Chi tiết đánh giá</a>
                     </div>
@@ -421,11 +421,11 @@
                         </div>
 
                         <div class="col-12 d-flex flex-wrap justify-content-end gap-3 mt-5 pt-3 border-top">
-                            <a href="reviews?action=list" class="btn-cz-secondary">
+                            <a href="${pageContext.request.contextPath}/admin/reviews?action=list" class="btn-cz-secondary">
                                 <i class="fa-solid fa-arrow-left"></i> Trở về danh sách
                             </a>
 
-                            <form action="${pageContext.request.contextPath}/reviews" method="POST" class="d-inline">
+                            <form action="${pageContext.request.contextPath}/admin/reviews" method="POST" class="d-inline">
                                 <input type="hidden" name="action" value="updateStatus">
                                 <input type="hidden" name="reviewId" value="${review.reviewId}">
                                 <input type="hidden" name="status" value="Approved">
@@ -434,7 +434,7 @@
                                 </button>
                             </form>
 
-                            <form action="${pageContext.request.contextPath}/reviews" method="POST" class="d-inline">
+                            <form action="${pageContext.request.contextPath}/admin/reviews" method="POST" class="d-inline">
                                 <input type="hidden" name="action" value="updateStatus">
                                 <input type="hidden" name="reviewId" value="${review.reviewId}">
                                 <input type="hidden" name="status" value="Featured">
@@ -443,7 +443,7 @@
                                 </button>
                             </form>
 
-                            <form action="${pageContext.request.contextPath}/reviews" method="POST" class="d-inline">
+                            <form action="${pageContext.request.contextPath}/admin/reviews" method="POST" class="d-inline">
                                 <input type="hidden" name="action" value="updateStatus">
                                 <input type="hidden" name="reviewId" value="${review.reviewId}">
                                 <input type="hidden" name="status" value="Rejected">

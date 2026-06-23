@@ -34,8 +34,10 @@ public class ReviewDAO {
             JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
             LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID
             LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
-            WHERE cc.Template_ID = ?
-            ORDER BY r.Review_ID DESC
+            WHERE cc.Template_ID = ? AND r.Moderation_Status IN ('Approved', 'Featured')
+                        ORDER BY 
+                            CASE WHEN r.Moderation_Status = 'Featured' THEN 1 ELSE 2 END ASC, 
+                            r.Review_ID DESC
             """;
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -372,5 +374,41 @@ public class ReviewDAO {
         }
         return false;
     }
+    
+    public List<Review> getFeaturedReviewsForHomePage() {
+    List<Review> list = new ArrayList<>();
+    String sql = """
+        SELECT 
+            r.Review_ID,
+            r.Rating_Stars,
+            r.Comment,
+            c.Full_Name AS Customer_Name,
+            t.Template_Name
+        FROM product_review r
+        JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
+        LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID
+        LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
+        WHERE r.Moderation_Status = 'Featured'
+        ORDER BY r.Review_ID DESC
+        LIMIT 3
+        """; // Lấy tối đa 3 bài nổi bật nhất để vừa vặn khung giao diện
+
+    try (Connection conn = com.bakeryzone.utils.DBContext.getJDBCConnection(); 
+         PreparedStatement ps = conn.prepareStatement(sql); 
+         ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            Review r = new Review();
+            r.setReviewId(rs.getString("Review_ID"));
+            r.setRatingStars(rs.getInt("Rating_Stars"));
+            r.setComment(rs.getString("Comment"));
+            r.setCustomerName(rs.getString("Customer_Name"));
+            r.setTemplateName(rs.getString("Template_Name"));
+            list.add(r);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return list;
+}
 
 }
