@@ -40,7 +40,7 @@
             </form>
 
             <!-- Cart -->
-            <button type="button" title="Giỏ hàng" onclick="#'">
+            <button type="button" title="Giỏ hàng" onclick="window.location.href = '${pageContext.request.contextPath}/cart'">
                 <span class="material-symbols-outlined">shopping_cart</span>
                 <span class="cart-count" id="navCartCount">0</span>
             </button>
@@ -147,7 +147,10 @@
                         const cart = JSON.parse(cartStr);
                         if (Array.isArray(cart)) {
                             let totalQty = 0;
-                            cart.forEach(item => { if (item) totalQty += (parseInt(item.qty) || 1); });
+                            cart.forEach(item => {
+                                if (item)
+                                    totalQty += (parseInt(item.qty) || 1);
+                            });
                             countEl.innerText = totalQty;
                         } else {
                             countEl.innerText = "0";
@@ -155,7 +158,7 @@
                     } else {
                         countEl.innerText = "0";
                     }
-                } catch(e) {
+                } catch (e) {
                     countEl.innerText = "0";
                 }
             }

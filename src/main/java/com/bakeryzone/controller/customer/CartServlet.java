@@ -74,22 +74,17 @@ public class CartServlet extends HttpServlet {
     // =========================================================
     // PRIVATE HELPER METHODS (Controller Pattern)
     // =========================================================
-
     private void renderCartPage(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
-
-        // Replace with your actual auth check; using a test ID for isolated development
         String userId = (session != null && session.getAttribute("loggedInUserId") != null)
                 ? (String) session.getAttribute("loggedInUserId")
-                : "USR-TEST-001";
+                : "CUS_2C4FEACD";
 
         List<CartItemDTO> cartItems = cartDAO.getCartItemsForUser(userId);
-        String aggregateStatus = cartDAO.getCartAggregateStatus(userId);
 
-        // Dynamic Subtotal Calculation (Respects Soft-Delete constraint)
+        // Calculate subtotal for items that are currently active
         BigDecimal subtotal = BigDecimal.ZERO;
         for (CartItemDTO item : cartItems) {
-            // Only add to the user's checkout total if the item has not been disabled by an admin
             if (item.isActive() && item.getUnitPrice() != null) {
                 BigDecimal itemTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
                 subtotal = subtotal.add(itemTotal);
@@ -98,8 +93,7 @@ public class CartServlet extends HttpServlet {
 
         request.setAttribute("cartItems", cartItems);
         request.setAttribute("cartSubtotal", subtotal);
-        request.setAttribute("footerAggregateStatus", aggregateStatus);
-
+        // Removed aggregate status if it relied on accessory tables
         request.getRequestDispatcher("/customer/cart.jsp").forward(request, response);
     }
 

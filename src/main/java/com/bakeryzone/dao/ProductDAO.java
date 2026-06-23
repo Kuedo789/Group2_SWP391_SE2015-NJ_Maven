@@ -17,8 +17,8 @@ import java.util.logging.Logger;
 
 /**
  * DAO class for managing Product CRUD operations matching the updated schema.
- * Operates on cake_template, product_category, tracks Base_Price, and
- * calculates dynamic margins/service percentages.
+ * Operates on cake_template, product_category, and calculates dynamic
+ * margins/service percentages.
  */
 public class ProductDAO {
 
@@ -122,6 +122,7 @@ public class ProductDAO {
             // 1. Get the total count matching filters
             String baseCountSql = "SELECT COUNT(*) FROM (" + getBaseUnionQuery() + ") AS p WHERE 1=1";
             List<Object> countParams = new ArrayList<>();
+            // Fix this line:
             String filteredCountSql = appendFilterConditions(baseCountSql, category, status, search, countParams);
 
             try (PreparedStatement ps = conn.prepareStatement(filteredCountSql)) {
@@ -164,6 +165,11 @@ public class ProductDAO {
         }
 
         return new ProductSearchResult(list, totalCount);
+    }
+
+    private int countCountParams(String category, String status, String search, List<Object> params) {
+        // Wrapper extraction tool matching native pattern
+        return params.size();
     }
 
     /**
@@ -233,11 +239,10 @@ public class ProductDAO {
                 }
 
                 if (exists) {
-                    // Merged Update query containing all fields
                     String updateT = "UPDATE cake_template SET Template_Name = ?, "
                             + "Estimated_Labor_Hours = ?, Allows_Greeting = ?, Image_URL = ?, Status = ?, "
                             + "Is_Featured = ?, Full_Description = ?, Category_ID = ?, "
-                            + "Base_Price = ?, Default_Margin_Percent = ?, Default_Service_Percent = ?, Instruction_Steps = ? "
+                            + "Default_Margin_Percent = ?, Default_Service_Percent = ?, Instruction_Steps = ? "
                             + "WHERE Template_ID = ?";
                     try (PreparedStatement ps = conn.prepareStatement(updateT)) {
                         ps.setString(1, product.getName());
@@ -251,20 +256,18 @@ public class ProductDAO {
                         String cId = product.getCategoryId();
                         ps.setString(8, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
 
-                        ps.setDouble(9, product.getBasePrice());
-                        ps.setDouble(10, product.getDefaultMarginPercent());
-                        ps.setDouble(11, product.getDefaultServicePercent());
-                        ps.setString(12, product.getInstructionSteps());
-                        ps.setString(13, product.getId());
+                        ps.setDouble(9, product.getDefaultMarginPercent());
+                        ps.setDouble(10, product.getDefaultServicePercent());
+                        ps.setString(11, product.getInstructionSteps());
+                        ps.setString(12, product.getId());
 
                         success = ps.executeUpdate() > 0;
                     }
                 } else {
-                    // Merged Insert query containing all fields
                     String insertT = "INSERT INTO cake_template (Template_ID, Template_Name, Estimated_Labor_Hours, "
                             + "Allows_Greeting, Image_URL, Status, Is_Featured, Full_Description, Category_ID, "
-                            + "Base_Price, Default_Margin_Percent, Default_Service_Percent, Instruction_Steps) "
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                            + "Default_Margin_Percent, Default_Service_Percent, Instruction_Steps) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                     try (PreparedStatement ps = conn.prepareStatement(insertT)) {
                         ps.setString(1, product.getId());
                         ps.setString(2, product.getName());
@@ -278,10 +281,9 @@ public class ProductDAO {
                         String cId = product.getCategoryId();
                         ps.setString(9, (cId == null || cId.trim().isEmpty()) ? null : cId.trim());
 
-                        ps.setDouble(10, product.getBasePrice());
-                        ps.setDouble(11, product.getDefaultMarginPercent());
-                        ps.setDouble(12, product.getDefaultServicePercent());
-                        ps.setString(13, product.getInstructionSteps());
+                        ps.setDouble(10, product.getDefaultMarginPercent());
+                        ps.setDouble(11, product.getDefaultServicePercent());
+                        ps.setString(12, product.getInstructionSteps());
 
                         success = ps.executeUpdate() > 0;
                     }
@@ -340,11 +342,10 @@ public class ProductDAO {
                 + "    t.Category_ID AS Category_ID, "
                 + "    c.Category_Name AS Category_Name, "
                 + "    t.Estimated_Labor_Hours AS Estimated_Labor_Hours, "
-                + "    t.Base_Price AS Base_Price, "
                 + "    t.Default_Margin_Percent AS Default_Margin_Percent, "
                 + "    t.Default_Service_Percent AS Default_Service_Percent, "
                 + "    t.Instruction_Steps AS Instruction_Steps, "
-                + "    (SELECT COALESCE(SUM(d.Standard_Gram * i.Price_Per_Unit), 0) "
+                + "    (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0) " // Fixed: Used d.Quantity instead of d.Standard_Gram
                 + "     FROM template_ingredient_detail d "
                 + "     JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
                 + "     WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost "
@@ -353,7 +354,6 @@ public class ProductDAO {
     }
 
     public Product mapRowToProduct(ResultSet rs) throws SQLException {
-        // Safe check to see if explicit constructor with margin/service/instruction fields exists
         Product p;
         try {
             p = new Product(
@@ -373,7 +373,6 @@ public class ProductDAO {
                     rs.getString("Instruction_Steps")
             );
         } catch (Exception e) {
-            // Fallback to standard bean if constructor signature differs
             p = new Product();
             p.setId(rs.getString("Product_ID"));
             p.setName(rs.getString("Product_Name"));
@@ -385,13 +384,12 @@ public class ProductDAO {
             p.setStatus(rs.getString("Status"));
             p.setFeatured(rs.getBoolean("Is_Featured"));
             p.setFullDescription(rs.getString("Full_Description"));
-            //p.setType(rs.getString("Product_Type"));
             p.setDefaultMarginPercent(rs.getDouble("Default_Margin_Percent"));
             p.setDefaultServicePercent(rs.getDouble("Default_Service_Percent"));
             p.setInstructionSteps(rs.getString("Instruction_Steps"));
         }
 
-        // Handle both: dynamic validation fallback logic from main AND actual saved Base_Price fallback
+        // Calculate dynamic base price using margin math formulas from template ingredient dependencies
         double ingredientCost = rs.getDouble("Ingredient_Cost");
         double margin = rs.getDouble("Default_Margin_Percent");
         double service = rs.getDouble("Default_Service_Percent");
@@ -404,14 +402,7 @@ public class ProductDAO {
             calculatedBasePrice = ingredientCost;
         }
 
-        // If your DB explicitly has a static Base_Price set, use it. Otherwise, use calculated option.
-        double explicitBasePrice = rs.getDouble("Base_Price");
-        if (explicitBasePrice > 0) {
-            p.setBasePrice(explicitBasePrice);
-        } else {
-            p.setBasePrice(calculatedBasePrice);
-        }
-
+        p.setBasePrice(calculatedBasePrice);
         return p;
     }
 
@@ -440,7 +431,7 @@ public class ProductDAO {
         } else if ("price-desc".equalsIgnoreCase(sortBy)) {
             return " ORDER BY p.Ingredient_Cost / (1.0 - (p.Default_Margin_Percent + p.Default_Service_Percent)/100.0) DESC";
         }
-        return " ORDER BY p.Product_ID DESC"; // newest first
+        return " ORDER BY p.Product_ID DESC";
     }
 
     public List<Product> getHomepageBestSellerProducts(int limit) {
@@ -506,16 +497,15 @@ public class ProductDAO {
         try (Connection conn = DBContext.getJDBCConnection()) {
             conn.setAutoCommit(false);
             try {
-                // 1. Delete existing
                 String deleteSql = "DELETE FROM template_ingredient_detail WHERE Template_ID = ?";
                 try (PreparedStatement ps = conn.prepareStatement(deleteSql)) {
                     ps.setString(1, templateId);
                     ps.executeUpdate();
                 }
 
-                // 2. Insert new batch
                 if (ingredientIds != null && standardGrams != null) {
-                    String insertSql = "INSERT INTO template_ingredient_detail (Template_ID, Ingredient_ID, Standard_Gram) VALUES (?, ?, ?)";
+                    // Find this inside saveProductIngredients and change standard_gram to Quantity:
+                    String insertSql = "INSERT INTO template_ingredient_detail (Template_ID, Ingredient_ID, Quantity) VALUES (?, ?, ?)";
                     try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
                         for (int i = 0; i < ingredientIds.length; i++) {
                             if (ingredientIds[i] != null && !ingredientIds[i].trim().isEmpty()) {

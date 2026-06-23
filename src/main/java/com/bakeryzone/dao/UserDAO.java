@@ -536,7 +536,7 @@ public class UserDAO {
 
             String sqlUser = "INSERT INTO `user` "
                     + "(User_ID, Email, Password, Role_ID, Is_Verified, OTP_Code, OTP_Expiry, Created_At, Account_Status) "
-                    + "VALUES (?, ?, ?, 'CUSTOMER', ?, ?, ?, NOW(), ?)";
+                    + "VALUES (?, ?, ?, 'R02', ?, ?, ?, NOW(), ?)";
 
             psUser = conn.prepareStatement(sqlUser);
             psUser.setString(1, userId);
