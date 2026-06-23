@@ -2,8 +2,8 @@
 
 .sidebar {
     width: 260px !important;
-    background-color: #1e251b !important; /* Dark green background */
-    border-right: 1px solid #2d2b2b !important;
+    background-color: #2B2D42 !important; /* Standard Dark Charcoal Admin Sidebar Background */
+    border-right: 1px solid var(--cz-border-color) !important;
     display: flex !important;
     flex-direction: column !important;
     flex-shrink: 0 !important;
@@ -43,11 +43,11 @@
     padding: 20px 25px 20px 25px !important;
     display: flex !important;
     align-items: center !important;
-    border-bottom: 1px solid #2d2b2b !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
     margin-bottom: 10px !important;
 }
 .sidebar .sidebar-brand i {
-    color: #c8a46d !important; /* Gold */
+    color: #3f5f36 !important; /* Brand Olive/Forest Green */
     font-size: 24px !important;
     margin-right: 10px !important;
 }
@@ -58,12 +58,12 @@
     letter-spacing: 0.5px !important;
 }
 .sidebar .sidebar-brand span span {
-    color: #c8a46d !important;
+    color: #3f5f36 !important;
 }
 
 /* Titles */
 .sidebar .nav-section-title {
-    color: #756d64 !important; /* Muted text */
+    color: rgba(255,255,255,0.35) !important; /* Muted text */
     font-size: 11px !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
@@ -99,7 +99,7 @@
     display: flex !important;
     align-items: center !important;
     padding: 8px 24px !important; /* Narrower padding: from 11px/12px to 8px */
-    color: #b5b5b5 !important; /* Original light gray text */
+    color: rgba(255,255,255,0.55) !important; /* Original light gray text */
     text-decoration: none !important;
     font-size: 14px !important;
     font-weight: 500 !important;
@@ -111,21 +111,21 @@
 /* Hover State for links (subtle, non-distracting highlight) */
 .sidebar .menu-item a:hover {
     color: #ffffff !important;
-    background-color: rgba(255, 255, 255, 0.05) !important; /* 5% white overlay */
+    background-color: rgba(255, 255, 255, 0.06) !important; /* 6% white overlay */
 }
 .sidebar .menu-item a:hover i {
-    color: #c8a46d !important; /* Icon turns gold on hover */
+    color: #3f5f36 !important; /* Icon turns green on hover */
 }
 
 /* Active State for links */
 .sidebar .menu-item.active a {
     color: #ffffff !important;
-    background-color: #2f4728 !important; /* Dark green active bg */
-    border-left-color: #c8a46d !important; /* Gold left border */
+    background-color: #3d3f57 !important; /* Slightly lighter active bg */
+    border-left-color: #3f5f36 !important; /* Green left border */
     font-weight: 600 !important;
 }
 .sidebar .menu-item.active a i {
-    color: #c8a46d !important;
+    color: #3f5f36 !important;
 }
 
 .sidebar .menu-item a i {
@@ -148,7 +148,7 @@
 .sidebar .product-child-item a {
     font-size: 13px !important;
     padding: 6px 24px !important; /* Slightly narrower padding */
-    color: #a0a0a0 !important;
+    color: rgba(255,255,255,0.55) !important;
 }
 .sidebar .product-child-item a i {
     font-size: 12px !important;
@@ -159,7 +159,7 @@
 /* Sidebar Seeding Card */
 .sidebar .sidebar-banner {
     margin: auto 20px 20px 20px !important;
-    background: linear-gradient(135deg, #232222, #181717) !important;
+    background: linear-gradient(135deg, #363852, #2B2D42) !important;
     border-radius: 12px !important;
     padding: 15px !important; /* Tighter padding */
     border: 1px dashed #3f5f36 !important;
