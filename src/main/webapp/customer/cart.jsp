@@ -2,11 +2,19 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <html>
+<<<<<<< Updated upstream
     <head>
         <title>BakeryZone | Giỏ hàng</title>
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/cart.css">
     </head>
     <body>
+=======
+<head>
+    <title>BakeryZone | Giỏ hàng</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/cart.css">
+</head>
+<body>
+>>>>>>> Stashed changes
 
         <div class="cart-container">
             <h1 class="cart-header">Giỏ hàng của bạn</h1>
