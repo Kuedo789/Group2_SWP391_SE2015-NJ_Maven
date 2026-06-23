@@ -456,7 +456,7 @@
                 </div>
 
                 <div class="filter-card">
-                    <form class="filter-form" action="reviews" method="GET">
+                    <form class="filter-form" action="${pageContext.request.contextPath}/admin/reviews" method="GET">
                         <input type="hidden" name="action" value="list">
 
                         <div class="search-wrapper">
@@ -482,7 +482,7 @@
                         </select>
 
                         <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc dữ liệu</button>
-                        <a href="reviews?action=list" class="btn-clear-filter text-center">Làm mới</a>
+                        <a href="${pageContext.request.contextPath}/admin/reviews?action=list" class="btn-clear-filter text-center">Làm mới</a>
                     </form>
                 </div>
 
@@ -532,7 +532,7 @@
                                                 </span>
                                             </td>
                                             <td style="text-align: center;">
-                                                <a href="reviews?action=detail&id=${r.reviewId}" class="btn-action-view" title="Xem chi tiết & Phê duyệt">
+                                                <a href="${pageContext.request.contextPath}/admin/reviews?action=detail&id=${r.reviewId}" class="btn-action-view" title="Xem chi tiết & Phê duyệt">
                                                     <i class="fa-regular fa-eye"></i>
                                                 </a>
                                             </td>
@@ -553,7 +553,7 @@
                         <ul class="pagination-nav">
                             <c:if test="${currentPage > 1}">
                                 <li class="page-num-item">
-                                    <a href="reviews?action=list&page=${currentPage - 1}&keyword=${keyword}&stars=${stars}&status=${status}">
+                                    <a href="${pageContext.request.contextPath}/admin/reviews?action=list&page=${currentPage - 1}&keyword=${keyword}&stars=${stars}&status=${status}">
                                         <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -561,13 +561,13 @@
 
                             <c:forEach begin="1" end="${totalPages}" var="i">
                                 <li class="page-num-item ${currentPage == i ? 'active' : ''}">
-                                    <a href="reviews?action=list&page=${i}&keyword=${keyword}&stars=${stars}&status=${status}">${i}</a>
+                                    <a href="${pageContext.request.contextPath}/admin/reviews?action=list&page=${i}&keyword=${keyword}&stars=${stars}&status=${status}">${i}</a>
                                 </li>
                             </c:forEach>
 
                             <c:if test="${currentPage < totalPages}">
                                 <li class="page-num-item">
-                                    <a href="reviews?action=list&page=${currentPage + 1}&keyword=${keyword}&stars=${stars}&status=${status}">
+                                    <a href="${pageContext.request.contextPath}/admin/reviews?action=list&page=${currentPage + 1}&keyword=${keyword}&stars=${stars}&status=${status}">
                                         <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                     </a>
                                 </li>

@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "ReviewManagementServlet", urlPatterns = {"/reviews"})
+@WebServlet(name = "ReviewManagementServlet", urlPatterns = {"/admin/reviews"})
 public class ReviewManagementServlet extends HttpServlet {
 
     private final ReviewDAO reviewDAO = new ReviewDAO();
@@ -22,7 +22,6 @@ public class ReviewManagementServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         request.setCharacterEncoding("UTF-8");
 
-        // Đồng bộ đọc action an toàn cho cả GET và POST
         String action = request.getParameter("action");
         if (action == null) {
             action = "list";
@@ -36,7 +35,7 @@ public class ReviewManagementServlet extends HttpServlet {
                 showReviewDetail(request, response);
                 break;
             default:
-                showReviewList(request, response);
+                redirectToDefault(request, response);
                 break;
         }
     }
@@ -56,26 +55,23 @@ public class ReviewManagementServlet extends HttpServlet {
             if (reviewId != null && status != null) {
                 String exactStatus = status.trim();
                 
-                // Đồng bộ hóa chuỗi chữ hoa chữ thường an toàn với DB
                 if (exactStatus.equalsIgnoreCase("Approved")) exactStatus = "Approved";
                 if (exactStatus.equalsIgnoreCase("Featured")) exactStatus = "Featured";
                 if (exactStatus.equalsIgnoreCase("Rejected")) exactStatus = "Rejected";
 
                 boolean success = reviewDAO.updateModerationStatus(reviewId, exactStatus);
                 if (success) {
-                    response.sendRedirect(request.getContextPath() + "/reviews?action=list&msg=success");
+                    redirectToDefault(request, response, "success");
                     return;
                 }
             }
-            response.sendRedirect(request.getContextPath() + "/reviews?action=list&msg=fail");
+            redirectToDefault(request, response, "fail");
             return;
         }
         
-        // Nếu không khớp hành động post nào, đá về trang list mặc định
-        response.sendRedirect(request.getContextPath() + "/reviews?action=list");
+        redirectToDefault(request, response);
     }
 
-    // 1. Logic xử lý hiển thị danh sách đánh giá kèm Tìm kiếm, Lọc, Phân trang
     private void showReviewList(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -127,7 +123,6 @@ public class ReviewManagementServlet extends HttpServlet {
         request.getRequestDispatcher("/admin/reviewList.jsp").forward(request, response);
     }
 
-    // 2. Logic xử lý hiển thị chi tiết 1 đánh giá
     private void showReviewDetail(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         String reviewId = request.getParameter("id");
@@ -139,7 +134,19 @@ public class ReviewManagementServlet extends HttpServlet {
                 return;
             }
         }
-        response.sendRedirect(request.getContextPath() + "/reviews?action=list&msg=error");
+        redirectToDefault(request, response, "error");
+    }
+
+    // 🟢 THÊM: Hàm điều hướng mặc định không kèm thông báo
+    private void redirectToDefault(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        response.sendRedirect(request.getContextPath() + "/admin/reviews?action=list");
+    }
+
+    // 🟢 THÊM: Hàm điều hướng nạp kèm tham số thông báo (success, fail, error) cho Toastify nhận diện
+    private void redirectToDefault(HttpServletRequest request, HttpServletResponse response, String msg)
+            throws IOException {
+        response.sendRedirect(request.getContextPath() + "/admin/reviews?action=list&msg=" + msg);
     }
 
     @Override
