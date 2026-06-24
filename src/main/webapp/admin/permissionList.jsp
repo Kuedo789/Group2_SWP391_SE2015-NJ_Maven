@@ -1,7 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,11 +36,11 @@
             .page-title { font-size: 26px; font-weight: 700; color: #111; margin-bottom: 4px; }
             .page-subtitle { font-size: 13.5px; color: var(--cz-text-muted); margin-bottom: 30px; }
 
-            /* Hàng nút bấm chọn Vai trò nằm ngang chuẩn Mockup bản vẽ của bạn */
+            /* Hàng nút bấm chọn Vai trò */
             .role-tabs-container { display: flex; background: #fff; border: 2px solid #222; border-radius: 6px; overflow: hidden; width: fit-content; margin-bottom: 35px; }
             .role-tab-item { padding: 14px 35px; font-weight: 700; text-transform: uppercase; text-decoration: none; color: #222; border-right: 2px solid #222; font-size: 13.5px; transition: all 0.2s; }
             .role-tab-item:last-child { border-right: none; }
-            .role-tab-item.active-tab { background-color: #ced4da; color: #000; } /* Sáng xám active */
+            .role-tab-item.active-tab { background-color: #ced4da; color: #000; }
 
             /* Cột Tính năng xếp dọc */
             .table-card { background-color: var(--cz-card-bg); border-radius: 12px; border: 1px solid var(--cz-border-color); overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02); }
@@ -50,11 +50,11 @@
             .feature-meta-info i { color: var(--cz-primary); font-size: 18px; }
             .feature-endpoint { font-size: 13px; color: #999; font-weight: 400; font-family: monospace; }
 
-            /* Nút công tắc đôi trượt đôi On | Off của bạn */
+            /* Nút công tắc đôi trượt On | Off */
             .toggle-switch-box { display: flex; border: 2px solid #222; border-radius: 20px; overflow: hidden; background-color: #fff; }
             .toggle-btn { padding: 6px 22px; font-size: 12.5px; font-weight: 800; text-transform: uppercase; text-decoration: none; color: #aaa; transition: all 0.2s; }
-            .toggle-btn.on-active { background-color: #ced4da; color: #111; } /* On màu xám */
-            .toggle-btn.off-active { background-color: #222; color: #fff; }  /* Off màu đen */
+            .toggle-btn.on-active { background-color: #ced4da; color: #111; }
+            .toggle-btn.off-active { background-color: #222; color: #fff; } 
         </style>
     </head>
     <body>
@@ -64,34 +64,16 @@
         </jsp:include>
 
         <div class="main-panel">
-            <div class="top-header">
-                <div class="header-left">
-                    <div class="breadcrumbs">
-                        <a href="#">Dashboard</a>
-                        <span>&gt;</span>
-                        <a href="#">System</a>
-                        <span>&gt;</span>
-                        <a href="#" class="active text-dark font-weight-bold">Vai trò & Quyền hạn</a>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="profile-section d-flex align-items-center gap-3">
-                        <span class="fw-bold" style="font-size: 14px;">Hoàng Anh</span>
-                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="rounded-circle" width="35" height="35">
-                    </div>
-                </div>
-            </div>
-
             <div class="content-container">
                 <div class="form-card">
                     <h1 class="page-title">QUẢN LÝ VAI TRÒ & PHÂN QUYỀN ĐỘNG</h1>
                     <p class="page-subtitle">Bật / Tắt trạng thái để kiểm soát việc Ẩn hoặc Hiện trực tiếp các danh mục tính năng trên Sidebar nội bộ</p>
 
-          <div class="role-tabs-container">
-                        <%-- 🟢 THÊM KIỂM TRA AN TOÀN: Chỉ lặp khi danh sách không trống --%>
+                    <div class="role-tabs-container">
                         <c:if test="${not empty ALL_ROLES}">
                             <c:forEach items="${ALL_ROLES}" var="r">
-                                <a href="${pageContext.request.contextPath}/admin/role-permissions?action=list&roleId=${r.roleId}" 
+                                <%-- 🟢 ĐỒNG BỘ: Bỏ tham số action=list thừa để Servlet nhận diện luồng hiển thị chuẩn --%>
+                                <a href="${pageContext.request.contextPath}/admin/role-permissions?roleId=${r.roleId}" 
                                    class="role-tab-item ${CURRENT_ROLE_ID eq r.roleId ? 'active-tab' : ''}">
                                     ${r.roleId}
                                 </a>
@@ -100,7 +82,6 @@
                     </div>
 
                     <div class="table-card p-2">
-                        <%-- 🟢 THÊM KIỂM TRA AN TOÀN: Tránh việc list rỗng gây trắng trang --%>
                         <c:choose>
                             <c:when test="${not empty SCREEN_LIST}">
                                 <c:forEach items="${SCREEN_LIST}" var="s">
@@ -108,15 +89,18 @@
                                         <div class="feature-meta-info">
                                             <i class="fa-solid fa-folder-gear"></i>
                                             <span>${s.screenName}</span>
+                                            <%-- 🟢 ĐỒNG BỘ: Sửa s.endpoint_url thành s.endpointUrl cho đúng Model Java Bean --%>
                                             <span class="feature-endpoint">(${s.endpointUrl})</span>
                                         </div>
                                         
                                         <div class="toggle-switch-box">
-                                            <a href="${pageContext.request.contextPath}/admin/role-permissions?action=toggle&roleId=${CURRENT_ROLE_ID}&screenId=${s.screenId}&status=on" 
+                                            <%-- 🟢 ĐỒNG BỘ: Sửa s.screen_id thành s.screenId, gọi hàm s.activated tường minh để check nút ON --%>
+                                            <a href="${pageContext.request.contextPath}/admin/role-permissions?action=on&roleId=${CURRENT_ROLE_ID}&screenId=${s.screenId}" 
                                                class="toggle-btn ${s.activated ? 'on-active' : ''}">
                                                 On
                                             </a>
-                                            <a href="${pageContext.request.contextPath}/admin/role-permissions?action=toggle&roleId=${CURRENT_ROLE_ID}&screenId=${s.screenId}&status=off" 
+                                            <%-- 🟢 ĐỒNG BỘ: Gọi nghịch đảo !s.activated để check trạng thái cho nút OFF --%>
+                                            <a href="${pageContext.request.contextPath}/admin/role-permissions?action=off&roleId=${CURRENT_ROLE_ID}&screenId=${s.screenId}" 
                                                class="toggle-btn ${!s.activated ? 'off-active' : ''}">
                                                 Off
                                             </a>
