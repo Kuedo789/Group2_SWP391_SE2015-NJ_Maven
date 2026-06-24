@@ -449,6 +449,13 @@
                 </div>
             </div>
 
+            <!-- Top Header -->
+            <jsp:include page="../common/top-header.jsp">
+                <jsp:param name="parentMenu" value="Hệ thống" />
+                <jsp:param name="activeMenu" value="Quản lý đánh giá" />
+            </jsp:include>
+
+
             <div class="content-container">
                 <div class="page-title-area">
                     <div>

@@ -29,14 +29,17 @@ public class CartServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Enforce Session Authentication
+        // 1. Enforce Session Authentication using your unified mapping strategy
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("loggedInUserId") == null) {
+        com.bakeryzone.model.User user = (session != null) ? (com.bakeryzone.model.User) session.getAttribute("user") : null;
+
+        if (user == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        String userId = (String) session.getAttribute("loggedInUserId");
+        // 2. Safely extract verified target credentials
+        String userId = user.getUserId();
         String actionParam = request.getParameter("action");
 
         // Command Pattern Routing based on JSP value="action-ID"
@@ -59,7 +62,6 @@ public class CartServlet extends HttpServlet {
                     // Handled by admin product states.
                     break;
                 case "checkout":
-                    // Redirects to order generation flow instead of cart refresh
                     response.sendRedirect(request.getContextPath() + "/checkout");
                     return;
                 default:
@@ -74,32 +76,41 @@ public class CartServlet extends HttpServlet {
     // =========================================================
     // PRIVATE HELPER METHODS (Controller Pattern)
     // =========================================================
-
     private void renderCartPage(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
 
-        // Replace with your actual auth check; using a test ID for isolated development
-        String userId = (session != null && session.getAttribute("loggedInUserId") != null)
-                ? (String) session.getAttribute("loggedInUserId")
-                : "USR-TEST-001";
+        // 1. Fetch the user object from the session
+        com.bakeryzone.model.User user = (session != null) ? (com.bakeryzone.model.User) session.getAttribute("user") : null;
 
+        // 2. Guard Clause: If no user object exists, flag as unauthenticated
+        if (user == null) {
+            request.setAttribute("isUnauthenticated", true);
+            request.getRequestDispatcher("/customer/cart.jsp").forward(request, response);
+            return;
+        }
+
+        // 3. Extract the real verified ID from the session user object
+        // (Double-check if your getter is getUserId() or getUser_ID() in your model)
+        String userId = user.getUserId();
         List<CartItemDTO> cartItems = cartDAO.getCartItemsForUser(userId);
-        String aggregateStatus = cartDAO.getCartAggregateStatus(userId);
 
-        // Dynamic Subtotal Calculation (Respects Soft-Delete constraint)
+        // 4. Calculate running subtotal for active items
         BigDecimal subtotal = BigDecimal.ZERO;
-        for (CartItemDTO item : cartItems) {
-            // Only add to the user's checkout total if the item has not been disabled by an admin
-            if (item.isActive() && item.getUnitPrice() != null) {
-                BigDecimal itemTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-                subtotal = subtotal.add(itemTotal);
+        if (cartItems != null) {
+            for (CartItemDTO item : cartItems) {
+                if (item.isActive() && item.getUnitPrice() != null) {
+                    BigDecimal itemTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+                    subtotal = subtotal.add(itemTotal);
+                }
             }
         }
 
+        // 5. Update the navbar total item quantity badge state
+        int totalCount = cartDAO.getCartCountForUser(userId);
+        session.setAttribute("cartCount", totalCount);
+
         request.setAttribute("cartItems", cartItems);
         request.setAttribute("cartSubtotal", subtotal);
-        request.setAttribute("footerAggregateStatus", aggregateStatus);
-
         request.getRequestDispatcher("/customer/cart.jsp").forward(request, response);
     }
 

@@ -64,6 +64,25 @@
         </jsp:include>
 
         <div class="main-panel">
+
+            <div class="top-header">
+                <div class="header-left">
+                    <div class="breadcrumbs">
+                        <a href="#">Dashboard</a>
+                        <span>&gt;</span>
+                        <a href="#">System</a>
+                        <span>&gt;</span>
+                        <a href="#" class="active text-dark font-weight-bold">Vai trò & Quyền hạn</a>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="profile-section d-flex align-items-center gap-3">
+                        <span class="fw-bold" style="font-size: 14px;"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></span>
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="rounded-circle" width="35" height="35">
+                    </div>
+                </div>
+            </div>
+
             <div class="content-container">
                 <div class="form-card">
                     <h1 class="page-title">QUẢN LÝ VAI TRÒ & PHÂN QUYỀN ĐỘNG</h1>

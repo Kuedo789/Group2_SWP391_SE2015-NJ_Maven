@@ -505,8 +505,8 @@
                 <div class="profile-section">
                     <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
                     <div class="profile-info">
-                        <div class="profile-name">Nguyễn Anh Quân</div>
-                        <div class="profile-role">PIC</div>
+                        <div class="profile-name"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></div>
+                        <div class="profile-role"><c:out value="${not empty sessionScope.user.roleName ? sessionScope.user.roleName : sessionScope.user.roleId}" /></div>
                     </div>
                 </div>
             </div>
@@ -519,6 +519,13 @@
                 <!-- Keep track of the product ID -->
                 <input type="hidden" name="id" value="${product.id}">
                 <input type="hidden" name="productType" value="${product.productType}">
+                <!-- Keep track of pagination/filters -->
+                <input type="hidden" name="page" value="${param.page}">
+                <input type="hidden" name="pageSize" value="${param.pageSize}">
+                <input type="hidden" name="category" value="${param.category}">
+                <input type="hidden" name="statusFilter" value="${param.status}">
+                <input type="hidden" name="search" value="${param.search}">
+                <input type="hidden" name="sortBy" value="${param.sortBy}">
 
                 <!-- Page Title Area -->
                 <div class="page-title-area">
@@ -681,13 +688,13 @@
                         <!-- Navigation Tabs -->
                         <div class="cz-tabs">
                             <button type="button" class="cz-tab-btn active" data-tab="basic" onclick="switchTab('basic')">
-                                <i class="fa-solid fa-circle-info me-1"></i> Thong Tin Co Ban
+                                <i class="fa-solid fa-circle-info me-1"></i> Thông Tin Cơ Bản
                             </button>
                             <button type="button" class="cz-tab-btn" data-tab="bom" onclick="switchTab('bom')">
-                                <i class="fa-solid fa-calculator me-1"></i> Dinh Luong & BOM
+                                <i class="fa-solid fa-calculator me-1"></i> Định Lượng & BOM
                             </button>
                             <button type="button" class="cz-tab-btn" data-tab="recipe" onclick="switchTab('recipe')">
-                                <i class="fa-solid fa-kitchen-set me-1"></i> Quy Trinh Huong Dan
+                                <i class="fa-solid fa-kitchen-set me-1"></i> Quy Trình Hướng Dẫn
                             </button>
                         </div>
 
@@ -695,17 +702,17 @@
                         <div id="tab-basic" class="cz-tab-pane active">
                             <!-- Product Information Card -->
                             <div class="detail-card">
-                                <h5 class="card-header-title">Thong Tin Banh Kem</h5>
+                                <h5 class="card-header-title">Thông Tin Bánh Kem</h5>
                                 
                                 <div class="row g-3">
                                      <div class="col-md-12">
-                                         <label class="form-label-cz">Ten Banh Kem <span>*</span></label>
+                                         <label class="form-label-cz">Tên Bánh Kem <span>*</span></label>
                                          <input type="text" class="form-control-cz" id="productName" name="name" value="${product.name}" required>
                                          <div id="error-name" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                      </div>
 
                                      <div class="col-md-6">
-                                         <label class="form-label-cz">Danh muc <span>*</span></label>
+                                         <label class="form-label-cz">Danh mục <span>*</span></label>
                                          <select class="form-select-cz" name="categoryId">
                                              <c:forEach var="cat" items="${productCategories}">
                                                  <option value="${cat.id}" ${product.categoryId eq cat.id ? 'selected' : ''}>${cat.name}</option>
@@ -713,35 +720,35 @@
                                          </select>
                                      </div>
                                      <div class="col-md-6">
-                                         <label class="form-label-cz">Thoi Gian Lam Viec Uoc Tinh (gio) <span>*</span></label>
+                                         <label class="form-label-cz">Thời Gian Làm Việc Ước Tính (giờ) <span>*</span></label>
                                          <input type="number" step="0.01" class="form-control-cz" id="productEstimatedLaborHours" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required>
                                          <div id="error-estimatedLaborHours" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                      </div>
 
                                      <div class="col-md-12">
-                                         <label class="form-label-cz">Cho Phep Ghi Chu</label>
+                                         <label class="form-label-cz">Cho Phép Ghi Chú</label>
                                          <div class="switch-container">
-                                             <span class="switch-label-text">Cho phep khach ghi chu chuc mung len mat banh</span>
+                                             <span class="switch-label-text">Cho phép khách ghi chú chúc mừng lên mặt bánh</span>
                                              <input type="checkbox" class="switch-input" name="allowsGreeting" value="true" ${product.allowsGreeting ? 'checked' : ''}>
                                          </div>
                                      </div>
 
                                      <div class="col-md-12">
-                                         <label class="form-label-cz">Trang Thai Kinh Doanh <span>*</span></label>
+                                         <label class="form-label-cz">Trạng Thái Kinh Doanh <span>*</span></label>
                                          <div class="status-radio-group">
                                              <label class="status-radio-label">
                                                  <input type="radio" name="status" class="status-radio-input" value="Active" ${product.status eq 'Active' ? 'checked' : ''}>
-                                                 Dang hoat dong
+                                                 Đang hoạt động
                                              </label>
                                              <label class="status-radio-label">
                                                  <input type="radio" name="status" class="status-radio-input" value="Inactive" ${product.status eq 'Inactive' ? 'checked' : ''}>
-                                                 Tam ngung ban
+                                                 Tạm ngưng bán
                                              </label>
                                          </div>
                                      </div>
 
                                     <div class="col-md-12">
-                                        <label class="form-label-cz" style="display: block; margin-bottom: 8px;">Mo Ta Chi Tiet</label>
+                                        <label class="form-label-cz" style="display: block; margin-bottom: 8px;">Mô Tả Chi Tiết</label>
                                         <div id="editor-container" style="height: 200px; font-family: 'Be Vietnam Pro', sans-serif; background-color: #fff;">
                                             ${product.fullDescription}
                                         </div>
@@ -755,8 +762,8 @@
                         <div id="tab-bom" class="cz-tab-pane">
                             <!-- BOM Ingredients Table Card -->
                             <div class="detail-card">
-                                <h5 class="card-header-title">Dinh Luong Nguyen Lieu (BOM)</h5>
-                                <p class="card-header-desc" style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">Quan ly cac nguyen lieu su dung de san xuat banh kem nay. He thong se tu dong cap nhat gia thanh.</p>
+                                <h5 class="card-header-title">Định Lượng Nguyên Liệu (BOM)</h5>
+                                <p class="card-header-desc" style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">Quản lý các nguyên liệu sử dụng để sản xuất bánh kem này. Hệ thống sẽ tự động cập nhật giá thành.</p>
                                 
                                 <!-- Template for JS options -->
                                 <template id="bom-options-template">
@@ -769,11 +776,11 @@
                                     <table class="table align-middle" id="bomTable" style="border-color: #f3f4f6;">
                                         <thead>
                                             <tr style="border-bottom: 2px solid #e5e7eb;">
-                                                <th style="font-size: 13px; font-weight: 700; color: #374151; padding-bottom: 12px;">Nguyen Lieu</th>
-                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 180px; padding-bottom: 12px;">So Luong</th>
-                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 120px; padding-bottom: 12px;">Don Gia</th>
-                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 120px; padding-bottom: 12px;">Thanh Tien</th>
-                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 60px; padding-bottom: 12px; text-align: center;">Xoa</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; padding-bottom: 12px; min-width: 280px;">Nguyên Liệu</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 180px; padding-bottom: 12px;">Số Lượng</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 120px; padding-bottom: 12px;">Đơn Giá</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 120px; padding-bottom: 12px;">Thành Tiền</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 60px; padding-bottom: 12px; text-align: center;">Xóa</th>
                                             </tr>
                                         </thead>
                                         <tbody id="bomTableBody">
@@ -783,25 +790,25 @@
                                                         <select class="form-select-cz bom-select" name="bomIngredientId" onchange="updateBomRowPrice(this)" style="padding: 6px 12px; height: 38px;">
                                                             <c:forEach var="ing" items="${allIngredients}">
                                                                 <option value="${ing.ingredientId}" data-price="${ing.pricePerUnit}" data-unit="${ing.unitName}" ${item.ingredientId eq ing.ingredientId ? 'selected' : ''}>
-                                                                    ${fn:escapeXml(ing.ingredientName)} (d/${ing.unitName})
+                                                                    ${fn:escapeXml(ing.ingredientName)} (đ/${ing.unitName})
                                                                 </option>
                                                             </c:forEach>
                                                         </select>
                                                     </td>
                                                     <td>
                                                         <div class="d-flex align-items-center gap-2">
-                                                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px;" required>
+                                                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px; width: 90px; min-width: 90px;" required>
                                                             <span class="bom-unit-label text-muted small" style="min-width: 45px; text-align: left; font-weight: 500;">${item.unitMeasure}</span>
                                                         </div>
                                                     </td>
                                                     <td class="bom-unit-price" style="font-size: 13px; color: #4b5563;">
-                                                        <fmt:formatNumber value="${item.pricePerUnit}" type="number" pattern="#,##0"/> d/${item.unitMeasure}
+                                                        <fmt:formatNumber value="${item.pricePerUnit}" type="number" pattern="#,##0"/> đ/${item.unitMeasure}
                                                     </td>
                                                     <td class="bom-row-total" style="font-weight: 600; font-size: 13.5px; color: #1f2937;">
-                                                        <fmt:formatNumber value="${item.standardGram * item.pricePerUnit}" type="number" pattern="#,##0"/> d
+                                                        <fmt:formatNumber value="${item.standardGram * item.pricePerUnit}" type="number" pattern="#,##0"/> đ
                                                     </td>
                                                     <td style="text-align: center;">
-                                                        <button type="button" class="btn-delete-bom-row" onclick="removeBomRow(this)" title="Xoa nguyen lieu">
+                                                        <button type="button" class="btn-delete-bom-row" onclick="removeBomRow(this)" title="Xóa nguyên liệu">
                                                             <i class="fa-regular fa-trash-can"></i>
                                                         </button>
                                                     </td>
@@ -811,25 +818,25 @@
                                     </table>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top: 1px dashed #e5e7eb; margin-bottom: 25px;">
-                                    <button type="button" class="btn btn-sm btn-cz-primary" onclick="addBomRow()" style="font-size: 13px; padding: 8px 18px; font-weight: 600;"><i class="fa-solid fa-plus me-1"></i> Them Nguyen Lieu</button>
+                                    <button type="button" class="btn btn-sm btn-cz-primary" onclick="addBomRow()" style="font-size: 13px; padding: 8px 18px; font-weight: 600;"><i class="fa-solid fa-plus me-1"></i> Thêm Nguyên Liệu</button>
                                     <div>
-                                        <span style="color: #4b5563; font-weight: 500;">Tong chi phi nguyen lieu:</span> 
-                                        <span id="bomCostTotal" style="font-size: 18px; font-weight: 700; color: var(--cz-primary); margin-left: 10px;">0 d</span>
+                                        <span style="color: #4b5563; font-weight: 500;">Tổng chi phí nguyên liệu:</span> 
+                                        <span id="bomCostTotal" style="font-size: 18px; font-weight: 700; color: var(--cz-primary); margin-left: 10px;">0 đ</span>
                                     </div>
                                 </div>
 
                                 <!-- Financial markup and pricing suggest cards -->
-                                <h5 class="card-header-title mt-4" style="border-top: 1px solid #e5e7eb; padding-top: 20px;">Co Cau Gia Ban De Xuat</h5>
+                                <h5 class="card-header-title mt-4" style="border-top: 1px solid #e5e7eb; padding-top: 20px;">Cơ Cấu Giá Bán Đề Xuất</h5>
                                 <div class="row g-3 mt-1">
                                     <div class="col-md-4">
-                                        <label class="form-label-cz">Bien Loi Nhuan (%) <span>*</span></label>
+                                        <label class="form-label-cz">Biên Lợi Nhuận (%) <span>*</span></label>
                                         <div class="input-group-cz">
                                             <input type="number" step="0.01" class="form-control-cz" id="defaultMarginPercent" name="defaultMarginPercent" value="${product.defaultMarginPercent}" required>
                                             <span class="input-group-addon">%</span>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
-                                        <label class="form-label-cz">Phi Dich Vu / Bep (%) <span>*</span></label>
+                                        <label class="form-label-cz">Phí Dịch Vụ / Bếp (%) <span>*</span></label>
                                         <div class="input-group-cz">
                                             <input type="number" step="0.01" class="form-control-cz" id="defaultServicePercent" name="defaultServicePercent" value="${product.defaultServicePercent}" required>
                                             <span class="input-group-addon">%</span>
@@ -837,11 +844,11 @@
                                     </div>
                                     <div class="col-md-4">
                                         <div class="pricing-suggested-card-tab">
-                                            <span class="pricing-title" style="font-size: 11px; font-weight: 600; color: #166534; text-transform: uppercase;">Gia Ban De Xuat</span>
+                                            <span class="pricing-title" style="font-size: 11px; font-weight: 600; color: #166534; text-transform: uppercase;">Giá Bán Đề Xuất</span>
                                             <span class="pricing-value" id="productBasePriceText" style="font-size: 22px; font-weight: 700; color: #15803d; margin: 2px 0;">
-                                                <fmt:formatNumber value="${product.basePrice}" type="number" pattern="#,##0"/> d
+                                                <fmt:formatNumber value="${product.basePrice}" type="number" pattern="#,##0"/> đ
                                             </span>
-                                            <span class="pricing-formula" style="font-size: 10px; color: #166534; opacity: 0.8;">Gia = Chi phi / (1 - Tong phi %)</span>
+                                            <span class="pricing-formula" style="font-size: 10px; color: #166534; opacity: 0.8;">Giá = Chi phí / (1 - Tổng phí %)</span>
                                             <input type="hidden" id="productBasePrice" value="${product.basePrice}">
                                         </div>
                                     </div>
@@ -853,8 +860,8 @@
                         <div id="tab-recipe" class="cz-tab-pane">
                             <!-- Recipe Instructions Card -->
                             <div class="detail-card">
-                                <h5 class="card-header-title">Quy Trinh & Huong Dan Lam Bep</h5>
-                                <p class="card-header-desc" style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">Nhap chi tiet cac buoc che bien danh rieng cho nhan vien bep san xuat.</p>
+                                <h5 class="card-header-title">Quy Trình & Hướng Dẫn Làm Bếp</h5>
+                                <p class="card-header-desc" style="font-size: 13px; color: #6b7280; margin-bottom: 15px;">Nhập chi tiết các bước chế biến dành riêng cho nhân viên bếp sản xuất.</p>
                                 
                                 <div id="recipe-editor-container" style="height: 300px; font-family: 'Be Vietnam Pro', sans-serif; background-color: #fff; border-radius: 8px;">
                                     ${product.instructionSteps}
@@ -1084,7 +1091,7 @@
                 const nameVal = nameInput.value.trim();
                 if (nameVal.length === 0) {
                     if (errorName) {
-                        errorName.textContent = 'Ten banh kem khong duoc de trong.';
+                        errorName.textContent = 'Tên bánh kem không được để trống.';
                         errorName.style.display = 'block';
                     }
                     nameInput.classList.add('is-invalid');
@@ -1097,7 +1104,7 @@
                 const laborVal = parseFloat(laborInput.value);
                 if (isNaN(laborVal) || laborVal < 0) {
                     if (errorLabor) {
-                        errorLabor.textContent = 'Thoi gian lam viec phai lon hon hoac bang 0.';
+                        errorLabor.textContent = 'Thời gian làm việc phải lớn hơn hoặc bằng 0.';
                         errorLabor.style.display = 'block';
                     }
                     laborInput.classList.add('is-invalid');
@@ -1120,7 +1127,7 @@
                 if (!hasError && (marginVal + serviceVal >= 100)) {
                     marginInput.classList.add('is-invalid');
                     serviceInput.classList.add('is-invalid');
-                    alert('Tong ty le Bien lai va Phi dich vu phai nho hon 100%.');
+                    alert('Tổng tỷ lệ Biên lợi và Phí dịch vụ phải nhỏ hơn 100%.');
                     hasError = true;
                 }
             }
@@ -1214,6 +1221,30 @@
         }
 
         function updateBomRowPrice(select) {
+            const selectedVal = select.value;
+            const currentGramInput = select.closest('tr').querySelector('.bom-grams');
+            const currentGram = parseFloat(currentGramInput.value) || 0;
+            
+            // Check if there is another row with the same ingredient selected
+            let duplicateRowFound = false;
+            const rows = document.querySelectorAll('#bomTableBody tr');
+            rows.forEach(row => {
+                const rowSelect = row.querySelector('.bom-select');
+                if (rowSelect && rowSelect !== select && rowSelect.value === selectedVal) {
+                    // Merge quantities
+                    const existingGramInput = row.querySelector('.bom-grams');
+                    if (existingGramInput) {
+                        const existingGram = parseFloat(existingGramInput.value) || 0;
+                        existingGramInput.value = (existingGram + currentGram).toFixed(2);
+                        duplicateRowFound = true;
+                    }
+                }
+            });
+            
+            if (duplicateRowFound) {
+                // Remove this duplicate row
+                select.closest('tr').remove();
+            }
             recalculateBom();
         }
 
@@ -1225,20 +1256,41 @@
         function addBomRow() {
             try {
                 const tbody = document.getElementById('bomTableBody');
-                const tr = document.createElement('tr');
-                
                 const templateEl = document.getElementById('bom-options-template');
-                const optionsHtml = templateEl ? templateEl.innerHTML : '';
+                if (!templateEl) return;
                 
+                // Find already selected IDs
+                const selectedIds = Array.from(document.querySelectorAll('#bomTableBody .bom-select')).map(s => s.value);
+                
+                // Create a temporary div to parse options
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = templateEl.innerHTML;
+                const options = tempDiv.querySelectorAll('option');
+                
+                // Find first option that is not selected
+                let targetValue = "";
+                for (let opt of options) {
+                    if (!selectedIds.includes(opt.value)) {
+                        targetValue = opt.value;
+                        break;
+                    }
+                }
+                
+                // If all are selected, just default to first
+                if (targetValue === "" && options.length > 0) {
+                    targetValue = options[0].value;
+                }
+                
+                const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>
                         <select class="form-select-cz bom-select" name="bomIngredientId" onchange="updateBomRowPrice(this)" style="padding: 5px 10px; height: 38px;">
-                            ` + optionsHtml + `
+                            ` + templateEl.innerHTML + `
                         </select>
                     </td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="100" oninput="recalculateBom()" style="padding: 5px 10px; height: 38px;" required>
+                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="100" oninput="recalculateBom()" style="padding: 5px 10px; height: 38px; width: 90px; min-width: 90px;" required>
                             <span class="bom-unit-label text-muted small" style="min-width: 45px; text-align: left; font-weight: 500;"></span>
                         </div>
                     </td>
@@ -1250,6 +1302,12 @@
                         </button>
                     </td>
                 `;
+                
+                const selectEl = tr.querySelector('.bom-select');
+                if (selectEl && targetValue !== "") {
+                    selectEl.value = targetValue;
+                }
+                
                 tbody.appendChild(tr);
                 recalculateBom();
             } catch (err) {
