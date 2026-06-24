@@ -67,8 +67,24 @@ public class AdminUnitController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        String search = request.getParameter("search");
+        if (search == null) {
+            search = "";
+        }
+        
         List<UnitMeasure> list = unitMeasureDAO.getAllUnitMeasures();
+        
+        // Let's filter the list based on search term
+        if (!search.trim().isEmpty()) {
+            final String finalSearch = search.trim().toLowerCase();
+            list = list.stream()
+                .filter(u -> (u.getUnitId() != null && u.getUnitId().toLowerCase().contains(finalSearch)) 
+                          || (u.getUnitName() != null && u.getUnitName().toLowerCase().contains(finalSearch)))
+                .collect(java.util.stream.Collectors.toList());
+        }
+
         request.setAttribute("unitList", list);
+        request.setAttribute("search", search);
         request.getRequestDispatcher("/admin/unitList.jsp").forward(request, response);
     }
 
@@ -110,15 +126,22 @@ public class AdminUnitController extends HttpServlet {
     private void deleteUnit(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         String id = request.getParameter("id");
+        String searchParam = request.getParameter("search");
+        
+        StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/admin/unit?action=list");
+        if (searchParam != null && !searchParam.trim().isEmpty()) {
+            redirectUrl.append("&search=").append(java.net.URLEncoder.encode(searchParam, "UTF-8"));
+        }
+
         if (id != null && !id.trim().isEmpty()) {
             boolean success = unitMeasureDAO.deleteUnitMeasure(id);
             if (success) {
-                response.sendRedirect(request.getContextPath() + "/admin/unit?action=list&msg=delete_success");
+                response.sendRedirect(redirectUrl.toString() + "&msg=delete_success");
             } else {
-                response.sendRedirect(request.getContextPath() + "/admin/unit?action=list&msg=delete_error");
+                response.sendRedirect(redirectUrl.toString() + "&msg=delete_error");
             }
         } else {
-            response.sendRedirect(request.getContextPath() + "/admin/unit?action=list");
+            response.sendRedirect(redirectUrl.toString());
         }
     }
 
@@ -127,6 +150,7 @@ public class AdminUnitController extends HttpServlet {
         String unitId = request.getParameter("unitId");
         String unitName = request.getParameter("unitName");
         String description = request.getParameter("description");
+        String searchParam = request.getParameter("search");
 
         if (unitId != null) unitId = unitId.trim().toUpperCase();
         if (unitName != null) unitName = unitName.trim();
@@ -162,8 +186,13 @@ public class AdminUnitController extends HttpServlet {
         UnitMeasure unit = new UnitMeasure(unitId, unitName, description);
         boolean success = unitMeasureDAO.saveUnitMeasure(unit);
 
+        StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/admin/unit?action=list");
+        if (searchParam != null && !searchParam.trim().isEmpty()) {
+            redirectUrl.append("&search=").append(java.net.URLEncoder.encode(searchParam, "UTF-8"));
+        }
+
         if (success) {
-            response.sendRedirect(request.getContextPath() + "/admin/unit?action=list&msg=" + (isNew ? "add_success" : "edit_success"));
+            response.sendRedirect(redirectUrl.toString() + "&msg=" + (isNew ? "add_success" : "edit_success"));
         } else {
             request.setAttribute("unit", unit);
             request.setAttribute("error", "Lỗi hệ thống khi lưu đơn vị tính.");

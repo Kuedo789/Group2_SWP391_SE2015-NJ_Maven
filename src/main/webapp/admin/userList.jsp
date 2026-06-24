@@ -606,31 +606,11 @@
 
         <div class="main-panel">
 
-            <div class="top-header">
-                <div class="header-left">
-                    <button class="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
-                    <div class="breadcrumbs">
-                        <a href="#">Dashboard</a>
-                        <span>&gt;</span>
-                        <a href="#">System</a>
-                        <span>&gt;</span>
-                        <a href="#" class="active text-dark font-weight-bold">Quản lý người dùng</a>
-                    </div>
-                </div>
-
-                <div class="header-right">
-                    <button class="header-icon-btn"><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
-                    <button class="header-icon-btn"><i class="fa-regular fa-circle-question"></i></button>
-
-                    <div class="profile-section">
-                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
-                        <div class="profile-info">
-                            <div class="profile-name">Hoàng Anh</div>
-                            <div class="profile-role">PIC</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Top Header -->
+            <jsp:include page="../common/top-header.jsp">
+                <jsp:param name="parentMenu" value="Hệ thống" />
+                <jsp:param name="activeMenu" value="Quản lý người dùng" />
+            </jsp:include>
 
             <div class="content-container">
 

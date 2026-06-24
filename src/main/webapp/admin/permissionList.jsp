@@ -76,7 +76,7 @@
                 </div>
                 <div class="header-right">
                     <div class="profile-section d-flex align-items-center gap-3">
-                        <span class="fw-bold" style="font-size: 14px;">Hoàng Anh</span>
+                        <span class="fw-bold" style="font-size: 14px;"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></span>
                         <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="rounded-circle" width="35" height="35">
                     </div>
                 </div>

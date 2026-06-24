@@ -115,6 +115,7 @@ public class AdminIngredientController extends HttpServlet {
         request.setAttribute("pageSize", pageSize);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalCount", totalCount);
+        request.setAttribute("unitMeasures", unitMeasureDAO.getAllUnitMeasures());
         
         request.getRequestDispatcher("/admin/ingredientList.jsp").forward(request, response);
     }
@@ -161,15 +162,25 @@ public class AdminIngredientController extends HttpServlet {
     private void deleteIngredient(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         String id = request.getParameter("id");
+        
+        String pageParam = request.getParameter("page");
+        String pageSizeParam = request.getParameter("pageSize");
+        String searchParam = request.getParameter("search");
+        
+        StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/admin/ingredient?action=list");
+        if (pageParam != null && !pageParam.trim().isEmpty()) redirectUrl.append("&page=").append(pageParam);
+        if (pageSizeParam != null && !pageSizeParam.trim().isEmpty()) redirectUrl.append("&pageSize=").append(pageSizeParam);
+        if (searchParam != null && !searchParam.trim().isEmpty()) redirectUrl.append("&search=").append(java.net.URLEncoder.encode(searchParam, "UTF-8"));
+
         if (id != null && !id.trim().isEmpty()) {
             boolean success = ingredientDAO.deleteIngredient(id);
             if (success) {
-                response.sendRedirect(request.getContextPath() + "/admin/ingredient?action=list&msg=delete_success");
+                response.sendRedirect(redirectUrl.toString() + "&msg=delete_success");
             } else {
-                response.sendRedirect(request.getContextPath() + "/admin/ingredient?action=list&msg=delete_error");
+                response.sendRedirect(redirectUrl.toString() + "&msg=delete_error");
             }
         } else {
-            response.sendRedirect(request.getContextPath() + "/admin/ingredient?action=list");
+            response.sendRedirect(redirectUrl.toString());
         }
     }
 
@@ -217,8 +228,17 @@ public class AdminIngredientController extends HttpServlet {
         Ingredient ingredient = new Ingredient(id, name, price, unitId, imageUrl, true);
         boolean success = ingredientDAO.saveIngredient(ingredient);
 
+        String pageParam = request.getParameter("page");
+        String pageSizeParam = request.getParameter("pageSize");
+        String searchParam = request.getParameter("search");
+        
+        StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/admin/ingredient?action=list");
+        if (pageParam != null && !pageParam.trim().isEmpty()) redirectUrl.append("&page=").append(pageParam);
+        if (pageSizeParam != null && !pageSizeParam.trim().isEmpty()) redirectUrl.append("&pageSize=").append(pageSizeParam);
+        if (searchParam != null && !searchParam.trim().isEmpty()) redirectUrl.append("&search=").append(java.net.URLEncoder.encode(searchParam, "UTF-8"));
+
         if (success) {
-            response.sendRedirect(request.getContextPath() + "/admin/ingredient?action=list&msg=" + (isNew ? "add_success" : "edit_success"));
+            response.sendRedirect(redirectUrl.toString() + "&msg=" + (isNew ? "add_success" : "edit_success"));
         } else {
             request.setAttribute("ingredient", ingredient);
             request.setAttribute("unitMeasures", unitMeasureDAO.getAllUnitMeasures());
