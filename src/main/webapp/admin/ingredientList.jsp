@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,31 +28,10 @@
     <div class="main-panel">
         
         <!-- Top Header -->
-        <div class="top-header">
-            <div class="header-left">
-                <button class="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
-                <div class="breadcrumbs">
-                    <a href="#">Bảng điều khiển</a>
-                    <span>&gt;</span>
-                    <a href="#">Nguyên liệu</a>
-                    <span>&gt;</span>
-                    <a href="#" class="active text-dark font-weight-bold">Danh sách nguyên liệu</a>
-                </div>
-            </div>
-            
-            <div class="header-right">
-                <button class="header-icon-btn"><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
-                <button class="header-icon-btn"><i class="fa-regular fa-circle-question"></i></button>
-                
-                <div class="profile-section">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
-                    <div class="profile-info">
-                        <div class="profile-name">Nguyễn Anh Quân</div>
-                        <div class="profile-role">PIC</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <jsp:include page="../common/top-header.jsp">
+            <jsp:param name="parentMenu" value="Nguyên liệu" />
+            <jsp:param name="activeMenu" value="Danh sách nguyên liệu" />
+        </jsp:include>
 
         <!-- Dashboard Container -->
         <div class="content-container">
@@ -76,9 +56,9 @@
                     <h1 class="page-title">Quản lý nguyên liệu</h1>
                     <p class="page-subtitle">Quản lý định giá và phân nhóm nguyên liệu làm bánh.</p>
                 </div>
-                <a href="${pageContext.request.contextPath}/admin/ingredient?action=create" class="btn btn-cz-primary">
+                <button type="button" class="btn btn-cz-primary" onclick="openCreateModal()">
                     <i class="fa-solid fa-circle-plus"></i> Thêm nguyên liệu
-                </a>
+                </button>
             </div>
 
             <!-- Filters -->
@@ -119,28 +99,32 @@
                             <c:when test="${not empty ingredientList}">
                                 <c:forEach var="i" items="${ingredientList}" varStatus="status">
                                     <tr>
-                                        <td>${((currentPage - 1) * pageSize) + status.index + 1}</td>
-                                        <td><strong>${i.ingredientId}</strong></td>
-                                        <td>${i.ingredientName}</td>
-                                         <td>${i.unitName}</td>
-                                         <td>
-                                             <c:if test="${not empty i.imageUrl}">
-                                                 <img src="${i.imageUrl}" alt="${i.ingredientName}" style="max-height: 40px; max-width: 60px; border-radius: 4px; border: 1px solid #ddd; object-fit: cover;">
-                                             </c:if>
-                                             <c:if test="${empty i.imageUrl}">
-                                                 <span class="text-muted">Không có ảnh</span>
-                                             </c:if>
-                                         </td>
-                                         <td>
-                                             <span style="font-weight: 600; color: var(--cz-primary);">
-                                                 <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0.00"/> đ / ${i.unitName}
-                                             </span>
-                                         </td>
+                                         <td>${((currentPage - 1) * pageSize) + status.index + 1}</td>
+                                         <td><strong>${i.ingredientId}</strong></td>
+                                         <td>${i.ingredientName}</td>
+                                          <td>
+                                              <span class="badge" style="background-color: #f5f5f5; color: #666; border: 1px solid #ddd; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: 4px; display: inline-flex; align-items: center; letter-spacing: 0.5px;">
+                                                  ${i.unitName}
+                                              </span>
+                                          </td>
+                                          <td>
+                                              <c:if test="${not empty i.imageUrl}">
+                                                  <img src="${i.imageUrl}" alt="${i.ingredientName}" style="max-height: 40px; max-width: 60px; border-radius: 4px; border: 1px solid #ddd; object-fit: cover;">
+                                              </c:if>
+                                              <c:if test="${empty i.imageUrl}">
+                                                  <span class="text-muted" style="font-size: 13.5px;">Không có ảnh</span>
+                                              </c:if>
+                                          </td>
+                                          <td>
+                                              <span style="font-size: 14px; font-weight: 600; color: var(--cz-primary);">
+                                                  <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0.00"/> đ / ${i.unitName}
+                                              </span>
+                                          </td>
                                         <td>
                                             <div class="actions-cell">
-                                                <a href="${pageContext.request.contextPath}/admin/ingredient?action=edit&id=${i.ingredientId}" class="btn-action-edit" title="Chỉnh sửa">
+                                                <button type="button" class="btn-action-edit" title="Chỉnh sửa" onclick="openEditModal('${i.ingredientId}', '${fn:escapeXml(i.ingredientName)}', '${i.unitMeasure}', '${i.pricePerUnit}', '${i.imageUrl}')">
                                                     <i class="fa-regular fa-pen-to-square"></i>
-                                                </a>
+                                                </button>
                                                 <button class="btn-action-delete" title="Xóa nguyên liệu" onclick="if(confirm('Bạn có chắc chắn muốn xóa nguyên liệu ${i.ingredientName} không?')) { deleteIngredient('${i.ingredientId}'); }">
                                                     <i class="fa-regular fa-trash-can"></i>
                                                 </button>
@@ -211,15 +195,145 @@
     <!-- Hidden delete form for POST request -->
     <form id="deleteIngredientForm" action="${pageContext.request.contextPath}/admin/ingredient?action=delete" method="post" style="display:none;">
         <input type="hidden" name="id" id="deleteIngredientId">
+        <input type="hidden" name="page" value="${currentPage}">
+        <input type="hidden" name="pageSize" value="${pageSize}">
+        <input type="hidden" name="search" value="${search}">
     </form>
+
+    <!-- Bootstrap Modal for Add/Edit Ingredient -->
+    <div class="modal fade" id="ingredientModal" tabindex="-1" aria-labelledby="ingredientModalLabel" aria-hidden="true" style="font-family: 'Be Vietnam Pro', sans-serif;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 5px 25px rgba(0,0,0,0.15);">
+                <div class="modal-header" style="background-color: #0f2d1e; color: white; border-top-left-radius: 12px; border-top-right-radius: 12px; padding: 16px 24px;">
+                    <h5 class="modal-title" id="ingredientModalLabel" style="font-weight: 700; font-size: 16px;">Thêm Nguyên Liệu</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="ingredientForm" action="${pageContext.request.contextPath}/admin/ingredient?action=create" method="post">
+                    <input type="hidden" name="ingredientId" id="modalIngredientId" value="">
+                    <input type="hidden" name="page" value="${currentPage}">
+                    <input type="hidden" name="pageSize" value="${pageSize}">
+                    <input type="hidden" name="search" value="${search}">
+                    
+                    <div class="modal-body" style="padding: 24px;">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label-cz" style="font-weight: 600; color: #374151; margin-bottom: 6px; display: block;">Tên Nguyên Liệu <span>*</span></label>
+                                <input type="text" class="form-control-cz" id="modalIngredientName" name="ingredientName" required style="border-radius: 8px;">
+                                <div id="modal-error-name" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <label class="form-label-cz" style="font-weight: 600; color: #374151; margin-bottom: 6px; display: block;">Đơn vị đo <span>*</span></label>
+                                <select class="form-select-cz" id="modalUnitMeasure" name="unitMeasure" required style="border-radius: 8px; height: 42px; font-size: 13.5px; padding: 0 15px;">
+                                    <c:forEach var="u" items="${unitMeasures}">
+                                        <option value="${u.unitId}">${u.unitName} (${u.unitId})</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <label class="form-label-cz" style="font-weight: 600; color: #374151; margin-bottom: 6px; display: block;">Đường dẫn ảnh (Image URL)</label>
+                                <input type="text" class="form-control-cz" id="modalImageUrl" name="imageUrl" style="border-radius: 8px;">
+                            </div>
+                            
+                            <div class="col-md-12">
+                                <label class="form-label-cz" style="font-weight: 600; color: #374151; margin-bottom: 6px; display: block;">Đơn giá (VND) <span>*</span></label>
+                                <input type="number" step="0.01" class="form-control-cz" id="modalPricePerUnit" name="pricePerUnit" required style="border-radius: 8px;">
+                                <div id="modal-error-price" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #f3f4f6; padding: 16px 24px;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 8px; padding: 8px 16px; font-weight: 600; font-size: 14px;">Hủy bỏ</button>
+                        <button type="submit" class="btn btn-cz-primary" style="border-radius: 8px; padding: 8px 20px; font-weight: 600; font-size: 14px; background-color: #0f2d1e; border-color: #0f2d1e; color: white;">Lưu Lại</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let ingModal;
+        window.addEventListener('DOMContentLoaded', () => {
+            ingModal = new bootstrap.Modal(document.getElementById('ingredientModal'));
+        });
+
         function deleteIngredient(id) {
             document.getElementById('deleteIngredientId').value = id;
             document.getElementById('deleteIngredientForm').submit();
         }
+
+        function openCreateModal() {
+            document.getElementById('ingredientModalLabel').textContent = 'Thêm Nguyên Liệu';
+            document.getElementById('ingredientForm').action = '${pageContext.request.contextPath}/admin/ingredient?action=create';
+            document.getElementById('modalIngredientId').value = 'new';
+            document.getElementById('modalIngredientName').value = '';
+            document.getElementById('modalImageUrl').value = '';
+            document.getElementById('modalPricePerUnit').value = '';
+            
+            // Reset validation errors
+            document.getElementById('modal-error-name').style.display = 'none';
+            document.getElementById('modal-error-price').style.display = 'none';
+            document.getElementById('modalIngredientName').classList.remove('is-invalid');
+            document.getElementById('modalPricePerUnit').classList.remove('is-invalid');
+            
+            ingModal.show();
+        }
+
+        function openEditModal(id, name, unit, price, imageUrl) {
+            document.getElementById('ingredientModalLabel').textContent = 'Chỉnh Sửa Nguyên Liệu';
+            document.getElementById('ingredientForm').action = '${pageContext.request.contextPath}/admin/ingredient?action=update';
+            document.getElementById('modalIngredientId').value = id;
+            document.getElementById('modalIngredientName').value = name;
+            document.getElementById('modalUnitMeasure').value = unit;
+            document.getElementById('modalImageUrl').value = imageUrl;
+            document.getElementById('modalPricePerUnit').value = price;
+            
+            // Reset validation errors
+            document.getElementById('modal-error-name').style.display = 'none';
+            document.getElementById('modal-error-price').style.display = 'none';
+            document.getElementById('modalIngredientName').classList.remove('is-invalid');
+            document.getElementById('modalPricePerUnit').classList.remove('is-invalid');
+            
+            ingModal.show();
+        }
+
+        document.getElementById('ingredientForm').addEventListener('submit', function(e) {
+            const nameInput = document.getElementById('modalIngredientName');
+            const priceInput = document.getElementById('modalPricePerUnit');
+            const errorName = document.getElementById('modal-error-name');
+            const errorPrice = document.getElementById('modal-error-price');
+            
+            errorName.style.display = 'none';
+            errorPrice.style.display = 'none';
+            nameInput.classList.remove('is-invalid');
+            priceInput.classList.remove('is-invalid');
+
+            let hasError = false;
+
+            const nameVal = nameInput.value.trim();
+            if (nameVal.length < 2) {
+                errorName.textContent = 'Tên nguyên liệu phải có tối thiểu 2 ký tự.';
+                errorName.style.display = 'block';
+                nameInput.classList.add('is-invalid');
+                hasError = true;
+            }
+
+            const priceVal = parseFloat(priceInput.value);
+            if (isNaN(priceVal) || priceVal < 0) {
+                errorPrice.textContent = 'Đơn giá phải lớn hơn hoặc bằng 0.';
+                errorPrice.style.display = 'block';
+                priceInput.classList.add('is-invalid');
+                hasError = true;
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                return false;
+            }
+        });
     </script>
 </body>
 </html>

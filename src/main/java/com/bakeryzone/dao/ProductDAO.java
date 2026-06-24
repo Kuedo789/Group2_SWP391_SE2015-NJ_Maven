@@ -543,4 +543,19 @@ public class ProductDAO {
         }
         return false;
     }
+
+    public boolean hasOrders(String productId) {
+        String sql = "SELECT COUNT(*) FROM order_item oi JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID WHERE cc.Template_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, productId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to check if product has orders: " + productId, e);
+        }
+        return false;
+    }
 }

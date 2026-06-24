@@ -1,10 +1,4 @@
-<%-- 
-    Document   : admin-navbar
-    Created on : Jun 8, 2026, 4:52:54 PM
-    Author     : thais
---%>
-
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <nav class="navbar">
     <div class="breadcrumb">
         <span>Dashboard &nbsp;/&nbsp; Catalog &nbsp;/&nbsp; <strong>${pageTitle}</strong></span>
@@ -12,9 +6,9 @@
     
     <div class="user-profile">
         <div class="user-info">
-            <div class="user-name">Cao Thai Son</div>
-            <div class="user-role">Administrator</div>
+            <div class="user-name"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></div>
+            <div class="user-role"><c:out value="${not empty sessionScope.user.roleName ? sessionScope.user.roleName : sessionScope.user.roleId}" /></div>
         </div>
-        <div class="avatar"></div>
+        <div class="avatar" style="background-image: url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde'); background-size: cover; background-position: center; width: 35px; height: 35px; border-radius: 50%;"></div>
     </div>
 </nav>
