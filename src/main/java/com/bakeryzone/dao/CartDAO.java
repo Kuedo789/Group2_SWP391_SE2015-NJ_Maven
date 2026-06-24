@@ -79,7 +79,6 @@ public class CartDAO {
 
                     // Explicitly flags if it is a custom configuration based on greeting text existence
                     //dto.setCustom(greeting != null && !greeting.trim().isEmpty());
-
                     items.add(dto);
                 }
             }
@@ -114,5 +113,28 @@ public class CartDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public int getCartCountForUser(String userId) {
+        if (userId == null || userId.trim().isEmpty()) {
+            return 0;
+        }
+
+        String sql = "SELECT COALESCE(SUM(Quantity), 0) FROM cart_item WHERE User_ID = ?";
+
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, userId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            java.util.logging.Logger.getLogger(CartDAO.class.getName())
+                    .log(java.util.logging.Level.SEVERE, "Failed to get cart count for user: " + userId, e);
+        }
+        return 0;
     }
 }

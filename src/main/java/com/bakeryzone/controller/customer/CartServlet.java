@@ -29,14 +29,17 @@ public class CartServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        // Enforce Session Authentication
+        // 1. Enforce Session Authentication using your unified mapping strategy
         HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("loggedInUserId") == null) {
+        com.bakeryzone.model.User user = (session != null) ? (com.bakeryzone.model.User) session.getAttribute("user") : null;
+
+        if (user == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
-        String userId = (String) session.getAttribute("loggedInUserId");
+        // 2. Safely extract verified target credentials
+        String userId = user.getUserId();
         String actionParam = request.getParameter("action");
 
         // Command Pattern Routing based on JSP value="action-ID"
@@ -59,7 +62,6 @@ public class CartServlet extends HttpServlet {
                     // Handled by admin product states.
                     break;
                 case "checkout":
-                    // Redirects to order generation flow instead of cart refresh
                     response.sendRedirect(request.getContextPath() + "/checkout");
                     return;
                 default:
@@ -76,24 +78,39 @@ public class CartServlet extends HttpServlet {
     // =========================================================
     private void renderCartPage(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(false);
-        String userId = (session != null && session.getAttribute("loggedInUserId") != null)
-                ? (String) session.getAttribute("loggedInUserId")
-                : "CUS_2C4FEACD";
 
+        // 1. Fetch the user object from the session
+        com.bakeryzone.model.User user = (session != null) ? (com.bakeryzone.model.User) session.getAttribute("user") : null;
+
+        // 2. Guard Clause: If no user object exists, flag as unauthenticated
+        if (user == null) {
+            request.setAttribute("isUnauthenticated", true);
+            request.getRequestDispatcher("/customer/cart.jsp").forward(request, response);
+            return;
+        }
+
+        // 3. Extract the real verified ID from the session user object
+        // (Double-check if your getter is getUserId() or getUser_ID() in your model)
+        String userId = user.getUserId();
         List<CartItemDTO> cartItems = cartDAO.getCartItemsForUser(userId);
 
-        // Calculate subtotal for items that are currently active
+        // 4. Calculate running subtotal for active items
         BigDecimal subtotal = BigDecimal.ZERO;
-        for (CartItemDTO item : cartItems) {
-            if (item.isActive() && item.getUnitPrice() != null) {
-                BigDecimal itemTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-                subtotal = subtotal.add(itemTotal);
+        if (cartItems != null) {
+            for (CartItemDTO item : cartItems) {
+                if (item.isActive() && item.getUnitPrice() != null) {
+                    BigDecimal itemTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+                    subtotal = subtotal.add(itemTotal);
+                }
             }
         }
 
+        // 5. Update the navbar total item quantity badge state
+        int totalCount = cartDAO.getCartCountForUser(userId);
+        session.setAttribute("cartCount", totalCount);
+
         request.setAttribute("cartItems", cartItems);
         request.setAttribute("cartSubtotal", subtotal);
-        // Removed aggregate status if it relied on accessory tables
         request.getRequestDispatcher("/customer/cart.jsp").forward(request, response);
     }
 

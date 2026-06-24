@@ -4,6 +4,10 @@
 <%
     String contextPath = request.getContextPath();
     User currentUser = (User) session.getAttribute("user");
+    
+// FETCH DYNAMIC CART COUNT: Fallback gracefully to 0 if not initialized yet
+    Integer sessionCartCount = (Integer) session.getAttribute("cartCount");
+    int cartCount = (sessionCartCount != null) ? sessionCartCount : 0;
 %>
 
 <nav class="navbar">
@@ -42,7 +46,7 @@
             <!-- Cart -->
             <button type="button" title="Giỏ hàng" onclick="window.location.href = '${pageContext.request.contextPath}/cart'">
                 <span class="material-symbols-outlined">shopping_cart</span>
-                <span class="cart-count" id="navCartCount">0</span>
+                <%-- Floating count badge tag removed for a clean layout look --%>
             </button>
 
             <!-- User dropdown -->
