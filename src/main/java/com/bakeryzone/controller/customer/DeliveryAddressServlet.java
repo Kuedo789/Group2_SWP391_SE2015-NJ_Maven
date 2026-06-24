@@ -84,6 +84,12 @@ public class DeliveryAddressServlet extends HttpServlet {
                 return;
             } else if (action.equalsIgnoreCase("add")) {
                 view = "form";
+            } else if (action.equalsIgnoreCase("profile")) {
+                addressDAO.getAddressesByUserId(user.getUserId()).stream()
+                        .filter(DeliveryAddress::isDefault)
+                        .findFirst()
+                        .ifPresent(addr -> request.setAttribute("addressToEdit", addr));
+                view = "form";
             } else if (action.equalsIgnoreCase("edit")) {
                 String idStr = request.getParameter("id");
                 try {
@@ -127,14 +133,21 @@ public class DeliveryAddressServlet extends HttpServlet {
 
         String addressIdRaw = trim(request.getParameter("addressId"));
         String source = request.getParameter("source");
-        String redirectUrl = request.getContextPath() + "/delivery-address" + (source != null && !source.isEmpty() ? "?source=" + source : "");
-        String receiverName = trim(request.getParameter("receiverName"));
-        String receiverPhone = trim(request.getParameter("receiverPhone"));
+        boolean isProfileMode = source == null || source.trim().isEmpty();
+        String redirectUrl = isProfileMode ? request.getContextPath() + "/profile" : request.getContextPath() + "/delivery-address?source=" + source;
+        String receiverNameRaw = trim(request.getParameter("receiverName"));
+        String receiverPhoneRaw = trim(request.getParameter("receiverPhone"));
+        
+        final String receiverName = isProfileMode ? user.getFullName() : receiverNameRaw;
+        final String receiverPhone = isProfileMode ? user.getPhone() : receiverPhoneRaw;
+
         String addressDetail = trim(request.getParameter("addressDetail"));
         String latitudeRaw = trim(request.getParameter("latitude"));
         String longitudeRaw = trim(request.getParameter("longitude"));
         String isDefaultRaw = request.getParameter("isDefault");
-        boolean isDefault = isDefaultRaw != null && (isDefaultRaw.equals("true") || isDefaultRaw.equals("on"));
+        boolean isDefaultParam = isDefaultRaw != null && (isDefaultRaw.equals("true") || isDefaultRaw.equals("on"));
+
+        final boolean isDefault = isProfileMode ? true : isDefaultParam;
 
         // Helper to preserve edit state on validation failure
         Runnable preserveState = () -> {

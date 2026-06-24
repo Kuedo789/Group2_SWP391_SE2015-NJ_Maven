@@ -105,15 +105,12 @@ public class CategoryDAO {
         sql.append("SELECT COUNT(*) AS TotalCount, ");
         sql.append("COALESCE(SUM(CASE WHEN enable = 1 THEN 1 ELSE 0 END), 0) AS ActiveCount, ");
         sql.append("COALESCE(SUM(CASE WHEN enable = 0 THEN 1 ELSE 0 END), 0) AS DisabledCount ");
-        sql.append("FROM ( ");
-        // Removed the UNION ALL and ingredient_category entirely
-        sql.append("SELECT Category_ID, Category_Name, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable FROM product_category ");
-        sql.append(") AS combined ");
+        sql.append("FROM product_category ");
         sql.append("WHERE (Category_ID LIKE ? OR Category_Name LIKE ?) ");
 
         boolean hasFilter = (filterType != null && !filterType.isEmpty() && !filterType.equals("all"));
         if (hasFilter) {
-            sql.append("AND Category_Type = ? ");
+            sql.append("AND (CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END) = ? ");
         }
 
         try {
@@ -155,14 +152,14 @@ public class CategoryDAO {
         String searchPattern = "%" + (search != null ? search : "") + "%";
 
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT Category_ID, Category_Name, Description, Category_Type, enable, Icon_URL FROM ( ");
-        sql.append("SELECT Category_ID, Category_Name, Description, CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, enable, image_url AS Icon_URL FROM product_category ");
-        sql.append(") AS combined ");
+        sql.append("SELECT Category_ID, Category_Name, Description, ");
+        sql.append("CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END AS Category_Type, ");
+        sql.append("enable, image_url AS Icon_URL FROM product_category ");
         sql.append("WHERE (Category_ID LIKE ? OR Category_Name LIKE ?) ");
 
         boolean hasFilter = (filterType != null && !filterType.isEmpty() && !filterType.equals("all"));
         if (hasFilter) {
-            sql.append("AND Category_Type = ? ");
+            sql.append("AND (CASE WHEN Category_ID LIKE 'CAT-ACC-%' THEN 'Phụ kiện' ELSE 'Sản phẩm chính' END) = ? ");
         }
         sql.append("ORDER BY Category_ID LIMIT ? OFFSET ?");
 

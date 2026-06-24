@@ -4,74 +4,15 @@
     Author     : Nguyễn Hùng
 --%>
 
-<%@page import="java.util.List"%>
-<%@page import="java.util.ArrayList"%>
-<%@page import="com.bakeryzone.model.Product"%>
-<%@page import="com.bakeryzone.model.Review"%>
-<%@page import="com.bakeryzone.model.User"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-
-<%!
-    private String js(String value) {
-        if (value == null) {
-            return "";
-        }
-
-        return value.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("'", "\\'")
-                .replace("\n", " ")
-                .replace("\r", " ");
-    }
-%>
-
-<%
-    Product product = (Product) request.getAttribute("product");
-    List<Product> relatedProducts = (List<Product>) request.getAttribute("relatedProducts");
-
-    if (relatedProducts == null) {
-        relatedProducts = new ArrayList<>();
-    }
-
-    if (product == null) {
-        response.sendRedirect(request.getContextPath() + "/products");
-        return;
-    }
-
-    List<String> imageList = new ArrayList<>();
-
-    if (product.getImageUrl() != null && !product.getImageUrl().trim().isEmpty()) {
-        imageList.add(product.getImageUrl());
-    }
-
-    if (product.getAdditionalImages() != null) {
-        for (String img : product.getAdditionalImages()) {
-            if (img != null && !img.trim().isEmpty() && !imageList.contains(img)) {
-                imageList.add(img);
-            }
-        }
-    }
-
-    if (imageList.isEmpty()) {
-        imageList.add("assets/images/products/basic.png");
-    }
-
-    boolean hasBought = request.getAttribute("hasBought") != null ? (Boolean) request.getAttribute("hasBought") : false;
-    boolean hasReviewed = request.getAttribute("hasReviewed") != null ? (Boolean) request.getAttribute("hasReviewed") : false;
-    List<Review> reviewsList = (List<Review>) request.getAttribute("reviewsList");
-    if (reviewsList == null) {
-        reviewsList = new ArrayList<>();
-    }
-    User sessionUser = (User) session.getAttribute("user");
-    String currentUserId = sessionUser != null ? sessionUser.getUserId() : "";
-%>
+<%@taglib prefix="c" uri="jakarta.tags.core" %>
 
 <!DOCTYPE html>
 <html lang="vi">
 
     <head>
         <jsp:include page="../common/header.jsp" />
-        <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/productDetail.css?v=2">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer/productDetail.css?v=2">
     </head>
 
     <body>
@@ -185,41 +126,9 @@
         <script>
             const contextPath = "<%= request.getContextPath() %>";
 
-            const product = {
-                id: "<%= js(product.getId()) %>",
-                name: "<%= js(product.getName()) %>",
-                category: "<%= js(product.getCategoryName()) %>",
-                price: <%= product.getBasePrice() %>,
-                desc: "<%= js(product.getFullDescription()) %>",
-                image: "<%= js(imageList.get(0)) %>".startsWith("http") ? "<%= js(imageList.get(0)) %>" : contextPath + "/<%= js(imageList.get(0)) %>"
-            };
-
-            const images = [
-            <%
-                for (String img : imageList) {
-            %>
-                "<%= js(img) %>".startsWith("http") ? "<%= js(img) %>" : contextPath + "/<%= js(img) %>",
-            <%
-                }
-            %>
-            ];
-
-            const relatedProducts = [
-            <%
-                for (Product p : relatedProducts) {
-            %>
-                {
-                    id: "<%= js(p.getId()) %>",
-                            name: "<%= js(p.getName()) %>",
-                    category: "<%= js(p.getCategoryName()) %>",
-                            price: <%= p.getBasePrice() %>,
-                    desc: "<%= js(p.getFullDescription()) %>",
-                            image: "<%= js(p.getImageUrl()) %>".startsWith("http") ? "<%= js(p.getImageUrl()) %>" : contextPath + "/<%= js(p.getImageUrl()) %>"
-                },
-            <%
-                }
-            %>
-            ];
+            const product = ${requestScope.productJson};
+            const images = ${requestScope.imagesJson};
+            const relatedProducts = ${requestScope.relatedProductsJson};
 
             let selectedVariant = 0;
             let selectedImage = 0;
@@ -384,6 +293,7 @@
 
                 const item = {
                     id: product.id + "_" + selectedVariant,
+                    templateId: product.id,
                     name: selectedVar.name,
                     desc: selectedVar.note,
                     price: selectedVar.price,
@@ -445,6 +355,7 @@
 
                 const item = {
                     id: product.id + "_" + selectedVariant,
+                    templateId: product.id,
                     name: selectedVar.name,
                     desc: selectedVar.note,
                     price: selectedVar.price,
@@ -510,28 +421,10 @@
                         '</ul>';
             }
 
-            const dbReviews = [
-            <%
-                for (Review r : reviewsList) {
-            %>
-                {
-                    reviewId: "<%= js(r.getReviewId()) %>",
-                    customCakeId: "<%= js(r.getCustomCakeId()) %>",
-                    customerId: "<%= js(r.getCustomerId()) %>",
-                    customerName: "<%= js(r.getCustomerName()) %>",
-                    ratingStars: <%= r.getRatingStars() %>,
-                    comment: "<%= js(r.getComment()) %>",
-                    variationName: "<%= js(r.getVariationName()) %>",
-                    greetingText: "<%= js(r.getGreetingText()) %>"
-                },
-            <%
-                }
-            %>
-            ];
-
-            const hasBought = <%= hasBought %>;
-            const hasReviewed = <%= hasReviewed %>;
-            const currentUserId = "<%= js(currentUserId) %>";
+            const dbReviews = ${requestScope.reviewsJson};
+            const hasBought = ${requestScope.hasBought};
+            const hasReviewed = ${requestScope.hasReviewed};
+            const currentUserId = "${requestScope.currentUserId}";
             const customCakeIdFromUrl = new URLSearchParams(window.location.search).get("customCakeId") || "";
 
             function renderReviews() {

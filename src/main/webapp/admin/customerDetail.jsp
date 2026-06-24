@@ -38,7 +38,7 @@
             .sidebar {
                 width: 260px;
                 background-color: var(--cz-dark-bg);
-                min-height: 100vh;
+                height: 100vh;
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -46,6 +46,20 @@
                 flex-direction: column;
                 padding: 20px 0;
                 z-index: 100;
+                overflow-y: auto;
+            }
+            .sidebar::-webkit-scrollbar {
+                width: 6px;
+            }
+            .sidebar::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .sidebar::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.25);
+                border-radius: 4px;
+            }
+            .sidebar::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.45);
             }
             .sidebar-brand {
                 padding: 0 25px 25px 25px;
@@ -262,7 +276,7 @@
                     <div class="breadcrumbs">
                         <a href="#">Dashboard</a>
                         <span>&gt;</span>
-                        <a href="${pageContext.request.contextPath}/customer?action=list">Customer System</a>
+                        <a href="${pageContext.request.contextPath}/admin/customer?action=list">Customer System</a>
                         <span>&gt;</span>
                         <a href="#" class="active text-dark font-weight-bold">
                             <c:set var="cusId" value="${CUSTOMER_DATA.customerId}" />
@@ -274,7 +288,7 @@
 
                     <div class="header-right">
                         <div class="profile-section d-flex align-items-center gap-3">
-                            <span class="fw-bold" style="font-size: 14px;">Hoàng Anh</span>
+                            <span class="fw-bold" style="font-size: 14px;"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></span>
                             <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="rounded-circle" width="35" height="35">
                         </div>
                     </div>
@@ -295,7 +309,7 @@
                         </div>
                     </c:if>
 
-                    <form action="customer" method="POST">  
+                    <form action="${pageContext.request.contextPath}/admin/customer" method="POST">  
                         <input type="hidden" name="action" value="${not empty param.action ? param.action : (CUSTOMER_DATA.customerId != null ? 'edit' : 'add')}">
                         <input type="hidden" name="isEdit" value="${CUSTOMER_DATA != null ? 'true' : 'false'}">                      
                         <input type="hidden" name="customerId" value="${cusId}">
@@ -337,7 +351,7 @@
 
 
                             <div class="col-12 d-flex justify-content-end gap-3 mt-5">
-                                <a href="${pageContext.request.contextPath}/customer?action=list" class="btn-cz-secondary">
+                                <a href="${pageContext.request.contextPath}/admin/customer?action=list" class="btn-cz-secondary">
                                     <i class="fa-solid fa-arrow-left"></i> Trở về danh sách
                                 </a>
                                 <button class="btn-cz-primary" type="submit">

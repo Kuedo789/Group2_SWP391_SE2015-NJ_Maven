@@ -47,7 +47,7 @@
             .sidebar {
                 width: 260px;
                 background-color: var(--cz-dark-bg);
-                min-height: 100vh;
+                height: 100vh;
                 position: fixed;
                 top: 0;
                 left: 0;
@@ -55,6 +55,21 @@
                 flex-direction: column;
                 padding: 20px 0;
                 z-index: 100;
+                overflow-y: auto;
+            }
+
+            .sidebar::-webkit-scrollbar {
+                width: 6px;
+            }
+            .sidebar::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .sidebar::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.25);
+                border-radius: 4px;
+            }
+            .sidebar::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.45);
             }
 
             .sidebar-brand {
@@ -532,31 +547,11 @@
 
 
 
-            <div class="top-header">
-                <div class="header-left">
-                    <button class="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
-                    <div class="breadcrumbs">
-                        <a href="#">Dashboard</a>
-                        <span>&gt;</span>
-                        <a href="#">System</a>
-                        <span>&gt;</span>
-                        <a href="#" class="active text-dark font-weight-bold">Quản lý khách hàng</a>
-                    </div>
-                </div>
-
-                <div class="header-right">
-                    <button class="header-icon-btn"><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
-                    <button class="header-icon-btn"><i class="fa-regular fa-circle-question"></i></button>
-
-                    <div class="profile-section">
-                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
-                        <div class="profile-info">
-                            <div class="profile-name">Hoàng Anh</div>
-                            <div class="profile-role">PIC</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Top Header -->
+            <jsp:include page="../common/top-header.jsp">
+                <jsp:param name="parentMenu" value="Hệ thống" />
+                <jsp:param name="activeMenu" value="Quản lý khách hàng" />
+            </jsp:include>
 
             <div class="content-container">
 
@@ -565,13 +560,13 @@
                         <h1 class="page-title">Quản lý khách hàng</h1>
                         <p class="page-subtitle">Hệ thống quản lý tài khoản khách hàng mua sắm hệ thống Bakery</p>
                     </div>
-                    <a href="customer?action=add" class="btn btn-cz-primary">
+                    <a href="${pageContext.request.contextPath}/admin/customer?action=add" class="btn btn-cz-primary">
                         <i class="fa-solid fa-circle-plus"></i> Thêm khách hàng mới
                     </a>
                 </div>
 
                 <div class="filter-card">
-                    <form class="filter-form" action="${pageContext.request.contextPath}/customer" method="GET">
+                    <form class="filter-form" action="${pageContext.request.contextPath}/admin/customer" method="GET">
                         <input type="hidden" name="action" value="list">
                         <div class="search-wrapper">
                             <i class="fa-solid fa-magnifying-glass"></i>
@@ -585,7 +580,7 @@
                         </select>
 
                         <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
-                        <a href="${pageContext.request.contextPath}/customer?action=list" class="btn-clear-filter text-center">Làm mới</a>
+                        <a href="${pageContext.request.contextPath}/admin/customer?action=list" class="btn-clear-filter text-center">Làm mới</a>
                     </form>
                 </div>
 
@@ -625,10 +620,10 @@
                                     <td>
                                         <div class="d-flex align-items-center justify-content-center gap-2">
                                             <c:set var="cusIdKey" value="${not empty c.customerId ? c.customerId : c.customer_ID}" />
-                                            <a href="customer?action=edit&id=${c.customerId}" class="btn-action-edit" title="Chỉnh sửa">
+                                            <a href="${pageContext.request.contextPath}/admin/customer?action=edit&id=${c.customerId}" class="btn-action-edit" title="Chỉnh sửa">
                                                 <i class="fa-regular fa-pen-to-square"></i>
                                             </a>
-                                            <a href="customer?action=delete&id=${c.customerId}" class="btn-action-delete"
+                                            <a href="${pageContext.request.contextPath}/admin/customer?action=delete&id=${c.customerId}" class="btn-action-delete"
                                                onclick="return confirm('Bạn có chắc chắn muốn xóa tài khoản của ${c.fullName} không?')" title="Xóa">
                                                 <i class="fa-regular fa-trash-can"></i>
                                             </a>
@@ -644,7 +639,7 @@
                         <ul class="pagination-nav">
                             <c:if test="${currentPage > 1}">
                                 <li class="page-num-item">
-                                    <a href="customer?action=list&page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
+                                    <a href="${pageContext.request.contextPath}/admin/customer?action=list&page=${currentPage - 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
                                         <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -652,13 +647,13 @@
 
                             <c:forEach begin="1" end="${endPage}" var="i">
                                 <li class="page-num-item ${currentPage == i ? 'active' : ''}">
-                                    <a href="customer?action=list&page=${i}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">${i}</a>
+                                    <a href="${pageContext.request.contextPath}/admin/customer?action=list&page=${i}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">${i}</a>
                                 </li>
                             </c:forEach>
 
                             <c:if test="${currentPage < endPage}">
                                 <li class="page-num-item">
-                                    <a href="customer?action=list&page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
+                                    <a href="${pageContext.request.contextPath}/admin/customer?action=list&page=${currentPage + 1}&searchKeyword=${param.searchKeyword}&filterStatus=${param.filterStatus}">
                                         <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                     </a>
                                 </li>

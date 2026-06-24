@@ -8,10 +8,79 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="com.bakeryzone.model.Product" %>
+<%@ page import="com.bakeryzone.model.Review" %>
 <!DOCTYPE html>
 <html lang="vi">
     <head>
         <jsp:include page="header.jsp" />
+        <style>
+            /* 🎨 STYLE CHO KHỐI ĐÁNH GIÁ NỔI BẬT */
+            .review-section {
+                background-color: #fffaf5;
+                padding: 60px 0;
+            }
+            .center-title-sub {
+                text-align: center;
+                color: #666;
+                font-size: 14px;
+                margin-top: -10px;
+                margin-bottom: 40px;
+            }
+            .review-home-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 30px;
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 20px;
+            }
+            .review-home-card {
+                background: #ffffff;
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+                border: 1px solid #f3ebe1;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+            .review-home-stars {
+                color: #ffc107;
+                margin-bottom: 15px;
+                display: flex;
+                gap: 2px;
+            }
+            .review-home-comment {
+                font-style: italic;
+                color: #555;
+                font-size: 15px;
+                line-height: 1.6;
+                margin-bottom: 20px;
+                flex-grow: 1;
+            }
+            .review-home-user {
+                border-top: 1px solid #f5f5f5;
+                padding-top: 15px;
+            }
+            .review-home-name {
+                font-weight: 700;
+                color: #222;
+                margin: 0 0 4px 0;
+                font-size: 16px;
+            }
+            .review-home-cake {
+                color: #888;
+                font-size: 12.5px;
+                display: block;
+            }
+            .review-empty {
+                grid-column: span 3;
+                text-align: center;
+                color: #999;
+                font-style: italic;
+                padding: 20px;
+            }
+        </style>
     </head>
 
     <body>
@@ -378,6 +447,44 @@
                         <h3>Giao hàng cẩn thận</h3>
                         <p>Đội ngũ giao hàng chuyên biệt, đảm bảo bánh nguyên vẹn, đẹp mắt đến tận tay người nhận.</p>
                     </div>
+                </div>
+            </section>
+            
+            <section class="section review-section">
+                <h2 class="center-title">Khách hàng nói về CakeZone</h2>
+                <p class="center-title-sub">Những lời phản hồi chân thực nhất từ những trải nghiệm ngọt ngào</p>
+
+                <div class="review-home-grid">
+                    <%
+                        List<Review> featuredReviews = (List<Review>) request.getAttribute("FEATURED_REVIEWS");
+                        if (featuredReviews != null && !featuredReviews.isEmpty()) {
+                            for (Review rev : featuredReviews) {
+                    %>
+                    <div class="review-home-card">
+                        <div>
+                            <!-- Tạo số sao động dựa vào thuộc tính ratingStars -->
+                            <div class="review-home-stars">
+                                <% for (int s = 0; s < rev.getRatingStars(); s++) { %>
+                                    <span class="material-symbols-outlined" style="font-size: 20px;">star</span>
+                                <% } %>
+                            </div>
+                            <p class="review-home-comment">"<%= rev.getComment() %>"</p>
+                        </div>
+                        <div class="review-home-user">
+                            <h4 class="review-home-name"><%= rev.getCustomerName() != null ? rev.getCustomerName() : "Khách hàng ẩn danh" %></h4>
+                            <small class="review-home-cake">Mẫu bánh: <%= rev.getTemplateName() %></small>
+                        </div>
+                    </div>
+                    <%
+                            }
+                        } else {
+                    %>
+                    <div class="review-empty">
+                        <p>Chưa có đánh giá nổi bật nào được chọn hiển thị.</p>
+                    </div>
+                    <%
+                        }
+                    %>
                 </div>
             </section>
 

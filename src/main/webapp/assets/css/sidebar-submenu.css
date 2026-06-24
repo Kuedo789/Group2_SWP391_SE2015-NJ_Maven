@@ -1,0 +1,192 @@
+/* sidebar-submenu.css - Modular styles for the dark green BakeryZone Admin Sidebar */
+
+.sidebar {
+    width: 260px !important;
+    background-color: #2B2D42 !important; /* Standard Dark Charcoal Admin Sidebar Background */
+    border-right: 1px solid var(--cz-border-color) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex-shrink: 0 !important;
+    overflow-y: auto !important;
+    padding: 0 !important; /* Reset padding to align brand correctly across all pages */
+    
+    /* Ensure the sidebar is ALWAYS fixed across all admin pages to prevent shifting */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    z-index: 1000 !important;
+}
+
+/* Push the main content panel to the right to leave space for fixed sidebar */
+.main-wrapper, .main-panel {
+    margin-left: 260px !important;
+}
+
+/* Webkit custom scrollbars for dark sidebar */
+.sidebar::-webkit-scrollbar {
+    width: 6px !important;
+}
+.sidebar::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25) !important;
+    border-radius: 4px !important;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.45) !important;
+}
+
+/* Branding */
+.sidebar .sidebar-brand {
+    padding: 20px 25px 20px 25px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+    margin-bottom: 10px !important;
+}
+.sidebar .sidebar-brand i {
+    color: #3f5f36 !important; /* Brand Olive/Forest Green */
+    font-size: 24px !important;
+    margin-right: 10px !important;
+}
+.sidebar .sidebar-brand span {
+    color: #ffffff !important;
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+}
+.sidebar .sidebar-brand span span {
+    color: #3f5f36 !important;
+}
+
+/* Titles */
+.sidebar .nav-section-title {
+    color: rgba(255,255,255,0.35) !important; /* Muted text */
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    padding: 12px 24px 6px 24px !important; /* Tighter padding for narrower spacing */
+    margin-top: 10px !important;
+}
+
+.sidebar .sidebar-menu {
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Main Menu Item resets and overrides */
+.sidebar .menu-item {
+    margin: 2px 0 !important; /* Narrower gap */
+    padding: 0 !important;
+    background-color: transparent !important;
+    border-radius: 0 !important;
+    cursor: pointer !important;
+    display: block !important;
+}
+
+/* Reset global hover from admin-global.css on <li> elements */
+.sidebar .menu-item:hover, 
+.sidebar .product-child-item:hover {
+    background-color: transparent !important;
+}
+
+/* Styling the links */
+.sidebar .menu-item a {
+    display: flex !important;
+    align-items: center !important;
+    padding: 8px 24px !important; /* Narrower padding: from 11px/12px to 8px */
+    color: rgba(255,255,255,0.55) !important; /* Original light gray text */
+    text-decoration: none !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    border-left: 3px solid transparent !important; /* Prevent layout shifts */
+    width: 100% !important;
+}
+
+/* Hover State for links (subtle, non-distracting highlight) */
+.sidebar .menu-item a:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.06) !important; /* 6% white overlay */
+}
+.sidebar .menu-item a:hover i {
+    color: #3f5f36 !important; /* Icon turns green on hover */
+}
+
+/* Active State for links */
+.sidebar .menu-item.active a {
+    color: #ffffff !important;
+    background-color: #3d3f57 !important; /* Slightly lighter active bg */
+    border-left-color: #3f5f36 !important; /* Green left border */
+    font-weight: 600 !important;
+}
+.sidebar .menu-item.active a i {
+    color: #3f5f36 !important;
+}
+
+.sidebar .menu-item a i {
+    width: 20px !important;
+    font-size: 16px !important;
+    margin-right: 12px !important;
+    text-align: center !important;
+}
+
+.sidebar .menu-item .arrow {
+    margin-left: auto !important;
+    font-size: 12px !important;
+    transition: transform 0.2s ease !important;
+}
+
+/* Child Items (indented sub-items) */
+.sidebar .product-child-item {
+    padding-left: 20px !important; /* Match the original indentation */
+}
+.sidebar .product-child-item a {
+    font-size: 13px !important;
+    padding: 6px 24px !important; /* Slightly narrower padding */
+    color: rgba(255,255,255,0.55) !important;
+}
+.sidebar .product-child-item a i {
+    font-size: 12px !important;
+    margin-right: 8px !important;
+    width: auto !important;
+}
+
+/* Sidebar Seeding Card */
+.sidebar .sidebar-banner {
+    margin: auto 20px 20px 20px !important;
+    background: linear-gradient(135deg, #363852, #2B2D42) !important;
+    border-radius: 12px !important;
+    padding: 15px !important; /* Tighter padding */
+    border: 1px dashed #3f5f36 !important;
+    text-align: center !important;
+    position: relative !important;
+}
+.sidebar .sidebar-banner i.cake-icon {
+    font-size: 32px !important;
+    color: #3f5f36 !important;
+    margin-bottom: 8px !important;
+    display: inline-block !important;
+    animation: float 3s ease-in-out infinite !important;
+}
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-5px); }
+    100% { transform: translateY(0px); }
+}
+.sidebar .sidebar-banner h6 {
+    color: #ffffff !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    margin-bottom: 4px !important;
+}
+.sidebar .sidebar-banner p {
+    color: #999999 !important;
+    font-size: 11px !important;
+    margin-bottom: 0 !important;
+    line-height: 1.4 !important;
+}

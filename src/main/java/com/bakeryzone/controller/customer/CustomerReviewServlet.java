@@ -38,7 +38,7 @@ public class CustomerReviewServlet extends HttpServlet {
         }
 
         String action = request.getParameter("action");
-        String customerId = currentUser.getUserId();
+        String customerId = new com.bakeryzone.dao.OrderDAO().getCustomerIdByUserId(currentUser.getUserId());
 
         try {
             if ("create".equalsIgnoreCase(action)) {

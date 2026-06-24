@@ -48,6 +48,34 @@ public class CustomerCheckoutServlet extends HttpServlet {
         List<DeliveryAddress> addressList = addressDAO.getAddressesByUserId(currentUser.getUserId());
         request.setAttribute("addressList", addressList);
 
+        // Determine selected address
+        DeliveryAddress selectedAddress = null;
+        if (addressList != null && !addressList.isEmpty()) {
+            selectedAddress = addressList.get(0);
+            String selectedParam = request.getParameter("selectedAddressId");
+            boolean foundParam = false;
+            
+            if (selectedParam != null && !selectedParam.isEmpty()) {
+                for (DeliveryAddress addr : addressList) {
+                    if (String.valueOf(addr.getAddressId()).equals(selectedParam)) {
+                        selectedAddress = addr;
+                        foundParam = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!foundParam) {
+                for (DeliveryAddress addr : addressList) {
+                    if (addr.isDefault()) {
+                        selectedAddress = addr;
+                        break;
+                    }
+                }
+            }
+        }
+        request.setAttribute("selectedAddress", selectedAddress);
+
         // Forward to the checkout page
         request.getRequestDispatcher("/customer/checkout.jsp").forward(request, response);
     }
@@ -109,13 +137,21 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     System.err.println("[WARN] Failed to parse delivery date/time: " + e.getMessage());
                 }
             }
+            
+            // Fallback for missing delivery date/time to avoid DB NOT NULL constraint error
+            if (deliveryWindowStart == null || deliveryWindowEnd == null) {
+                long tomorrow = System.currentTimeMillis() + 24L * 3600 * 1000;
+                deliveryWindowStart = new Timestamp(tomorrow);
+                deliveryWindowEnd = new Timestamp(tomorrow + 2L * 3600 * 1000);
+            }
 
             // ── 4. Parse cart JSON to OrderItem list ───────────────────────────────
             // Cart item shape (from localStorage): { id, name, price, qty, image, desc, templateId? }
             Order order = new Order();
             String orderNo = "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             order.setOrderNo(orderNo);
-            order.setCustomerId(currentUser.getUserId());
+            String customerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
+            order.setCustomerId(customerId);
             order.setOrderTime(orderTime);
             order.setDeliveryWindowStart(deliveryWindowStart);
             order.setDeliveryWindowEnd(deliveryWindowEnd);
@@ -178,20 +214,27 @@ public class CustomerCheckoutServlet extends HttpServlet {
             BigDecimal shippingFee = BigDecimal.valueOf(25000);
             BigDecimal totalCost   = productTotal.add(shippingFee);
             BigDecimal deposit     = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
+            BigDecimal remainingCod = totalCost.subtract(deposit);
 
             order.setTotalCost(totalCost);
             order.setDepositAmount(deposit);
+            order.setRemainingCodBalance(remainingCod);
             order.setShippingFee(shippingFee);
 
             // ── 5. Persist order ───────────────────────────────────────────────────
+            System.out.println("[INFO] Attempting to place order: " + orderNo 
+                    + " for customerId: " + order.getCustomerId() 
+                    + " | deliveryWindow: " + order.getDeliveryWindowStart()
+                    + " | cart items size: " + order.getItems().size());
+            
             boolean success = orderDAO.insertOrder(order);
 
             System.out.println("[INFO] Order placed: " + orderNo + " by user " + currentUser.getUserId()
                     + " | success=" + success + " | total=" + totalCost);
 
             if (success) {
-                // Redirect with success message
-                response.sendRedirect(request.getContextPath() + "/OrderList?msg=order_success&orderNo=" + orderNo);
+                // Redirect to Order Success page
+                response.sendRedirect(request.getContextPath() + "/order-success?orderNo=" + orderNo);
             } else {
                 // Pass error back to checkout page
                 response.sendRedirect(request.getContextPath() + "/checkout?error=save_failed");

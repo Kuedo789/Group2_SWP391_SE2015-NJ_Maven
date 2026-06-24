@@ -14,7 +14,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>CakeZone Admin - Thêm Danh Mục</title>
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-        <link href="${pageContext.request.contextPath}/assets/css/admin-global.css" rel="stylesheet">
+        <link href="${pageContext.request.contextPath}/assets/css/admin-global.css?v=1.1" rel="stylesheet">
         <style>
             /* Specific styles for the form card to keep the global CSS clean */
             .form-card {
@@ -91,7 +91,9 @@
     </head>
     <body>
 
-        <jsp:include page="/common/admin-sidebar.jsp" />
+        <jsp:include page="/common/sidebar.jsp">
+            <jsp:param name="activeMenu" value="categories" />
+        </jsp:include>
 
         <main class="main-wrapper">
 

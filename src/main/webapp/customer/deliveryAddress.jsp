@@ -5,18 +5,7 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@page import="java.util.List"%>
-<%@page import="com.bakeryzone.model.DeliveryAddress"%>
-
-<%
-    String view = (String) request.getAttribute("view");
-    if (view == null) {
-        view = "list";
-    }
-    DeliveryAddress addressToEdit = (DeliveryAddress) request.getAttribute("addressToEdit");
-    boolean isEditMode = addressToEdit != null;
-    List<DeliveryAddress> addressList = (List<DeliveryAddress>) request.getAttribute("addressList");
-%>
+<%@taglib prefix="c" uri="jakarta.tags.core" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -28,398 +17,7 @@
         <link rel="stylesheet"
               href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-        <style>
-            .address-page {
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 110px 24px 90px;
-            }
-
-            /* Common Card Design */
-            .address-card {
-                background-color: var(--white);
-                border-radius: 22px;
-                padding: 35px;
-                box-shadow: var(--shadow);
-            }
-
-            /* Header Section */
-            .address-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 24px;
-                border-bottom: 1px solid #f0edf8;
-                padding-bottom: 16px;
-            }
-
-            .address-header h2 {
-                margin: 0;
-                font-size: 26px;
-                font-weight: 800;
-                color: var(--text);
-            }
-
-            /* Buttons */
-            .btn-add-new {
-                background-color: var(--primary);
-                color: white;
-                text-decoration: none;
-                padding: 10px 20px;
-                border-radius: 10px;
-                font-weight: 700;
-                font-size: 14px;
-                transition: all 0.2s;
-                display: inline-flex;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .btn-add-new:hover {
-                opacity: 0.9;
-                color: white;
-            }
-
-            .btn-back {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                text-decoration: none;
-                border: 1px solid #ccc;
-                border-radius: 10px;
-                color: var(--text);
-                font-weight: 700;
-                padding: 0 20px;
-                height: 52px;
-                background-color: white;
-                transition: all 0.2s;
-            }
-
-            .btn-back:hover {
-                background-color: #f5f5f5;
-                color: var(--text);
-            }
-
-            /* View 1: Address List Layout */
-            .address-list-container {
-                max-width: 850px;
-                margin: 0 auto;
-            }
-
-            .address-items-container {
-                display: flex;
-                flex-direction: column;
-                gap: 16px;
-            }
-
-            .address-item {
-                border: 1px solid var(--border);
-                border-radius: 12px;
-                padding: 24px;
-                background-color: #faf9f6;
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                transition: all 0.2s;
-            }
-
-            .address-item:hover {
-                border-color: var(--primary);
-                box-shadow: 0 4px 12px rgba(21, 92, 46, 0.05);
-            }
-
-            .address-item.default-item {
-                border-left: 4px solid var(--primary);
-                background-color: #fffdf5;
-            }
-
-            .address-item-left {
-                flex: 1;
-                padding-right: 16px;
-            }
-
-            .address-item-header {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                margin-bottom: 8px;
-            }
-
-            .receiver-name {
-                font-weight: 700;
-                font-size: 17px;
-                color: var(--text);
-            }
-
-            .divider-pipe {
-                color: #ccc;
-            }
-
-            .receiver-phone {
-                color: var(--text-muted);
-                font-size: 15px;
-            }
-
-            .address-item-detail {
-                font-size: 15px;
-                color: var(--text);
-                line-height: 1.5;
-                margin-bottom: 12px;
-            }
-
-            .badge-default {
-                background-color: #eefaf1;
-                color: var(--primary);
-                border: 1px solid #b8e6c4;
-                padding: 2px 8px;
-                border-radius: 4px;
-                font-size: 11px;
-                font-weight: 700;
-                display: inline-block;
-            }
-
-            .address-item-right {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-end;
-                gap: 18px;
-            }
-
-            .address-actions {
-                display: flex;
-                gap: 12px;
-            }
-
-            .action-link {
-                text-decoration: none;
-                font-size: 14px;
-                font-weight: 700;
-                color: #0d6efd;
-            }
-
-            .action-link:hover {
-                text-decoration: underline;
-            }
-
-            .action-link.delete-link {
-                color: #dc3545;
-            }
-
-            .btn-set-default {
-                background-color: white;
-                border: 1px solid #ccc;
-                color: var(--text);
-                padding: 6px 14px;
-                border-radius: 6px;
-                font-size: 13px;
-                font-weight: 700;
-                cursor: pointer;
-                text-decoration: none;
-                transition: all 0.2s;
-            }
-
-            .btn-set-default:hover {
-                background-color: #f5f5f5;
-                border-color: #999;
-                color: var(--text);
-            }
-
-            .no-address-state {
-                text-align: center;
-                padding: 60px 20px;
-                color: var(--text-muted);
-            }
-
-            .no-address-state i {
-                font-size: 56px;
-                margin-bottom: 16px;
-                color: #ddd;
-            }
-
-            .no-address-state p {
-                margin: 0;
-                font-size: 17px;
-                font-weight: 600;
-            }
-
-            /* View 2: Form & Map Layout */
-            .address-form-container {
-                display: grid;
-                grid-template-columns: 1.2fr 1fr;
-                gap: 32px;
-            }
-
-            .address-form {
-                display: flex;
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .form-field-group {
-                margin-bottom: 8px;
-                display: flex;
-                flex-direction: column;
-                gap: 6px;
-            }
-
-            .form-field-label {
-                font-size: 14px;
-                font-weight: 700;
-                color: var(--text);
-            }
-
-            .required {
-                color: #d62828;
-            }
-
-            .address-input {
-                width: 100%;
-                height: 52px;
-                border: 1px solid var(--border);
-                border-radius: 10px;
-                padding: 0 16px;
-                font-size: 16px;
-                outline: none;
-                box-sizing: border-box;
-            }
-
-            .address-input:focus {
-                border-color: var(--primary);
-            }
-
-            .address-suggest-box {
-                position: relative;
-                width: 100%;
-            }
-
-            .suggestion-list {
-                position: absolute;
-                top: 58px;
-                left: 0;
-                right: 0;
-                z-index: 999;
-                display: none;
-                max-height: 240px;
-                overflow-y: auto;
-                background-color: white;
-                border: 1px solid var(--border);
-                border-radius: 10px;
-                box-shadow: var(--shadow);
-            }
-
-            .suggestion-item {
-                padding: 12px 14px;
-                font-size: 14px;
-                cursor: pointer;
-                border-bottom: 1px solid #eee;
-            }
-
-            .suggestion-item:hover {
-                background-color: #fff4e8;
-            }
-
-            .suggestion-item:last-child {
-                border-bottom: none;
-            }
-
-            .button-row {
-                display: flex;
-                gap: 12px;
-            }
-
-            .btn-search,
-            .btn-save {
-                height: 52px;
-                padding: 0 24px;
-                border: none;
-                border-radius: 10px;
-                color: white;
-                font-weight: 700;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-
-            .btn-search {
-                background-color: #6c757d;
-                min-width: 110px;
-            }
-
-            .btn-save {
-                background-color: var(--primary);
-                flex: 1;
-            }
-
-            .btn-search:hover,
-            .btn-save:hover {
-                opacity: 0.9;
-            }
-
-            #map {
-                width: 100%;
-                height: 420px;
-                border-radius: 16px;
-                overflow: hidden;
-                margin-top: 20px;
-            }
-
-            .address-info {
-                margin-top: 20px;
-                padding: 16px;
-                background-color: #fffaf5;
-                border: 1px solid #ead8c7;
-                border-radius: 12px;
-                line-height: 1.8;
-            }
-
-            .address-info strong {
-                color: var(--primary);
-            }
-
-            .alert {
-                margin-bottom: 20px;
-                padding: 12px 16px;
-                border-radius: 10px;
-                font-weight: 600;
-            }
-
-            .alert-success {
-                color: #155c2e;
-                background-color: #eefaf1;
-                border: 1px solid #b8e6c4;
-            }
-
-            .alert-danger {
-                color: #d62828;
-                background-color: #fff0f0;
-                border: 1px solid #f5b5b5;
-            }
-
-            .checkbox-row {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 14px;
-                font-weight: 700;
-                color: var(--text);
-                cursor: pointer;
-                margin: 8px 0 16px;
-            }
-
-            .checkbox-row input {
-                width: 18px;
-                height: 18px;
-                cursor: pointer;
-            }
-
-            @media (max-width: 992px) {
-                .address-form-container {
-                    grid-template-columns: 1fr;
-                }
-                .address-page {
-                    padding: 32px 18px 70px;
-                }
-            }
-        </style>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer/deliveryAddress.css">
     </head>
 
     <body>
@@ -428,121 +26,128 @@
 
         <main class="address-page">
 
-            <% 
-                // view is already declared at the top of the file
+            <c:set var="sourceParam" value="${not empty param.source ? '&source=' += param.source : ''}" />
+            <c:set var="sourceQuery" value="${not empty param.source ? '?source=' += param.source : ''}" />
+            <c:set var="isEditMode" value="${not empty requestScope.addressToEdit}" />
+            <c:set var="addressToEdit" value="${requestScope.addressToEdit}" />
+            <c:set var="addressList" value="${requestScope.addressList}" />
+            <c:set var="isProfileMode" value="${empty param.source}" />
 
-                String source = request.getParameter("source");
-                String sourceParam = (source != null && !source.isEmpty()) ? "&source=" + source : "";
-                String sourceQuery = (source != null && !source.isEmpty()) ? "?source=" + source : "";
-            %>
-            <% if (view.equals("list")) { %>
+            <c:choose>
+            <c:when test="${empty requestScope.view or requestScope.view == 'list'}">
                 <!-- View 1: Address List Screen -->
                 <div class="address-list-container">
                     <div class="address-card">
                         <div class="address-header">
                             <div style="display:flex;align-items:center;gap:12px;">
-                                <% if ("checkout".equals(source)) { %>
+                                <c:choose>
+                                <c:when test="${param.source == 'checkout'}">
                                 <a href="${pageContext.request.contextPath}/checkout" class="btn-back" title="Quay lại thanh toán">
                                     <i class="fa fa-arrow-left" style="margin-right:6px;"></i> Quay lại
                                 </a>
-                                <% } else { %>
+                                </c:when>
+                                <c:otherwise>
                                 <a href="${pageContext.request.contextPath}/profile" class="btn-back" title="Quay lại trang cá nhân">
                                     <i class="fa fa-arrow-left" style="margin-right:6px;"></i> Quay lại
                                 </a>
-                                <% } %>
+                                </c:otherwise>
+                                </c:choose>
                                 <h2 style="margin:0;">Địa chỉ của tôi</h2>
                             </div>
-                            <a href="${pageContext.request.contextPath}/delivery-address?action=add<%= sourceParam %>" class="btn-add-new">
+                            <a href="${pageContext.request.contextPath}/delivery-address?action=add${sourceParam}" class="btn-add-new">
                                 <i class="fa fa-plus"></i> Thêm địa chỉ mới
                             </a>
                         </div>
 
-                        <% if (request.getAttribute("successMessage") != null) { %>
+                        <c:if test="${not empty requestScope.successMessage}">
                         <div class="alert alert-success">
-                            ✓ <%= request.getAttribute("successMessage") %>
+                            ✓ ${requestScope.successMessage}
                         </div>
-                        <% } %>
+                        </c:if>
 
-                        <% if (request.getAttribute("errorMessage") != null) { %>
+                        <c:if test="${not empty requestScope.errorMessage}">
                         <div class="alert alert-danger">
-                            <%= request.getAttribute("errorMessage") %>
+                            ${requestScope.errorMessage}
                         </div>
-                        <% } %>
+                        </c:if>
 
                         <div class="address-items-container">
-                            <% 
-                                if (addressList == null || addressList.isEmpty()) {
-                            %>
-                                <div class="no-address-state">
-                                    <i class="fa fa-map-marker-alt"></i>
-                                    <p>Bạn chưa lưu địa chỉ giao hàng nào.</p>
-                                </div>
-                            <% 
-                                } else {
-                                    for (DeliveryAddress addr : addressList) {
-                            %>
-                                <div class="address-item <%= addr.isDefault() ? "default-item" : "" %>"
-                                     <% if ("checkout".equals(source)) { %>
-                                     style="cursor: pointer;"
-                                     onclick="if(event.target.tagName !== 'A') window.location.href='${pageContext.request.contextPath}/checkout?selectedAddressId=<%= addr.getAddressId() %>'"
-                                     <% } %>>
-                                    <div class="address-item-left">
-                                        <div class="address-item-header">
-                                            <span class="receiver-name"><%= addr.getReceiverName() %></span>
-                                            <span class="divider-pipe">|</span>
-                                            <span class="receiver-phone"><%= addr.getReceiverPhone() %></span>
-                                        </div>
-                                        <div class="address-item-detail">
-                                            <%= addr.getAddressDetail() %>
-                                        </div>
-                                        <% if (addr.isDefault()) { %>
-                                            <span class="badge-default">Mặc định</span>
-                                        <% } %>
-                                        <% if ("checkout".equals(source)) { %>
-                                            <div style="margin-top: 8px; font-size: 13px; color: var(--primary-dark); font-weight: 600;">
-                                                <i class="fa fa-check-circle"></i> Nhấp để chọn địa chỉ này
+                            <c:choose>
+                                <c:when test="${empty addressList}">
+                                    <div class="no-address-state">
+                                        <i class="fa fa-map-marker-alt"></i>
+                                        <p>Bạn chưa lưu địa chỉ giao hàng nào.</p>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:forEach var="addr" items="${addressList}">
+                                        <div class="address-item ${addr.isDefault() ? 'default-item' : ''}"
+                                             <c:if test="${param.source == 'checkout'}">
+                                             style="cursor: pointer;"
+                                             onclick="if(event.target.tagName !== 'A') window.location.href='${pageContext.request.contextPath}/checkout?selectedAddressId=${addr.addressId}'"
+                                             </c:if>>
+                                            <div class="address-item-left">
+                                                <div class="address-item-header">
+                                                    <span class="receiver-name">${addr.receiverName}</span>
+                                                    <span class="divider-pipe">|</span>
+                                                    <span class="receiver-phone">${addr.receiverPhone}</span>
+                                                </div>
+                                                <div class="address-item-detail">
+                                                    ${addr.addressDetail}
+                                                </div>
+                                                <c:if test="${addr.isDefault()}">
+                                                    <span class="badge-default">Mặc định</span>
+                                                </c:if>
+                                                <c:if test="${param.source == 'checkout'}">
+                                                    <div style="margin-top: 8px; font-size: 13px; color: var(--primary-dark); font-weight: 600;">
+                                                        <i class="fa fa-check-circle"></i> Nhấp để chọn địa chỉ này
+                                                    </div>
+                                                </c:if>
                                             </div>
-                                        <% } %>
-                                    </div>
-                                    <div class="address-item-right">
-                                        <div class="address-actions">
-                                            <a href="${pageContext.request.contextPath}/delivery-address?action=edit&id=<%= addr.getAddressId() %><%= sourceParam %>" class="action-link">Cập nhật</a>
-                                            <a href="${pageContext.request.contextPath}/delivery-address?action=delete&id=<%= addr.getAddressId() %><%= sourceParam %>" class="action-link delete-link" onclick="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')">Xóa</a>
+                                            <div class="address-item-right">
+                                                <div class="address-actions">
+                                                    <a href="${pageContext.request.contextPath}/delivery-address?action=edit&id=${addr.addressId}${sourceParam}" class="action-link">Cập nhật</a>
+                                                    <a href="${pageContext.request.contextPath}/delivery-address?action=delete&id=${addr.addressId}${sourceParam}" class="action-link delete-link" onclick="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')">Xóa</a>
+                                                </div>
+                                                <c:if test="${not addr.isDefault() and param.source != 'checkout'}">
+                                                    <a href="${pageContext.request.contextPath}/delivery-address?action=set-default&id=${addr.addressId}${sourceParam}" class="btn-set-default">Thiết lập mặc định</a>
+                                                </c:if>
+                                            </div>
                                         </div>
-                                        <% if (!addr.isDefault()) { %>
-                                            <a href="${pageContext.request.contextPath}/delivery-address?action=set-default&id=<%= addr.getAddressId() %><%= sourceParam %>" class="btn-set-default">Thiết lập mặc định</a>
-                                        <% } %>
-                                    </div>
-                                </div>
-                            <% 
-                                    }
-                                }
-                            %>
+                                    </c:forEach>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
                     </div>
                 </div>
-
-            <% } else if (view.equals("form")) { %>
+            </c:when>
+            <c:when test="${requestScope.view == 'form'}">
                 <!-- View 2: Add/Edit Address Form & Map Screen -->
                 <div class="address-form-container">
                     <div class="address-card">
                         <div class="address-header">
-                            <h2><%= isEditMode ? "Cập nhật địa chỉ" : "Địa chỉ mới" %></h2>
+                            <h2>${isEditMode ? 'Cập nhật địa chỉ' : 'Địa chỉ mới'}</h2>
                         </div>
 
-                        <% if (request.getAttribute("errorMessage") != null) { %>
+                        <c:if test="${not empty requestScope.errorMessage}">
                         <div class="alert alert-danger">
-                            <%= request.getAttribute("errorMessage") %>
+                            ${requestScope.errorMessage}
                         </div>
-                        <% } %>
+                        </c:if>
 
                         <form id="addressForm" class="address-form"
                               action="${pageContext.request.contextPath}/delivery-address"
                               method="post">
 
-                            <input type="hidden" name="addressId" value="<%= isEditMode ? addressToEdit.getAddressId() : "" %>">
-                            <input type="hidden" name="source" value="<%= source != null ? source : "" %>">
+                            <input type="hidden" name="addressId" value="${isEditMode ? addressToEdit.addressId : ''}">
+                            <input type="hidden" name="source" value="${not empty param.source ? param.source : ''}">
 
+                            <c:choose>
+                            <c:when test="${isProfileMode}">
+                                <input type="hidden" name="receiverName" value="${sessionScope.user.fullName}">
+                                <input type="hidden" name="receiverPhone" value="${sessionScope.user.phone}">
+                            </c:when>
+                            <c:otherwise>
                             <div class="form-field-group">
                                 <label class="form-field-label">Tên người nhận <span class="required">*</span></label>
                                 <input type="text"
@@ -550,7 +155,7 @@
                                        class="address-input"
                                        maxlength="30"
                                        placeholder="Tên người nhận"
-                                       value="<%= isEditMode ? addressToEdit.getReceiverName() : "" %>">
+                                       value="${isEditMode ? addressToEdit.receiverName : ''}">
                             </div>
 
                             <div class="form-field-group">
@@ -560,8 +165,10 @@
                                        class="address-input"
                                        maxlength="10"
                                        placeholder="Số điện thoại người nhận"
-                                       value="<%= isEditMode ? addressToEdit.getReceiverPhone() : "" %>">
+                                       value="${isEditMode ? addressToEdit.receiverPhone : ''}">
                             </div>
+                            </c:otherwise>
+                            </c:choose>
 
                             <div class="form-field-group">
                                 <label class="form-field-label">Địa chỉ <span class="required">*</span></label>
@@ -572,7 +179,7 @@
                                            placeholder="Nhập và tìm địa chỉ giao hàng"
                                            oninput="suggestAddress()"
                                            autocomplete="off"
-                                           value="<%= isEditMode ? addressToEdit.getAddressDetail() : "" %>">
+                                           value="${isEditMode ? addressToEdit.addressDetail : ''}">
 
                                     <div id="suggestionList" class="suggestion-list"></div>
                                 </div>
@@ -587,20 +194,27 @@
                                        placeholder="Ghi chú địa chỉ: số nhà, ngõ, tầng...">
                             </div>
 
-                            <input type="hidden" id="addressDetail" name="addressDetail" value="<%= isEditMode ? addressToEdit.getAddressDetail() : "" %>">
-                            <input type="hidden" id="latitudeInput" name="latitude" value="<%= isEditMode ? addressToEdit.getLatitude() : "" %>">
-                            <input type="hidden" id="longitudeInput" name="longitude" value="<%= isEditMode ? addressToEdit.getLongitude() : "" %>">
+                            <input type="hidden" id="addressDetail" name="addressDetail" value="${isEditMode ? addressToEdit.addressDetail : ''}">
+                            <input type="hidden" id="latitudeInput" name="latitude" value="${isEditMode ? addressToEdit.latitude : ''}">
+                            <input type="hidden" id="longitudeInput" name="longitude" value="${isEditMode ? addressToEdit.longitude : ''}">
 
+                            <c:choose>
+                            <c:when test="${isProfileMode}">
+                                <input type="hidden" name="isDefault" value="on">
+                            </c:when>
+                            <c:otherwise>
                             <label class="checkbox-row">
-                                <input type="checkbox" name="isDefault" <%= (isEditMode && addressToEdit.isDefault()) ? "checked disabled" : "" %> <%= (!isEditMode && (addressList == null || addressList.isEmpty())) ? "checked disabled" : "" %>>
+                                <input type="checkbox" name="isDefault" ${(isEditMode and addressToEdit.isDefault()) ? 'checked disabled' : ''} ${(!isEditMode and empty addressList) ? 'checked disabled' : ''}>
                                 Đặt làm địa chỉ mặc định
                             </label>
-                            <% if (isEditMode && addressToEdit.isDefault()) { %>
+                            <c:if test="${isEditMode and addressToEdit.isDefault()}">
                                 <input type="hidden" name="isDefault" value="on">
-                            <% } %>
-                            <% if (!isEditMode && (addressList == null || addressList.isEmpty())) { %>
+                            </c:if>
+                            <c:if test="${!isEditMode and empty addressList}">
                                 <input type="hidden" name="isDefault" value="on">
-                            <% } %>
+                            </c:if>
+                            </c:otherwise>
+                            </c:choose>
 
                             <div class="button-row">
                                 <button type="button"
@@ -614,9 +228,18 @@
                                     Lưu địa chỉ
                                 </button>
 
-                                <a href="${pageContext.request.contextPath}/delivery-address<%= sourceQuery %>" class="btn-back">
-                                    Trở lại
-                                </a>
+                                <c:choose>
+                                <c:when test="${isProfileMode}">
+                                    <a href="${pageContext.request.contextPath}/profile" class="btn-back">
+                                        Trở lại
+                                    </a>
+                                </c:when>
+                                <c:otherwise>
+                                    <a href="${pageContext.request.contextPath}/delivery-address${sourceQuery}" class="btn-back">
+                                        Trở lại
+                                    </a>
+                                </c:otherwise>
+                                </c:choose>
                             </div>
 
                         </form>
@@ -634,13 +257,14 @@
                         <div id="map"></div>
 
                         <div class="address-info">
-                            <div><strong>Địa chỉ:</strong> <span id="selectedAddress"><%= isEditMode ? addressToEdit.getAddressDetail() : "Chưa chọn" %></span></div>
+                            <div><strong>Địa chỉ:</strong> <span id="selectedAddress">${isEditMode ? addressToEdit.addressDetail : 'Chưa chọn'}</span></div>
                             <div><strong>Khoảng cách:</strong> <span id="distance">Chưa tính</span></div>
                             <div><strong>Thời gian dự kiến:</strong> <span id="duration">Chưa tính</span></div>
                         </div>
                     </div>
                 </div>
-            <% } %>
+            </c:when>
+            </c:choose>
 
         </main>
 
@@ -650,11 +274,12 @@
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
         <script>
-            const isEditMode = <%= isEditMode %>;
-            const editLat = <%= isEditMode ? addressToEdit.getLatitude() : "null" %>;
-            const editLng = <%= isEditMode ? addressToEdit.getLongitude() : "null" %>;
-            const editAddress = `<%= isEditMode ? addressToEdit.getAddressDetail().replace("`", "\\`").replace("$", "\\$") : "" %>`;
-
+            <c:set var="escapedAddress" value="${isEditMode ? addressToEdit.addressDetail : ''}" />
+            const isEditMode = ${isEditMode};
+            const isProfileModeJs = ${isProfileMode};
+            const editLat = ${isEditMode ? addressToEdit.latitude : 'null'};
+            const editLng = ${isEditMode ? addressToEdit.longitude : 'null'};
+            const editAddress = "${escapedAddress}";
             const shopLat = 21.0278;
             const shopLng = 105.8342;
 
@@ -919,42 +544,44 @@
                     const latInput = document.getElementById("latitudeInput");
                     const lngInput = document.getElementById("longitudeInput");
 
-                    const nameVal = nameInput ? nameInput.value.trim() : "";
-                    if (nameVal === "") {
-                        alert("Vui lòng nhập tên người nhận.");
-                        if (nameInput) nameInput.focus();
-                        e.preventDefault();
-                        return;
-                    }
-                    if (nameVal.length > 30) {
-                        alert("Tên người nhận không được dài quá 30 ký tự.");
-                        if (nameInput) nameInput.focus();
-                        e.preventDefault();
-                        return;
-                    }
-                    // Validate name format: no numbers or special characters (except spaces)
-                    const specialCharOrNum = /[0-9!@#$%^&*(),.?":{}|<>_\[\]\\\/+=~`-]/;
-                    if (specialCharOrNum.test(nameVal)) {
-                        alert("Tên người nhận không hợp lệ (chỉ chứa chữ cái và khoảng trắng, không chứa số hay ký tự đặc biệt).");
-                        if (nameInput) nameInput.focus();
-                        e.preventDefault();
-                        return;
-                    }
+                    if (!isProfileModeJs) {
+                        const nameVal = nameInput ? nameInput.value.trim() : "";
+                        if (nameVal === "") {
+                            alert("Vui lòng nhập tên người nhận.");
+                            if (nameInput) nameInput.focus();
+                            e.preventDefault();
+                            return;
+                        }
+                        if (nameVal.length > 30) {
+                            alert("Tên người nhận không được dài quá 30 ký tự.");
+                            if (nameInput) nameInput.focus();
+                            e.preventDefault();
+                            return;
+                        }
+                        // Validate name format: no numbers or special characters (except spaces)
+                        const specialCharOrNum = /[0-9!@#$%^&*(),.?":{}|<>_\[\]\\\/+=~`-]/;
+                        if (specialCharOrNum.test(nameVal)) {
+                            alert("Tên người nhận không hợp lệ (chỉ chứa chữ cái và khoảng trắng, không chứa số hay ký tự đặc biệt).");
+                            if (nameInput) nameInput.focus();
+                            e.preventDefault();
+                            return;
+                        }
 
-                    const phoneVal = phoneInput ? phoneInput.value.trim() : "";
-                    if (phoneVal === "") {
-                        alert("Vui lòng nhập số điện thoại người nhận.");
-                        if (phoneInput) phoneInput.focus();
-                        e.preventDefault();
-                        return;
-                    }
-                    // Vietnamese phone regex: starts with 03, 05, 07, 08, 09, exactly 10 digits
-                    const phoneRegex = /^0(3|5|7|8|9)\d{8}$/;
-                    if (!phoneRegex.test(phoneVal)) {
-                        alert("Số điện thoại không hợp lệ (phải đủ 10 chữ số và bắt đầu bằng 03, 05, 07, 08 hoặc 09).");
-                        if (phoneInput) phoneInput.focus();
-                        e.preventDefault();
-                        return;
+                        const phoneVal = phoneInput ? phoneInput.value.trim() : "";
+                        if (phoneVal === "") {
+                            alert("Vui lòng nhập số điện thoại người nhận.");
+                            if (phoneInput) phoneInput.focus();
+                            e.preventDefault();
+                            return;
+                        }
+                        // Vietnamese phone regex: starts with 03, 05, 07, 08, 09, exactly 10 digits
+                        const phoneRegex = /^0(3|5|7|8|9)\d{8}$/;
+                        if (!phoneRegex.test(phoneVal)) {
+                            alert("Số điện thoại không hợp lệ (phải đủ 10 chữ số và bắt đầu bằng 03, 05, 07, 08 hoặc 09).");
+                            if (phoneInput) phoneInput.focus();
+                            e.preventDefault();
+                            return;
+                        }
                     }
 
                     const addrVal = addressInput ? addressInput.value.trim() : "";

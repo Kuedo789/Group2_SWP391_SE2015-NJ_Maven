@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet(name = "CustomerOrderController", urlPatterns = {"/OrderList", "/OrderDetail"})
+@WebServlet(name = "CustomerOrderController", urlPatterns = {"/OrderList", "/OrderDetail", "/order-success"})
 public class CustomerOrderController extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
@@ -39,6 +39,8 @@ public class CustomerOrderController extends HttpServlet {
 
         if ("/OrderDetail".equals(path)) {
             handleDetail(request, response, currentUser);
+        } else if ("/order-success".equals(path)) {
+            handleSuccess(request, response, currentUser);
         } else {
             handleList(request, response, currentUser);
         }
@@ -46,7 +48,7 @@ public class CustomerOrderController extends HttpServlet {
 
     private void handleList(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
-        String customerId = currentUser.getUserId();
+        String customerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
         List<Order> ordersList = orderDAO.getOrdersByCustomerId(customerId);
 
 
@@ -128,6 +130,42 @@ public class CustomerOrderController extends HttpServlet {
         int pageSize = 6;
         int totalPages = (int) Math.ceil((double) totalOrders / pageSize);
         
+        // Count orders for each status matching the date range
+        int countAll = 0;
+        int countProcessing = 0;
+        int countShipping = 0;
+        int countCompleted = 0;
+        int countCancelled = 0;
+
+        for (Order order : ordersList) {
+            boolean dateMatch = true;
+            if (order.getOrderTime() == null) {
+                dateMatch = false;
+            } else {
+                if (startDate != null && order.getOrderTime().before(startDate)) {
+                    dateMatch = false;
+                }
+                if (endDate != null && order.getOrderTime().after(endDate)) {
+                    dateMatch = false;
+                }
+            }
+            if (dateMatch) {
+                countAll++;
+                String dbStatus = order.getOrderStatus();
+                if (dbStatus != null) {
+                    if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing")) {
+                        countProcessing++;
+                    } else if (dbStatus.equalsIgnoreCase("Delivering")) {
+                        countShipping++;
+                    } else if (dbStatus.equalsIgnoreCase("Completed")) {
+                        countCompleted++;
+                    } else if (dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled")) {
+                        countCancelled++;
+                    }
+                }
+            }
+        }
+
         int currentPage = 1;
         String pageParam = request.getParameter("page");
         if (pageParam != null) {
@@ -148,7 +186,32 @@ public class CustomerOrderController extends HttpServlet {
         request.setAttribute("startDate", startDateStr);
         request.setAttribute("endDate", endDateStr);
         request.setAttribute("status", status);
+        request.setAttribute("countAll", countAll);
+        request.setAttribute("countProcessing", countProcessing);
+        request.setAttribute("countShipping", countShipping);
+        request.setAttribute("countCompleted", countCompleted);
+        request.setAttribute("countCancelled", countCancelled);
         request.getRequestDispatcher("/customer/my-orders.jsp").forward(request, response);
+    }
+
+    private void handleSuccess(HttpServletRequest request, HttpServletResponse response, User currentUser)
+            throws ServletException, IOException {
+        String orderNo = request.getParameter("orderNo");
+        if (orderNo == null || orderNo.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/OrderList");
+            return;
+        }
+
+        Order order = orderDAO.getOrderByNo(orderNo);
+
+        String actualCustomerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
+        if (order == null || !order.getCustomerId().equals(actualCustomerId)) {
+            response.sendRedirect(request.getContextPath() + "/OrderList");
+            return;
+        }
+
+        request.setAttribute("order", order);
+        request.getRequestDispatcher("/customer/order-success.jsp").forward(request, response);
     }
 
     private void handleDetail(HttpServletRequest request, HttpServletResponse response, User currentUser)
@@ -168,7 +231,8 @@ public class CustomerOrderController extends HttpServlet {
         }
 
         // Đảm bảo khách hàng chỉ xem được đơn hàng của chính mình (Bảo mật)
-        if (!order.getCustomerId().equals(currentUser.getUserId())) {
+        String actualCustomerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
+        if (!order.getCustomerId().equals(actualCustomerId)) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập thông tin đơn hàng này.");
             return;
         }
@@ -204,8 +268,9 @@ public class CustomerOrderController extends HttpServlet {
 
             if ("cancel".equalsIgnoreCase(action) && orderNo != null && !orderNo.trim().isEmpty()) {
                 Order order = orderDAO.getOrderByNo(orderNo);
+                String actualCustomerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
 
-                if (order != null && order.getCustomerId().equals(currentUser.getUserId())) {
+                if (order != null && order.getCustomerId().equals(actualCustomerId)) {
                     String dbStatus = order.getOrderStatus();
                     if (dbStatus != null && (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing"))) {
                         orderDAO.updateOrderStatus(orderNo, "Cancelled");

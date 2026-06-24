@@ -282,18 +282,34 @@ public class AdminProductController extends HttpServlet {
     private void deleteProduct(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         String id = request.getParameter("id");
+        
+        String pageParam = request.getParameter("page");
+        String pageSizeParam = request.getParameter("pageSize");
+        String categoryParam = request.getParameter("category");
+        String statusFilterParam = request.getParameter("status");
+        String searchParam = request.getParameter("search");
+        String sortByParam = request.getParameter("sortBy");
+        
+        StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/admin/product?action=list");
+        if (pageParam != null && !pageParam.trim().isEmpty()) redirectUrl.append("&page=").append(pageParam);
+        if (pageSizeParam != null && !pageSizeParam.trim().isEmpty()) redirectUrl.append("&pageSize=").append(pageSizeParam);
+        if (categoryParam != null && !categoryParam.trim().isEmpty()) redirectUrl.append("&category=").append(java.net.URLEncoder.encode(categoryParam, "UTF-8"));
+        if (statusFilterParam != null && !statusFilterParam.trim().isEmpty()) redirectUrl.append("&status=").append(java.net.URLEncoder.encode(statusFilterParam, "UTF-8"));
+        if (searchParam != null && !searchParam.trim().isEmpty()) redirectUrl.append("&search=").append(java.net.URLEncoder.encode(searchParam, "UTF-8"));
+        if (sortByParam != null && !sortByParam.trim().isEmpty()) redirectUrl.append("&sortBy=").append(java.net.URLEncoder.encode(sortByParam, "UTF-8"));
+
         if (id != null && !id.trim().isEmpty()) {
             System.out.println("[INFO] Bat dau xoa banh kem co ID: " + id);
             try {
                 productDAO.deleteProduct(id);
                 System.out.println("[SUCCESS] Xoa banh kem co ID: " + id + " thanh cong!");
-                response.sendRedirect(request.getContextPath() + "/admin/product?action=list&msg=delete_success");
+                response.sendRedirect(redirectUrl.toString() + "&msg=delete_success");
             } catch (Exception e) {
                 System.err.println("[ERROR] Loi khi xoa banh kem co ID: " + id + ". Details: " + e.getMessage());
-                response.sendRedirect(request.getContextPath() + "/admin/product?action=list&msg=delete_error");
+                response.sendRedirect(redirectUrl.toString() + "&msg=delete_error");
             }
         } else {
-            response.sendRedirect(request.getContextPath() + "/admin/product?action=list");
+            response.sendRedirect(redirectUrl.toString());
         }
     }
 
@@ -303,6 +319,18 @@ public class AdminProductController extends HttpServlet {
         String id = request.getParameter("id");
         String name = request.getParameter("name");
         String categoryId = request.getParameter("categoryId");
+        
+        boolean isNewProductForced = false;
+        String oldId = id;
+        if (!isNew && id != null && !id.trim().isEmpty() && !"new".equalsIgnoreCase(id)) {
+            String[] bomIngredientIds = request.getParameterValues("bomIngredientId");
+            String[] bomStandardGrams = request.getParameterValues("bomStandardGram");
+            
+            if (productDAO.hasOrders(id) && isBomChanged(id, bomIngredientIds, bomStandardGrams)) {
+                isNew = true;
+                isNewProductForced = true;
+            }
+        }
         
         // Validate Margin Percent
         double defaultMarginPercent = 30.00;
@@ -517,12 +545,88 @@ public class AdminProductController extends HttpServlet {
             String[] bomStandardGrams = request.getParameterValues("bomStandardGram");
             productDAO.saveProductIngredients(id, bomIngredientIds, bomStandardGrams);
             
+            String pageParam = request.getParameter("page");
+            String pageSizeParam = request.getParameter("pageSize");
+            String categoryParam = request.getParameter("category");
+            String statusFilterParam = request.getParameter("statusFilter");
+            String searchParam = request.getParameter("search");
+            String sortByParam = request.getParameter("sortBy");
+            
+            StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/admin/product?action=list");
+            if (pageParam != null && !pageParam.trim().isEmpty()) redirectUrl.append("&page=").append(pageParam);
+            if (pageSizeParam != null && !pageSizeParam.trim().isEmpty()) redirectUrl.append("&pageSize=").append(pageSizeParam);
+            if (categoryParam != null && !categoryParam.trim().isEmpty()) redirectUrl.append("&category=").append(java.net.URLEncoder.encode(categoryParam, "UTF-8"));
+            if (statusFilterParam != null && !statusFilterParam.trim().isEmpty()) redirectUrl.append("&status=").append(java.net.URLEncoder.encode(statusFilterParam, "UTF-8"));
+            if (searchParam != null && !searchParam.trim().isEmpty()) redirectUrl.append("&search=").append(java.net.URLEncoder.encode(searchParam, "UTF-8"));
+            if (sortByParam != null && !sortByParam.trim().isEmpty()) redirectUrl.append("&sortBy=").append(java.net.URLEncoder.encode(sortByParam, "UTF-8"));
+
             System.out.println("[SUCCESS] Luu banh kem thanh cong. ID: " + product.getId());
-            response.sendRedirect(request.getContextPath() + "/admin/product?action=list&msg=" + (isNew ? "add_success" : "edit_success"));
+            if (isNewProductForced) {
+                productDAO.deactivateProduct(oldId);
+                response.sendRedirect(redirectUrl.toString() + "&msg=new_version_success");
+            } else {
+                response.sendRedirect(redirectUrl.toString() + "&msg=" + (isNew ? "add_success" : "edit_success"));
+            }
         } else {
+            String pageParam = request.getParameter("page");
+            String pageSizeParam = request.getParameter("pageSize");
+            String categoryParam = request.getParameter("category");
+            String statusFilterParam = request.getParameter("statusFilter");
+            String searchParam = request.getParameter("search");
+            String sortByParam = request.getParameter("sortBy");
+            
+            StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/admin/product?action=list");
+            if (pageParam != null && !pageParam.trim().isEmpty()) redirectUrl.append("&page=").append(pageParam);
+            if (pageSizeParam != null && !pageSizeParam.trim().isEmpty()) redirectUrl.append("&pageSize=").append(pageSizeParam);
+            if (categoryParam != null && !categoryParam.trim().isEmpty()) redirectUrl.append("&category=").append(java.net.URLEncoder.encode(categoryParam, "UTF-8"));
+            if (statusFilterParam != null && !statusFilterParam.trim().isEmpty()) redirectUrl.append("&status=").append(java.net.URLEncoder.encode(statusFilterParam, "UTF-8"));
+            if (searchParam != null && !searchParam.trim().isEmpty()) redirectUrl.append("&search=").append(java.net.URLEncoder.encode(searchParam, "UTF-8"));
+            if (sortByParam != null && !sortByParam.trim().isEmpty()) redirectUrl.append("&sortBy=").append(java.net.URLEncoder.encode(sortByParam, "UTF-8"));
+
             System.err.println("[ERROR] Luu banh kem that bai. ID: " + product.getId());
-            response.sendRedirect(request.getContextPath() + "/admin/product?action=list&msg=save_error");
+            response.sendRedirect(redirectUrl.toString() + "&msg=save_error");
         }
+    }
+
+    private boolean isBomChanged(String productId, String[] newIds, String[] newGrams) {
+        List<Map<String, Object>> currentIngredients = productDAO.getProductIngredients(productId);
+        
+        List<String> validNewIds = new ArrayList<>();
+        List<Double> validNewGrams = new ArrayList<>();
+        if (newIds != null && newGrams != null) {
+            for (int i = 0; i < newIds.length; i++) {
+                if (newIds[i] != null && !newIds[i].trim().isEmpty()) {
+                    validNewIds.add(newIds[i].trim());
+                    double val = 0.0;
+                    try {
+                        val = Double.parseDouble(newGrams[i]);
+                    } catch (Exception e) {}
+                    validNewGrams.add(val);
+                }
+            }
+        }
+        
+        if (currentIngredients.size() != validNewIds.size()) {
+            return true;
+        }
+        
+        java.util.HashMap<String, Double> currentMap = new java.util.HashMap<>();
+        for (Map<String, Object> ing : currentIngredients) {
+            currentMap.put((String) ing.get("ingredientId"), (Double) ing.get("standardGram"));
+        }
+        
+        for (int i = 0; i < validNewIds.size(); i++) {
+            String id = validNewIds.get(i);
+            Double currentGram = currentMap.get(id);
+            if (currentGram == null) {
+                return true;
+            }
+            if (Math.abs(currentGram - validNewGrams.get(i)) > 0.0001) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     private String escapeJson(String s) {

@@ -26,6 +26,13 @@ public class ProfileServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/auth/login.jsp");
             return;
         }
+        
+        // Handle PRG pattern success message
+        String successMessage = (String) session.getAttribute("successMessage");
+        if (successMessage != null) {
+            request.setAttribute("successMessage", successMessage);
+            session.removeAttribute("successMessage");
+        }
 
         request.getRequestDispatcher("/customer/profile.jsp").forward(request, response);
     }
@@ -52,8 +59,6 @@ public class ProfileServlet extends HttpServlet {
         String currentPassword = trim(request.getParameter("currentPassword"));
         String newPassword = trim(request.getParameter("newPassword"));
         String confirmPassword = trim(request.getParameter("confirmPassword"));
-
-        setInputAttributes(request, fullName, phone, currentPassword, newPassword, confirmPassword);
 
         // 1. Validate họ tên
         if (isEmpty(fullName)) {
@@ -170,18 +175,12 @@ public class ProfileServlet extends HttpServlet {
         }
 
         if (updated || wantChangePassword) {
-            request.setAttribute("successMessage", "Cập nhật thông tin thành công.");
-
-            // Sau khi cập nhật thành công thì không giữ lại mật khẩu trên form
-            request.removeAttribute("inputCurrentPassword");
-            request.removeAttribute("inputNewPassword");
-            request.removeAttribute("inputConfirmPassword");
-            request.removeAttribute("showPasswordBox");
+            // Apply PRG Pattern to avoid double form submission on refresh
+            session.setAttribute("successMessage", "Cập nhật thông tin thành công.");
+            response.sendRedirect(request.getContextPath() + "/profile");
         } else {
-            request.setAttribute("errorMessage", "Cập nhật thất bại. Vui lòng thử lại.");
+            forwardError(request, response, "Cập nhật thất bại. Vui lòng thử lại.");
         }
-
-        request.getRequestDispatcher("/customer/profile.jsp").forward(request, response);
     }
 
     private String trim(String value) {
@@ -190,20 +189,6 @@ public class ProfileServlet extends HttpServlet {
 
     private boolean isEmpty(String value) {
         return value == null || value.isEmpty();
-    }
-
-    private void setInputAttributes(HttpServletRequest request,
-                                    String fullName,
-                                    String phone,
-                                    String currentPassword,
-                                    String newPassword,
-                                    String confirmPassword) {
-
-        request.setAttribute("inputFullName", fullName);
-        request.setAttribute("inputPhone", phone);
-        request.setAttribute("inputCurrentPassword", currentPassword);
-        request.setAttribute("inputNewPassword", newPassword);
-        request.setAttribute("inputConfirmPassword", confirmPassword);
     }
 
     private void forwardError(HttpServletRequest request,

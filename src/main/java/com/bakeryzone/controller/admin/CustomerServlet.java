@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @author Asus
  */
-@WebServlet(name = "CustomerServlet", urlPatterns = {"/customer"})
+@WebServlet(name = "CustomerServlet", urlPatterns = {"/admin/customer"})
 public class CustomerServlet extends HttpServlet {
 
     private static final String LIST_VIEW = "/admin/customerList.jsp";
@@ -241,7 +241,7 @@ public class CustomerServlet extends HttpServlet {
 
     private void redirectToDefault(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        response.sendRedirect("customer?action=list");
+        response.sendRedirect(request.getContextPath() + "/admin/customer?action=list");
     }
 
     @Override

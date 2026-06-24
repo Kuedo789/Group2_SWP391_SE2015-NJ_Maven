@@ -4,44 +4,15 @@
     Author     : Nguyễn Hùng
 --%>
 
-<%@page import="java.util.List"%>
-<%@page import="java.util.Map"%>
-<%@page import="com.bakeryzone.model.Product"%>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
-
-<%!
-    private String js(String value) {
-        if (value == null) {
-            return "";
-        }
-
-        return value.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("'", "\\'")
-                .replace("\n", " ")
-                .replace("\r", " ");
-    }
-%>
-
-<%
-    List<Product> productListData = (List<Product>) request.getAttribute("productList");
-    List<Map<String, String>> categoryListData = (List<Map<String, String>>) request.getAttribute("categoryList");
-
-    if (productListData == null) {
-        productListData = new java.util.ArrayList<>();
-    }
-
-    if (categoryListData == null) {
-        categoryListData = new java.util.ArrayList<>();
-    }
-%>
+<%@taglib prefix="c" uri="jakarta.tags.core" %>
 
 <!DOCTYPE html>
 <html lang="vi">
 
     <head>
         <jsp:include page="../common/header.jsp" />
-        <link rel="stylesheet" href="<%= request.getContextPath() %>/assets/css/productList.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer/productList.css">
     </head>
 
     <body>
@@ -57,7 +28,7 @@
                     <div class="product-search-box">
                         <i class="fa fa-search"></i>
                         <input type="text" id="searchInput" placeholder="Tìm bánh, đồ uống..."
-                         value="<%= request.getParameter("search") != null ? request.getParameter("search") : "" %>">
+                         value="${not empty param.search ? param.search : ''}">
                     </div>
 
                     <select id="sortSelect" class="sort-select">
@@ -72,32 +43,13 @@
                     <button class="category-pill active" onclick="selectCategory('all', this)">
                         Tất cả <span id="allProductCount">0</span>
                     </button>
-
-                    <%
-                        for (Map<String, String> c : categoryListData) {
-                            String categoryName = c.get("name");
-
-                            int count = 0;
-                            for (Product p : productListData) {
-                                if (categoryName != null && categoryName.equals(p.getCategoryName())) {
-                                    count++;
-                                }
-                            }
-                    %>
-
-                    <button class="category-pill" onclick="selectCategory('<%= js(categoryName) %>', this)">
-                        <%= categoryName %> <span><%= count %></span>
-                    </button>
-
-                    <%
-                        }
-                    %>
+                    <!-- Category pills will be rendered dynamically by JS -->
                 </div>
 
                 <div class="product-top-row">
                     <div class="product-count" id="productCount">0 sản phẩm</div>
 
-                    <a href="<%= request.getContextPath() %>/auth/login.jsp" class="voucher-link">
+                    <a href="${pageContext.request.contextPath}/auth/login.jsp" class="voucher-link">
                         Đăng nhập xem voucher ưu đãi của bạn
                     </a>
                 </div>
@@ -121,38 +73,34 @@
         <jsp:include page="../common/scripts.jsp" />
 
         <script>
-            const contextPath = "<%= request.getContextPath() %>";
+            const contextPath = "${pageContext.request.contextPath}";
 
-            const products = [
-            <%
-                for (Product p : productListData) {
-                    double price = p.getBasePrice();
-            %>
-                {
-                    id: "<%= js(p.getId()) %>",
-                            name: "<%= js(p.getName()) %>",
-                    category: "<%= js(p.getCategoryName()) %>",
-                            price: <%= price %>,
-                    desc: "<%= js(p.getFullDescription()) %>",
-                            image: "<%= js(p.getImageUrl()) %>".startsWith("http") ? "<%= js(p.getImageUrl()) %>" : contextPath + "/<%= js(p.getImageUrl()) %>",
-                    featured: <%= p.isFeatured() %>
-                },
-            <%
+            const products = ${requestScope.productsJson};
+            const categories = ${requestScope.categoriesJson};
+            
+            // Render category pills dynamically based on data
+            function renderCategoryPills() {
+                const categoryListDiv = document.getElementById("categoryList");
+                let html = '<button class="category-pill active" onclick="selectCategory(\'all\', this)">' +
+                           'Tất cả <span id="allProductCount">' + products.length + '</span></button>';
+                
+                for (let i = 0; i < categories.length; i++) {
+                    const categoryName = categories[i];
+                    let count = 0;
+                    for (let j = 0; j < products.length; j++) {
+                        if (products[j].category === categoryName) {
+                            count++;
+                        }
+                    }
+                    html += '<button class="category-pill" onclick="selectCategory(\'' + categoryName.replace(/'/g, "\\'") + '\', this)">' +
+                            categoryName + ' <span>' + count + '</span></button>';
                 }
-            %>
-            ];
+                categoryListDiv.innerHTML = html;
+            }
+            
+            renderCategoryPills();
 
-            const categories = [
-            <%
-                for (Map<String, String> c : categoryListData) {
-            %>
-            "<%= js(c.get("name")) %>",
-            <%
-                }
-            %>
-            ];
-
-            let currentCategory = "<%= request.getParameter("category") != null ? js(request.getParameter("category")) : "all" %>";
+            let currentCategory = "${not empty param.category ? param.category : 'all'}";
             let currentPage = 1;
             const itemsPerPage = 8;
             const itemsPerCategoryHome = 4;
