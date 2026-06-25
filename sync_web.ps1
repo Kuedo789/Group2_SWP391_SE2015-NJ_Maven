@@ -16,7 +16,9 @@ $filesToCopy = @(
     "admin/unitDetail.jsp",
     "admin/orderList.jsp",
     "admin/orderDetail.jsp",
-    "common/sidebar.jsp"
+    "common/sidebar.jsp",
+    "customer/my-orders.jsp",
+    "customer/order-detail.jsp"
 )
 
 foreach ($file in $filesToCopy) {

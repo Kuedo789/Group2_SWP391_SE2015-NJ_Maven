@@ -107,8 +107,39 @@
             <!-- Charts Row -->
             <div class="charts-row">
                 <div class="chart-card">
-                    <div class="chart-title">
-                        Báo cáo doanh thu <span>Xu hướng 6 tháng gần nhất</span>
+                    <div class="chart-title d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div class="d-flex flex-column">
+                            <span id="chartMetricTitle" style="font-family:'Playfair Display', serif; font-weight:700;">Báo cáo doanh thu</span>
+                            <span id="chartTimeframeSubtitle" style="font-family:'Inter', sans-serif; font-size:12px; color:var(--cz-text-muted); font-weight:500;">Xu hướng 6 tháng gần nhất</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <!-- Timeframe Select Dropdown -->
+                            <div class="chart-select-container">
+                                <span class="calendar-icon-wrap"><i class="fa-regular fa-calendar"></i></span>
+                                <select id="timeframeSelect" class="chart-select">
+                                    <option value="7days">7 ngày qua</option>
+                                    <option value="30days">30 ngày qua</option>
+                                    <option value="6months">6 tháng gần nhất</option>
+                                    <option value="custom">Tùy chọn...</option>
+                                </select>
+                                <i class="fa-solid fa-chevron-down select-chevron"></i>
+                            </div>
+
+                            <!-- Custom Date Range inline picker -->
+                            <div id="customDateRangeContainer" style="display: none; align-items: center; gap: 8px;">
+                                <input type="date" id="startDate" name="startDate" class="form-control form-control-sm" style="max-width: 140px; font-size:12px;" value="${startDate}">
+                                <span style="font-size:13px; font-weight:500;">đến</span>
+                                <input type="date" id="endDate" name="endDate" class="form-control form-control-sm" style="max-width: 140px; font-size:12px;" value="${endDate}">
+                                <button type="button" id="btnApplyCustomDate" class="btn btn-sm text-white" style="background-color:#1E3224; border-color:#1E3224; padding: 4px 12px; font-size:12px; border-radius:15px; font-weight:600;">Lọc</button>
+                            </div>
+
+                            <!-- Metrics -->
+                            <div class="chart-controls" id="metricControls">
+                                <button class="btn-toggle-pill active" data-metric="revenue">Doanh thu</button>
+                                <button class="btn-toggle-pill" data-metric="orders">Đơn hàng</button>
+                                <button class="btn-toggle-pill" data-metric="profit">Lợi nhuận</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="chart-body">
                         <canvas id="revenueChart"></canvas>
@@ -117,9 +148,9 @@
 
                 <div class="chart-card">
                     <div class="chart-title">
-                        Trạng thái đơn hàng <span>Tỷ lệ phân bổ</span>
+                        Trạng thái đơn hàng <span>Tỷ lệ phân bổ đơn hàng</span>
                     </div>
-                    <div class="chart-body">
+                    <div class="chart-body" style="min-height: 200px; max-height: 200px;">
                         <canvas id="statusChart"></canvas>
                         <div class="chart-center-text">
                             <div class="chart-center-val">
@@ -135,95 +166,134 @@
                             <div class="chart-center-lbl">TỔNG CỘNG</div>
                         </div>
                     </div>
+                    <!-- Custom legend below Doughnut -->
+                    <div class="d-flex flex-wrap justify-content-between mt-3 px-2" style="font-size: 13px;">
+                        <div class="w-50 mb-2 d-flex align-items-center gap-2">
+                            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color:#3f5f36;"></span>
+                            <span>Hoàn thành: <strong id="lbl-completed">-</strong></span>
+                        </div>
+                        <div class="w-50 mb-2 d-flex align-items-center gap-2">
+                            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color:#c8a46d;"></span>
+                            <span>Đang giao: <strong id="lbl-delivering">-</strong></span>
+                        </div>
+                        <div class="w-50 mb-2 d-flex align-items-center gap-2">
+                            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color:#ffe082;"></span>
+                            <span>Chờ xử lý: <strong id="lbl-pending">-</strong></span>
+                        </div>
+                        <div class="w-50 mb-2 d-flex align-items-center gap-2">
+                            <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color:#ef9a9a;"></span>
+                            <span>Đã hủy: <strong id="lbl-cancelled">-</strong></span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Recent Orders Table -->
-            <div class="table-card">
-                <div class="dashboard-table-controls">
-                    <h5>Đơn hàng mới nhận</h5>
-                    <a href="${pageContext.request.contextPath}/admin/orders" class="btn btn-outline-secondary btn-sm dashboard-view-all-btn">
-                        Xem tất cả đơn hàng <i class="fa-solid fa-arrow-right-long"></i>
-                    </a>
+            <!-- Bento Grid Row for Best Sellers and Top Customers -->
+            <div class="bento-row">
+                <!-- Best Selling Products Card -->
+                <div class="bento-card">
+                    <div class="bento-card-title">
+                        <div>
+                            Sản phẩm bán chạy nhất
+                            <span class="d-block" style="font-size: 12px; font-weight: 500; color: var(--cz-text-muted);">Thống kê sản phẩm được yêu thích nhất tháng này</span>
+                        </div>
+                        <a href="${pageContext.request.contextPath}/admin/product?action=list">Xem báo cáo chi tiết</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="bento-table">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th>Danh mục</th>
+                                    <th class="text-end">Doanh thu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:choose>
+                                    <c:when test="${not empty bestSellers}">
+                                        <c:forEach var="item" items="${bestSellers}">
+                                            <tr>
+                                                <td>
+                                                    <div class="bento-product-info">
+                                                        <c:choose>
+                                                            <c:when test="${not empty item.imageUrl}">
+                                                                <img class="bento-product-img" src="${pageContext.request.contextPath}/${item.imageUrl}" alt="${item.name}" onerror="this.src='${pageContext.request.contextPath}/assets/images/default-cake.png';">
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <img class="bento-product-img" src="${pageContext.request.contextPath}/assets/images/default-cake.png" alt="Default Product">
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                        <span class="bento-product-name"><c:out value="${item.name}"/></span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="text-secondary"><c:out value="${item.category}"/></span>
+                                                    <span class="badge bg-light text-dark ms-1 border" style="font-size:11px;"><c:out value="${item.quantitySold}"/> đã bán</span>
+                                                </td>
+                                                <td class="text-end fw-bold text-dark font-monospace">
+                                                    <fmt:formatNumber value="${item.totalRevenue}" type="number" pattern="#,##0"/>đ
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <tr>
+                                            <td colspan="3" class="text-center py-4 text-muted">Chưa có dữ liệu sản phẩm bán chạy.</td>
+                                        </tr>
+                                    </c:otherwise>
+                                </c:choose>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                
-                <table class="cz-table">
-                    <thead>
-                        <tr>
-                            <th>Mã đơn</th>
-                            <th>Khách hàng</th>
-                            <th>Thời gian</th>
-                            <th>Tổng thanh toán</th>
-                            <th class="text-center">Trạng thái</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+
+                <!-- Top Customers Card -->
+                <div class="bento-card">
+                    <div class="bento-card-title">
+                        <div>
+                            Khách hàng thân thiết
+                            <span class="d-block" style="font-size: 12px; font-weight: 500; color: var(--cz-text-muted);">Top 5 khách hàng chi tiêu nhiều nhất</span>
+                        </div>
+                    </div>
+                    <div class="customer-list">
                         <c:choose>
-                            <c:when test="${not empty recentOrders}">
-                                <c:forEach var="ord" items="${recentOrders}">
-                                    <tr>
-                                        <td class="dashboard-order-no">
-                                            #${ord.orderNo.replace("ORD_", "")}
-                                        </td>
-                                        <td>
-                                            <div class="dashboard-customer-name">
-                                                <c:out value="${not empty ord.customerName ? ord.customerName : 'Khách vãng lai'}" />
+                            <c:when test="${not empty topCustomers}">
+                                <c:forEach var="cust" items="${topCustomers}" varStatus="status">
+                                    <div class="customer-list-item">
+                                        <div class="customer-info-wrap">
+                                            <div class="customer-index-badge">
+                                                ${status.index + 1}
                                             </div>
-                                            <div class="dashboard-customer-id">
-                                                ID: ${ord.customerId}
+                                            <div>
+                                                <div class="customer-name"><c:out value="${cust.fullName}"/></div>
+                                                <div class="customer-orders-count">${cust.orderCount} đơn hàng</div>
                                             </div>
-                                        </td>
-                                        <td>
-                                            <fmt:formatDate value="${ord.orderTime}" pattern="dd/MM/yyyy HH:mm" />
-                                        </td>
-                                        <td>
-                                            <span class="dashboard-order-cost">
-                                                <fmt:formatNumber value="${ord.totalCost}" type="number" pattern="#,##0"/>đ
-                                            </span>
-                                        </td>
-                                        <td class="text-center">
-                                            <c:choose>
-                                                <c:when test="${ord.orderStatus eq 'Pending' || ord.orderStatus eq 'Chờ xác nhận'}">
-                                                    <span class="status-badge-custom badge-pending">Chờ xác nhận</span>
-                                                </c:when>
-                                                <c:when test="${ord.orderStatus eq 'Confirmed' || ord.orderStatus eq 'Đã xác nhận'}">
-                                                    <span class="status-badge-custom badge-confirmed">Đã xác nhận</span>
-                                                </c:when>
-                                                <c:when test="${ord.orderStatus eq 'Processing' || ord.orderStatus eq 'Đang xử lý'}">
-                                                    <span class="status-badge-custom badge-processing">Đang xử lý</span>
-                                                </c:when>
-                                                <c:when test="${ord.orderStatus eq 'Delivering' || ord.orderStatus eq 'Đang giao hàng' || ord.orderStatus eq 'Đang giao'}">
-                                                    <span class="status-badge-custom badge-delivering">Đang giao</span>
-                                                </c:when>
-                                                <c:when test="${ord.orderStatus eq 'Completed' || ord.orderStatus eq 'Hoàn thành' || ord.orderStatus eq 'Đã giao'}">
-                                                    <span class="status-badge-custom badge-completed">Hoàn thành</span>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <span class="status-badge-custom badge-cancelled">Đã hủy</span>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </td>
-                                        <td class="text-center">
-                                            <a href="${pageContext.request.contextPath}/OrderDetail?orderNo=${ord.orderNo}" class="btn btn-sm btn-outline-success dashboard-btn-details">
-                                                Chi tiết
-                                            </a>
-                                        </td>
-                                    </tr>
+                                        </div>
+                                        <div class="customer-spending">
+                                            <fmt:formatNumber value="${cust.totalSpent / 1000}" pattern="#,##0"/>k
+                                        </div>
+                                    </div>
                                 </c:forEach>
                             </c:when>
                             <c:otherwise>
-                                <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
-                                        <i class="fa-solid fa-box-open d-block fs-3 mb-3 dashboard-empty-icon"></i>
-                                        Chưa có đơn hàng nào được ghi nhận trên hệ thống.
-                                    </td>
-                                </tr>
+                                <div class="text-center py-4 text-muted">Chưa có dữ liệu khách hàng thân thiết.</div>
                             </c:otherwise>
                         </c:choose>
-                    </tbody>
-                </table>
+                    </div>
+                </div>
             </div>
+
+            <!-- Footer at Bottom -->
+            <footer class="text-center py-4 mt-auto border-top" style="font-size: 13px; color: var(--cz-text-muted); background-color: #ffffff; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.01);">
+                <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span>&copy; 2024 Crumb & Craft. Sourdough with Soul.</span>
+                    <div class="d-flex gap-3">
+                        <a href="#" style="color: inherit; text-decoration: none;">Điều khoản</a>
+                        <a href="#" style="color: inherit; text-decoration: none;">Bảo mật</a>
+                        <a href="#" style="color: inherit; text-decoration: none;">Liên hệ hỗ trợ</a>
+                    </div>
+                </div>
+            </footer>
 
         </div>
     </main>
@@ -234,89 +304,263 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        // Data populated dynamically from AdminDashboardServlet
-        const revenueLabels = [${revenueLabels}];
-        const revenueData = [${revenueData}];
-        
+        // Multi-dimensional datasets populated from AdminDashboardServlet
+        const trends = {
+            "custom": {
+                "revenue": {
+                    labels: [${customRevLabels}],
+                    data: [${customRevData}]
+                },
+                "orders": {
+                    labels: [${customOrdLabels}],
+                    data: [${customOrdData}]
+                },
+                "profit": {
+                    labels: [${customPrfLabels}],
+                    data: [${customPrfData}]
+                }
+            },
+            "6months": {
+                "revenue": {
+                    labels: [${monthlyRevLabels}],
+                    data: [${monthlyRevData}]
+                },
+                "orders": {
+                    labels: [${monthlyOrdLabels}],
+                    data: [${monthlyOrdData}]
+                },
+                "profit": {
+                    labels: [${monthlyPrfLabels}],
+                    data: [${monthlyPrfData}]
+                }
+            },
+            "30days": {
+                "revenue": {
+                    labels: [${daily30RevLabels}],
+                    data: [${daily30RevData}]
+                },
+                "orders": {
+                    labels: [${daily30OrdLabels}],
+                    data: [${daily30OrdData}]
+                },
+                "profit": {
+                    labels: [${daily30PrfLabels}],
+                    data: [${daily30PrfData}]
+                }
+            },
+            "7days": {
+                "revenue": {
+                    labels: [${daily7RevLabels}],
+                    data: [${daily7RevData}]
+                },
+                "orders": {
+                    labels: [${daily7OrdLabels}],
+                    data: [${daily7OrdData}]
+                },
+                "profit": {
+                    labels: [${daily7PrfLabels}],
+                    data: [${daily7PrfData}]
+                }
+            }
+        };
+
         const statusLabels = [${statusLabels}];
         const statusData = [${statusData}];
 
-        // Map labels like "06/2026" to "Tháng 6"
-        const formattedLabels = revenueLabels.map(label => {
-            if (typeof label === 'string' && label.includes('/')) {
-                const parts = label.split('/');
-                return "Tháng " + parseInt(parts[0]);
-            }
-            return label;
-        });
+        // Initialize state variables
+        let activeMetric = "revenue";
+        let activeTimeframe = "${hasCustomDate}" === "true" ? "custom" : "6months";
 
-        // Set bar colors: last bar (current month) is dark green, others are sage green
-        const barColors = revenueData.map((val, idx) => {
-            return (idx === revenueData.length - 1) ? '#3f5f36' : '#a3b89e';
-        });
+        // Create Chart instances
+        let revenueChart;
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            // Calculate doughnut percentages for custom legend
+            const totalStatusCount = statusData.reduce((a, b) => a + b, 0);
+            const getPercentageString = (val) => {
+                if (totalStatusCount === 0) return "0%";
+                return Math.round((val / totalStatusCount) * 100) + "%";
+            };
 
-        // Initialize Revenue Bar Chart
-        const ctxRev = document.getElementById('revenueChart').getContext('2d');
-        new Chart(ctxRev, {
-            type: 'bar',
-            data: {
-                labels: formattedLabels.length > 0 ? formattedLabels : ["Chưa có dữ liệu"],
-                datasets: [{
-                    label: 'Doanh thu (đ)',
-                    data: revenueData.length > 0 ? revenueData : [0],
-                    backgroundColor: revenueData.length > 0 ? barColors : '#a3b89e',
-                    borderRadius: 8,
-                    borderSkipped: false,
-                    maxBarThickness: 35
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
-                                }
-                                return label;
-                            }
-                        }
-                    }
+            let completedVal = 0;
+            let deliveringVal = 0;
+            let pendingVal = 0;
+            let cancelledVal = 0;
+
+            statusLabels.forEach((lbl, idx) => {
+                const val = statusData[idx];
+                if (lbl === "Hoàn thành") {
+                    completedVal += val;
+                } else if (lbl === "Đang giao") {
+                    deliveringVal += val;
+                } else if (lbl === "Chờ xác nhận" || lbl === "Đã xác nhận" || lbl === "Đang xử lý") {
+                    pendingVal += val;
+                } else if (lbl === "Đã hủy") {
+                    cancelledVal += val;
+                }
+            });
+
+            document.getElementById('lbl-completed').innerText = getPercentageString(completedVal);
+            document.getElementById('lbl-delivering').innerText = getPercentageString(deliveringVal);
+            document.getElementById('lbl-pending').innerText = getPercentageString(pendingVal);
+            document.getElementById('lbl-cancelled').innerText = getPercentageString(cancelledVal);
+
+            // Initialize revenue chart
+            const ctxRev = document.getElementById('revenueChart').getContext('2d');
+            revenueChart = new Chart(ctxRev, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Doanh thu (đ)',
+                        data: [],
+                        backgroundColor: '#a3b89e',
+                        borderRadius: 8,
+                        borderSkipped: false,
+                        maxBarThickness: 35
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: '#f3ede5'
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
                         },
-                        ticks: {
-                            callback: function(value) {
-                                return new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(value);
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        if (activeMetric === "orders") {
+                                            label += context.parsed.y;
+                                        } else {
+                                            label += new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(context.parsed.y);
+                                        }
+                                    }
+                                    return label;
+                                }
                             }
                         }
                     },
-                    x: {
-                        grid: {
-                            display: false
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f3ede5'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    if (activeMetric === "orders") {
+                                        return value;
+                                    }
+                                    return new Intl.NumberFormat('vi-VN', { notation: 'compact' }).format(value);
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
                         }
                     }
                 }
+            });
+
+            // Initial chart rendering
+            const timeframeSelect = document.getElementById('timeframeSelect');
+            const customDateContainer = document.getElementById('customDateRangeContainer');
+            
+            timeframeSelect.value = activeTimeframe;
+            if (activeTimeframe === 'custom') {
+                customDateContainer.style.display = 'inline-flex';
             }
+            
+            updateChart();
+
+            // Set up chart select change listener
+            timeframeSelect.addEventListener('change', function() {
+                activeTimeframe = this.value;
+                if (activeTimeframe === 'custom') {
+                    customDateContainer.style.display = 'inline-flex';
+                } else {
+                    customDateContainer.style.display = 'none';
+                }
+                updateChart();
+            });
+
+            // Set up custom date range apply button listener
+            document.getElementById('btnApplyCustomDate').addEventListener('click', function() {
+                const start = document.getElementById('startDate').value;
+                const end = document.getElementById('endDate').value;
+                if (start && end) {
+                    window.location.href = '${pageContext.request.contextPath}/admin/dashboard?startDate=' + start + '&endDate=' + end;
+                } else {
+                    alert('Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc!');
+                }
+            });
+
+            document.querySelectorAll('#metricControls .btn-toggle-pill').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#metricControls .btn-toggle-pill').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    activeMetric = this.getAttribute('data-metric');
+                    updateChart();
+                });
+            });
         });
+
+        function updateChart() {
+            const dataset = trends[activeTimeframe][activeMetric];
+            let labels = dataset.labels;
+            
+            // Format monthly labels for readable display
+            if (activeTimeframe === "6months") {
+                labels = labels.map(label => {
+                    if (typeof label === 'string' && label.includes('/')) {
+                        const parts = label.split('/');
+                        return "Tháng " + parseInt(parts[0]);
+                    }
+                    return label;
+                });
+            }
+
+            // Set bar colors: last bar is dark green, others are sage green
+            const barColors = dataset.data.map((val, idx) => {
+                return (idx === dataset.data.length - 1) ? '#1E3224' : '#a3b89e';
+            });
+
+            revenueChart.data.labels = labels.length > 0 ? labels : ["Chưa có dữ liệu"];
+            revenueChart.data.datasets[0].data = dataset.data.length > 0 ? dataset.data : [0];
+            revenueChart.data.datasets[0].backgroundColor = dataset.data.length > 0 ? barColors : '#a3b89e';
+            revenueChart.data.datasets[0].label = activeMetric === "revenue" ? "Doanh thu (đ)" : (activeMetric === "orders" ? "Đơn hàng" : "Lợi nhuận (đ)");
+
+            // Title labels updating
+            const metricText = activeMetric === "revenue" ? "Doanh thu" : (activeMetric === "orders" ? "Đơn hàng" : "Lợi nhuận");
+            let timeframeText = "";
+            if (activeTimeframe === "6months") {
+                timeframeText = "Xu hướng kinh doanh 6 tháng gần nhất";
+            } else if (activeTimeframe === "30days") {
+                timeframeText = "Xu hướng kinh doanh 30 ngày gần nhất";
+            } else if (activeTimeframe === "7days") {
+                timeframeText = "Xu hướng kinh doanh 7 ngày gần nhất";
+            } else if (activeTimeframe === "custom") {
+                const startVal = document.getElementById('startDate').value;
+                const endVal = document.getElementById('endDate').value;
+                timeframeText = "Xu hướng kinh doanh từ " + formatDateDMY(startVal) + " đến " + formatDateDMY(endVal);
+            }
+            
+            document.getElementById('chartMetricTitle').innerText = "Báo cáo " + metricText.toLowerCase();
+            document.getElementById('chartTimeframeSubtitle').innerText = timeframeText;
+
+            revenueChart.update();
+        }
 
         // Initialize Order Status Doughnut Chart
         const ctxStatus = document.getElementById('statusChart').getContext('2d');
-        
-        // Custom palette matching the warm green/gold branding
         const statusColors = {
             "Hoàn thành": "#3f5f36",
             "Đang giao": "#c8a46d",
@@ -344,19 +588,21 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 12,
-                            padding: 15,
-                            font: {
-                                size: 11
-                            }
-                        }
+                        display: false
                     }
                 },
                 cutout: '70%'
             }
         });
+
+        function formatDateDMY(dateStr) {
+            if (!dateStr) return "";
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return parts[2] + "/" + parts[1] + "/" + parts[0];
+            }
+            return dateStr;
+        }
     </script>
 </body>
 </html>

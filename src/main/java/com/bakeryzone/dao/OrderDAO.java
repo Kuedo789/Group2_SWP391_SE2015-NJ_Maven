@@ -81,12 +81,12 @@ public class OrderDAO {
                     oi.Accessory_ID,
                     oi.Quantity,
                     oi.Price_At_Purchase,
-                    COALESCE(t.Template_Name, a.Accessory_Name) AS Item_Name,
-                    COALESCE(cc.Canvas_Image_URL, t.Image_URL, a.Image_URL) AS Item_Image,
+                    COALESCE(NULLIF(TRIM(t.Template_Name), ''), NULLIF(TRIM(a.Accessory_Name), '')) AS Item_Name,
+                    COALESCE(NULLIF(TRIM(cc.Canvas_Image_URL), ''), NULLIF(TRIM(t.Image_URL), ''), NULLIF(TRIM(a.Image_URL), '')) AS Item_Image,
                     cc.Greeting_Text,
-                    COALESCE(cat.Category_Name, 'Phụ kiện') AS Category_Name,
+                    COALESCE(NULLIF(TRIM(cat.Category_Name), ''), 'Phụ kiện') AS Category_Name,
                     t.Template_ID,
-                    t.Image_URL AS Template_Image,
+                    COALESCE(NULLIF(TRIM(t.Image_URL), ''), NULLIF(TRIM(a.Image_URL), '')) AS Template_Image,
                     (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0)
                      FROM template_ingredient_detail d
                      JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID

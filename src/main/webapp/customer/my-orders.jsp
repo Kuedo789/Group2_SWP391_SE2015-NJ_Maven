@@ -66,9 +66,11 @@
             <button onclick="document.getElementById('orderSuccessBanner').style.display='none'"
                     style="margin-left:auto; background:none; border:none; color:rgba(255,255,255,0.6); font-size:22px; cursor:pointer; line-height:1;">&times;</button>
         </div>
-        <style>@keyframes slideDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
-        .active-filter { background-color: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }</style>
+        <style>@keyframes slideDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }</style>
         <% } %>
+        <style>
+            .active-filter { background-color: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
+        </style>
 
         <!-- Filters Section -->
         <section class="orders-filter" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 25px;">
@@ -81,7 +83,7 @@
 
         <!-- Date Range Filter -->
         <section class="date-filter" style="margin: 20px auto; max-width: 900px; display: flex; gap: 15px; align-items: center; justify-content: center; background: var(--card); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-            <form action="<%= request.getContextPath() %>/OrderList" method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
+            <form id="dateFilterForm" action="<%= request.getContextPath() %>/OrderList" method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
                 <input type="hidden" name="status" value="<%= currentStatus %>" />
                 <label for="startDate" style="font-weight: 600; font-size: 14px;">Từ ngày:</label>
                 <input type="date" id="startDate" name="startDate" value="<%= request.getAttribute("startDate") != null ? request.getAttribute("startDate") : "" %>" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; background: var(--bg-soft); color: var(--text);" />
@@ -407,12 +409,12 @@
                 const yyyy = date.getFullYear();
                 const mm = String(date.getMonth() + 1).padStart(2, '0');
                 const dd = String(date.getDate()).padStart(2, '0');
-                return `${yyyy}-${mm}-${dd}`;
+                return yyyy + '-' + mm + '-' + dd;
             };
             
             document.getElementById('startDate').value = formatDate(start);
             document.getElementById('endDate').value = formatDate(end);
-            document.getElementById('startDate').form.submit();
+            document.getElementById('dateFilterForm').submit();
         }
 
         document.addEventListener("DOMContentLoaded", function() {

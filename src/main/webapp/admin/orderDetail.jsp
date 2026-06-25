@@ -421,26 +421,35 @@
 
                             if (adminOrder != null && adminOrder.getItems() != null && !adminOrder.getItems().isEmpty()) {
                                 for (OrderItem oi : adminOrder.getItems()) {
-                                    // Resolve image URL safely
                                     String rawImg = oi.getItemImage();
                                     String resolvedImg = defaultImg;
-                                    if (rawImg != null && !rawImg.trim().isEmpty() && !rawImg.startsWith("data:")) {
-                                        if (rawImg.startsWith("http://") || rawImg.startsWith("https://")) {
+                                    if (rawImg != null && !rawImg.trim().isEmpty()) {
+                                        if (rawImg.startsWith("data:") || rawImg.startsWith("http://") || rawImg.startsWith("https://")) {
                                             resolvedImg = rawImg;
                                         } else if (rawImg.startsWith("/")) {
-                                            resolvedImg = rawImg;
+                                            if (!ctxPath.isEmpty() && rawImg.startsWith(ctxPath + "/")) {
+                                                resolvedImg = rawImg;
+                                            } else {
+                                                resolvedImg = ctxPath + rawImg;
+                                            }
                                         } else {
                                             resolvedImg = ctxPath + "/" + rawImg;
                                         }
-                                    } else if (oi.getTemplateImage() != null && !oi.getTemplateImage().trim().isEmpty()
-                                               && !oi.getTemplateImage().startsWith("data:")) {
+                                    }
+
+                                    String resolvedTemplateImg = defaultImg;
+                                    if (oi.getTemplateImage() != null && !oi.getTemplateImage().trim().isEmpty()) {
                                         String tImg = oi.getTemplateImage();
-                                        if (tImg.startsWith("http://") || tImg.startsWith("https://")) {
-                                            resolvedImg = tImg;
+                                        if (tImg.startsWith("data:") || tImg.startsWith("http://") || tImg.startsWith("https://")) {
+                                            resolvedTemplateImg = tImg;
                                         } else if (tImg.startsWith("/")) {
-                                            resolvedImg = tImg;
+                                            if (!ctxPath.isEmpty() && tImg.startsWith(ctxPath + "/")) {
+                                                resolvedTemplateImg = tImg;
+                                            } else {
+                                                resolvedTemplateImg = ctxPath + tImg;
+                                            }
                                         } else {
-                                            resolvedImg = ctxPath + "/" + tImg;
+                                            resolvedTemplateImg = ctxPath + "/" + tImg;
                                         }
                                     }
 
@@ -454,8 +463,8 @@
                                     double lineTotal  = price * qty;
                         %>
                             <div class="order-item-row">
-                                <img src="<%= resolvedImg %>" alt="<%= itemName %>" class="item-img"
-                                     onerror="this.src='<%= defaultImg %>';">
+                                <img src="<%= resolvedImg %>" data-template-image="<%= resolvedTemplateImg %>" alt="<%= itemName %>" class="item-img"
+                                     onerror="this.src = this.getAttribute('data-template-image') || '<%= defaultImg %>'; this.onerror = function() { this.src = '<%= defaultImg %>'; };">
                                 <div class="item-details">
                                     <div class="item-name"><%= itemName %></div>
                                     <div class="item-meta">Phân loại: <span><%= catName %></span></div>
