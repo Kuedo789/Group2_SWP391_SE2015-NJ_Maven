@@ -124,8 +124,13 @@ public class ProfileServlet extends HttpServlet {
                 return;
             }
 
-            if (newPassword.length() > 20) {
-                forwardError(request, response, "Mật khẩu mới không được quá 20 ký tự.");
+            if (newPassword.length() < 6 || newPassword.length() > 20) {
+                forwardError(request, response, "Mật khẩu mới phải từ 6 đến 20 ký tự.");
+                return;
+            }
+
+            if (newPassword.equals(currentPassword)) {
+                forwardError(request, response, "Mật khẩu mới không được trùng với mật khẩu hiện tại.");
                 return;
             }
 
