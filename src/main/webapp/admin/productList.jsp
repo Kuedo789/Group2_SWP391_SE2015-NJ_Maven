@@ -27,31 +27,10 @@
     <div class="main-panel">
         
         <!-- Top Header -->
-        <div class="top-header">
-            <div class="header-left">
-                <button class="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
-                <div class="breadcrumbs">
-                    <a href="#">Bảng điều khiển</a>
-                    <span>&gt;</span>
-                    <a href="#">Sản phẩm</a>
-                    <span>&gt;</span>
-                    <a href="#" class="active text-dark font-weight-bold">Danh sách bánh kem</a>
-                </div>
-            </div>
-            
-            <div class="header-right">
-                <button class="header-icon-btn"><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
-                <button class="header-icon-btn"><i class="fa-regular fa-circle-question"></i></button>
-                
-                <div class="profile-section">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
-                    <div class="profile-info">
-                        <div class="profile-name">Nguyễn Anh Quân</div>
-                        <div class="profile-role">PIC</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <jsp:include page="../common/top-header.jsp">
+            <jsp:param name="parentMenu" value="Sản phẩm" />
+            <jsp:param name="activeMenu" value="Danh sách bánh kem" />
+        </jsp:include>
 
         <!-- Dashboard Container -->
         <div class="content-container">
@@ -71,11 +50,12 @@
                   </div>
                   <c:remove var="errorMessage" scope="session" />
              </c:if>
-             <c:if test="${not empty sessionScope.successMessage or param.msg eq 'save_success' or param.msg eq 'add_success' or param.msg eq 'edit_success' or param.msg eq 'delete_success' or param.msg eq 'deactivate_success' or param.msg eq 'activate_success'}">
+             <c:if test="${not empty sessionScope.successMessage or param.msg eq 'save_success' or param.msg eq 'add_success' or param.msg eq 'edit_success' or param.msg eq 'delete_success' or param.msg eq 'deactivate_success' or param.msg eq 'activate_success' or param.msg eq 'new_version_success'}">
                   <div class="alert alert-success alert-dismissible fade show" role="alert">
                       <i class="fa-solid fa-circle-check me-2"></i> 
                       <c:choose>
                           <c:when test="${param.msg eq 'add_success'}">Đã thêm mới bánh kem thành công!</c:when>
+                          <c:when test="${param.msg eq 'new_version_success'}">Do bánh cũ đã có đơn hàng, hệ thống tự động tạo phiên bản bánh mới với định lượng BOM mới và tạm ngưng bánh cũ!</c:when>
                           <c:when test="${param.msg eq 'edit_success' or param.msg eq 'save_success'}">Đã cập nhật thông tin bánh kem thành công!</c:when>
                           <c:when test="${param.msg eq 'delete_success'}">Đã xóa bánh kem thành công!</c:when>
                           <c:when test="${param.msg eq 'deactivate_success'}">Đã vô hiệu hóa bánh kem thành công!</c:when>
@@ -93,7 +73,7 @@
                     <h1 class="page-title">Danh sách bánh kem</h1>
                     <p class="page-subtitle">Quản lý tất cả sản phẩm bánh kem, nguyên liệu và trạng thái kinh doanh.</p>
                 </div>
-                <a href="${pageContext.request.contextPath}/admin/product?action=create" class="btn btn-cz-primary">
+                <a href="${pageContext.request.contextPath}/admin/product?action=create&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="btn btn-cz-primary">
                     <i class="fa-solid fa-circle-plus"></i> Thêm bánh mới
                 </a>
             </div>
@@ -169,7 +149,7 @@
                                                     </c:otherwise>
                                                 </c:choose>
                                                 <div class="product-meta">
-                                                    <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}" class="product-name-link">${p.name}</a>
+                                                    <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="product-name-link">${p.name}</a>
                                                     <span class="product-sku">Mã: ${p.id}</span>
                                                 </div>
                                             </div>
@@ -200,7 +180,7 @@
                                          <td>
                                              <c:choose>
                                                  <c:when test="${not empty p.instructionSteps}">
-                                                     <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}#recipe-editor-container" class="product-name-link" style="font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">
+                                                     <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}#recipe-editor-container" class="product-name-link" style="font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">
                                                          <i class="fa-solid fa-receipt" style="color: var(--cz-secondary); font-size: 12px;"></i> Xem hướng dẫn
                                                      </a>
                                                  </c:when>
@@ -221,10 +201,10 @@
                                         </td>
                                         <td>
                                             <div class="actions-cell">
-                                                <a href="${pageContext.request.contextPath}/admin/product?action=detail&id=${p.id}" class="btn-action-view" title="Xem chi tiết">
+                                                <a href="${pageContext.request.contextPath}/admin/product?action=detail&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="btn-action-view" title="Xem chi tiết">
                                                     <i class="fa-regular fa-eye"></i>
                                                 </a>
-                                                <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}" class="btn-action-edit" title="Chỉnh sửa">
+                                                <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="btn-action-edit" title="Chỉnh sửa">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </a>
                                                 <button class="btn-action-delete" title="Xóa sản phẩm" onclick="if(confirm('Bạn có chắc chắn muốn xóa bánh kem ${p.name} không?')) { deleteProduct('${p.id}'); }">
@@ -255,7 +235,7 @@
                             <!-- Prev page -->
                             <c:if test="${currentPage > 1}">
                                 <li class="page-num-item">
-                                    <a href="${pageContext.request.contextPath}/admin/product?action=list&page=${currentPage - 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
+                                    <a href="${pageContext.request.contextPath}/admin/product?action=list&page=${currentPage - 1}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
                                         <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -264,14 +244,14 @@
                             <!-- Page Numbers -->
                             <c:forEach var="i" begin="1" end="${totalPages}">
                                 <li class="page-num-item ${i == currentPage ? 'active' : ''}">
-                                    <a href="${pageContext.request.contextPath}/admin/product?action=list&page=${i}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">${i}</a>
+                                    <a href="${pageContext.request.contextPath}/admin/product?action=list&page=${i}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">${i}</a>
                                 </li>
                             </c:forEach>
                             
                             <!-- Next page -->
                             <c:if test="${currentPage < totalPages}">
                                 <li class="page-num-item">
-                                    <a href="${pageContext.request.contextPath}/admin/product?action=list&page=${currentPage + 1}&category=${category}&status=${status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
+                                    <a href="${pageContext.request.contextPath}/admin/product?action=list&page=${currentPage + 1}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}&pageSize=${pageSize}">
                                         <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                     </a>
                                 </li>
@@ -300,6 +280,12 @@
     <!-- Hidden delete form for POST request -->
     <form id="deleteProductForm" action="${pageContext.request.contextPath}/admin/product?action=delete" method="post" style="display:none;">
         <input type="hidden" name="id" id="deleteProductId">
+        <input type="hidden" name="page" value="${currentPage}">
+        <input type="hidden" name="pageSize" value="${pageSize}">
+        <input type="hidden" name="category" value="${category}">
+        <input type="hidden" name="status" value="${status}">
+        <input type="hidden" name="search" value="${search}">
+        <input type="hidden" name="sortBy" value="${sortBy}">
     </form>
 
     <!-- Bootstrap 5 JS Bundle -->

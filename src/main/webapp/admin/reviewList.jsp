@@ -426,14 +426,16 @@
 
         <div class="main-panel">
             <div class="top-header">
-                <div class="header-left">
-                    <button class="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
-                    <div class="breadcrumbs">
-                        <a href="#">Dashboard</a>
-                        <span>&gt;</span>
-                        <a href="#">System</a>
-                        <span>&gt;</span>
-                        <a href="#" class="active text-dark font-weight-bold">Quản lý đánh giá</a>
+                <div class="header-left d-flex align-items-center gap-3">
+                    <button class="sidebar-toggle btn p-0 border-0 fs-5 text-secondary">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="breadcrumbs m-0">
+                        <a href="${pageContext.request.contextPath}/admin/dashboard" class="text-decoration-none text-muted">Dashboard</a>
+                        <span class="text-muted-50">&gt;</span>
+                        <a href="#" class="text-decoration-none text-muted">System</a>
+                        <span class="text-muted-50">&gt;</span>
+                        <a href="#" class="active text-dark text-decoration-none">Quản lý đánh giá</a>
                     </div>
                 </div>
                 <div class="header-right">
@@ -441,11 +443,18 @@
                         <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
                         <div class="profile-info">
                             <div class="profile-name">Hoàng Anh</div>
-                            <div class="profile-role">PIC</div>
+                            <div class="profile-role">Admin PIC</div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Top Header -->
+            <jsp:include page="../common/top-header.jsp">
+                <jsp:param name="parentMenu" value="Hệ thống" />
+                <jsp:param name="activeMenu" value="Quản lý đánh giá" />
+            </jsp:include>
+
 
             <div class="content-container">
                 <div class="page-title-area">

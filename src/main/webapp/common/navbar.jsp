@@ -4,6 +4,10 @@
 <%
     String contextPath = request.getContextPath();
     User currentUser = (User) session.getAttribute("user");
+    
+// FETCH DYNAMIC CART COUNT: Fallback gracefully to 0 if not initialized yet
+    Integer sessionCartCount = (Integer) session.getAttribute("cartCount");
+    int cartCount = (sessionCartCount != null) ? sessionCartCount : 0;
 %>
 
 <nav class="navbar">
@@ -40,9 +44,9 @@
             </form>
 
             <!-- Cart -->
-            <button type="button" title="Giỏ hàng" onclick="window.location.href='<%= contextPath %>/cart'">
+            <button type="button" title="Giỏ hàng" onclick="window.location.href = '${pageContext.request.contextPath}/cart'">
                 <span class="material-symbols-outlined">shopping_cart</span>
-                <span class="cart-count" id="navCartCount">0</span>
+                <%-- Floating count badge tag removed for a clean layout look --%>
             </button>
 
             <!-- User dropdown -->
@@ -147,7 +151,10 @@
                         const cart = JSON.parse(cartStr);
                         if (Array.isArray(cart)) {
                             let totalQty = 0;
-                            cart.forEach(item => { if (item) totalQty += (parseInt(item.qty) || 1); });
+                            cart.forEach(item => {
+                                if (item)
+                                    totalQty += (parseInt(item.qty) || 1);
+                            });
                             countEl.innerText = totalQty;
                         } else {
                             countEl.innerText = "0";
@@ -155,7 +162,7 @@
                     } else {
                         countEl.innerText = "0";
                     }
-                } catch(e) {
+                } catch (e) {
                     countEl.innerText = "0";
                 }
             }
