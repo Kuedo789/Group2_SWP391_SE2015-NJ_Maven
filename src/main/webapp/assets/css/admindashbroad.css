@@ -328,9 +328,445 @@
 a.stat-card {
     text-decoration: none !important;
 }
+a.stat-card:hover {
+    box-shadow: 0 12px 30px rgba(64, 52, 38, 0.08);
+}
 a.stat-card .stat-value {
     color: var(--text-dark);
 }
 a.stat-card:hover .stat-value {
     color: var(--cz-primary);
 }
+
+/* Bento Grid Layout for Bottom Row */
+.bento-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 992px) {
+    .bento-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Custom list and table styles for Bento Grid */
+.bento-card {
+    background-color: var(--cz-card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-soft);
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(64, 52, 38, 0.03);
+    display: flex;
+    flex-direction: column;
+}
+
+.bento-card-title {
+    font-family: "Playfair Display", serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 12px;
+}
+
+.bento-card-title span {
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.bento-card-title a {
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    color: var(--cz-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.bento-card-title a:hover {
+    text-decoration: underline;
+}
+
+/* Best Sellers styles */
+.bento-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bento-table th {
+    font-size: 11px;
+    color: var(--cz-text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 15px;
+    border-bottom: 2px solid var(--cz-border-color);
+}
+
+.bento-table td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--cz-border-color);
+}
+
+.bento-product-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bento-product-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid var(--cz-border-color);
+}
+
+.bento-product-name {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+/* Top Customers list styles */
+.customer-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--cz-border-color);
+}
+
+.customer-list-item:last-child {
+    border-bottom: none;
+}
+
+.customer-info-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.customer-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--cz-border-color);
+}
+
+.customer-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.customer-orders-count {
+    font-size: 11.5px;
+    color: var(--cz-text-muted);
+}
+
+.customer-spending {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--cz-primary);
+}
+
+/* Chart type / Timeframe toggle buttons */
+.chart-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-toggle-pill {
+    padding: 5px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: 20px;
+    border: 1px solid var(--cz-border-color);
+    background-color: #fcfbf9;
+    color: var(--cz-text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-toggle-pill.active {
+}
+.dashboard-customer-id {
+    font-size: 11.5px;
+    color: var(--cz-text-muted);
+    margin-top: 2px;
+}
+.dashboard-order-cost {
+    font-weight: 700;
+    color: var(--cz-primary);
+}
+.dashboard-btn-details {
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12.5px;
+    text-decoration: none;
+}
+.dashboard-empty-icon {
+    color: #ccc;
+}
+/* Style stats cards clickable hover transitions */
+a.stat-card {
+    text-decoration: none !important;
+}
+a.stat-card:hover {
+    box-shadow: 0 12px 30px rgba(64, 52, 38, 0.08);
+}
+a.stat-card .stat-value {
+    color: var(--text-dark);
+}
+a.stat-card:hover .stat-value {
+    color: var(--cz-primary);
+}
+
+/* Bento Grid Layout for Bottom Row */
+.bento-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 992px) {
+    .bento-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Custom list and table styles for Bento Grid */
+.bento-card {
+    background-color: var(--cz-card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-soft);
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(64, 52, 38, 0.03);
+    display: flex;
+    flex-direction: column;
+}
+
+.bento-card-title {
+    font-family: "Playfair Display", serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-soft);
+    padding-bottom: 12px;
+}
+
+.bento-card-title span {
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.bento-card-title a {
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    color: var(--cz-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.bento-card-title a:hover {
+    text-decoration: underline;
+}
+
+/* Best Sellers styles */
+.bento-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.bento-table th {
+    font-size: 11px;
+    color: var(--cz-text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 15px;
+    border-bottom: 2px solid var(--cz-border-color);
+}
+
+.bento-table td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--cz-border-color);
+}
+
+.bento-product-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.bento-product-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid var(--cz-border-color);
+}
+
+.bento-product-name {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+/* Top Customers list styles */
+.customer-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--cz-border-color);
+}
+
+.customer-list-item:last-child {
+    border-bottom: none;
+}
+
+.customer-info-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.customer-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--cz-border-color);
+}
+
+.customer-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-dark);
+}
+
+.customer-orders-count {
+    font-size: 11.5px;
+    color: var(--cz-text-muted);
+}
+
+.customer-spending {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--cz-primary);
+}
+
+/* Chart type / Timeframe toggle buttons */
+.chart-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-toggle-pill {
+    padding: 5px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    border-radius: 20px;
+    border: 1px solid var(--cz-border-color);
+    background-color: #fcfbf9;
+    color: var(--cz-text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-toggle-pill.active {
+    background-color: #1E3224; /* Deep Forest Green for active state */
+    border-color: #1E3224;
+    color: #ffffff;
+}
+
+.btn-toggle-pill:hover:not(.active) {
+    background-color: #f3ede5;
+}
+
+/* Custom styles for timeframe select dropdown */
+.chart-select-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.chart-select-container .calendar-icon-wrap {
+    position: absolute;
+    left: 12px;
+    color: var(--cz-text-muted);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-select-container .select-chevron {
+    position: absolute;
+    right: 12px;
+    color: var(--cz-text-muted);
+    pointer-events: none;
+    font-size: 11px;
+}
+
+.chart-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-color: #ffffff;
+    border: 1px solid var(--cz-border-color, #e5e7eb);
+    border-radius: 20px;
+    padding: 6px 30px 6px 34px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cz-text-dark, #1f2937);
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.chart-select:hover {
+    border-color: #1E3224;
+}
+
+#customDateRangeContainer input[type="date"] {
+    border: 1px solid var(--cz-border-color);
+    border-radius: 6px;
+    padding: 4px 8px;
+    font-size: 13px;
+    background-color: #ffffff;
+}
+
+.customer-index-badge {
+    width: 32px;
+    height: 32px;
+    background-color: #f3ede5;
+    color: #1E3224;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    border: 1px solid var(--cz-border-color, #e5e7eb);
+}
+

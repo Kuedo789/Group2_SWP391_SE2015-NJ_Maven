@@ -212,14 +212,14 @@
         <% } else { %>
             <div class="timeline-card">
                 <%
-                    // Calculate active progress line percentage
-                    String lineWidth = "0%";
+                    // Calculate active progress line percentage (cải tiến CSS calc để tránh bị lố)
+                    String lineWidth = "0px";
                     if (step4Active) {
-                        lineWidth = "100%";
+                        lineWidth = "calc(100% - 100px)";
                     } else if (step3Active) {
-                        lineWidth = "66.6%";
+                        lineWidth = "calc(66.6% - 66.6px)";
                     } else if (step2Active) {
-                        lineWidth = "33.3%";
+                        lineWidth = "calc(33.3% - 33.3px)";
                     }
                 %>
                 <div class="timeline-container">
@@ -274,11 +274,23 @@
                                 String itemImage = item.getItemImage();
                                 if (itemImage == null || itemImage.trim().isEmpty()) {
                                     itemImage = request.getContextPath() + "/assets/images/default-cake.png";
-                                } else if (!itemImage.startsWith("http") && !itemImage.startsWith("https")) {
+                                } else if (!itemImage.startsWith("data:") && !itemImage.startsWith("http://") && !itemImage.startsWith("https://")) {
                                     if (!itemImage.startsWith("/")) {
                                         itemImage = request.getContextPath() + "/" + itemImage;
                                     } else {
                                         itemImage = request.getContextPath() + itemImage;
+                                    }
+                                }
+
+                                String itemTemplateImage = "";
+                                if (item.getTemplateImage() != null && !item.getTemplateImage().trim().isEmpty()) {
+                                    String tplImg = item.getTemplateImage();
+                                    if (tplImg.startsWith("data:") || tplImg.startsWith("http://") || tplImg.startsWith("https://")) {
+                                        itemTemplateImage = tplImg;
+                                    } else if (tplImg.startsWith("/")) {
+                                        itemTemplateImage = request.getContextPath() + tplImg;
+                                    } else {
+                                        itemTemplateImage = request.getContextPath() + "/" + tplImg;
                                     }
                                 }
 
@@ -302,7 +314,7 @@
                                 <div class="food-item">
                                     <% if (!itemLink.isEmpty()) { %>
                                         <a href="<%= itemLink %>">
-                                            <img class="food-img" src="<%= itemImage %>" data-template-image="<%= item.getTemplateImage() != null ? (item.getTemplateImage().startsWith("http") ? item.getTemplateImage() : request.getContextPath() + "/" + item.getTemplateImage()) : "" %>" alt="<%= item.getItemName() %>" onerror="this.src = this.getAttribute('data-template-image') || '<%= request.getContextPath() %>/assets/images/default-cake.png'; this.onerror = function() { this.src = '<%= request.getContextPath() %>/assets/images/default-cake.png'; };" />
+                                            <img class="food-img" src="<%= itemImage %>" data-template-image="<%= itemTemplateImage %>" alt="<%= item.getItemName() %>" onerror="this.src = this.getAttribute('data-template-image') || '<%= request.getContextPath() %>/assets/images/default-cake.png'; this.onerror = function() { this.src = '<%= request.getContextPath() %>/assets/images/default-cake.png'; };" />
                                         </a>
                                     <% } else { %>
                                         <img class="food-img" src="<%= itemImage %>" alt="<%= item.getItemName() %>" onerror="this.src='<%= request.getContextPath() %>/assets/images/default-cake.png';" />

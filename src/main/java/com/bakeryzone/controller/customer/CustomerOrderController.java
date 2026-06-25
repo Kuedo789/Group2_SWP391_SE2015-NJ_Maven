@@ -88,14 +88,17 @@ public class CustomerOrderController extends HttpServlet {
             boolean keep = true;
             
             // 1. Date filter with NPE checks
-            if (order.getOrderTime() == null) {
-                keep = false;
-            } else {
-                if (startDate != null && order.getOrderTime().before(startDate)) {
+            if (startDate != null || endDate != null) {
+                if (order.getOrderTime() == null) {
                     keep = false;
-                }
-                if (endDate != null && order.getOrderTime().after(endDate)) {
-                    keep = false;
+                } else {
+                    long orderMs = order.getOrderTime().getTime();
+                    if (startDate != null && orderMs < startDate.getTime()) {
+                        keep = false;
+                    }
+                    if (endDate != null && orderMs > endDate.getTime()) {
+                        keep = false;
+                    }
                 }
             }
 
@@ -139,14 +142,17 @@ public class CustomerOrderController extends HttpServlet {
 
         for (Order order : ordersList) {
             boolean dateMatch = true;
-            if (order.getOrderTime() == null) {
-                dateMatch = false;
-            } else {
-                if (startDate != null && order.getOrderTime().before(startDate)) {
+            if (startDate != null || endDate != null) {
+                if (order.getOrderTime() == null) {
                     dateMatch = false;
-                }
-                if (endDate != null && order.getOrderTime().after(endDate)) {
-                    dateMatch = false;
+                } else {
+                    long orderMs = order.getOrderTime().getTime();
+                    if (startDate != null && orderMs < startDate.getTime()) {
+                        dateMatch = false;
+                    }
+                    if (endDate != null && orderMs > endDate.getTime()) {
+                        dateMatch = false;
+                    }
                 }
             }
             if (dateMatch) {
