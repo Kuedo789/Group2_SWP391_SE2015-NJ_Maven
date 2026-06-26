@@ -33,11 +33,9 @@
                 </div>
                 </c:if>
 
-                <c:if test="${not empty errorMessage}">
-                <div class="alert profile-error">
+                <div id="errorBox" class="alert profile-error" style="display: ${not empty errorMessage ? 'block' : 'none'};">
                     ${errorMessage}
                 </div>
-                </c:if>
 
                 <form id="profileForm"
                       class="profile-form"
@@ -202,7 +200,80 @@
 
                 document.getElementById("showPassword").checked = false;
                 document.getElementById("passwordBox").style.display = "none";
+                
+                const errorBox = document.getElementById("errorBox");
+                if (errorBox) {
+                    errorBox.style.display = "none";
+                    errorBox.innerHTML = "";
+                }
             }
+
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                const errorBox = document.getElementById("errorBox");
+                const showError = (msg) => {
+                    errorBox.innerHTML = msg;
+                    errorBox.style.display = 'block';
+                    e.preventDefault();
+                    errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                };
+
+                const fullName = document.querySelector('input[name="fullName"]').value.trim();
+                const phone = document.querySelector('input[name="phone"]').value.trim();
+                
+                const currentPassword = document.getElementById('currentPassword').value.trim();
+                const newPassword = document.getElementById('newPassword').value.trim();
+                const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+                // 1. Validate họ tên
+                if (!fullName) {
+                    return showError("Vui lòng nhập họ và tên.");
+                }
+                if (fullName.length > 30) {
+                    return showError("Họ và tên không được quá 30 ký tự.");
+                }
+                if (fullName.includes("  ")) {
+                    return showError("Họ và tên không được có quá 1 khoảng trắng liên tiếp.");
+                }
+                const nameRegex = /^[\p{L}]+( [\p{L}]+)*$/u;
+                if (!nameRegex.test(fullName)) {
+                    return showError("Họ và tên không được chứa số hoặc ký tự đặc biệt.");
+                }
+
+                // 2. Validate số điện thoại
+                if (!phone) {
+                    return showError("Vui lòng nhập số điện thoại.");
+                }
+                const phoneRegex = /^0(3|5|7|8|9)\d{8}$/;
+                if (!phoneRegex.test(phone)) {
+                    return showError("Số điện thoại không hợp lệ. Số điện thoại Việt Nam phải bắt đầu bằng 03, 05, 07, 08 hoặc 09 và có đúng 10 chữ số.");
+                }
+
+                // 3. Validate đổi mật khẩu
+                const wantChangePassword = currentPassword || newPassword || confirmPassword;
+                if (wantChangePassword) {
+                    if (!currentPassword) {
+                        return showError("Vui lòng nhập mật khẩu hiện tại.");
+                    }
+                    if (!newPassword) {
+                        return showError("Vui lòng nhập mật khẩu mới.");
+                    }
+                    if (newPassword.length < 6 || newPassword.length > 20) {
+                        return showError("Mật khẩu mới phải từ 6 đến 20 ký tự.");
+                    }
+                    if (newPassword === currentPassword) {
+                        return showError("Mật khẩu mới không được trùng với mật khẩu hiện tại.");
+                    }
+                    if (!confirmPassword) {
+                        return showError("Vui lòng xác nhận mật khẩu mới.");
+                    }
+                    if (confirmPassword.length > 20) {
+                        return showError("Xác nhận mật khẩu mới không được quá 20 ký tự.");
+                    }
+                    if (newPassword !== confirmPassword) {
+                        return showError("Xác nhận mật khẩu mới không khớp.");
+                    }
+                }
+            });
         </script>
 
     </body>
