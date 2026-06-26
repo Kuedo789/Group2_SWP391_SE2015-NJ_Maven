@@ -129,11 +129,9 @@
                             <h2>${isEditMode ? 'Cập nhật địa chỉ' : 'Địa chỉ mới'}</h2>
                         </div>
 
-                        <c:if test="${not empty requestScope.errorMessage}">
-                        <div class="alert alert-danger">
+                        <div id="errorBox" class="alert alert-danger" style="display: ${not empty requestScope.errorMessage ? 'block' : 'none'};">
                             ${requestScope.errorMessage}
                         </div>
-                        </c:if>
 
                         <form id="addressForm" class="address-form"
                               action="${pageContext.request.contextPath}/delivery-address"
@@ -538,6 +536,24 @@
             const addressForm = document.getElementById("addressForm");
             if (addressForm) {
                 addressForm.addEventListener("submit", function (e) {
+                    const errorBox = document.getElementById("errorBox");
+                    const showError = (msg, el) => {
+                        if (errorBox) {
+                            errorBox.innerHTML = msg;
+                            errorBox.style.display = 'block';
+                            errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        } else {
+                            alert(msg);
+                        }
+                        if (el) el.focus();
+                        e.preventDefault();
+                    };
+
+                    if (errorBox) {
+                        errorBox.style.display = "none";
+                        errorBox.innerHTML = "";
+                    }
+
                     const nameInput = document.querySelector('input[name="receiverName"]');
                     const phoneInput = document.querySelector('input[name="receiverPhone"]');
                     const addressInput = document.getElementById("addressInput");
@@ -547,58 +563,38 @@
                     if (!isProfileModeJs) {
                         const nameVal = nameInput ? nameInput.value.trim() : "";
                         if (nameVal === "") {
-                            alert("Vui lòng nhập tên người nhận.");
-                            if (nameInput) nameInput.focus();
-                            e.preventDefault();
-                            return;
+                            return showError("Vui lòng nhập tên người nhận.", nameInput);
                         }
                         if (nameVal.length > 30) {
-                            alert("Tên người nhận không được dài quá 30 ký tự.");
-                            if (nameInput) nameInput.focus();
-                            e.preventDefault();
-                            return;
+                            return showError("Tên người nhận không được dài quá 30 ký tự.", nameInput);
                         }
-                        // Validate name format: no numbers or special characters (except spaces)
-                        const specialCharOrNum = /[0-9!@#$%^&*(),.?":{}|<>_\[\]\\\/+=~`-]/;
-                        if (specialCharOrNum.test(nameVal)) {
-                            alert("Tên người nhận không hợp lệ (chỉ chứa chữ cái và khoảng trắng, không chứa số hay ký tự đặc biệt).");
-                            if (nameInput) nameInput.focus();
-                            e.preventDefault();
-                            return;
+                        if (nameVal.includes("  ")) {
+                            return showError("Tên người nhận không được có quá 1 khoảng trắng liên tiếp.", nameInput);
+                        }
+                        const nameRegex = /^[\p{L}]+( [\p{L}]+)*$/u;
+                        if (!nameRegex.test(nameVal)) {
+                            return showError("Tên người nhận không hợp lệ (chỉ chứa chữ cái và khoảng trắng, không chứa số hay ký tự đặc biệt).", nameInput);
                         }
 
                         const phoneVal = phoneInput ? phoneInput.value.trim() : "";
                         if (phoneVal === "") {
-                            alert("Vui lòng nhập số điện thoại người nhận.");
-                            if (phoneInput) phoneInput.focus();
-                            e.preventDefault();
-                            return;
+                            return showError("Vui lòng nhập số điện thoại người nhận.", phoneInput);
                         }
-                        // Vietnamese phone regex: starts with 03, 05, 07, 08, 09, exactly 10 digits
                         const phoneRegex = /^0(3|5|7|8|9)\d{8}$/;
                         if (!phoneRegex.test(phoneVal)) {
-                            alert("Số điện thoại không hợp lệ (phải đủ 10 chữ số và bắt đầu bằng 03, 05, 07, 08 hoặc 09).");
-                            if (phoneInput) phoneInput.focus();
-                            e.preventDefault();
-                            return;
+                            return showError("Số điện thoại không hợp lệ (phải đủ 10 chữ số và bắt đầu bằng 03, 05, 07, 08 hoặc 09).", phoneInput);
                         }
                     }
 
                     const addrVal = addressInput ? addressInput.value.trim() : "";
                     if (addrVal === "") {
-                        alert("Vui lòng nhập và tìm kiếm địa chỉ trên bản đồ.");
-                        if (addressInput) addressInput.focus();
-                        e.preventDefault();
-                        return;
+                        return showError("Vui lòng tìm và chọn địa chỉ giao hàng.", addressInput);
                     }
 
                     const latVal = latInput ? latInput.value.trim() : "";
                     const lngVal = lngInput ? lngInput.value.trim() : "";
                     if (latVal === "" || lngVal === "") {
-                        alert("Vui lòng tìm địa chỉ hoặc ghim vị trí trên bản đồ để xác định tọa độ giao hàng.");
-                        if (addressInput) addressInput.focus();
-                        e.preventDefault();
-                        return;
+                        return showError("Vui lòng tìm địa chỉ trên bản đồ trước khi lưu.", addressInput);
                     }
                 });
             }

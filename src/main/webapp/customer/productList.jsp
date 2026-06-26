@@ -147,7 +147,12 @@
                         '<div class="cake-body">' +
                         '<div class="cake-name">' + product.name + '</div>' +
                         '<div class="cake-desc">' + product.desc + '</div>' +
-                        '<div class="cake-price">' + formatPrice(product.price) + '</div>' +
+                        '<div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">' +
+                        '<div class="cake-price" style="margin-top: 0;">' + formatPrice(product.price) + '</div>' +
+                        '<button type="button" onclick="addToCartFromList(event, \'' + product.id + '\')" title="Thêm vào giỏ hàng" style="background: var(--primary); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" onmouseover="this.style.transform=\'scale(1.1)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
+                        '<i class="fa fa-shopping-cart"></i>' +
+                        '</button>' +
+                        '</div>' +
                         '</div>' +
                         '</div>' +
                         '</div>';
@@ -155,6 +160,69 @@
 
             function goToProductDetail(id) {
                 window.location.href = contextPath + "/product-detail?id=" + id;
+            }
+
+            function addToCartFromList(event, productId) {
+                event.stopPropagation();
+                const product = products.find(p => p.id == productId);
+                if (!product) return;
+
+                let cart = [];
+                try {
+                    const cartStr = localStorage.getItem("cart");
+                    if (cartStr) {
+                        cart = JSON.parse(cartStr);
+                    }
+                } catch (e) {
+                    cart = [];
+                }
+                if (!Array.isArray(cart)) cart = [];
+
+                let resolvedImage = "assets/images/products/basic.png";
+                if (product.image) {
+                    if (product.image.startsWith("http")) {
+                        resolvedImage = product.image;
+                    } else {
+                        let imgPath = product.image;
+                        if (contextPath && imgPath.startsWith(contextPath)) {
+                            imgPath = imgPath.substring(contextPath.length);
+                        }
+                        if (imgPath.startsWith("/")) {
+                            imgPath = imgPath.substring(1);
+                        }
+                        resolvedImage = imgPath;
+                    }
+                }
+
+                // Add with default variant (16cm) just like detail page
+                const item = {
+                    id: product.id + "_0",
+                    templateId: product.id,
+                    name: product.name + " 16cm",
+                    desc: "Size bánh dành cho 4 - 6 người dùng.",
+                    price: product.price,
+                    qty: 1,
+                    image: resolvedImage
+                };
+
+                const existingItem = cart.find(x => x && x.name === item.name);
+                if (existingItem) {
+                    existingItem.qty = (parseInt(existingItem.qty) || 0) + 1;
+                } else {
+                    cart.push(item);
+                }
+
+                localStorage.setItem("cart", JSON.stringify(cart));
+                window.dispatchEvent(new Event("storage"));
+                
+                const countEl = document.getElementById("navCartCount");
+                if (countEl) {
+                    let totalQty = 0;
+                    cart.forEach(c => { if (c) totalQty += (parseInt(c.qty) || 1); });
+                    countEl.innerText = totalQty;
+                }
+
+                alert("Đã thêm 1 sản phẩm \"" + item.name + "\" vào giỏ hàng!");
             }
 
             function getSortedProducts(list) {
