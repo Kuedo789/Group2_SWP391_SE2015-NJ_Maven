@@ -483,6 +483,98 @@ button {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* ----------------------------------------------------------
+   Navbar – membership link (center nav)
+   Only shown to logged-in users.
+---------------------------------------------------------- */
+.nav-menu-membership-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--primary) !important;
+    font-weight: 700 !important;
+}
+
+.nav-menu-membership-link::before {
+    content: '✦';
+    font-size: 9px;
+    opacity: 0.7;
+}
+
+/* ----------------------------------------------------------
+   Dropdown header – identity row  (name · tier chip)
+---------------------------------------------------------- */
+.user-dropdown-identity {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+/* Name inside the identity row keeps its existing sizing */
+.user-dropdown-identity .user-dropdown-fullname {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 160px;
+}
+
+/* ----------------------------------------------------------
+   Tier chip – shared base
+---------------------------------------------------------- */
+.nav-tier-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+    /* default neutral – overridden by modifier classes below */
+    background: rgba(139, 144, 168, 0.15);
+    color: #6e6e82;
+    border: 1px solid rgba(139, 144, 168, 0.25);
+}
+
+/* Per-tier colour modifiers  – mirror membership.css tier tokens */
+.nav-tier-chip--member {
+    background: rgba(139, 144, 168, 0.14);
+    color: #6a6e82;
+    border-color: rgba(139, 144, 168, 0.3);
+}
+
+.nav-tier-chip--bronze {
+    background: rgba(181, 121, 66, 0.13);
+    color: #8a5a2a;
+    border-color: rgba(181, 121, 66, 0.28);
+}
+
+.nav-tier-chip--silver {
+    background: rgba(157, 167, 179, 0.15);
+    color: #5a6675;
+    border-color: rgba(157, 167, 179, 0.3);
+}
+
+.nav-tier-chip--gold {
+    background: rgba(217, 165, 46, 0.15);
+    color: #9a7010;
+    border-color: rgba(217, 165, 46, 0.32);
+}
+
+.nav-tier-chip--diamond {
+    background: rgba(91, 141, 136, 0.13);
+    color: #2d6e6a;
+    border-color: rgba(91, 141, 136, 0.28);
+}
+
 /* =========================================================
    06. Hero
 ========================================================= */

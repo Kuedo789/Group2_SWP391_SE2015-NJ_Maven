@@ -1,0 +1,933 @@
+/* ==========================================================================
+   membership.css  –  Membership Dashboard styles
+   BakeryZone · Customer area
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Import & Variables
+   -------------------------------------------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+:root {
+    /* Backgrounds */
+    --clr-bg:        #fbfaf5;
+    --clr-surface:   #ffffff;
+    --clr-surface2:  #f6f5f0;
+
+    /* Borders */
+    --clr-border:    #e3e1d5;
+
+    /* Text */
+    --clr-text:      #1c1c1c;
+    --clr-muted:     #6e716e;
+
+    /* Brand */
+    --clr-accent:    #1e4620;
+    --clr-accent2:   #2b5b2d;
+
+    /* Tier colours (slightly softened) */
+    --clr-member:    #8c8c8c;
+    --clr-bronze:    #b57942;
+    --clr-silver:    #9da7b3;
+    --clr-gold:      #d9a52e;
+    --clr-diamond:   #5b8d88;
+
+    --radius-card:   18px;
+    --radius-pill:   999px;
+
+    /* Much softer shadow */
+    --shadow-card:   0 4px 12px rgba(0,0,0,.05);
+
+    --transition:    .25s ease;
+}
+
+/* --------------------------------------------------------------------------
+   Page shell
+   -------------------------------------------------------------------------- */
+body {
+    font-family: 'Inter', sans-serif;
+    background:#fbfaf5;
+    color:var(--clr-text);
+    min-height: 100vh;
+}
+
+.membership-page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 48px 20px 80px;
+}
+
+/* --------------------------------------------------------------------------
+   Page heading
+   -------------------------------------------------------------------------- */
+.membership-page-header {
+    margin-bottom: 36px;
+}
+
+.membership-page-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    /*    background: linear-gradient(135deg, var(--clr-accent), var(--clr-accent2));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;*/
+    color:#1e4620;
+    background-clip: text;
+    margin: 0 0 6px;
+}
+
+.membership-page-header p {
+    color: var(--clr-muted);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Error / info banners
+   -------------------------------------------------------------------------- */
+.membership-alert {
+    background: rgba(244, 71, 71, 0.12);
+    border: 1px solid rgba(244, 71, 71, 0.35);
+    border-radius: 12px;
+    padding: 16px 20px;
+    color: #f47171;
+    margin-bottom: 28px;
+    font-size: 0.92rem;
+}
+
+/* --------------------------------------------------------------------------
+   Card base
+   -------------------------------------------------------------------------- */
+.ms-card {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+}
+/*
+.ms-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at top left, rgba(244, 160, 53, 0.06) 0%, transparent 65%);
+    pointer-events: none;
+}*/
+
+/* --------------------------------------------------------------------------
+   Hero card – user tier identity
+   -------------------------------------------------------------------------- */
+.ms-hero {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+
+/* Tier badge / medallion */
+.ms-tier-badge {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    gap: 4px;
+    border: 3px solid;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.ms-tier-badge:hover {
+    transform: scale(1.06);
+}
+
+.ms-tier-badge .badge-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+/* Tier-specific colouring */
+.tier-MEMBER  {
+    color: var(--clr-member);
+    border-color: var(--clr-member);
+    background: rgba(139,144,168,0.1);
+    box-shadow: 0 0 20px rgba(139,144,168,0.2);
+}
+.tier-BRONZE  {
+    color: var(--clr-bronze);
+    border-color: var(--clr-bronze);
+    background: rgba(205,127,50,0.1);
+    box-shadow: 0 0 20px rgba(205,127,50,0.3);
+}
+.tier-SILVER  {
+    color: var(--clr-silver);
+    border-color: var(--clr-silver);
+    background: rgba(176,196,222,0.1);
+    box-shadow: 0 0 20px rgba(176,196,222,0.3);
+}
+.tier-GOLD    {
+    color: var(--clr-gold);
+    border-color: var(--clr-gold);
+    background: rgba(255,215,0,0.1);
+    box-shadow: 0 0 24px rgba(255,215,0,0.35);
+}
+.tier-DIAMOND {
+    color: var(--clr-diamond);
+    border-color: var(--clr-diamond);
+    background: rgba(133,211,255,0.1);
+    box-shadow: 0 0 28px rgba(133,211,255,0.4);
+}
+
+.ms-tier-info {
+    flex: 1;
+    min-width: 200px;
+}
+
+.ms-tier-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--clr-muted);
+    margin-bottom: 4px;
+}
+
+.ms-tier-name {
+    font-size: 2.1rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.ms-tier-desc {
+    font-size: 0.88rem;
+    color: var(--clr-muted);
+    max-width: 520px;
+}
+
+/* Stats pill row */
+.ms-stat-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+}
+
+.ms-stat-pill {
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.18);
+    color:white;
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-pill);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    transition: border-color var(--transition);
+}
+
+.ms-stat-pill:hover {
+    border-color: rgba(244,160,53,0.4);
+}
+
+.ms-stat-pill .stat-icon {
+    font-size: 1.15rem;
+}
+
+.ms-stat-pill .stat-value {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--clr-accent);
+}
+
+.ms-stat-pill .stat-label {
+    color: var(--clr-muted);
+    font-size: 0.82rem;
+}
+
+/* CTA button – "Đổi thưởng ngay" */
+.ms-redeem-cta {
+    margin-top: 20px;
+}
+
+.ms-redeem-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #1e4620;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 11px 26px;
+    border-radius: var(--radius-pill);
+    border: 2px solid transparent;
+    box-shadow: 0 2px 8px rgba(30,70,32,0.18);
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    letter-spacing: 0.01em;
+}
+
+.ms-redeem-btn:hover {
+    background: #2b5b2d;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(30,70,32,0.26);
+    color: #ffffff;
+    text-decoration: none;
+}
+
+.ms-redeem-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(30,70,32,0.18);
+}
+
+/* --------------------------------------------------------------------------
+   Progress section
+   -------------------------------------------------------------------------- */
+.ms-progress-section {
+    margin-top: 28px;
+}
+
+.ms-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.ms-progress-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--clr-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.ms-progress-meta {
+    font-size: 0.82rem;
+    color: var(--clr-muted);
+}
+
+.ms-progress-meta strong {
+    color: var(--clr-text);
+}
+
+/* Track */
+.ms-progress-track {
+    height: 10px;
+    background:#ebe8df;
+    border-radius: var(--radius-pill);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Fill – width set inline via style="${membership.progressPercent}%" */
+.ms-progress-fill {
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background:#1e4620;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+/* Subtle animated shimmer on the fill */
+.ms-progress-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%);
+    animation: shimmer 2.4s infinite;
+}
+
+@keyframes shimmer {
+    0%   {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.ms-progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: var(--clr-muted);
+}
+
+/* "MAX TIER" message when at DIAMOND */
+.ms-max-tier-msg {
+    text-align: center;
+    padding: 12px;
+    background: rgba(133,211,255,0.07);
+    border: 1px solid rgba(133,211,255,0.2);
+    border-radius: 10px;
+    color: var(--clr-diamond);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-top: 16px;
+    letter-spacing: 0.05em;
+}
+
+/* --------------------------------------------------------------------------
+   Layout grid for the two bottom panels
+   -------------------------------------------------------------------------- */
+.ms-bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+@media (max-width: 840px) {
+    .ms-bottom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   Section headings (inside cards)
+   -------------------------------------------------------------------------- */
+.ms-section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ms-section-title .title-icon {
+    font-size: 1.2rem;
+}
+
+/* --------------------------------------------------------------------------
+   Benefits matrix table
+   -------------------------------------------------------------------------- */
+.ms-benefits-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+}
+
+.ms-benefits-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.ms-benefits-table th,
+.ms-benefits-table td {
+    padding: 12px 16px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.ms-benefits-table thead th {
+    background: var(--clr-surface2);
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-muted);
+    border-bottom: 1px solid var(--clr-border);
+}
+
+.ms-benefits-table thead th:first-child {
+    text-align: left;
+    border-radius: 10px 0 0 0;
+}
+
+.ms-benefits-table thead th:last-child {
+    border-radius: 0 10px 0 0;
+}
+
+.ms-benefits-table tbody tr {
+    border-bottom: 1px solid var(--clr-border);
+    transition: background var(--transition);
+}
+
+.ms-benefits-table tbody tr:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+.ms-benefits-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.ms-benefits-table tbody td:first-child {
+    text-align: left;
+}
+
+/* Highlighted row for user's current tier */
+.ms-benefits-table tbody tr.active-tier-row {
+    background: rgba(244, 160, 53, 0.07);
+}
+
+.ms-benefits-table tbody tr.active-tier-row td:first-child::before {
+    content: '▶ ';
+    color: var(--clr-accent);
+    font-size: 0.7rem;
+}
+
+/* Tier colour chip in the table */
+.tier-chip {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+}
+
+.chip-MEMBER  {
+    background: rgba(139,144,168,0.18);
+    color: var(--clr-member);
+}
+.chip-BRONZE  {
+    background: rgba(205,127,50,0.18);
+    color: var(--clr-bronze);
+}
+.chip-SILVER  {
+    background: rgba(176,196,222,0.18);
+    color: var(--clr-silver);
+}
+.chip-GOLD    {
+    background: rgba(255,215,0,0.15);
+    color: var(--clr-gold);
+}
+.chip-DIAMOND {
+    background: rgba(133,211,255,0.15);
+    color: var(--clr-diamond);
+}
+
+/* --------------------------------------------------------------------------
+   Point-history sub-tab
+   -------------------------------------------------------------------------- */
+.ms-point-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+/* Custom scrollbar */
+.ms-point-list::-webkit-scrollbar {
+    width: 4px;
+}
+.ms-point-list::-webkit-scrollbar-track {
+    background: var(--clr-surface2);
+    border-radius: 4px;
+}
+.ms-point-list::-webkit-scrollbar-thumb {
+    background: var(--clr-border);
+    border-radius: 4px;
+}
+
+/* Individual entry */
+.ms-point-entry {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    background: var(--clr-surface2);
+    border: 1px solid var(--clr-border);
+    border-radius: 12px;
+    transition: border-color var(--transition);
+}
+
+.ms-point-entry:hover {
+    border-color: rgba(244,160,53,0.3);
+}
+
+/* Type dot */
+.point-type-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.dot-EARN    {
+    background: rgba(74, 222, 128, 0.15);
+    color: #4ade80;
+}
+.dot-REDEEM  {
+    background: rgba(251, 113, 133, 0.15);
+    color: #fb7185;
+}
+.dot-EXPIRE  {
+    background: rgba(156, 163, 175, 0.15);
+    color: #9ca3af;
+}
+.dot-ADJUST  {
+    background: rgba(251, 191, 36, 0.15);
+    color: #fbbf24;
+}
+
+.point-entry-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.point-entry-desc {
+    font-size: 0.88rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.point-entry-date {
+    font-size: 0.76rem;
+    color: var(--clr-muted);
+    margin-top: 2px;
+}
+
+.point-entry-amount {
+    font-weight: 700;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+.amount-earn   {
+    color: #4ade80;
+}
+.amount-redeem {
+    color: #fb7185;
+}
+.amount-expire {
+    color: #9ca3af;
+}
+.amount-adjust {
+    color: #fbbf24;
+}
+
+/* Empty state */
+.ms-empty-state {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--clr-muted);
+    font-size: 0.9rem;
+}
+
+.ms-empty-state .empty-icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 10px;
+    opacity: 0.4;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive – single column on mobile
+   -------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+    .ms-hero {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .ms-stat-row {
+        justify-content: center;
+    }
+
+    .ms-progress-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ms-card {
+        padding: 20px 16px;
+    }
+
+    .membership-page-header h1 {
+        font-size: 1.5rem;
+    }
+}
+
+/* ==========================================================================
+   Voucher Wallet ("Kho Voucher của bạn") section
+   Full-width card placed below the two-column bottom grid.
+   ========================================================================== */
+
+/* Wallet card spacing override */
+.ms-wallet-card {
+    margin-top: 24px;
+}
+
+/* Header row: title on the left, "Đổi thêm" link on the right */
+.ms-wallet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.ms-wallet-link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--clr-accent);
+    text-decoration: none;
+    padding: 6px 16px;
+    border: 1.5px solid var(--clr-accent);
+    border-radius: var(--radius-pill);
+    transition: background var(--transition), color var(--transition);
+}
+
+.ms-wallet-link:hover {
+    background: var(--clr-accent);
+    color: #fff;
+}
+
+/* Responsive masonry-style grid of ticket cards */
+.ms-wallet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   Coupon ticket card
+   Anatomy:  [left-ear] [body] [tear-line] [stub] [right-ear]
+   -------------------------------------------------------------------------- */
+.ms-ticket {
+    display: flex;
+    align-items: stretch;
+    background: #fff;
+    border: 1px solid var(--clr-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    transition: transform var(--transition), box-shadow var(--transition);
+    position: relative;
+}
+
+.ms-ticket:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(30,70,32,0.1);
+}
+
+/* Punched-hole ear circles (left and right) */
+.ms-ticket-ear {
+    width: 14px;
+    flex-shrink: 0;
+    background: var(--clr-bg);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ms-ticket-ear::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--clr-bg);
+    border: 1px solid var(--clr-border);
+    display: block;
+}
+
+.ms-ticket-ear--left {
+    border-right: 1px dashed var(--clr-border);
+}
+
+.ms-ticket-ear--right {
+    border-left: 1px dashed var(--clr-border);
+}
+
+/* Main body: discount badge + title + meta */
+.ms-ticket-body {
+    flex: 1;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+/* Green pill: e.g. "Giảm 20%" */
+.ms-ticket-discount {
+    display: inline-block;
+    align-self: flex-start;
+    background: #e8f0e8;
+    color: var(--clr-accent);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+.ms-ticket-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--clr-text);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-wrap: break-word;
+}
+
+.ms-ticket-meta {
+    font-size: 0.75rem;
+    color: var(--clr-muted);
+}
+
+/* Dashed vertical tear-line between body and stub */
+.ms-ticket-tear {
+    width: 0;
+    border-left: 2px dashed var(--clr-border);
+    flex-shrink: 0;
+}
+
+/* Right stub: holds the voucher code badge */
+.ms-ticket-stub {
+    width: 130px;
+    flex-shrink: 0;
+    padding: 14px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #fafaf7;
+}
+
+.ms-ticket-code-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--clr-muted);
+}
+
+/* Clickable code badge */
+.ms-ticket-code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--clr-accent);
+    background: #e8f0e8;
+    border: 1px solid #c3d9c4;
+    border-radius: 8px;
+    padding: 5px 8px;
+    cursor: pointer;
+    text-align: center;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    transition: background var(--transition), color var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    justify-content: center;
+}
+
+.ms-ticket-code:hover {
+    background: var(--clr-accent);
+    color: #fff;
+    border-color: var(--clr-accent);
+}
+
+.ms-copy-icon {
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+/* --------------------------------------------------------------------------
+   Wallet empty state
+   -------------------------------------------------------------------------- */
+.ms-wallet-empty {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--clr-muted);
+}
+
+.ms-wallet-empty-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 12px;
+    opacity: 0.4;
+}
+
+.ms-wallet-empty p {
+    margin: 0 0 4px;
+    font-size: 0.92rem;
+    font-weight: 500;
+}
+
+.ms-wallet-empty-sub {
+    font-size: 0.85rem !important;
+    color: var(--clr-muted);
+}
+
+.ms-wallet-empty-sub a {
+    color: var(--clr-accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.ms-wallet-empty-sub a:hover {
+    text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   Success flash banner variant (green)
+   -------------------------------------------------------------------------- */
+.membership-alert--success {
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 12px;
+    padding: 14px 20px;
+    color: #2e7d32;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive wallet adjustments
+   -------------------------------------------------------------------------- */
+@media (max-width: 600px) {
+    .ms-wallet-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ms-ticket-stub {
+        width: 110px;
+        padding: 10px 8px;
+    }
+
+    .ms-ticket-code {
+        font-size: 0.72rem;
+    }
+
+    .ms-wallet-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

@@ -1,0 +1,448 @@
+/* ==========================================================================
+   rewardsExchange.css  –  Rewards Exchange Marketplace styles
+   BakeryZone · Customer area
+   Warm cream / forest-green theme to match the rest of the customer UI.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* --------------------------------------------------------------------------
+   CSS custom properties (same palette as membership.css)
+   -------------------------------------------------------------------------- */
+:root {
+    --rw-bg:         #fbfaf5;
+    --rw-surface:    #ffffff;
+    --rw-surface2:   #f6f5f0;
+    --rw-border:     #e3e1d5;
+    --rw-text:       #1c1c1c;
+    --rw-muted:      #6e716e;
+    --rw-green:      #1e4620;
+    --rw-green2:     #2b5b2d;
+    --rw-green-light:#e8f0e8;
+    --rw-amber:      #b57942;
+    --rw-red:        #c0392b;
+    --rw-radius:     16px;
+    --rw-pill:       999px;
+    --rw-shadow:     0 4px 16px rgba(0,0,0,.07);
+    --rw-transition: .22s ease;
+}
+
+/* --------------------------------------------------------------------------
+   Page shell
+   -------------------------------------------------------------------------- */
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--rw-bg);
+    color: var(--rw-text);
+    min-height: 100vh;
+}
+
+.rewards-page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 80px 20px 80px;
+}
+
+/* --------------------------------------------------------------------------
+   Back navigation link
+   -------------------------------------------------------------------------- */
+.rw-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--rw-muted);
+    text-decoration: none;
+    margin-bottom: 28px;
+    transition: color var(--rw-transition);
+}
+
+.rw-back-link:hover {
+    color: var(--rw-green);
+}
+
+/* --------------------------------------------------------------------------
+   Page heading block
+   -------------------------------------------------------------------------- */
+.rw-page-header {
+    margin-bottom: 36px;
+}
+
+.rw-page-header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--rw-green);
+    margin: 0 0 6px;
+}
+
+.rw-page-header p {
+    color: var(--rw-muted);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Flash message banners (PRG pattern)
+   -------------------------------------------------------------------------- */
+.rw-alert {
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.rw-alert-success {
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    color: #2e7d32;
+}
+
+.rw-alert-error {
+    background: #fdecea;
+    border: 1px solid #f5c6c2;
+    color: var(--rw-red);
+}
+
+/* --------------------------------------------------------------------------
+   Points-summary hero strip
+   -------------------------------------------------------------------------- */
+.rw-points-strip {
+    background: var(--rw-green);
+    border-radius: var(--rw-radius);
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+    box-shadow: 0 6px 24px rgba(30,70,32,0.18);
+}
+
+.rw-points-strip-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.rw-points-icon {
+    width: 56px;
+    height: 56px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    flex-shrink: 0;
+}
+
+.rw-points-label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 4px;
+}
+
+.rw-points-value {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1;
+}
+
+.rw-points-unit {
+    font-size: 1rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.rw-points-strip-note {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.65);
+    max-width: 300px;
+    text-align: right;
+    line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Section sub-heading
+   -------------------------------------------------------------------------- */
+.rw-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--rw-text);
+    margin: 0 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Voucher / reward grid
+   -------------------------------------------------------------------------- */
+.rw-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   Voucher card (coupon tile)
+   -------------------------------------------------------------------------- */
+.rw-card {
+    background: var(--rw-surface);
+    border: 1px solid var(--rw-border);
+    border-radius: var(--rw-radius);
+    box-shadow: var(--rw-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform var(--rw-transition), box-shadow var(--rw-transition);
+    position: relative;
+}
+
+.rw-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.11);
+}
+
+/* Disabled state – greyed out when user can't afford */
+.rw-card.rw-card--disabled {
+    opacity: 0.62;
+    filter: grayscale(35%);
+}
+
+.rw-card.rw-card--disabled:hover {
+    transform: none;
+    box-shadow: var(--rw-shadow);
+}
+
+/* Top accent stripe */
+.rw-card-stripe {
+    height: 5px;
+    background: linear-gradient(90deg, var(--rw-green), var(--rw-amber));
+}
+
+/* Body */
+.rw-card-body {
+    padding: 22px 22px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Discount badge */
+.rw-discount-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--rw-green-light);
+    color: var(--rw-green);
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 6px 14px;
+    border-radius: var(--rw-pill);
+    align-self: flex-start;
+}
+
+.rw-voucher-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--rw-text);
+    line-height: 1.35;
+    margin: 0;
+}
+
+.rw-voucher-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rw-voucher-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--rw-muted);
+}
+
+.rw-voucher-meta-row .meta-icon {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+/* Dashed coupon divider */
+.rw-card-divider {
+    border: none;
+    border-top: 2px dashed var(--rw-border);
+    margin: 0 22px;
+}
+
+/* Footer / CTA */
+.rw-card-footer {
+    padding: 14px 22px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.rw-card-cost {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.rw-cost-label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--rw-muted);
+}
+
+.rw-cost-value {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--rw-green);
+    line-height: 1;
+}
+
+.rw-cost-value .cost-unit {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--rw-muted);
+    margin-left: 2px;
+}
+
+/* Redeem button – enabled */
+.rw-redeem-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--rw-green);
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: var(--rw-pill);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(30,70,32,0.18);
+    transition: background var(--rw-transition), transform var(--rw-transition),
+                box-shadow var(--rw-transition);
+}
+
+.rw-redeem-btn:hover {
+    background: var(--rw-green2);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(30,70,32,0.24);
+}
+
+.rw-redeem-btn:active {
+    transform: translateY(0);
+}
+
+/* Disabled button – not enough points */
+.rw-redeem-btn--disabled {
+    background: #c8c8c0;
+    color: #ffffff;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.rw-redeem-btn--disabled:hover {
+    background: #c8c8c0;
+    transform: none;
+    box-shadow: none;
+}
+
+/* "Insufficient points" badge overlay on card */
+.rw-insufficient-tag {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: #fdecea;
+    color: var(--rw-red);
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: var(--rw-pill);
+    border: 1px solid #f5c6c2;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   Empty state
+   -------------------------------------------------------------------------- */
+.rw-empty-state {
+    text-align: center;
+    padding: 64px 20px;
+    color: var(--rw-muted);
+}
+
+.rw-empty-state .empty-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 12px;
+    opacity: 0.4;
+}
+
+.rw-empty-state p {
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+    .rw-points-strip {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .rw-points-strip-note {
+        text-align: left;
+    }
+
+    .rewards-page {
+        padding: 70px 14px 60px;
+    }
+
+    .rw-page-header h1 {
+        font-size: 1.55rem;
+    }
+
+    .rw-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rw-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .rw-redeem-btn,
+    .rw-redeem-btn--disabled {
+        width: 100%;
+        justify-content: center;
+    }
+}
