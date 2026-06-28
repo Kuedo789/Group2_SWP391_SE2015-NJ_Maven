@@ -28,57 +28,60 @@ public class AuthorizationFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
-        chain.doFilter(servletRequest, servletResponse);
-        return;
 
-        // response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        // response.setHeader("Pragma", "no-cache");
-        // response.setDateHeader("Expires", 0);
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        response.setHeader("Pragma", "no-cache");
+        response.setDateHeader("Expires", 0);
 
-        // HttpSession session = request.getSession(false);
-        // User user = (session != null) ? (User) session.getAttribute("user") : null;
+        HttpSession session = request.getSession(false);
+        User user = (session != null) ? (User) session.getAttribute("user") : null;
 
-        // String currentUri = request.getRequestURI();
-        // String contextPath = request.getContextPath();
-        // String servletPath = currentUri.substring(contextPath.length());
+        String currentUri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        String servletPath = currentUri.substring(contextPath.length());
 
-        // if (servletPath.contains("/admin/role-permissions") ||
-        // servletPath.contains("/admin/staff")
-        // || servletPath.contains("/admin/test-reviews")) {
-        // chain.doFilter(servletRequest, servletResponse);
-        // return;
-        // }
+        // Block direct access to any JSP files (Must access through Servlets/Controllers)
+        if (servletPath.endsWith(".jsp")) {
+            response.sendRedirect(request.getContextPath() + "/home");
+            return;
+        }
 
-        // if (user == null) {
-        // response.sendRedirect(request.getContextPath() + "/login");
-        // return;
-        // }
+        if (servletPath.contains("/admin/role-permissions") ||
+            servletPath.contains("/admin/staff") ||
+            servletPath.contains("/admin/test-reviews")) {
+            chain.doFilter(servletRequest, servletResponse);
+            return;
+        }
 
-        // String roleId = user.getRoleId();
-        // if (roleId != null) {
-        // roleId = roleId.trim().toUpperCase();
-        // }
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
 
-        // if ("ADMIN".equals(roleId)) {
-        // chain.doFilter(servletRequest, servletResponse);
-        // return;
-        // }
-        // boolean hasPermission = false;
+        String roleId = user.getRoleId();
+        if (roleId != null) {
+            roleId = roleId.trim().toUpperCase();
+        }
 
-        // String cleanPath = servletPath;
-        // if (servletPath.contains("?")) {
-        // cleanPath = servletPath.split("\\?")[0];
-        // }
+        if ("ADMIN".equals(roleId)) {
+            chain.doFilter(servletRequest, servletResponse);
+            return;
+        }
+        
+        boolean hasPermission = false;
+        String cleanPath = servletPath;
+        if (servletPath.contains("?")) {
+            cleanPath = servletPath.split("\\?")[0];
+        }
 
-        // hasPermission = permissionDAO.checkPermission(roleId, cleanPath);
+        hasPermission = permissionDAO.checkPermission(roleId, cleanPath);
 
-        // if (hasPermission) {
-        // chain.doFilter(servletRequest, servletResponse);
-        // } else {
-        // request.setAttribute("error", "Tài khoản của bạn không có quyền truy cập tính
-        // năng này.");
-        // request.getRequestDispatcher("/common/home.jsp").forward(request, response);
-        // }
+        if (hasPermission) {
+            chain.doFilter(servletRequest, servletResponse);
+        } else {
+            request.setAttribute("error", "Tài khoản của bạn không có quyền truy cập tính năng này.");
+            request.getRequestDispatcher("/common/home.jsp").forward(request, response);
+        }
     }
 
     @Override

@@ -15,7 +15,7 @@
 
         <!-- Logo -->
         <a href="<%= contextPath %>/home" class="logo">
-            BakeryZone
+            ${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}
         </a>
 
         <!-- Menu chính -->

@@ -93,19 +93,23 @@
                 <div class="hero-card" id="heroCarousel">
 
                     <div class="hero-slide active"
-                         style="background-image: url('${pageContext.request.contextPath}/assets/images/hero/hero-1.jpg');">
+                         style="background-image: url('${pageContext.request.contextPath}/${not empty settings.banner1 ? settings.banner1 : 'assets/images/hero/hero-1.jpg'}');
+                                background-position: center ${settings.banner1Align eq 'top' ? '0' : (settings.banner1Align eq 'bottom' ? '100' : (settings.banner1Align eq 'center' ? '50' : (not empty settings.banner1Align ? settings.banner1Align : '50')))}%;">
                     </div>
 
                     <div class="hero-slide"
-                         style="background-image: url('${pageContext.request.contextPath}/assets/images/hero/hero-2.jpg');">
+                         style="background-image: url('${pageContext.request.contextPath}/${not empty settings.banner2 ? settings.banner2 : 'assets/images/hero/hero-2.jpg'}');
+                                background-position: center ${settings.banner2Align eq 'top' ? '0' : (settings.banner2Align eq 'bottom' ? '100' : (settings.banner2Align eq 'center' ? '50' : (not empty settings.banner2Align ? settings.banner2Align : '50')))}%;">
                     </div>
 
                     <div class="hero-slide"
-                         style="background-image: url('${pageContext.request.contextPath}/assets/images/hero/hero-3.jpg');">
+                         style="background-image: url('${pageContext.request.contextPath}/${not empty settings.banner3 ? settings.banner3 : 'assets/images/hero/hero-3.jpg'}');
+                                background-position: center ${settings.banner3Align eq 'top' ? '0' : (settings.banner3Align eq 'bottom' ? '100' : (settings.banner3Align eq 'center' ? '50' : (not empty settings.banner3Align ? settings.banner3Align : '50')))}%;">
                     </div>
 
                     <div class="hero-slide"
-                         style="background-image: url('${pageContext.request.contextPath}/assets/images/hero/hero-4.jpg');">
+                         style="background-image: url('${pageContext.request.contextPath}/${not empty settings.banner4 ? settings.banner4 : 'assets/images/hero/hero-4.jpg'}');
+                                background-position: center ${settings.banner4Align eq 'top' ? '0' : (settings.banner4Align eq 'bottom' ? '100' : (settings.banner4Align eq 'center' ? '50' : (not empty settings.banner4Align ? settings.banner4Align : '50')))}%;">
                     </div>
 
                     <div class="hero-overlay"></div>

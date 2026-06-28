@@ -98,11 +98,15 @@
     </filter-mapping>
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
-        <url-pattern>/staff</url-pattern>
+        <url-pattern>/staff/*</url-pattern>
     </filter-mapping>
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
-        <url-pattern>/customer</url-pattern>
+        <url-pattern>/shipper/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>AuthorizationFilter</filter-name>
+        <url-pattern>/customer/*</url-pattern>
     </filter-mapping>
     <servlet-mapping>
         <servlet-name>CustomerCheckoutServlet</servlet-name>

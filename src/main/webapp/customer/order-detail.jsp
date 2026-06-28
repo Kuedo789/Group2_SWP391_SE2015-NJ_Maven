@@ -155,7 +155,7 @@
 <html lang="vi">
 <head>
     <jsp:include page="../common/header.jsp" />
-    <title>Chi tiết đơn hàng #<%= order.getOrderNo().replace("ORD_", "") %> - BakeryZone</title>
+    <title>Chi tiết đơn hàng #<%= order.getOrderNo().replace("ORD_", "") %> - ${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}</title>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -183,7 +183,13 @@
             </div>
             
             <div class="order-header-actions">
-                <button class="btn btn-support" onclick="alert('Hotline hỗ trợ khách hàng: 090 123 4567. BakeryZone rất hân hạnh được hỗ trợ bạn!')">
+                <%
+                    java.util.Map<String, Object> settingsMap = (java.util.Map<String, Object>) application.getAttribute("settings");
+                    String supportHotline = (settingsMap != null && settingsMap.get("hotline") != null) ? (String) settingsMap.get("hotline") : "0901234567";
+                    String supportName = (settingsMap != null && settingsMap.get("bakeryName") != null) ? (String) settingsMap.get("bakeryName") : "BakeryZone";
+                %>
+                
+                <button class="btn btn-support" onclick="alert('Hotline hỗ trợ khách hàng: <%= supportHotline %>. <%= supportName %> rất hân hạnh được hỗ trợ bạn!')">
                     Cần hỗ trợ?
                 </button>
                 

@@ -4,18 +4,57 @@
 <%@ page import="java.text.DecimalFormat" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%
+    if (application.getAttribute("settings") == null) {
+        com.bakeryzone.dao.SettingDAO settingDAO = new com.bakeryzone.dao.SettingDAO();
+        java.util.Map<String, Object> dbSettings = settingDAO.getSettings();
+        if (dbSettings == null || dbSettings.isEmpty()) {
+            dbSettings = new java.util.HashMap<>();
+            dbSettings.put("bakeryName", "BakeryZone");
+            dbSettings.put("hotline", "0901234567");
+            dbSettings.put("email", "support@bakeryzone.vn");
+            dbSettings.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
+            dbSettings.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
+            dbSettings.put("banner1", "assets/images/banner1.jpg");
+            dbSettings.put("banner2", "assets/images/banner2.jpg");
+            dbSettings.put("banner3", "assets/images/banner3.jpg");
+            dbSettings.put("banner4", "assets/images/hero/hero-4.jpg");
+            dbSettings.put("darkMode", false);
+        } else {
+            String currentHotline = (String) dbSettings.get("hotline");
+            if (currentHotline != null) {
+                dbSettings.put("hotline", currentHotline.replaceAll("\\s+", ""));
+            }
+        }
+        application.setAttribute("settings", dbSettings);
+    }
+%>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Dark Mode Init: chạy trước khi render để tránh flash trắng -->
+    <script>
+        (function() {
+            var globalDark = ${not empty settings.darkMode ? settings.darkMode : 'false'};
+            var saved = localStorage.getItem('darkMode');
+            if (globalDark || saved === 'true') {
+                document.documentElement.classList.add('dark-theme');
+            }
+        })();
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CakeZone Admin - Order Detail #${order.orderNo.replace('ORD_', '')}</title>
+    <title>${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'} Admin - Chi tiết đơn hàng #${order.orderNo.replace('ORD_', '')}</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
+    <!-- Global Admin Style Link -->
+    <link href="${pageContext.request.contextPath}/assets/css/all/admin-global.css" rel="stylesheet">
+    <!-- Order Specific Style Link -->
     <link href="${pageContext.request.contextPath}/assets/css/all/order.css" rel="stylesheet">
 </head>
 <body>
@@ -166,7 +205,7 @@
                                 <div class="item-price-qty">
                                     <div class="item-price font-mono"><%= czFmt.format(price) %>đ</div>
                                     <div class="item-qty">Số lượng: x<%= qty %></div>
-                                    <div class="item-qty fw-bold" style="color:#222;">
+                                    <div class="item-qty fw-bold item-qty-total">
                                         Thành tiền: <%= czFmt.format(lineTotal) %>đ
                                     </div>
                                 </div>
@@ -203,10 +242,23 @@
                         </div>
                         <div class="info-row">
                             <div class="info-label">Giờ giao dự kiến:</div>
-                            <div class="info-value" style="color: #c07b0c;">
+                            <div class="info-value delivery-time-highlight">
                                 <fmt:formatDate value="${order.deliveryWindowStart}" pattern="dd/MM/yyyy HH:mm" />
                                 -
                                 <fmt:formatDate value="${order.deliveryWindowEnd}" pattern="HH:mm" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bằng chứng giao hàng (Shipper tải lên, Admin chỉ xem) -->
+                    <div class="cz-card">
+                        <div class="cz-card-title">
+                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Bằng chứng giao hàng
+                        </div>
+                        <div class="shipper-proof-box">
+                            <div id="admin-proof-display-container" style="text-align: center; width: 100%;">
+                                <i class="fa-regular fa-image proof-icon" style="font-size: 32px; margin-bottom: 8px; display: block;"></i>
+                                <span class="proof-empty-text">Shipper chưa tải lên ảnh bằng chứng giao hàng cho đơn này.</span>
                             </div>
                         </div>
                     </div>
@@ -311,6 +363,34 @@
             }).showToast();
             <c:remove var="errorMessage" scope="session" />
         </c:if>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderStatus = '${order.orderStatus}';
+            const displayContainer = document.getElementById('admin-proof-display-container');
+            const savedProof = localStorage.getItem('proof_of_delivery_' + '${order.orderNo}');
+
+            if (savedProof) {
+                displayContainer.innerHTML = `
+                    <img src="${savedProof}" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+                    <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
+                        <i class="fa-solid fa-circle-check"></i> Ảnh bằng chứng thực tế từ Shipper
+                    </div>
+                `;
+            } else if (orderStatus.toLowerCase() === 'completed' || orderStatus === 'Hoàn thành' || orderStatus === 'Đã giao') {
+                // Ảnh demo cho đơn hàng đã hoàn thành
+                displayContainer.innerHTML = `
+                    <img src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=500&auto=format&fit=crop" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+                    <div style="margin-top: 8px; font-size: 12px; color: #555; font-weight: 600;">
+                        <i class="fa-solid fa-circle-check"></i> Bằng chứng giao hàng (Shipper đã giao bánh thành công)
+                    </div>
+                `;
+            } else {
+                displayContainer.innerHTML = `
+                    <i class="fa-regular fa-image" style="font-size: 32px; color: #bbb; margin-bottom: 8px; display: block;"></i>
+                    <span style="font-size: 13px; color: #777; font-weight: 500;">Shipper chưa tải lên ảnh bằng chứng giao hàng cho đơn này.</span>
+                `;
+            }
+        });
     </script>
 </body>
 </html>

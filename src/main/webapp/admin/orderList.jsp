@@ -1,18 +1,57 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%
+    if (application.getAttribute("settings") == null) {
+        com.bakeryzone.dao.SettingDAO settingDAO = new com.bakeryzone.dao.SettingDAO();
+        java.util.Map<String, Object> dbSettings = settingDAO.getSettings();
+        if (dbSettings == null || dbSettings.isEmpty()) {
+            dbSettings = new java.util.HashMap<>();
+            dbSettings.put("bakeryName", "BakeryZone");
+            dbSettings.put("hotline", "0901234567");
+            dbSettings.put("email", "support@bakeryzone.vn");
+            dbSettings.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
+            dbSettings.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
+            dbSettings.put("banner1", "assets/images/banner1.jpg");
+            dbSettings.put("banner2", "assets/images/banner2.jpg");
+            dbSettings.put("banner3", "assets/images/banner3.jpg");
+            dbSettings.put("banner4", "assets/images/hero/hero-4.jpg");
+            dbSettings.put("darkMode", false);
+        } else {
+            String currentHotline = (String) dbSettings.get("hotline");
+            if (currentHotline != null) {
+                dbSettings.put("hotline", currentHotline.replaceAll("\\s+", ""));
+            }
+        }
+        application.setAttribute("settings", dbSettings);
+    }
+%>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Dark Mode Init: chạy trước khi render để tránh flash trắng -->
+    <script>
+        (function() {
+            var globalDark = ${not empty settings.darkMode ? settings.darkMode : 'false'};
+            var saved = localStorage.getItem('darkMode');
+            if (globalDark || saved === 'true') {
+                document.documentElement.classList.add('dark-theme');
+            }
+        })();
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CakeZone Admin - Order Management</title>
+    <title>${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'} Admin - Quản lý đơn hàng</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
+    <!-- Global Admin Style Link -->
+    <link href="${pageContext.request.contextPath}/assets/css/all/admin-global.css" rel="stylesheet">
+    <!-- Order Specific Style Link -->
     <link href="${pageContext.request.contextPath}/assets/css/all/order.css" rel="stylesheet">
 </head>
 <body>
@@ -133,12 +172,14 @@
                                         <td>
                                             <fmt:formatDate value="${o.orderTime}" pattern="dd/MM/yyyy HH:mm" />
                                         </td>
-                                        <td style="text-align: right;" class="text-secondary font-monospace">
+
+                                        <td style="text-align: right;" class="font-monospace admin-order-deposit">
                                             <fmt:formatNumber value="${o.depositAmount}" type="number" pattern="#,##0"/>đ
                                         </td>
-                                        <td style="text-align: right;" class="fw-bold font-monospace text-dark">
+                                        <td style="text-align: right;" class="fw-bold font-monospace admin-order-total">
                                             <fmt:formatNumber value="${o.totalCost}" type="number" pattern="#,##0"/>đ
                                         </td>
+
                                         <td style="text-align: center;">
                                             <c:choose>
                                                 <c:when test="${o.orderStatus eq 'Pending' || o.orderStatus eq 'Chờ xác nhận'}">

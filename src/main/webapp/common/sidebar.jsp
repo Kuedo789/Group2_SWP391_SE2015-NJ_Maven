@@ -29,7 +29,7 @@
 <div class="sidebar">
     <div class="sidebar-brand">
         <i class="fa-solid fa-cake-candles"></i>
-        <span>Bakery<span>Zone</span> Admin</span>
+        <span>${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'} Admin</span>
     </div>
 
     <div class="nav-section-title">Hệ thống chính</div>
@@ -100,18 +100,17 @@
         <a href="${pageContext.request.contextPath}/admin/role-permissions?action=list"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a>
     </li>
     <li class="menu-item ${param.activeMenu == 'settings' ? 'active' : ''}">
-        <a href="#"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a>
+        <a href="${pageContext.request.contextPath}/admin/settings"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a>
     </li>
     <li class="menu-item ${param.activeMenu == 'logs' ? 'active' : ''}">
         <a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hoạt động</a>
     </li>
 </ul>
 
-<!-- Grow Your Bakery card -->
-<div class="sidebar-banner">
-    <i class="fa-solid fa-cake-candles cake-icon"></i>
-    <h6>Phát triển tiệm bánh</h6>
-    <p>Tạo ra những chiếc bánh đẹp và trao gửi hạnh phúc!</p>
+<!-- Technical Support button matching mockup -->
+<div class="sidebar-banner support-box">
+    <div class="support-title">HỖ TRỢ</div>
+    <a href="tel:0901234567" class="support-btn">Liên hệ kỹ thuật</a>
 </div>
 </div>
 

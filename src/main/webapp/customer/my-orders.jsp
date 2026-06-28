@@ -30,7 +30,7 @@
 <html lang="vi">
 <head>
     <jsp:include page="../common/header.jsp" />
-    <title>Đơn hàng của tôi - BakeryZone</title>
+    <title>Đơn hàng của tôi - ${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}</title>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -40,7 +40,7 @@
         <!-- Header Section -->
         <section class="orders-title">
             <h1>Đơn hàng của tôi</h1>
-            <p>Theo dõi trạng thái và quản lý lịch sử những chiếc bánh ngọt ngào bạn đã đặt tại BakeryZone.</p>
+            <p>Theo dõi trạng thái và quản lý lịch sử những chiếc bánh ngọt ngào bạn đã đặt tại ${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}.</p>
         </section>
 
         <%-- Success banner after placing an order --%>
