@@ -103,7 +103,8 @@
 
                                  <div class="col-md-12">
                                      <label class="form-label-cz">Mô Tả Chi Tiết</label>
-                                     <textarea class="form-control-cz" id="description" name="description" rows="4" style="height: auto; border-radius: 8px;" placeholder="Nhập mô tả cụ thể về đơn vị đo lường...">${unit.description}</textarea>
+                                     <textarea class="form-control-cz" id="description" name="description" rows="4" maxlength="255" style="height: auto; border-radius: 8px;" placeholder="Nhập mô tả cụ thể về đơn vị đo lường...">${unit.description}</textarea>
+                                     <div id="error-desc" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
                             </div>
                         </div>
@@ -134,15 +135,19 @@
             
             const errorId = document.getElementById('error-id');
             const errorName = document.getElementById('error-name');
+            const errorDesc = document.getElementById('error-desc');
             
             if (errorId) errorId.style.display = 'none';
             errorName.style.display = 'none';
+            if (errorDesc) errorDesc.style.display = 'none';
             
             const idInput = document.getElementById('unitId');
             const nameInput = document.getElementById('unitName');
+            const descInput = document.getElementById('description');
             
             idInput.classList.remove('is-invalid');
             nameInput.classList.remove('is-invalid');
+            if (descInput) descInput.classList.remove('is-invalid');
 
             // Validate ID only if creating new
             if (!idInput.hasAttribute('readonly')) {
@@ -172,6 +177,17 @@
                 errorName.style.display = 'block';
                 nameInput.classList.add('is-invalid');
                 hasError = true;
+            }
+
+            // Validate description length
+            if (descInput) {
+                const descVal = descInput.value;
+                if (descVal.length > 255) {
+                    errorDesc.textContent = 'Mô tả chi tiết không được vượt quá 255 ký tự.';
+                    errorDesc.style.display = 'block';
+                    descInput.classList.add('is-invalid');
+                    hasError = true;
+                }
             }
 
             if (hasError) {
