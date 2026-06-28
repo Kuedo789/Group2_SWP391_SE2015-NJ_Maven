@@ -156,7 +156,6 @@
 <head>
     <jsp:include page="../common/header.jsp" />
     <title>Chi tiết đơn hàng #<%= order.getOrderNo().replace("ORD_", "") %> - BakeryZone</title>
-    
 </head>
 <body>
     <!-- Navigation Bar -->

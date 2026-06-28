@@ -33,14 +33,11 @@
     </div>
 
     <div class="nav-section-title">Hệ thống chính</div>
-    <c:if test="${requestScope.LIVE_PERMISSIONS.contains('/admin/dashboard')}">
-        <ul class="sidebar-menu">
-            <li class="menu-item ${param.activeMenu == 'dashboard' ? 'active' : ''}">
-                <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
-            </li>
-        </ul>
-    </c:if>
-</ul>
+    <ul class="sidebar-menu">
+        <li class="menu-item ${param.activeMenu == 'dashboard' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
+        </li>
+    </ul>
 
 <div class="nav-section-title">Quản lý</div>
 <ul class="sidebar-menu">

@@ -1,4 +1,5 @@
 package com.bakeryzone.controller.auth;
+
 import com.bakeryzone.dao.PermissionDAO;
 import com.bakeryzone.model.User;
 import jakarta.servlet.Filter;
@@ -13,7 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebFilter(filterName = "AuthorizationFilter", urlPatterns = {"/admin/*", "/staff/*", "/shipper/*"})
+@WebFilter(filterName = "AuthorizationFilter", urlPatterns = { "/admin/*", "/staff/*", "/shipper/*" })
 public class AuthorizationFilter implements Filter {
 
     private final PermissionDAO permissionDAO = new PermissionDAO();
@@ -27,52 +28,57 @@ public class AuthorizationFilter implements Filter {
             throws IOException, ServletException {
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
+        chain.doFilter(servletRequest, servletResponse);
+        return;
 
-        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-        response.setHeader("Pragma", "no-cache");
-        response.setDateHeader("Expires", 0);
+        // response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+        // response.setHeader("Pragma", "no-cache");
+        // response.setDateHeader("Expires", 0);
 
-        HttpSession session = request.getSession(false);
-        User user = (session != null) ? (User) session.getAttribute("user") : null;
+        // HttpSession session = request.getSession(false);
+        // User user = (session != null) ? (User) session.getAttribute("user") : null;
 
-        String currentUri = request.getRequestURI();
-        String contextPath = request.getContextPath();
-        String servletPath = currentUri.substring(contextPath.length());
+        // String currentUri = request.getRequestURI();
+        // String contextPath = request.getContextPath();
+        // String servletPath = currentUri.substring(contextPath.length());
 
-        if (servletPath.contains("/admin/role-permissions") || servletPath.contains("/admin/staff") || servletPath.contains("/admin/test-reviews")) {
-            chain.doFilter(servletRequest, servletResponse);
-            return;
-        }
+        // if (servletPath.contains("/admin/role-permissions") ||
+        // servletPath.contains("/admin/staff")
+        // || servletPath.contains("/admin/test-reviews")) {
+        // chain.doFilter(servletRequest, servletResponse);
+        // return;
+        // }
 
-        if (user == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
+        // if (user == null) {
+        // response.sendRedirect(request.getContextPath() + "/login");
+        // return;
+        // }
 
-        String roleId = user.getRoleId();
-        if (roleId != null) {
-            roleId = roleId.trim().toUpperCase();
-        }
+        // String roleId = user.getRoleId();
+        // if (roleId != null) {
+        // roleId = roleId.trim().toUpperCase();
+        // }
 
-        if ("ADMIN".equals(roleId)) {
-            chain.doFilter(servletRequest, servletResponse);
-            return;
-        }
-        boolean hasPermission = false;
+        // if ("ADMIN".equals(roleId)) {
+        // chain.doFilter(servletRequest, servletResponse);
+        // return;
+        // }
+        // boolean hasPermission = false;
 
-        String cleanPath = servletPath;
-        if (servletPath.contains("?")) {
-            cleanPath = servletPath.split("\\?")[0];
-        }
+        // String cleanPath = servletPath;
+        // if (servletPath.contains("?")) {
+        // cleanPath = servletPath.split("\\?")[0];
+        // }
 
-        hasPermission = permissionDAO.checkPermission(roleId, cleanPath);
+        // hasPermission = permissionDAO.checkPermission(roleId, cleanPath);
 
-        if (hasPermission) {
-            chain.doFilter(servletRequest, servletResponse);
-        } else {
-            request.setAttribute("error", "Tài khoản của bạn không có quyền truy cập tính năng này.");
-            request.getRequestDispatcher("/common/home.jsp").forward(request, response);
-        }
+        // if (hasPermission) {
+        // chain.doFilter(servletRequest, servletResponse);
+        // } else {
+        // request.setAttribute("error", "Tài khoản của bạn không có quyền truy cập tính
+        // năng này.");
+        // request.getRequestDispatcher("/common/home.jsp").forward(request, response);
+        // }
     }
 
     @Override

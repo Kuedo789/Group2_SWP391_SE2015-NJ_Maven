@@ -1,7 +1,8 @@
 package com.bakeryzone.controller.admin;
 
-import com.bakeryzone.dao.DashboardDAO;
+import com.bakeryzone.dao.OrderDAO;
 import com.bakeryzone.model.Order;
+import com.bakeryzone.utils.ValidationUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,41 +15,55 @@ import java.util.Map;
 @WebServlet(name = "AdminDashboardServlet", urlPatterns = {"/admin/dashboard"})
 public class AdminDashboardServlet extends HttpServlet {
 
-    private final DashboardDAO dashboardDAO = new DashboardDAO();
+    private final OrderDAO orderDAO = new OrderDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
         // Retrieve statistics from DAO
-        double totalRevenue = dashboardDAO.getTotalRevenue();
-        int totalOrders = dashboardDAO.getTotalOrders();
-        int totalCustomers = dashboardDAO.getTotalCustomers();
-        int totalProducts = dashboardDAO.getTotalProducts();
+        double totalRevenue = orderDAO.getTotalRevenue(null, null);
+        int totalOrders = orderDAO.getTotalOrdersCount(null, null, null, null);
+        int totalCustomers = orderDAO.getTotalCustomers(null, null);
+        int totalProducts = orderDAO.getTotalProducts();
         
-        List<Order> recentOrders = dashboardDAO.getRecentOrders(5);
-        Map<String, Integer> statusCounts = dashboardDAO.getOrderStatusCounts();
+        List<Order> recentOrders = orderDAO.getOrdersPaged(null, null, null, null, null, 1, 5);
+        Map<String, Integer> statusCounts = orderDAO.getOrderStatusCounts(null, null);
         List<Map<String, Object>> bestSellers = null;
         List<Map<String, Object>> topCustomers = null;
 
         // 0. Parse Custom Dates if present
         String startDate = request.getParameter("startDate");
         String endDate = request.getParameter("endDate");
+        
+        // Validate
+        if (!ValidationUtils.isValidDateFormat(startDate) || !ValidationUtils.isValidDateFormat(endDate)) {
+            request.setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
+            request.getSession().setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
+            startDate = null;
+            endDate = null;
+        } else if (!ValidationUtils.isValidDateRange(startDate, endDate)) {
+            request.setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
+            request.getSession().setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
+            startDate = null;
+            endDate = null;
+        }
+
         boolean hasCustomDate = (startDate != null && !startDate.trim().isEmpty() && endDate != null && !endDate.trim().isEmpty());
         if (hasCustomDate) {
             String sDate = startDate.trim();
             String eDate = endDate.trim();
-            Map<String, Double> customRevenue = dashboardDAO.getRevenueTrendCustom(sDate, eDate);
-            Map<String, Integer> customOrders = dashboardDAO.getOrdersTrendCustom(sDate, eDate);
-            Map<String, Double> customProfit = dashboardDAO.getProfitTrendCustom(sDate, eDate);
+            Map<String, Double> customRevenue = orderDAO.getRevenueTrendCustom(sDate, eDate);
+            Map<String, Integer> customOrders = orderDAO.getOrdersTrendCustom(sDate, eDate);
+            Map<String, Double> customProfit = orderDAO.getProfitTrendCustom(sDate, eDate);
             
             // Override stats cards and lists for specified date range
-            totalRevenue = dashboardDAO.getTotalRevenueCustom(sDate, eDate);
-            totalOrders = dashboardDAO.getTotalOrdersCustom(sDate, eDate);
-            totalCustomers = dashboardDAO.getTotalCustomersCustom(sDate, eDate);
-            statusCounts = dashboardDAO.getOrderStatusCountsCustom(sDate, eDate);
-            bestSellers = dashboardDAO.getBestSellingProductsCustom(sDate, eDate, 5);
-            topCustomers = dashboardDAO.getTopCustomersCustom(sDate, eDate, 5);
+            totalRevenue = orderDAO.getTotalRevenue(sDate, eDate);
+            totalOrders = orderDAO.getTotalOrdersCount(null, null, sDate, eDate);
+            totalCustomers = orderDAO.getTotalCustomers(sDate, eDate);
+            statusCounts = orderDAO.getOrderStatusCounts(sDate, eDate);
+            bestSellers = orderDAO.getBestSellingProducts(sDate, eDate, 5);
+            topCustomers = orderDAO.getTopCustomers(sDate, eDate, 5);
 
             request.setAttribute("customRevLabels", mapKeysToString(customRevenue));
             request.setAttribute("customRevData", mapValuesToString(customRevenue));
@@ -60,27 +75,27 @@ public class AdminDashboardServlet extends HttpServlet {
             request.setAttribute("startDate", startDate);
             request.setAttribute("endDate", endDate);
         } else {
-            bestSellers = dashboardDAO.getBestSellingProducts(5);
-            topCustomers = dashboardDAO.getTopCustomers(5);
+            bestSellers = orderDAO.getBestSellingProducts(null, null, 5);
+            topCustomers = orderDAO.getTopCustomers(null, null, 5);
             request.setAttribute("hasCustomDate", false);
             request.setAttribute("startDate", "");
             request.setAttribute("endDate", "");
         }
 
         // 1. Fetch Monthly Trends (6 months)
-        Map<String, Double> monthlyRevenue = dashboardDAO.getRevenueTrend("month", 6);
-        Map<String, Integer> monthlyOrders = dashboardDAO.getOrdersTrend("month", 6);
-        Map<String, Double> monthlyProfit = dashboardDAO.getProfitTrend("month", 6);
+        Map<String, Double> monthlyRevenue = orderDAO.getRevenueTrend("month", 6);
+        Map<String, Integer> monthlyOrders = orderDAO.getOrdersTrend("month", 6);
+        Map<String, Double> monthlyProfit = orderDAO.getProfitTrend("month", 6);
 
         // 2. Fetch Daily Trends (30 days)
-        Map<String, Double> daily30Revenue = dashboardDAO.getRevenueTrend("day", 30);
-        Map<String, Integer> daily30Orders = dashboardDAO.getOrdersTrend("day", 30);
-        Map<String, Double> daily30Profit = dashboardDAO.getProfitTrend("day", 30);
+        Map<String, Double> daily30Revenue = orderDAO.getRevenueTrend("day", 30);
+        Map<String, Integer> daily30Orders = orderDAO.getOrdersTrend("day", 30);
+        Map<String, Double> daily30Profit = orderDAO.getProfitTrend("day", 30);
 
         // 3. Fetch Daily Trends (7 days)
-        Map<String, Double> daily7Revenue = dashboardDAO.getRevenueTrend("day", 7);
-        Map<String, Integer> daily7Orders = dashboardDAO.getOrdersTrend("day", 7);
-        Map<String, Double> daily7Profit = dashboardDAO.getProfitTrend("day", 7);
+        Map<String, Double> daily7Revenue = orderDAO.getRevenueTrend("day", 7);
+        Map<String, Integer> daily7Orders = orderDAO.getOrdersTrend("day", 7);
+        Map<String, Double> daily7Profit = orderDAO.getProfitTrend("day", 7);
 
         // Set request attributes for stats and lists
         request.setAttribute("totalRevenue", totalRevenue);

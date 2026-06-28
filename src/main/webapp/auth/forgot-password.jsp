@@ -101,6 +101,7 @@
                                            name="email"
                                            value="<%= email %>"
                                            placeholder="Nhập email đã đăng ký"
+                                           maxlength="100"
                                            required>
                                 </div>
                             </div>

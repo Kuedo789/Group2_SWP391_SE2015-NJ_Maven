@@ -451,7 +451,7 @@
             </section>
             
             <section class="section review-section">
-                <h2 class="center-title">Khách hàng nói về CakeZone</h2>
+                <h2 class="center-title">Khách hàng nói về Bakery Zone</h2>
                 <p class="center-title-sub">Những lời phản hồi chân thực nhất từ những trải nghiệm ngọt ngào</p>
 
                 <div class="review-home-grid">
@@ -472,7 +472,7 @@
                         </div>
                         <div class="review-home-user">
                             <h4 class="review-home-name"><%= rev.getCustomerName() != null ? rev.getCustomerName() : "Khách hàng ẩn danh" %></h4>
-                            <small class="review-home-cake">Mẫu bánh: <%= rev.getTemplateName() %></small>
+                            <small class="review-home-cake">Mẫu bánh: <%= rev.getTemplateName() != null ? rev.getTemplateName() : "Bánh ngọt" %></small>
                         </div>
                     </div>
                     <%

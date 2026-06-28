@@ -47,7 +47,7 @@ public class ValidationUtils {
         return null;
     }
 
-    public static String validateForgotPasswordInput(String email) {
+    public static String validateEmailInput(String email) {
         if (email == null || email.isEmpty()) {
             return "Vui lòng nhập email.";
         }
@@ -58,6 +58,10 @@ public class ValidationUtils {
             return "Email không đúng định dạng.";
         }
         return null;
+    }
+
+    public static String validateForgotPasswordInput(String email) {
+        return validateEmailInput(email);
     }
 
     public static String validateResetPasswordInput(String newPassword, String confirmPassword) {
@@ -77,5 +81,40 @@ public class ValidationUtils {
             return "Mật khẩu xác nhận không khớp.";
         }
         return null;
+    }
+
+    public static String validateOtpInput(String otp) {
+        if (otp == null || otp.trim().isEmpty()) {
+            return "Vui lòng nhập mã OTP.";
+        }
+        if (!otp.trim().matches("\\d{6}")) {
+            return "Mã OTP phải gồm đúng 6 chữ số.";
+        }
+        return null;
+    }
+
+    public static boolean isValidDateFormat(String dateStr) {
+        if (dateStr == null || dateStr.trim().isEmpty()) {
+            return true;
+        }
+        try {
+            java.time.LocalDate.parse(dateStr);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public static boolean isValidDateRange(String startDateStr, String endDateStr) {
+        if (startDateStr == null || startDateStr.trim().isEmpty() || endDateStr == null || endDateStr.trim().isEmpty()) {
+            return true;
+        }
+        try {
+            java.time.LocalDate start = java.time.LocalDate.parse(startDateStr.trim());
+            java.time.LocalDate end = java.time.LocalDate.parse(endDateStr.trim());
+            return !start.isAfter(end);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

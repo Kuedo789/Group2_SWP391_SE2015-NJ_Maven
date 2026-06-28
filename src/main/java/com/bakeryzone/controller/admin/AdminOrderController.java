@@ -5,6 +5,7 @@ import com.bakeryzone.dao.OrderDAO;
 import com.bakeryzone.model.Customer;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.model.User;
+import com.bakeryzone.utils.ValidationUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -19,6 +20,11 @@ public class AdminOrderController extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
     private final CustomerDAO customerDAO = new CustomerDAO();
+
+    // Whitelist trạng thái hợp lệ – ngăn giá trị rác ghi vào DB
+    private static final java.util.Set<String> ALLOWED_STATUSES = java.util.Set.of(
+        "Pending", "Confirmed", "Processing", "Delivering", "Completed", "Cancelled"
+    );
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -64,6 +70,7 @@ public class AdminOrderController extends HttpServlet {
         String statusParam = request.getParameter("status");
         String startDate = request.getParameter("startDate");
         String endDate = request.getParameter("endDate");
+        String sort = request.getParameter("sort");
 
         if (keyword != null && keyword.trim().isEmpty()) {
             keyword = null;
@@ -75,11 +82,28 @@ public class AdminOrderController extends HttpServlet {
             statusForDao = statusParam.trim();
             statusForView = statusForDao;
         }
+        // Validate Dates
+        if (!ValidationUtils.isValidDateFormat(startDate) || !ValidationUtils.isValidDateFormat(endDate)) {
+            request.setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
+            request.getSession().setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
+            startDate = null;
+            endDate = null;
+        } else if (!ValidationUtils.isValidDateRange(startDate, endDate)) {
+            request.setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
+            request.getSession().setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
+            startDate = null;
+            endDate = null;
+        }
+
         if (startDate != null && startDate.trim().isEmpty()) {
             startDate = null;
         }
         if (endDate != null && endDate.trim().isEmpty()) {
             endDate = null;
+        }
+
+        if (sort == null || sort.trim().isEmpty()) {
+            sort = "date_desc";
         }
 
         // Reset to page 1 when filters change (no page param means fresh filter)
@@ -100,7 +124,7 @@ public class AdminOrderController extends HttpServlet {
         if (totalPages == 0) totalPages = 1;
         if (page > totalPages) page = totalPages;
 
-        List<Order> orders = orderDAO.getOrdersPaged(keyword, statusForDao, startDate, endDate, page, pageSize);
+        List<Order> orders = orderDAO.getOrdersPaged(keyword, statusForDao, startDate, endDate, sort, page, pageSize);
 
         request.setAttribute("orders", orders);
         request.setAttribute("currentPage", page);
@@ -110,6 +134,7 @@ public class AdminOrderController extends HttpServlet {
         request.setAttribute("status", statusForView);
         request.setAttribute("startDate", startDate != null ? startDate : "");
         request.setAttribute("endDate", endDate != null ? endDate : "");
+        request.setAttribute("sort", sort);
 
         request.getRequestDispatcher("/admin/orderList.jsp").forward(request, response);
     }
@@ -141,15 +166,60 @@ public class AdminOrderController extends HttpServlet {
             throws ServletException, IOException {
         String orderNo = request.getParameter("orderNo");
         String status = request.getParameter("status");
+        HttpSession session = request.getSession();
 
         if (orderNo == null || orderNo.trim().isEmpty() || status == null || status.trim().isEmpty()) {
-            request.getSession().setAttribute("errorMessage", "Dữ liệu trạng thái không hợp lệ!");
+            session.setAttribute("errorMessage", "Dữ liệu trạng thái không hợp lệ!");
             response.sendRedirect(request.getContextPath() + "/admin/orders");
             return;
         }
 
+        // Kiểm tra status nằm trong whitelist trước khi làm bất cứ điều gì
+        if (!ALLOWED_STATUSES.contains(status)) {
+            session.setAttribute("errorMessage", "Trạng thái '" + status + "' không hợp lệ!");
+            response.sendRedirect(request.getContextPath() + "/admin/orders?action=detail&orderNo=" + orderNo);
+            return;
+        }
+
+        Order order = orderDAO.getOrderByNo(orderNo);
+        if (order == null) {
+            session.setAttribute("errorMessage", "Không tìm thấy đơn hàng #" + orderNo);
+            response.sendRedirect(request.getContextPath() + "/admin/orders");
+            return;
+        }
+
+        String currentStatus = order.getOrderStatus();
+        
+        // Ngăn chặn thay đổi nếu đơn hàng đã bị huỷ hoặc hoàn thành
+        if (currentStatus != null && (currentStatus.equalsIgnoreCase("Cancelled") || currentStatus.equalsIgnoreCase("Completed"))) {
+            session.setAttribute("errorMessage", "Đơn hàng đã hoàn thành hoặc đã huỷ, không thể thay đổi trạng thái!");
+            response.sendRedirect(request.getContextPath() + "/admin/orders?action=detail&orderNo=" + orderNo);
+            return;
+        }
+
+        // Kiểm tra các bước chuyển tiếp trạng thái hợp lệ
+        boolean isValidTransition = false;
+        if (currentStatus != null) {
+            if (currentStatus.equalsIgnoreCase("Pending")) {
+                isValidTransition = status.equalsIgnoreCase("Confirmed") || status.equalsIgnoreCase("Cancelled");
+            } else if (currentStatus.equalsIgnoreCase("Confirmed")) {
+                isValidTransition = status.equalsIgnoreCase("Processing") || status.equalsIgnoreCase("Cancelled");
+            } else if (currentStatus.equalsIgnoreCase("Processing")) {
+                isValidTransition = status.equalsIgnoreCase("Delivering") || status.equalsIgnoreCase("Cancelled");
+            } else if (currentStatus.equalsIgnoreCase("Delivering")) {
+                isValidTransition = status.equalsIgnoreCase("Completed") || status.equalsIgnoreCase("Cancelled");
+            }
+        } else {
+            isValidTransition = true;
+        }
+
+        if (!isValidTransition) {
+            session.setAttribute("errorMessage", "Không thể chuyển trạng thái từ '" + currentStatus + "' sang '" + status + "'!");
+            response.sendRedirect(request.getContextPath() + "/admin/orders?action=detail&orderNo=" + orderNo);
+            return;
+        }
+
         boolean success = orderDAO.updateOrderStatus(orderNo, status);
-        HttpSession session = request.getSession();
         if (success) {
             session.setAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + orderNo + " thành công!");
         } else {

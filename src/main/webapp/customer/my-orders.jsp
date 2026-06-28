@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ page import="java.util.List" %>
 <%@ page import="com.bakeryzone.model.Order" %>
 <%@ page import="com.bakeryzone.model.OrderItem" %>
@@ -11,7 +12,11 @@
 
     String startDateVal = request.getAttribute("startDate") != null ? request.getAttribute("startDate").toString() : "";
     String endDateVal = request.getAttribute("endDate") != null ? request.getAttribute("endDate").toString() : "";
+    String searchVal = request.getAttribute("search") != null ? request.getAttribute("search").toString() : "";
+    String sortVal = request.getAttribute("sort") != null ? request.getAttribute("sort").toString() : "date_desc";
 
+    String searchParams = !searchVal.isEmpty() ? "&search=" + java.net.URLEncoder.encode(searchVal, "UTF-8") : "";
+    String sortParams = "&sort=" + sortVal;
     String dateParams = "";
     if (!startDateVal.isEmpty()) {
         dateParams += "&startDate=" + startDateVal;
@@ -19,6 +24,7 @@
     if (!endDateVal.isEmpty()) {
         dateParams += "&endDate=" + endDateVal;
     }
+
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -66,37 +72,84 @@
             <button onclick="document.getElementById('orderSuccessBanner').style.display='none'"
                     style="margin-left:auto; background:none; border:none; color:rgba(255,255,255,0.6); font-size:22px; cursor:pointer; line-height:1;">&times;</button>
         </div>
-        <style>@keyframes slideDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }</style>
         <% } %>
-        <style>
-            .active-filter { background-color: var(--primary) !important; color: white !important; border-color: var(--primary) !important; }
-        </style>
+
+        <%-- Error banner if date filtering is invalid --%>
+        <c:if test="${not empty errorMessage}">
+            <div id="orderErrorBanner" style="
+                background: #f8d7da;
+                color: #842029;
+                border: 1px solid #f5c2c7;
+                border-radius: 16px;
+                padding: 16px 24px;
+                margin: 0 0 28px 0;
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+                animation: slideDown 0.4s ease;">
+                <span class="material-symbols-outlined" style="font-size: 28px; color: #842029; flex-shrink: 0;">error</span>
+                <div style="font-weight: 600; font-size: 14px;">
+                    <c:out value="${errorMessage}" />
+                </div>
+                <button onclick="document.getElementById('orderErrorBanner').style.display='none'"
+                        style="margin-left:auto; background:none; border:none; color:#842029; font-size:22px; cursor:pointer; line-height:1;">&times;</button>
+            </div>
+            <c:remove var="errorMessage" scope="session" />
+        </c:if>
 
         <!-- Filters Section -->
-        <section class="orders-filter" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 25px;">
-            <a href="<%= request.getContextPath() %>/OrderList?status=all<%= dateParams %>" class="filter-btn <%= "all".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Tất cả (<%= request.getAttribute("countAll") != null ? request.getAttribute("countAll") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=processing<%= dateParams %>" class="filter-btn <%= "processing".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang xử lý (<%= request.getAttribute("countProcessing") != null ? request.getAttribute("countProcessing") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=shipping<%= dateParams %>" class="filter-btn <%= "shipping".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang giao (<%= request.getAttribute("countShipping") != null ? request.getAttribute("countShipping") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=completed<%= dateParams %>" class="filter-btn <%= "completed".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Hoàn thành (<%= request.getAttribute("countCompleted") != null ? request.getAttribute("countCompleted") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=cancelled<%= dateParams %>" class="filter-btn <%= "cancelled".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đã hủy (<%= request.getAttribute("countCancelled") != null ? request.getAttribute("countCancelled") : 0 %>)</a>
+        <section class="orders-filter" style="display: flex; gap: 12px; justify-content: flex-start; margin-bottom: 25px; flex-wrap: wrap;">
+            <a href="<%= request.getContextPath() %>/OrderList?status=all<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "all".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Tất cả (<%= request.getAttribute("countAll") != null ? request.getAttribute("countAll") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=processing<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "processing".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang xử lý (<%= request.getAttribute("countProcessing") != null ? request.getAttribute("countProcessing") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=shipping<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "shipping".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang giao (<%= request.getAttribute("countShipping") != null ? request.getAttribute("countShipping") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=completed<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "completed".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Hoàn thành (<%= request.getAttribute("countCompleted") != null ? request.getAttribute("countCompleted") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=cancelled<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "cancelled".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đã hủy (<%= request.getAttribute("countCancelled") != null ? request.getAttribute("countCancelled") : 0 %>)</a>
         </section>
 
-        <!-- Date Range Filter -->
-        <section class="date-filter" style="margin: 20px auto; max-width: 900px; display: flex; gap: 15px; align-items: center; justify-content: center; background: var(--card); padding: 15px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-            <form id="dateFilterForm" action="<%= request.getContextPath() %>/OrderList" method="GET" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center;">
+
+        <!-- Date Range, Search & Sort Filter Card -->
+        <section class="my-orders-filter-card">
+            <form id="dateFilterForm" class="my-orders-filter-form" action="<%= request.getContextPath() %>/OrderList" method="GET">
                 <input type="hidden" name="status" value="<%= currentStatus %>" />
-                <label for="startDate" style="font-weight: 600; font-size: 14px;">Từ ngày:</label>
-                <input type="date" id="startDate" name="startDate" value="<%= request.getAttribute("startDate") != null ? request.getAttribute("startDate") : "" %>" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; background: var(--bg-soft); color: var(--text);" />
+                <input type="hidden" name="sort" value="<%= sortVal %>" />
                 
-                <label for="endDate" style="font-weight: 600; font-size: 14px;">Đến ngày:</label>
-                <input type="date" id="endDate" name="endDate" value="<%= request.getAttribute("endDate") != null ? request.getAttribute("endDate") : "" %>" style="padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; background: var(--bg-soft); color: var(--text);" />
-                
-                <button type="submit" class="btn btn-primary" style="padding: 8px 20px; border-radius: var(--radius-sm);">Lọc</button>
-                <button type="button" id="btn-7days" class="btn btn-outline" style="padding: 8px 15px; border-radius: var(--radius-sm); height: 38px; display: inline-flex; align-items: center; justify-content: center;" onclick="setQuickFilter(7)">7 ngày qua</button>
-                <button type="button" id="btn-30days" class="btn btn-outline" style="padding: 8px 15px; border-radius: var(--radius-sm); height: 38px; display: inline-flex; align-items: center; justify-content: center;" onclick="setQuickFilter(30)">1 tháng qua</button>
-                <% if ((request.getAttribute("startDate") != null && !request.getAttribute("startDate").toString().isEmpty()) || (request.getAttribute("endDate") != null && !request.getAttribute("endDate").toString().isEmpty())) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList" class="btn btn-outline" style="padding: 8px 20px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; height: 38px; border-radius: var(--radius-sm);">Xóa bộ lọc</a>
-                <% } %>
+                <div class="filter-inputs-row">
+                    <div class="filter-field-group">
+                        <span class="filter-field-label">Tìm kiếm:</span>
+                        <div class="pill-control-wrap">
+                            <span class="material-symbols-outlined pill-search-icon">search</span>
+                            <input type="text" name="search" class="pill-search-input" value="<c:out value='${search}'/>" placeholder="Mã đơn hàng, sản phẩm, ..." />
+                        </div>
+                    </div>
+
+                    <div class="filter-field-group">
+                        <span class="filter-field-label">Từ ngày:</span>
+                        <div class="pill-control-wrap">
+                            <input type="date" id="startDate" name="startDate" class="pill-date-input" value="<%= request.getAttribute("startDate") != null ? request.getAttribute("startDate") : "" %>" />
+                        </div>
+                    </div>
+
+                    <div class="filter-field-group">
+                        <span class="filter-field-label">Đến ngày:</span>
+                        <div class="pill-control-wrap">
+                            <input type="date" id="endDate" name="endDate" class="pill-date-input" value="<%= request.getAttribute("endDate") != null ? request.getAttribute("endDate") : "" %>" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-actions-row">
+                    <div class="quick-filters-box">
+                        <span class="quick-filters-label">Lọc nhanh:</span>
+                        <button type="button" id="btn-7days" class="pill-btn-outline" onclick="setQuickFilter(7)">7 ngày</button>
+                        <button type="button" id="btn-30days" class="pill-btn-outline" onclick="setQuickFilter(30)">30 ngày</button>
+                    </div>
+
+                    <div class="right-action-buttons">
+                        <a href="<%= request.getContextPath() %>/OrderList" class="pill-btn-outline">Làm mới</a>
+                        <button type="submit" class="pill-btn-submit">Lọc kết quả</button>
+                    </div>
+                </div>
             </form>
         </section>
 
@@ -350,23 +403,48 @@
             if (request.getAttribute("endDate") != null && !request.getAttribute("endDate").toString().isEmpty()) {
                 endDateParam = "&endDate=" + request.getAttribute("endDate");
             }
+            String searchParam = !searchVal.isEmpty() ? "&search=" + java.net.URLEncoder.encode(searchVal, "UTF-8") : "";
+            String sortParam = "&sort=" + sortVal;
             String statusParam = "&status=" + currentStatus;
             
             if (totalPages > 0) {
+                // Windowed pagination: hiển thị tối đa 7 số trang quanh trang hiện tại
+                int windowSize = 7;
+                int half = windowSize / 2;
+                int winStart = Math.max(1, currentPage - half);
+                int winEnd = Math.min(totalPages, winStart + windowSize - 1);
+                if (winEnd - winStart + 1 < windowSize) {
+                    winStart = Math.max(1, winEnd - windowSize + 1);
+                }
         %>
             <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 40px; margin-bottom: 40px;">
+                <%-- Nút Trước --%>
                 <% if (currentPage > 1) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage - 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Trước</a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage - 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Trước</a>
                 <% } else { %>
                     <button class="btn btn-outline" style="padding: 8px 16px; border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;" disabled>Trước</button>
                 <% } %>
-                
-                <% for (int i = 1; i <= totalPages; i++) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= i %><%= statusParam %><%= startDateParam %><%= endDateParam %>" class="btn <%= i == currentPage ? "btn-primary" : "btn-outline" %>" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= i %></a>
+
+                <%-- Ellipsis đầu nếu cần --%>
+                <% if (winStart > 1) { %>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=1<%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">1</a>
+                    <% if (winStart > 2) { %><span style="padding: 0 4px; color: #999;">...</span><% } %>
                 <% } %>
-                
+
+                <%-- Số trang trong cửa sổ --%>
+                <% for (int i = winStart; i <= winEnd; i++) { %>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= i %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn <%= i == currentPage ? "btn-primary" : "btn-outline" %>" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= i %></a>
+                <% } %>
+
+                <%-- Ellipsis cuối nếu cần --%>
+                <% if (winEnd < totalPages) { %>
+                    <% if (winEnd < totalPages - 1) { %><span style="padding: 0 4px; color: #999;">...</span><% } %>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= totalPages %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= totalPages %></a>
+                <% } %>
+
+                <%-- Nút Sau --%>
                 <% if (currentPage < totalPages) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage + 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Sau</a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage + 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Sau</a>
                 <% } else { %>
                     <button class="btn btn-outline" style="padding: 8px 16px; border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;" disabled>Sau</button>
                 <% } %>

@@ -54,6 +54,14 @@
 
         <!-- Dashboard Content -->
         <div class="content">
+            <c:if test="${not empty errorMessage}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin: 20px 0; border-radius: 12px; font-weight: 500;">
+                    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i>
+                    <c:out value="${errorMessage}" />
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <c:remove var="errorMessage" scope="session" />
+            </c:if>
             
             <!-- Page Title Area -->
             <div class="page-header dashboard-page-header">

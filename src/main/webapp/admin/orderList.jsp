@@ -13,405 +13,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
-    <style>
-        :root {
-            --cz-primary: #3f5f36;
-            --cz-primary-hover: #2f4728;
-            --cz-dark-bg: #111010;
-            --cz-sidebar-active: #232222;
-            --cz-text-muted: #888888;
-            --cz-border-color: #f1ede8;
-            --cz-light-bg: #f8f6f4;
-            --cz-card-bg: #ffffff;
-        }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--cz-light-bg);
-            color: #333;
-            overflow-x: hidden;
-            margin: 0;
-        }
-
-        /* Sidebar margin */
-        .main-panel {
-            margin-left: 260px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Top Header */
-        .top-header {
-            height: 70px;
-            background-color: #fff;
-            border-bottom: 1px solid var(--cz-border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 35px;
-            position: sticky;
-            top: 0;
-            z-index: 90;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .sidebar-toggle {
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: #555;
-            cursor: pointer;
-        }
-        .breadcrumbs {
-            font-size: 13px;
-            color: var(--cz-text-muted);
-            margin-bottom: 0;
-        }
-        .breadcrumbs a {
-            color: var(--cz-text-muted);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .breadcrumbs a:hover {
-            color: var(--cz-primary);
-        }
-        .breadcrumbs span {
-            margin: 0 6px;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .header-icon-btn {
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: #555;
-            position: relative;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .header-icon-btn:hover {
-            color: var(--cz-primary);
-        }
-        .header-icon-btn .badge-dot {
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 8px;
-            height: 8px;
-            background-color: var(--cz-primary);
-            border-radius: 50%;
-            border: 1px solid #fff;
-        }
-
-        .profile-section {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-left: 1px solid var(--cz-border-color);
-            padding-left: 20px;
-        }
-        .profile-img {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--cz-border-color);
-        }
-        .profile-info {
-            line-height: 1.2;
-        }
-        .profile-name {
-            font-size: 13.5px;
-            font-weight: 600;
-            color: #333;
-        }
-        .profile-role {
-            font-size: 10.5px;
-            color: var(--cz-text-muted);
-            font-weight: 500;
-        }
-
-        /* Container & Elements */
-        .content-container {
-            padding: 35px;
-            flex: 1;
-        }
-        .page-title-area {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 25px;
-        }
-        .page-title {
-            font-size: 26px;
-            font-weight: 700;
-            color: #111;
-            margin-bottom: 4px;
-        }
-        .page-subtitle {
-            font-size: 13.5px;
-            color: var(--cz-text-muted);
-            margin-bottom: 0;
-        }
-
-        .filter-card {
-            background-color: var(--cz-card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid var(--cz-border-color);
-            margin-bottom: 25px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-        }
-        .filter-form {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        .filter-select, .filter-date {
-            padding: 10px 15px;
-            font-size: 13.5px;
-            font-weight: 500;
-            border-radius: 8px;
-            border: 1px solid var(--cz-border-color);
-            background-color: #fff;
-            color: #444;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .filter-select {
-            min-width: 160px;
-            cursor: pointer;
-        }
-        .filter-select:focus, .filter-date:focus {
-            border-color: var(--cz-primary);
-        }
-
-        .search-wrapper {
-            position: relative;
-            flex: 1;
-            min-width: 280px;
-        }
-        .search-input {
-            width: 100%;
-            padding: 10px 15px 10px 40px;
-            font-size: 13.5px;
-            border-radius: 8px;
-            border: 1px solid var(--cz-border-color);
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .search-input:focus {
-            border-color: var(--cz-primary);
-        }
-        .search-wrapper i {
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #aaa;
-            font-size: 14px;
-        }
-
-        .btn-filter-action {
-            padding: 10px 20px;
-            font-size: 13.5px;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 1px solid var(--cz-border-color);
-            background-color: #fff;
-            color: #444;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-        .btn-filter-action:hover {
-            background-color: #fdfdfd;
-            border-color: #ccc;
-        }
-        .btn-clear-filter {
-            padding: 10px 15px;
-            font-size: 13.5px;
-            font-weight: 500;
-            border-radius: 8px;
-            background-color: #555;
-            color: #fff;
-            text-decoration: none;
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-        .btn-clear-filter:hover {
-            background-color: #333;
-            color: #fff;
-        }
-
-        /* Table Design */
-        .table-card {
-            background-color: var(--cz-card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--cz-border-color);
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-            margin-bottom: 25px;
-        }
-        .cz-table {
-            width: 100%;
-            margin-bottom: 0;
-            border-collapse: collapse;
-        }
-        .cz-table th {
-            background-color: #fffaf5;
-            color: #666;
-            font-size: 11.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 16px 20px;
-            border-bottom: 2px solid var(--cz-border-color);
-        }
-        .cz-table td {
-            padding: 16px 20px;
-            vertical-align: middle;
-            font-size: 14px;
-            border-bottom: 1px solid var(--cz-border-color);
-        }
-        .cz-table tr:hover td {
-            background-color: #fdfbf9;
-        }
-
-        /* Custom Status Badges */
-        .status-badge {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 5px 14px;
-            border-radius: 30px;
-            display: inline-block;
-            text-align: center;
-            white-space: nowrap;
-        }
-        .status-pending {
-            background-color: #fef9c3;
-            color: #a16207;
-        }
-        .status-confirmed {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
-        .status-processing {
-            background-color: #f3e8ff;
-            color: #6b21a8;
-        }
-        .status-delivering {
-            background-color: #ffedd5;
-            color: #9a3412;
-        }
-        .status-completed {
-            background-color: #dcfce7;
-            color: #166534;
-        }
-        .status-cancelled {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-
-        .btn-action-detail {
-            padding: 6px 16px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 1px solid var(--cz-primary);
-            background-color: #fff;
-            color: var(--cz-primary);
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-action-detail:hover {
-            background-color: #f6faf5;
-            border-color: var(--cz-primary-hover);
-            color: var(--cz-primary-hover);
-        }
-
-        /* Pagination Design */
-        .pagination-area {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 25px;
-            border-top: 1px solid var(--cz-border-color);
-            background-color: #fff;
-        }
-        .pagination-text {
-            font-size: 13px;
-            color: var(--cz-text-muted);
-        }
-        .pagination-nav {
-            display: flex;
-            gap: 5px;
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .page-num-item a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            border: 1px solid var(--cz-border-color);
-            font-size: 13px;
-            font-weight: 600;
-            color: #555;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        .page-num-item a:hover {
-            background-color: #fafafa;
-            border-color: #ccc;
-        }
-        .page-num-item.active a {
-            background-color: var(--cz-primary) !important;
-            border-color: var(--cz-primary) !important;
-            color: #fff !important;
-        }
-        .page-num-item.disabled a {
-            opacity: 0.5;
-            pointer-events: none;
-            background-color: #f8f6f4;
-        }
-        
-        .date-label {
-            font-size: 12.5px;
-            font-weight: 600;
-            color: var(--cz-text-muted);
-            margin-right: 5px;
-        }
-        .date-container {
-            display: flex;
-            align-items: center;
-        }
-
-        /* Clickable row */
-        .cz-table tbody tr.clickable-row {
-            cursor: pointer;
-            transition: background-color 0.15s;
-        }
-        .cz-table tbody tr.clickable-row:hover td {
-            background-color: #f0f7ee;
-        }
-    </style>
+    <link href="${pageContext.request.contextPath}/assets/css/all/order.css" rel="stylesheet">
 </head>
 <body>
 
@@ -445,6 +47,14 @@
         </div>
 
         <div class="content-container">
+            <c:if test="${not empty errorMessage}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 20px; border-radius: 12px; font-weight: 500;">
+                    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i>
+                    <c:out value="${errorMessage}" />
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <c:remove var="errorMessage" scope="session" />
+            </c:if>
             <div class="page-title-area">
                 <div>
                     <h1 class="page-title">Quản lý đơn hàng</h1>
@@ -469,6 +79,13 @@
                         <option value="Delivering" ${status eq 'Delivering' ? 'selected' : ''}>Đang giao</option>
                         <option value="Completed" ${status eq 'Completed' ? 'selected' : ''}>Hoàn thành</option>
                         <option value="Cancelled" ${status eq 'Cancelled' ? 'selected' : ''}>Đã hủy</option>
+                    </select>
+
+                    <select class="filter-select" name="sort" onchange="this.form.submit()">
+                        <option value="date_desc" ${empty sort || sort eq 'date_desc' ? 'selected' : ''}>Mới nhất xếp trước</option>
+                        <option value="date_asc" ${sort eq 'date_asc' ? 'selected' : ''}>Cũ nhất xếp trước</option>
+                        <option value="price_desc" ${sort eq 'price_desc' ? 'selected' : ''}>Tổng tiền giảm dần</option>
+                        <option value="price_asc" ${sort eq 'price_asc' ? 'selected' : ''}>Tổng tiền tăng dần</option>
                     </select>
 
                     <div class="date-container">
@@ -569,7 +186,7 @@
                     <ul class="pagination-nav">
                         <c:if test="${currentPage > 1}">
                             <li class="page-num-item">
-                                <a href="${pageContext.request.contextPath}/admin/orders?action=list&page=${currentPage - 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}">
+                                <a href="${pageContext.request.contextPath}/admin/orders?action=list&page=${currentPage - 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}">
                                     <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                 </a>
                             </li>
@@ -577,13 +194,13 @@
 
                         <c:forEach begin="1" end="${totalPages}" var="i">
                             <li class="page-num-item ${currentPage == i ? 'active' : ''}">
-                                <a href="${pageContext.request.contextPath}/admin/orders?action=list&page=${i}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}">${i}</a>
+                                <a href="${pageContext.request.contextPath}/admin/orders?action=list&page=${i}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}">${i}</a>
                             </li>
                         </c:forEach>
 
                         <c:if test="${currentPage < totalPages}">
                             <li class="page-num-item">
-                                <a href="${pageContext.request.contextPath}/admin/orders?action=list&page=${currentPage + 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}">
+                                <a href="${pageContext.request.contextPath}/admin/orders?action=list&page=${currentPage + 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}">
                                     <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                 </a>
                             </li>

@@ -75,6 +75,7 @@
                                         name="email"
                                         placeholder="Nhập email của bạn"
                                         value="${accountInput != null ? accountInput : ''}"
+                                        maxlength="100"
                                         required>
                                 </div>
                             </div>
@@ -88,6 +89,7 @@
                                         id="password"
                                         name="password"
                                         placeholder="Nhập mật khẩu"
+                                        maxlength="20"
                                         required>
                                     <span
                                         class="material-symbols-outlined toggle-password"
