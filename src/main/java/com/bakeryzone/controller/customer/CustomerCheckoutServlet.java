@@ -209,9 +209,15 @@ public class CustomerCheckoutServlet extends HttpServlet {
                 }
             }
 
-            // Shipping fee stored in summary total from front-end is not posted; we use a flat 25k default
-            // (Real implementation: recalculate from address coords or read from hidden field)
-            BigDecimal shippingFee = BigDecimal.valueOf(25000);
+            String shippingFeeStr = request.getParameter("shippingFee");
+            BigDecimal shippingFee = BigDecimal.ZERO;
+            if (shippingFeeStr != null && !shippingFeeStr.trim().isEmpty()) {
+                try {
+                    shippingFee = new BigDecimal(shippingFeeStr.trim());
+                } catch (NumberFormatException e) {
+                    shippingFee = BigDecimal.ZERO;
+                }
+            }
             BigDecimal totalCost   = productTotal.add(shippingFee);
             BigDecimal deposit     = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
             BigDecimal remainingCod = totalCost.subtract(deposit);

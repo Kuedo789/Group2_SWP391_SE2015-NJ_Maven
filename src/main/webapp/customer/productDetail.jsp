@@ -62,9 +62,11 @@
 
                     <div class="detail-price" id="productPrice">0đ</div>
 
-                    <a href="<%= request.getContextPath() %>/auth/login.jsp" class="voucher-text">
-                        Đăng nhập để xem voucher ưu đãi của bạn ›
-                    </a>
+                    <c:if test="${empty sessionScope.user}">
+                        <a href="<%= request.getContextPath() %>/auth/login.jsp" class="voucher-text">
+                            Đăng nhập để xem voucher ưu đãi của bạn ›
+                        </a>
+                    </c:if>
 
                     <div class="tag-list">
                         <div class="tag-item" id="sizeTag">Size 16cm</div>
