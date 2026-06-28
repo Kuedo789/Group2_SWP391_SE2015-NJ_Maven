@@ -87,6 +87,10 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
 
 .stat-value {
@@ -234,12 +238,9 @@
 .stat-trend {
     font-size: 12px;
     font-weight: 600;
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 4px;
-    position: absolute;
-    top: 24px;
-    right: 24px;
 }
 .trend-up {
     color: #2e7d32;
@@ -680,6 +681,7 @@ a.stat-card:hover .stat-value {
 .chart-controls {
     display: flex;
     gap: 8px;
+    flex-shrink: 0;
 }
 
 .btn-toggle-pill {
@@ -692,6 +694,8 @@ a.stat-card:hover .stat-value {
     color: var(--cz-text-muted);
     cursor: pointer;
     transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .btn-toggle-pill.active {
@@ -709,6 +713,7 @@ a.stat-card:hover .stat-value {
     position: relative;
     display: inline-flex;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .chart-select-container .calendar-icon-wrap {
@@ -770,3 +775,120 @@ a.stat-card:hover .stat-value {
     border: 1px solid var(--cz-border-color, #e5e7eb);
 }
 
+.customer-index-badge.rank-1 { background-color: #ffd700; color: #111; }
+.customer-index-badge.rank-2 { background-color: #c0c0c0; color: #111; }
+.customer-index-badge.rank-3 { background-color: #cd7f32; color: #111; }
+
+.customer-avatar-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    border: 1px solid var(--cz-border-color, #e5e7eb);
+}
+
+/* ==========================================================
+   DARK THEME VARIABLE OVERRIDES FOR ADMIN DASHBOARD
+   ========================================================== */
+html.dark-theme {
+    --cz-card-bg:        #131612;
+    --cz-border-color:   rgba(255, 255, 255, 0.05);
+    --cz-text-muted:     #959893;
+    --cz-dark-bg:        #0b0c0a;
+    --border-soft:       rgba(255, 255, 255, 0.05);
+    --bg-cream:          #0f110e;
+    --text-dark:         #eae6df;
+    --text-muted:        #959893;
+}
+
+html.dark-theme .navbar.dashboard-navbar {
+    background-color: #0f110e;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+html.dark-theme .dashboard-table-controls h5 {
+    color: #eae6df;
+}
+
+html.dark-theme .dashboard-customer-name {
+    color: #eae6df;
+}
+
+html.dark-theme .bento-card {
+    background-color: var(--cz-card-bg);
+    border-color: var(--cz-border-color);
+}
+
+html.dark-theme .bento-card-title {
+    color: #eae6df;
+    border-bottom-color: var(--cz-border-color);
+}
+
+html.dark-theme .bento-table th {
+    border-bottom-color: var(--cz-border-color);
+    color: var(--cz-text-muted);
+}
+
+html.dark-theme .bento-table td {
+    border-bottom-color: var(--cz-border-color);
+    color: #eae6df;
+}
+
+html.dark-theme .bento-product-name {
+    color: #eae6df;
+}
+
+html.dark-theme .customer-list-item {
+    border-bottom-color: var(--cz-border-color);
+}
+
+html.dark-theme .stat-card {
+    background-color: var(--cz-card-bg);
+    border-color: var(--cz-border-color);
+}
+
+html.dark-theme .stat-value {
+    color: #eae6df;
+}
+
+html.dark-theme .stat-revenue .stat-icon { background-color: #1c241b; color: #b5cfa3; }
+html.dark-theme .stat-orders .stat-icon { background-color: #1c241b; color: #b5cfa3; }
+html.dark-theme .stat-customers .stat-icon { background-color: #1c241b; color: #b5cfa3; }
+html.dark-theme .stat-products .stat-icon { background-color: #1c241b; color: #b5cfa3; }
+
+html.dark-theme .chart-card {
+    background-color: var(--cz-card-bg);
+    border-color: var(--cz-border-color);
+}
+
+html.dark-theme .chart-title {
+    color: #eae6df;
+    border-bottom-color: var(--cz-border-color);
+}
+
+html.dark-theme .chart-center-val {
+    color: #eae6df;
+}
+
+html.dark-theme .trend-up {
+    color: #b5cfa3;
+}
+html.dark-theme .trend-down {
+    color: #ef9a9a;
+}
+
+html.dark-theme .badge-pending { background-color: #2e2612; color: #fbbf24; border-color: rgba(251, 191, 36, 0.2); }
+html.dark-theme .badge-confirmed { background-color: #0d1e2a; color: #60a5fa; border-color: rgba(96, 165, 250, 0.2); }
+html.dark-theme .badge-processing { background-color: #242220; color: #a0a0a0; border-color: rgba(160, 160, 160, 0.2); }
+html.dark-theme .badge-delivering { background-color: #151a30; color: #818cf8; border-color: rgba(129, 140, 248, 0.2); }
+html.dark-theme .badge-completed { background-color: #1c241b; color: #b5cfa3; border-color: rgba(181, 207, 163, 0.2); }
+html.dark-theme .badge-cancelled { background-color: #2a1414; color: #f87171; border-color: rgba(248, 113, 113, 0.2); }
+
+/* Best Selling Product Revenue */
+.bento-revenue {
+    color: #1E3224;
+}
+html.dark-theme .bento-revenue {
+    color: #b5cfa3 !important;
+}

@@ -3,16 +3,14 @@ package com.bakeryzone.controller.auth;
 import com.bakeryzone.dao.UserDAO;
 import com.bakeryzone.dao.CartDAO; // Import your CartDAO
 import com.bakeryzone.model.User;
-import com.bakeryzone.utils.EmailUtils;
-import com.bakeryzone.utils.OtpUtil;
 import com.bakeryzone.utils.PasswordUtils;
+import com.bakeryzone.utils.ValidationUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession; // Clean explicit import
 import java.io.IOException;
-import java.sql.Timestamp;
 
 public class LoginServlet extends HttpServlet {
 
@@ -47,6 +45,14 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
+        // Validate định dạng và độ dài email trước khi truy vấn DB
+        String emailError = ValidationUtils.validateEmailInput(email);
+        if (emailError != null) {
+            request.setAttribute("error", "Email hoặc mật khẩu không đúng.");
+            request.getRequestDispatcher("/auth/login.jsp").forward(request, response);
+            return;
+        }
+
         UserDAO dao = new UserDAO();
         User user = dao.findByEmail(email);
 
@@ -75,8 +81,9 @@ public class LoginServlet extends HttpServlet {
         // --- SUCCESS LOGIN PIPELINE ---
         HttpSession session = request.getSession();
         session.setAttribute("user", user);
-        
-        // FIXED: Dynamically load and bind cart state balance badge immediately on successful sign-in
+
+        // FIXED: Dynamically load and bind cart state balance badge immediately on
+        // successful sign-in
         try {
             CartDAO cartDAO = new CartDAO();
             int initialCount = cartDAO.getCartCountForUser(user.getUserId());

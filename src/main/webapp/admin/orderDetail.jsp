@@ -4,336 +4,58 @@
 <%@ page import="java.text.DecimalFormat" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%
+    if (application.getAttribute("settings") == null) {
+        com.bakeryzone.dao.SettingDAO settingDAO = new com.bakeryzone.dao.SettingDAO();
+        java.util.Map<String, Object> dbSettings = settingDAO.getSettings();
+        if (dbSettings == null || dbSettings.isEmpty()) {
+            dbSettings = new java.util.HashMap<>();
+            dbSettings.put("bakeryName", "BakeryZone");
+            dbSettings.put("hotline", "0901234567");
+            dbSettings.put("email", "support@bakeryzone.vn");
+            dbSettings.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
+            dbSettings.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
+            dbSettings.put("banner1", "assets/images/banner1.jpg");
+            dbSettings.put("banner2", "assets/images/banner2.jpg");
+            dbSettings.put("banner3", "assets/images/banner3.jpg");
+            dbSettings.put("banner4", "assets/images/hero/hero-4.jpg");
+            dbSettings.put("darkMode", false);
+        } else {
+            String currentHotline = (String) dbSettings.get("hotline");
+            if (currentHotline != null) {
+                dbSettings.put("hotline", currentHotline.replaceAll("\\s+", ""));
+            }
+        }
+        application.setAttribute("settings", dbSettings);
+    }
+%>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Dark Mode Init: chạy trước khi render để tránh flash trắng -->
+    <script>
+        (function() {
+            var globalDark = ${not empty settings.darkMode ? settings.darkMode : 'false'};
+            var saved = localStorage.getItem('darkMode');
+            if (globalDark || saved === 'true') {
+                document.documentElement.classList.add('dark-theme');
+            }
+        })();
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CakeZone Admin - Order Detail #${order.orderNo.replace('ORD_', '')}</title>
+    <title>${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'} Admin - Chi tiết đơn hàng #${order.orderNo.replace('ORD_', '')}</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
-    <style>
-        :root {
-            --cz-primary: #3f5f36;
-            --cz-primary-hover: #2f4728;
-            --cz-dark-bg: #111010;
-            --cz-sidebar-active: #232222;
-            --cz-text-muted: #888888;
-            --cz-border-color: #f1ede8;
-            --cz-light-bg: #f8f6f4;
-            --cz-card-bg: #ffffff;
-        }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background-color: var(--cz-light-bg);
-            color: #333;
-            overflow-x: hidden;
-            margin: 0;
-        }
-
-        .main-panel {
-            margin-left: 260px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Top Header */
-        .top-header {
-            height: 70px;
-            background-color: #fff;
-            border-bottom: 1px solid var(--cz-border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 35px;
-            position: sticky;
-            top: 0;
-            z-index: 90;
-        }
-
-        .header-left {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .sidebar-toggle {
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: #555;
-            cursor: pointer;
-        }
-        .breadcrumbs {
-            font-size: 13px;
-            color: var(--cz-text-muted);
-            margin-bottom: 0;
-        }
-        .breadcrumbs a {
-            color: var(--cz-text-muted);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .breadcrumbs a:hover {
-            color: var(--cz-primary);
-        }
-        .breadcrumbs span {
-            margin: 0 6px;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .header-icon-btn {
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: #555;
-            position: relative;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .header-icon-btn:hover {
-            color: var(--cz-primary);
-        }
-
-        .profile-section {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border-left: 1px solid var(--cz-border-color);
-            padding-left: 20px;
-        }
-        .profile-img {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--cz-border-color);
-        }
-        .profile-info {
-            line-height: 1.2;
-        }
-        .profile-name {
-            font-size: 13.5px;
-            font-weight: 600;
-            color: #333;
-        }
-        .profile-role {
-            font-size: 10.5px;
-            color: var(--cz-text-muted);
-            font-weight: 500;
-        }
-
-        /* Container */
-        .content-container {
-            padding: 35px;
-            flex: 1;
-        }
-        
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #555;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            transition: color 0.2s;
-        }
-        .btn-back:hover {
-            color: var(--cz-primary);
-        }
-
-        .page-title-area {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 25px;
-        }
-        .page-title {
-            font-size: 26px;
-            font-weight: 700;
-            color: #111;
-            margin-bottom: 4px;
-        }
-        
-        /* Grid Layout */
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 25px;
-        }
-        @media (max-width: 991px) {
-            .grid-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .cz-card {
-            background-color: var(--cz-card-bg);
-            border-radius: 12px;
-            border: 1px solid var(--cz-border-color);
-            padding: 24px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
-            margin-bottom: 25px;
-        }
-        .cz-card-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #111;
-            margin-bottom: 18px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--cz-border-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* Info Item */
-        .info-row {
-            display: flex;
-            margin-bottom: 12px;
-            font-size: 14px;
-        }
-        .info-label {
-            width: 140px;
-            color: var(--cz-text-muted);
-            font-weight: 500;
-            flex-shrink: 0;
-        }
-        .info-value {
-            color: #222;
-            font-weight: 600;
-        }
-
-        /* Status Badges */
-        .status-badge {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 5px 14px;
-            border-radius: 30px;
-            display: inline-block;
-        }
-        .status-pending { background-color: #fef9c3; color: #a16207; }
-        .status-confirmed { background-color: #dbeafe; color: #1e40af; }
-        .status-processing { background-color: #f3e8ff; color: #6b21a8; }
-        .status-delivering { background-color: #ffedd5; color: #9a3412; }
-        .status-completed { background-color: #dcfce7; color: #166534; }
-        .status-cancelled { background-color: #fee2e2; color: #991b1b; }
-
-        /* Items list */
-        .order-item-row {
-            display: flex;
-            align-items: center;
-            padding: 16px 0;
-            border-bottom: 1px solid var(--cz-border-color);
-        }
-        .order-item-row:last-child {
-            border-bottom: none;
-        }
-        .item-img {
-            width: 70px;
-            height: 70px;
-            border-radius: 8px;
-            object-fit: cover;
-            background-color: #fcfcfc;
-            border: 1px solid var(--cz-border-color);
-            margin-right: 16px;
-            flex-shrink: 0;
-        }
-        .item-details {
-            flex-grow: 1;
-        }
-        .item-name {
-            font-size: 14.5px;
-            font-weight: 700;
-            color: #222;
-            margin-bottom: 4px;
-        }
-        .item-meta {
-            font-size: 12px;
-            color: var(--cz-text-muted);
-            margin-bottom: 2px;
-        }
-        .item-meta span {
-            color: #444;
-            font-weight: 600;
-        }
-        .item-price-qty {
-            text-align: right;
-            flex-shrink: 0;
-        }
-        .item-price {
-            font-size: 14.5px;
-            font-weight: 700;
-            color: #222;
-            font-family: monospace;
-        }
-        .item-qty {
-            font-size: 12.5px;
-            color: var(--cz-text-muted);
-        }
-
-        /* Status Form dropdown */
-        .status-form {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        .status-select {
-            padding: 10px 15px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 8px;
-            border: 1px solid var(--cz-border-color);
-            outline: none;
-            cursor: pointer;
-            background-color: #fff;
-            width: 100%;
-        }
-        .btn-update-status {
-            background-color: var(--cz-primary);
-            color: #fff;
-            border: none;
-            padding: 10px 15px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-            width: 100%;
-        }
-        .btn-update-status:hover {
-            background-color: var(--cz-primary-hover);
-        }
-
-        /* Cost Table */
-        .cost-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-        .cost-row.total {
-            font-size: 16px;
-            font-weight: 700;
-            border-top: 1px solid var(--cz-border-color);
-            padding-top: 12px;
-            margin-top: 5px;
-            color: var(--cz-primary);
-        }
-        .font-mono {
-            font-family: monospace;
-        }
-    </style>
+    <!-- Global Admin Style Link -->
+    <link href="${pageContext.request.contextPath}/assets/css/all/admin-global.css" rel="stylesheet">
+    <!-- Order Specific Style Link -->
+    <link href="${pageContext.request.contextPath}/assets/css/all/order.css" rel="stylesheet">
 </head>
 <body>
 
@@ -483,7 +205,7 @@
                                 <div class="item-price-qty">
                                     <div class="item-price font-mono"><%= czFmt.format(price) %>đ</div>
                                     <div class="item-qty">Số lượng: x<%= qty %></div>
-                                    <div class="item-qty fw-bold" style="color:#222;">
+                                    <div class="item-qty fw-bold item-qty-total">
                                         Thành tiền: <%= czFmt.format(lineTotal) %>đ
                                     </div>
                                 </div>
@@ -520,10 +242,24 @@
                         </div>
                         <div class="info-row">
                             <div class="info-label">Giờ giao dự kiến:</div>
-                            <div class="info-value" style="color: #c07b0c;">
+                            <div class="info-value delivery-time-highlight">
                                 <fmt:formatDate value="${order.deliveryWindowStart}" pattern="dd/MM/yyyy HH:mm" />
                                 -
                                 <fmt:formatDate value="${order.deliveryWindowEnd}" pattern="HH:mm" />
+                            </div>
+                        </div>
+                        
+                    </div>
+
+                    <!-- Bằng chứng giao hàng (Shipper tải lên, Admin chỉ xem) -->
+                    <div class="cz-card">
+                        <div class="cz-card-title">
+                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Bằng chứng giao hàng
+                        </div>
+                        <div class="shipper-proof-box">
+                            <div id="admin-proof-display-container" style="text-align: center; width: 100%;">
+                                <i class="fa-regular fa-image proof-icon" style="font-size: 32px; margin-bottom: 8px; display: block;"></i>
+                                <span class="proof-empty-text">Shipper chưa tải lên ảnh bằng chứng giao hàng cho đơn này.</span>
                             </div>
                         </div>
                     </div>
@@ -628,6 +364,36 @@
             }).showToast();
             <c:remove var="errorMessage" scope="session" />
         </c:if>
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderStatus = '${order.orderStatus}';
+            const savedProof = localStorage.getItem('proof_of_delivery_' + '${order.orderNo}');
+            const displayContainer = document.getElementById('admin-proof-display-container');
+
+            // Load saved proof to admin display container
+            if (displayContainer) {
+                if (savedProof) {
+                    displayContainer.innerHTML = `
+                        <img src="${savedProof}" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+                        <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
+                            <i class="fa-solid fa-circle-check"></i> Ảnh bằng chứng thực tế từ Shipper
+                        </div>
+                    `;
+                } else if (orderStatus.toLowerCase() === 'completed' || orderStatus === 'Hoàn thành' || orderStatus === 'Đã giao') {
+                    displayContainer.innerHTML = `
+                        <img src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=500&auto=format&fit=crop" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+                        <div style="margin-top: 8px; font-size: 12px; color: #555; font-weight: 600;">
+                            <i class="fa-solid fa-circle-check"></i> Bằng chứng giao hàng (Shipper đã giao bánh thành công)
+                        </div>
+                    `;
+                } else {
+                    displayContainer.innerHTML = `
+                        <i class="fa-regular fa-image proof-icon" style="font-size: 32px; color: #bbb; margin-bottom: 8px; display: block;"></i>
+                        <span class="proof-empty-text">Shipper chưa tải lên ảnh bằng chứng giao hàng cho đơn này.</span>
+                    `;
+                }
+            }
+        });
     </script>
 </body>
 </html>

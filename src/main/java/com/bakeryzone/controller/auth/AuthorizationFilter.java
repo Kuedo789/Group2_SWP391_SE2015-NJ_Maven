@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebFilter(filterName = "AuthorizationFilter", urlPatterns = {"/admin/*", "/staff/*", "/shipper/*"})
+@WebFilter(filterName = "AuthorizationFilter", urlPatterns = { "/admin/*", "/staff/*", "/shipper/*" })
 public class AuthorizationFilter implements Filter {
 
     private final PermissionDAO permissionDAO = new PermissionDAO();
@@ -40,6 +40,12 @@ public class AuthorizationFilter implements Filter {
         String contextPath = request.getContextPath();
         String servletPath = currentUri.substring(contextPath.length());
 
+        // Block direct access to any JSP files (Must access through Servlets/Controllers)
+        if (servletPath.endsWith(".jsp")) {
+            response.sendRedirect(request.getContextPath() + "/home");
+            return;
+        }
+
         // 1. Kiểm tra đăng nhập trước tiên
         if (user == null) {
             response.sendRedirect(request.getContextPath() + "/login");
@@ -57,7 +63,6 @@ public class AuthorizationFilter implements Filter {
             chain.doFilter(servletRequest, servletResponse);
             return;
         }
-
         if (servletPath.startsWith("/admin/role-permissions") || servletPath.startsWith("/admin/staff")) {
             request.setAttribute("error", "Tài khoản của bạn không có quyền quản trị.");
             request.getRequestDispatcher("/common/403.jsp").forward(request, response);

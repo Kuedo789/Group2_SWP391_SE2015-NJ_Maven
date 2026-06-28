@@ -12,8 +12,6 @@ import jakarta.mail.internet.MimeUtility;
 
 public class EmailUtils {
 
-    private static final String FROM_EMAIL = "doduyhung0901@gmail.com";
-    private static final String APP_PASSWORD = "erqx uoeu fsdv nwlk";
     public static boolean sendOtpEmail(String toEmail, String otpCode) {
         return sendEmail(
                 toEmail,
@@ -54,6 +52,34 @@ public class EmailUtils {
     }
 
     private static boolean sendEmail(String toEmail, String subject, String htmlContent) {
+        String fromEmail = null;
+        String appPassword = null;
+        String bakeryName = "BakeryZone";
+        
+        try {
+            com.bakeryzone.dao.SettingDAO settingDAO = new com.bakeryzone.dao.SettingDAO();
+            java.util.Map<String, Object> settings = settingDAO.getSettings();
+            if (settings != null && !settings.isEmpty()) {
+                fromEmail = (String) settings.get("systemEmail");
+                appPassword = (String) settings.get("appPassword");
+                String dbName = (String) settings.get("bakeryName");
+                if (dbName != null && !dbName.isEmpty()) {
+                    bakeryName = dbName;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (fromEmail == null || fromEmail.isEmpty() || appPassword == null || appPassword.isEmpty()) {
+            System.err.println("LỖI: Chưa có cấu hình Email hệ thống hoặc Mật khẩu ứng dụng trong Database!");
+            return false;
+        }
+
+        final String finalFrom = fromEmail;
+        final String finalPass = appPassword;
+        final String finalName = bakeryName;
+
         try {
             Properties props = new Properties();
 
@@ -65,14 +91,13 @@ public class EmailUtils {
             Session session = Session.getInstance(props, new Authenticator() {
                 @Override
                 protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(FROM_EMAIL, APP_PASSWORD);
+                    return new PasswordAuthentication(finalFrom, finalPass);
                 }
             });
 
             Message message = new MimeMessage(session);
 
-            
-            message.setFrom(new InternetAddress(FROM_EMAIL, "BakeryZone", "UTF-8"));
+            message.setFrom(new InternetAddress(finalFrom, finalName, "UTF-8"));
 
             message.setRecipients(
                     Message.RecipientType.TO,

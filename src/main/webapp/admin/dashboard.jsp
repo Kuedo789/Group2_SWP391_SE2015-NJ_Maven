@@ -1,9 +1,45 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
+<%
+    if (application.getAttribute("settings") == null) {
+        com.bakeryzone.dao.SettingDAO settingDAO = new com.bakeryzone.dao.SettingDAO();
+        java.util.Map<String, Object> dbSettings = settingDAO.getSettings();
+        if (dbSettings == null || dbSettings.isEmpty()) {
+            dbSettings = new java.util.HashMap<>();
+            dbSettings.put("bakeryName", "BakeryZone");
+            dbSettings.put("hotline", "0901234567");
+            dbSettings.put("email", "support@bakeryzone.vn");
+            dbSettings.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
+            dbSettings.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
+            dbSettings.put("banner1", "assets/images/banner1.jpg");
+            dbSettings.put("banner2", "assets/images/banner2.jpg");
+            dbSettings.put("banner3", "assets/images/banner3.jpg");
+            dbSettings.put("banner4", "assets/images/hero/hero-4.jpg");
+            dbSettings.put("darkMode", false);
+        } else {
+            String currentHotline = (String) dbSettings.get("hotline");
+            if (currentHotline != null) {
+                dbSettings.put("hotline", currentHotline.replaceAll("\\s+", ""));
+            }
+        }
+        application.setAttribute("settings", dbSettings);
+    }
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Dark Mode Init: chạy trước khi render để tránh flash trắng -->
+    <script>
+        (function() {
+            var globalDark = ${not empty settings.darkMode ? settings.darkMode : 'false'};
+            var saved = localStorage.getItem('darkMode');
+            if (globalDark || saved === 'true') {
+                document.documentElement.classList.add('dark-theme');
+            }
+        })();
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CakeZone Admin - Dashboard</title>
@@ -14,9 +50,9 @@
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Main Style Link -->
-    <link href="${pageContext.request.contextPath}/assets/css/admin-global.css?v=1.2" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/assets/css/all/admin-global.css?v=1.3" rel="stylesheet">
     <!-- Dashboard Specific Style Link -->
-    <link href="${pageContext.request.contextPath}/assets/css/admindashbroad.css?v=1.0" rel="stylesheet">
+    <link href="${pageContext.request.contextPath}/assets/css/admindashbroad.css?v=1.3" rel="stylesheet">
 </head>
 <body>
 
@@ -54,6 +90,14 @@
 
         <!-- Dashboard Content -->
         <div class="content">
+            <c:if test="${not empty errorMessage}">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin: 20px 0; border-radius: 12px; font-weight: 500;">
+                    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i>
+                    <c:out value="${errorMessage}" />
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <c:remove var="errorMessage" scope="session" />
+            </c:if>
             
             <!-- Page Title Area -->
             <div class="page-header dashboard-page-header">
@@ -66,10 +110,12 @@
             <!-- Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-card stat-revenue">
-                    <div class="stat-trend trend-up">+12.5% <i class="fa-solid fa-arrow-trend-up"></i></div>
                     <div class="stat-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
                     <div class="stat-info">
-                        <div class="stat-label">Tổng doanh thu</div>
+                        <div class="stat-label">
+                            <span>Tổng doanh thu</span>
+                            <span class="stat-trend trend-up">+12.5% <i class="fa-solid fa-arrow-trend-up"></i></span>
+                        </div>
                         <div class="stat-value">
                             <fmt:formatNumber value="${totalRevenue}" type="number" pattern="#,##0"/>đ
                         </div>
@@ -77,28 +123,34 @@
                 </div>
 
                 <div class="stat-card stat-orders">
-                    <div class="stat-trend trend-up">+8.2% <i class="fa-solid fa-arrow-trend-up"></i></div>
                     <div class="stat-icon"><i class="fa-solid fa-cart-shopping"></i></div>
                     <div class="stat-info">
-                        <div class="stat-label">Đơn hàng</div>
+                        <div class="stat-label">
+                            <span>Đơn hàng</span>
+                            <span class="stat-trend trend-up">+8.2% <i class="fa-solid fa-arrow-trend-up"></i></span>
+                        </div>
                         <div class="stat-value">${totalOrders}</div>
                     </div>
                 </div>
 
                 <a href="${pageContext.request.contextPath}/customer" class="stat-card stat-customers">
-                    <div class="stat-trend trend-down">-2.1% <i class="fa-solid fa-arrow-trend-down"></i></div>
                     <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                     <div class="stat-info">
-                        <div class="stat-label">Khách hàng</div>
+                        <div class="stat-label">
+                            <span>Khách hàng</span>
+                            <span class="stat-trend trend-down">-2.1% <i class="fa-solid fa-arrow-trend-down"></i></span>
+                        </div>
                         <div class="stat-value">${totalCustomers}</div>
                     </div>
                 </a>
 
                 <a href="${pageContext.request.contextPath}/admin/product?action=list" class="stat-card stat-products">
-                    <div class="stat-trend trend-up">+4% <i class="fa-solid fa-arrow-trend-up"></i></div>
                     <div class="stat-icon"><i class="fa-solid fa-cake-candles"></i></div>
                     <div class="stat-info">
-                        <div class="stat-label">Mẫu bánh</div>
+                        <div class="stat-label">
+                            <span>Mẫu bánh</span>
+                            <span class="stat-trend trend-up">+4% <i class="fa-solid fa-arrow-trend-up"></i></span>
+                        </div>
                         <div class="stat-value">${totalProducts}</div>
                     </div>
                 </a>
@@ -107,12 +159,12 @@
             <!-- Charts Row -->
             <div class="charts-row">
                 <div class="chart-card">
-                    <div class="chart-title d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <div class="d-flex flex-column">
-                            <span id="chartMetricTitle" style="font-family:'Playfair Display', serif; font-weight:700;">Báo cáo doanh thu</span>
+                    <div id="chartHeader" class="chart-title d-flex justify-content-between align-items-center flex-nowrap gap-3">
+                        <div class="d-flex flex-column" style="min-width: 0; flex-shrink: 1; margin-right: 15px;">
+                            <span id="chartMetricTitle" style="font-family:'Playfair Display', serif; font-weight:700; white-space: nowrap;">Báo cáo doanh thu</span>
                             <span id="chartTimeframeSubtitle" style="font-family:'Inter', sans-serif; font-size:12px; color:var(--cz-text-muted); font-weight:500;">Xu hướng 6 tháng gần nhất</span>
                         </div>
-                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div id="chartControlsContainer" class="d-flex align-items-center gap-3 flex-nowrap">
                             <!-- Timeframe Select Dropdown -->
                             <div class="chart-select-container">
                                 <span class="calendar-icon-wrap"><i class="fa-regular fa-calendar"></i></span>
@@ -514,6 +566,21 @@
         });
 
         function updateChart() {
+            const chartHeader = document.getElementById('chartHeader');
+            const chartControlsContainer = document.getElementById('chartControlsContainer');
+            if (chartHeader && chartControlsContainer) {
+                if (activeTimeframe === 'custom') {
+                    chartHeader.classList.remove('flex-nowrap');
+                    chartHeader.classList.add('flex-wrap');
+                    chartControlsContainer.classList.remove('flex-nowrap');
+                    chartControlsContainer.classList.add('flex-wrap');
+                } else {
+                    chartHeader.classList.remove('flex-wrap');
+                    chartHeader.classList.add('flex-nowrap');
+                    chartControlsContainer.classList.remove('flex-wrap');
+                    chartControlsContainer.classList.add('flex-nowrap');
+                }
+            }
             const dataset = trends[activeTimeframe][activeMetric];
             let labels = dataset.labels;
             
@@ -528,15 +595,28 @@
                 });
             }
 
-            // Set bar colors: last bar is dark green, others are sage green
+            // Set bar colors: last bar is glowing green in dark mode, others are dark sage green
+            const isDark = document.documentElement.classList.contains('dark-theme');
+            const activeColor = isDark ? '#b5cfa3' : '#1E3224';
+            const inactiveColor = isDark ? '#242b20' : '#a3b89e';
             const barColors = dataset.data.map((val, idx) => {
-                return (idx === dataset.data.length - 1) ? '#1E3224' : '#a3b89e';
+                return (idx === dataset.data.length - 1) ? activeColor : inactiveColor;
             });
 
             revenueChart.data.labels = labels.length > 0 ? labels : ["Chưa có dữ liệu"];
             revenueChart.data.datasets[0].data = dataset.data.length > 0 ? dataset.data : [0];
-            revenueChart.data.datasets[0].backgroundColor = dataset.data.length > 0 ? barColors : '#a3b89e';
+            revenueChart.data.datasets[0].backgroundColor = dataset.data.length > 0 ? barColors : (isDark ? '#242b20' : '#a3b89e');
             revenueChart.data.datasets[0].label = activeMetric === "revenue" ? "Doanh thu (đ)" : (activeMetric === "orders" ? "Đơn hàng" : "Lợi nhuận (đ)");
+
+            // Update axis and grid colors for dark mode dynamically
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : '#f3ede5';
+            const tickColor = isDark ? '#959893' : '#666';
+            revenueChart.options.scales.y.grid.color = gridColor;
+            revenueChart.options.scales.y.ticks.color = tickColor;
+            if (!revenueChart.options.scales.x.ticks) {
+                revenueChart.options.scales.x.ticks = {};
+            }
+            revenueChart.options.scales.x.ticks.color = tickColor;
 
             // Title labels updating
             const metricText = activeMetric === "revenue" ? "Doanh thu" : (activeMetric === "orders" ? "Đơn hàng" : "Lợi nhuận");
@@ -561,15 +641,16 @@
 
         // Initialize Order Status Doughnut Chart
         const ctxStatus = document.getElementById('statusChart').getContext('2d');
+        const isDarkDoughnut = document.documentElement.classList.contains('dark-theme');
         const statusColors = {
-            "Hoàn thành": "#3f5f36",
+            "Hoàn thành": "#b5cfa3",
             "Đang giao": "#c8a46d",
             "Chờ xác nhận": "#ffe082",
             "Đã xác nhận": "#90caf9",
             "Đang xử lý": "#d7ccc8",
             "Đã hủy": "#ef9a9a"
         };
-        const defaultPalette = ["#3f5f36", "#c8a46d", "#ffe082", "#90caf9", "#d7ccc8", "#ef9a9a"];
+        const defaultPalette = ["#b5cfa3", "#c8a46d", "#ffe082", "#90caf9", "#d7ccc8", "#ef9a9a"];
         const backgroundColors = statusLabels.map((lbl, idx) => statusColors[lbl] || defaultPalette[idx % defaultPalette.length]);
 
         new Chart(ctxStatus, {
@@ -578,9 +659,9 @@
                 labels: statusLabels.length > 0 ? statusLabels : ["Chưa có đơn"],
                 datasets: [{
                     data: statusData.length > 0 ? statusData : [1],
-                    backgroundColor: statusData.length > 0 ? backgroundColors : ['#eee5d8'],
+                    backgroundColor: statusData.length > 0 ? backgroundColors : (isDarkDoughnut ? ['#242b20'] : ['#eee5d8']),
                     borderWidth: 2,
-                    borderColor: '#ffffff'
+                    borderColor: isDarkDoughnut ? '#131612' : '#ffffff'
                 }]
             },
             options: {

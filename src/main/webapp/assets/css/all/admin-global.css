@@ -14,6 +14,19 @@
     --status-active-text: #315038;
 }
 
+html.dark-theme {
+    --bg-cream: #121212;
+    --primary-green: #4b7856;
+    --primary-green-hover: #5d906a;
+    --surface-white: #1e1e1e;
+    --text-dark: #f0f0f0;
+    --text-muted: #a0a0a0;
+    --border-soft: #2d2d2d;
+    --accent-light-green: #242c26;
+    --status-active: #242c26;
+    --status-active-text: #a4c9ad;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
     font-family: 'Inter', sans-serif;
@@ -91,3 +104,471 @@ td { font-size: 13px; vertical-align: middle; }
 .page-btn { border: 1px solid var(--border-soft); background: var(--surface-white); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-dark); transition: all 0.2s; }
 .page-btn:hover, .page-btn.active { border-color: var(--primary-green); color: var(--primary-green); }
 .page-btn.active { background-color: var(--primary-green); color: white; }
+
+/* =========================================================
+   ADMIN SYSTEM SETTINGS
+   ========================================================= */
+.settings-card {
+    background-color: #fff;
+    border-radius: 16px;
+    border: 1px solid var(--border-soft);
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.015);
+    overflow: hidden;
+}
+.settings-card-header {
+    background-color: #faf9f6;
+    padding: 18px 24px;
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary-green);
+    border-bottom: 1px solid var(--border-soft);
+}
+.settings-card-body {
+    padding: 24px;
+}
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+.form-row.form-cols-2 .form-group {
+    flex: 1;
+}
+.form-row.form-cols-3 .form-group {
+    flex: 1;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.form-group.full-width {
+    width: 100%;
+}
+.form-group.half-width {
+    width: 50%;
+}
+.form-group label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #666;
+    margin-left: 12px;
+}
+.settings-input {
+    background-color: #f6f3ed;
+    border: 1px solid transparent;
+    border-radius: 24px;
+    padding: 10px 18px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+    height: 42px;
+}
+.settings-input:focus {
+    background-color: #fff;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(49, 80, 56, 0.15);
+}
+.settings-textarea {
+    background-color: #f6f3ed;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    padding: 12px 18px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: all 0.2s ease;
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+.settings-textarea:focus {
+    background-color: #fff;
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(49, 80, 56, 0.15);
+}
+
+/* File upload */
+.file-upload-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #f6f3ed;
+    border-radius: 24px;
+    padding: 4px 12px 4px 4px;
+    width: 100%;
+    box-sizing: border-box;
+    height: 42px;
+}
+.btn-file-upload {
+    background-color: var(--primary-green);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    user-select: none;
+    margin: 0;
+}
+.btn-file-upload:hover {
+    background-color: var(--primary-green-hover);
+}
+.btn-file-upload input[type="file"] {
+    display: none;
+}
+.file-name-display {
+    font-size: 12px;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Switch toggle */
+.switch-toggle {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+}
+.switch-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+.switch-toggle input:checked + .switch-slider {
+    background-color: var(--primary-green);
+}
+.switch-toggle input:checked + .switch-slider:before {
+    transform: translateX(24px);
+}
+
+/* Action buttons */
+.btn-cancel {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    color: #444;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.btn-cancel:hover {
+    background-color: #fafafa;
+    border-color: #bbb;
+    color: #333;
+}
+.btn-save {
+    padding: 10px 24px;
+    background-color: var(--primary-green);
+    border: 1px solid transparent;
+    color: #fff;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+.btn-save:hover {
+    background-color: var(--primary-green-hover);
+}
+
+/* Suffix and Icon wrappers */
+.input-suffix-wrapper, .input-icon-wrapper, .password-wrapper {
+    position: relative;
+    width: 100%;
+}
+.input-suffix {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    font-weight: 600;
+    color: #777;
+}
+.input-icon, .password-toggle {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #777;
+    cursor: pointer;
+}
+/* ==========================================================
+   DARK MODE OVERRIDES — Admin Pages
+   Áp dụng khi html có class "dark-theme"
+   ========================================================== */
+
+/* ----- Main layout ----- */
+html.dark-theme body {
+    background-color: #0f110e;
+    color: #eae6df;
+}
+
+/* ----- Top header / navbar ----- */
+html.dark-theme .top-header,
+html.dark-theme .navbar {
+    background-color: #0f110e !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+html.dark-theme .header-left .breadcrumbs a,
+html.dark-theme .breadcrumbs {
+    color: #959893;
+}
+html.dark-theme .breadcrumbs a.active,
+html.dark-theme .breadcrumbs .text-dark,
+html.dark-theme .breadcrumb strong {
+    color: #eae6df !important;
+}
+html.dark-theme .header-icon-btn {
+    background: transparent;
+    color: #959893;
+    border-color: rgba(255,255,255,0.06);
+}
+html.dark-theme .header-icon-btn:hover {
+    background: rgba(181, 207, 163, 0.10);
+    color: #b5cfa3;
+}
+html.dark-theme .profile-name {
+    color: #eae6df;
+}
+html.dark-theme .profile-role {
+    color: #959893;
+}
+
+/* ----- Content area ----- */
+html.dark-theme .main-panel,
+html.dark-theme .content-container,
+html.dark-theme .main-wrapper {
+    background-color: #0f110e !important;
+}
+
+/* ----- Dashboard stat cards / summary cards ----- */
+html.dark-theme .stat-card,
+html.dark-theme .summary-card,
+html.dark-theme .card-widget {
+    background-color: #131612 !important;
+    border-color: rgba(255, 255, 255, 0.04) !important;
+}
+html.dark-theme .stat-card h3,
+html.dark-theme .stat-number {
+    color: #eae6df;
+}
+html.dark-theme .stat-label,
+html.dark-theme .stat-sub {
+    color: #959893;
+}
+
+/* ----- Table card ----- */
+html.dark-theme .table-card,
+html.dark-theme .cz-card {
+    background-color: #131612;
+    border-color: rgba(255, 255, 255, 0.04);
+}
+html.dark-theme .table-controls {
+    border-bottom-color: rgba(255, 255, 255, 0.04);
+}
+html.dark-theme .search-bar {
+    background: #191c18;
+    border-color: rgba(255, 255, 255, 0.06);
+}
+html.dark-theme .search-bar input {
+    background: transparent;
+    color: #eae6df;
+}
+html.dark-theme .search-bar input::placeholder {
+    color: rgba(149, 152, 147, 0.5);
+}
+html.dark-theme table th {
+    background-color: #191c18;
+    color: #959893;
+    border-bottom-color: rgba(255, 255, 255, 0.04);
+}
+html.dark-theme table td {
+    border-bottom-color: rgba(255, 255, 255, 0.03);
+    color: #c4c0b8;
+}
+html.dark-theme table tr:hover td {
+    background-color: rgba(165, 196, 148, 0.04);
+}
+html.dark-theme .btn-icon {
+    background: #1e2219;
+    border-color: rgba(255, 255, 255, 0.10);
+    color: #c4c0b8;
+}
+html.dark-theme .btn-icon:hover {
+    background: #3f5f36;
+    border-color: #3f5f36;
+    color: #fff;
+}
+
+/* ----- Pagination ----- */
+html.dark-theme .pagination {
+    color: #9a9690;
+    border-top-color: rgba(255, 255, 255, 0.07);
+}
+html.dark-theme .page-btn {
+    background: #1e2219;
+    border-color: rgba(255, 255, 255, 0.10);
+    color: #c4c0b8;
+}
+html.dark-theme .page-btn:hover,
+html.dark-theme .page-btn.active {
+    border-color: #a5c494;
+    color: #a5c494;
+}
+html.dark-theme .page-btn.active {
+    background: #3f5f36;
+    color: #fff;
+}
+
+/* ----- Settings page cards & inputs ----- */
+html.dark-theme .settings-card {
+    background-color: #161a14;
+    border-color: rgba(255, 255, 255, 0.07);
+}
+html.dark-theme .settings-card-header {
+    background-color: #1a1e18;
+    border-bottom-color: rgba(255, 255, 255, 0.07);
+    color: #a5c494;
+}
+html.dark-theme .form-group label,
+html.dark-theme .settings-card-body label {
+    color: #9a9690;
+}
+html.dark-theme .settings-input {
+    background-color: #1e2219;
+    color: #e8e4dc;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+html.dark-theme .settings-input:focus {
+    background-color: #242a20;
+    border-color: rgba(165, 196, 148, 0.45);
+    box-shadow: 0 0 0 3px rgba(165, 196, 148, 0.08);
+}
+html.dark-theme .settings-textarea {
+    background-color: #1e2219;
+    color: #e8e4dc;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+html.dark-theme .settings-textarea:focus {
+    background-color: #242a20;
+    border-color: rgba(165, 196, 148, 0.45);
+}
+html.dark-theme .file-upload-wrapper {
+    background-color: #1e2219;
+}
+html.dark-theme .file-name-display {
+    color: #9a9690;
+}
+html.dark-theme .input-suffix,
+html.dark-theme .input-icon,
+html.dark-theme .password-toggle {
+    color: #706c64;
+}
+html.dark-theme .btn-cancel {
+    background-color: #1e2219;
+    border-color: rgba(255, 255, 255, 0.10);
+    color: #c4c0b8;
+}
+html.dark-theme .btn-cancel:hover {
+    background-color: #242a20;
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #e8e4dc;
+}
+
+/* ----- Badge & status ----- */
+html.dark-theme .badge {
+    background-color: rgba(165, 196, 148, 0.12);
+    color: #a5c494;
+}
+
+/* ----- Alert boxes (Bootstrap alerts) ----- */
+html.dark-theme .alert-danger {
+    background-color: #2a1412;
+    border-color: rgba(248, 113, 113, 0.20);
+    color: #f87171;
+}
+html.dark-theme .alert-success {
+    background-color: #192219;
+    border-color: rgba(165, 196, 148, 0.20);
+    color: #a5c494;
+}
+
+/* ----- Select & filter inputs on admin list pages ----- */
+html.dark-theme select,
+html.dark-theme .filter-select {
+    background-color: #1e2219;
+    border-color: rgba(255, 255, 255, 0.10);
+    color: #e8e4dc;
+}
+html.dark-theme select option {
+    background: #1e2219;
+    color: #e8e4dc;
+}
+
+/* ----- Input fields in admin detail/form pages ----- */
+html.dark-theme input[type="text"]:not(.settings-input):not(.nav-search-input),
+html.dark-theme input[type="number"]:not(.settings-input),
+html.dark-theme input[type="email"]:not(.settings-input),
+html.dark-theme textarea:not(.settings-textarea) {
+    background-color: #1e2219;
+    border-color: rgba(255, 255, 255, 0.10);
+    color: #e8e4dc;
+}
+
+/* ----- Order detail inline styles (cz- classes) ----- */
+html.dark-theme .cz-card {
+    background-color: #161a14;
+    border-color: rgba(255, 255, 255, 0.07);
+}
+html.dark-theme .info-label {
+    color: #9a9690 !important;
+}
+html.dark-theme .info-value {
+    color: #f0ece4 !important;
+}
+html.dark-theme .cost-row {
+    color: #c4c0b8;
+}
+html.dark-theme .cost-row.total {
+    border-top-color: rgba(255, 255, 255, 0.08);
+}

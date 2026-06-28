@@ -4,7 +4,9 @@ import com.bakeryzone.dao.CustomerDAO;
 import com.bakeryzone.dao.OrderDAO;
 import com.bakeryzone.model.Customer;
 import com.bakeryzone.model.Order;
+import com.bakeryzone.model.OrderItem;
 import com.bakeryzone.model.User;
+import com.bakeryzone.utils.ValidationUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,8 +14,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @WebServlet(name = "CustomerOrderController", urlPatterns = {"/OrderList", "/OrderDetail", "/order-success"})
 public class CustomerOrderController extends HttpServlet {
@@ -49,154 +49,69 @@ public class CustomerOrderController extends HttpServlet {
     private void handleList(HttpServletRequest request, HttpServletResponse response, User currentUser)
             throws ServletException, IOException {
         String customerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
-        List<Order> ordersList = orderDAO.getOrdersByCustomerId(customerId);
-
 
         String startDateStr = request.getParameter("startDate");
-        String endDateStr = request.getParameter("endDate");
+        String endDateStr   = request.getParameter("endDate");
+        String search       = request.getParameter("search");
+        String sort         = request.getParameter("sort");
+        String status       = request.getParameter("status");
 
-        java.util.Date startDate = null;
-        java.util.Date endDate = null;
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
+        // Normalize
+        if (search != null && search.trim().isEmpty()) search = null;
+        if (sort == null || sort.trim().isEmpty())     sort = "date_desc";
+        if (status == null || status.trim().isEmpty()) status = "all";
+        else status = status.trim().toLowerCase();
 
-        if (startDateStr != null && !startDateStr.trim().isEmpty()) {
-            try {
-                startDate = sdf.parse(startDateStr.trim());
-            } catch (Exception e) {}
+        // Validate dates
+        if (!ValidationUtils.isValidDateFormat(startDateStr) || !ValidationUtils.isValidDateFormat(endDateStr)) {
+            request.setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
+            request.getSession().setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
+            startDateStr = null;
+            endDateStr = null;
+        } else if (!ValidationUtils.isValidDateRange(startDateStr, endDateStr)) {
+            request.setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
+            request.getSession().setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
+            startDateStr = null;
+            endDateStr = null;
         }
-        if (endDateStr != null && !endDateStr.trim().isEmpty()) {
-            try {
-                java.util.Calendar cal = java.util.Calendar.getInstance();
-                cal.setTime(sdf.parse(endDateStr.trim()));
-                cal.set(java.util.Calendar.HOUR_OF_DAY, 23);
-                cal.set(java.util.Calendar.MINUTE, 59);
-                cal.set(java.util.Calendar.SECOND, 59);
-                cal.set(java.util.Calendar.MILLISECOND, 999);
-                endDate = cal.getTime();
-            } catch (Exception e) {}
-        }
+        if (startDateStr != null && startDateStr.trim().isEmpty()) startDateStr = null;
+        if (endDateStr   != null && endDateStr.trim().isEmpty())   endDateStr   = null;
 
-        String status = request.getParameter("status");
-        if (status == null || status.trim().isEmpty()) {
-            status = "all";
-        } else {
-            status = status.trim().toLowerCase();
-        }
-
-        List<Order> filteredOrders = new ArrayList<>();
-        for (Order order : ordersList) {
-            boolean keep = true;
-            
-            // 1. Date filter with NPE checks
-            if (startDate != null || endDate != null) {
-                if (order.getOrderTime() == null) {
-                    keep = false;
-                } else {
-                    long orderMs = order.getOrderTime().getTime();
-                    if (startDate != null && orderMs < startDate.getTime()) {
-                        keep = false;
-                    }
-                    if (endDate != null && orderMs > endDate.getTime()) {
-                        keep = false;
-                    }
-                }
-            }
-
-            // 2. Status filter
-            if (keep) {
-                String dbStatus = order.getOrderStatus();
-                if ("processing".equals(status)) {
-                    if (dbStatus == null || (!dbStatus.equalsIgnoreCase("Pending") && !dbStatus.equalsIgnoreCase("Confirmed") && !dbStatus.equalsIgnoreCase("Processing"))) {
-                        keep = false;
-                    }
-                } else if ("shipping".equals(status)) {
-                    if (dbStatus == null || !dbStatus.equalsIgnoreCase("Delivering")) {
-                        keep = false;
-                    }
-                } else if ("completed".equals(status)) {
-                    if (dbStatus == null || !dbStatus.equalsIgnoreCase("Completed")) {
-                        keep = false;
-                    }
-                } else if ("cancelled".equals(status)) {
-                    if (dbStatus == null || (!dbStatus.equalsIgnoreCase("Cancelled") && !dbStatus.equalsIgnoreCase("Canceled"))) {
-                        keep = false;
-                    }
-                }
-            }
-
-            if (keep) {
-                filteredOrders.add(order);
-            }
-        }
-
-        int totalOrders = filteredOrders.size();
+        // Pagination
         int pageSize = 6;
-        int totalPages = (int) Math.ceil((double) totalOrders / pageSize);
-        
-        // Count orders for each status matching the date range
-        int countAll = 0;
-        int countProcessing = 0;
-        int countShipping = 0;
-        int countCompleted = 0;
-        int countCancelled = 0;
-
-        for (Order order : ordersList) {
-            boolean dateMatch = true;
-            if (startDate != null || endDate != null) {
-                if (order.getOrderTime() == null) {
-                    dateMatch = false;
-                } else {
-                    long orderMs = order.getOrderTime().getTime();
-                    if (startDate != null && orderMs < startDate.getTime()) {
-                        dateMatch = false;
-                    }
-                    if (endDate != null && orderMs > endDate.getTime()) {
-                        dateMatch = false;
-                    }
-                }
-            }
-            if (dateMatch) {
-                countAll++;
-                String dbStatus = order.getOrderStatus();
-                if (dbStatus != null) {
-                    if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing")) {
-                        countProcessing++;
-                    } else if (dbStatus.equalsIgnoreCase("Delivering")) {
-                        countShipping++;
-                    } else if (dbStatus.equalsIgnoreCase("Completed")) {
-                        countCompleted++;
-                    } else if (dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled")) {
-                        countCancelled++;
-                    }
-                }
-            }
-        }
+        int totalOrders = orderDAO.getOrdersCountByCustomer(customerId, search, status, startDateStr, endDateStr);
+        int totalPages  = (int) Math.ceil((double) totalOrders / pageSize);
+        if (totalPages < 1) totalPages = 1;
 
         int currentPage = 1;
         String pageParam = request.getParameter("page");
         if (pageParam != null) {
-            try {
-                currentPage = Integer.parseInt(pageParam);
-            } catch (Exception e) {}
+            try { currentPage = Integer.parseInt(pageParam); } catch (Exception ignored) {}
         }
-        if (currentPage < 1) currentPage = 1;
-        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+        if (currentPage < 1)          currentPage = 1;
+        if (currentPage > totalPages) currentPage = totalPages;
 
-        int start = (currentPage - 1) * pageSize;
-        int end = Math.min(start + pageSize, totalOrders);
-        List<Order> paginatedOrders = (totalOrders > 0) ? filteredOrders.subList(start, end) : new ArrayList<>();
+        // Fetch only the current page from DB (N+1 only for pageSize, not all orders)
+        java.util.List<Order> paginatedOrders = orderDAO.getOrdersByCustomerPaged(
+            customerId, search, status, startDateStr, endDateStr, sort, currentPage, pageSize);
 
-        request.setAttribute("orders", paginatedOrders);
-        request.setAttribute("currentPage", currentPage);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("startDate", startDateStr);
-        request.setAttribute("endDate", endDateStr);
-        request.setAttribute("status", status);
-        request.setAttribute("countAll", countAll);
-        request.setAttribute("countProcessing", countProcessing);
-        request.setAttribute("countShipping", countShipping);
-        request.setAttribute("countCompleted", countCompleted);
-        request.setAttribute("countCancelled", countCancelled);
+        // Status tab counts (1 query thay vì loop Java)
+        java.util.Map<String, Integer> statusCounts = orderDAO.getOrderStatusCountsByCustomer(
+            customerId, search, startDateStr, endDateStr);
+
+        request.setAttribute("orders",          paginatedOrders);
+        request.setAttribute("currentPage",     currentPage);
+        request.setAttribute("totalPages",      totalPages);
+        request.setAttribute("startDate",       startDateStr);
+        request.setAttribute("endDate",         endDateStr);
+        request.setAttribute("search",          search != null ? search : "");
+        request.setAttribute("sort",            sort);
+        request.setAttribute("status",          status);
+        request.setAttribute("countAll",        statusCounts.getOrDefault("all", 0));
+        request.setAttribute("countProcessing", statusCounts.getOrDefault("processing", 0));
+        request.setAttribute("countShipping",   statusCounts.getOrDefault("shipping", 0));
+        request.setAttribute("countCompleted",  statusCounts.getOrDefault("completed", 0));
+        request.setAttribute("countCancelled",  statusCounts.getOrDefault("cancelled", 0));
         request.getRequestDispatcher("/customer/my-orders.jsp").forward(request, response);
     }
 
@@ -211,7 +126,7 @@ public class CustomerOrderController extends HttpServlet {
         Order order = orderDAO.getOrderByNo(orderNo);
 
         String actualCustomerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
-        if (order == null || !order.getCustomerId().equals(actualCustomerId)) {
+        if (order == null || !actualCustomerId.equals(order.getCustomerId())) {
             response.sendRedirect(request.getContextPath() + "/OrderList");
             return;
         }
@@ -278,8 +193,15 @@ public class CustomerOrderController extends HttpServlet {
 
                 if (order != null && order.getCustomerId().equals(actualCustomerId)) {
                     String dbStatus = order.getOrderStatus();
-                    if (dbStatus != null && (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing"))) {
-                        orderDAO.updateOrderStatus(orderNo, "Cancelled");
+                    if (dbStatus != null && (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed"))) {
+                        boolean success = orderDAO.updateOrderStatus(orderNo, "Cancelled");
+                        if (success) {
+                            session.setAttribute("successMessage", "Huỷ đơn hàng #" + orderNo + " thành công!");
+                        } else {
+                            session.setAttribute("errorMessage", "Không thể huỷ đơn hàng.");
+                        }
+                    } else {
+                        session.setAttribute("errorMessage", "Đơn hàng đã bắt đầu làm bánh hoặc đã được giao, không thể huỷ!");
                     }
                 }
                 response.sendRedirect(request.getContextPath() + "/OrderDetail?orderNo=" + orderNo);

@@ -25,7 +25,7 @@
 <html lang="vi">
 <head>
     <jsp:include page="../common/header.jsp" />
-    <title>Đặt hàng thành công - BakeryZone</title>
+    <title>Đặt hàng thành công - ${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}</title>
     <style>
         .order-success-page {
             display: flex;

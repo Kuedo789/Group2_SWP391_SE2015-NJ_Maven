@@ -11,6 +11,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.math.BigDecimal;
+import java.util.Map;
+import java.util.LinkedHashMap;
+import java.util.HashMap;
 
 public class OrderDAO {
 
@@ -40,16 +43,210 @@ public class OrderDAO {
             ps.setString(1, customerId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    Order order = mapRowToOrder(rs);
-                    order.getItems().addAll(getOrderItems(order.getOrderNo(), conn));
-                    orders.add(order);
+                    orders.add(mapRowToOrder(rs));
                 }
             }
+            populateOrderItems(orders, conn);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return orders;
     }
+
+    /**
+     * Đếm số đơn hàng của một khách hàng theo bộ lọc (date, status, search).
+     * Dùng cho customer-side pagination – thực hiện filter hoàn toàn ở DB.
+     *
+     * @param uiStatus "processing" | "shipping" | "completed" | "cancelled" | "all" | null
+     */
+    public int getOrdersCountByCustomer(String customerId, String keyword, String uiStatus,
+            String startDateStr, String endDateStr) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(DISTINCT o.Order_No) FROM `orders` o"
+            + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
+            + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
+            + " LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID"
+            + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
+            + " WHERE o.Customer_ID = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(customerId);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
+            String kw = "%" + keyword.trim() + "%";
+            params.add(kw);
+            params.add(kw);
+        }
+        appendCustomerStatusFilter(sql, params, uiStatus);
+        if (startDateStr != null && !startDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time >= ?");
+            params.add(startDateStr.trim() + " 00:00:00");
+        }
+        if (endDateStr != null && !endDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time <= ?");
+            params.add(endDateStr.trim() + " 23:59:59");
+        }
+
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    /**
+     * Lấy danh sách đơn hàng đã phân trang của một khách hàng.
+     * Filter, sort, LIMIT/OFFSET thực hiện hoàn toàn ở DB.
+     * Items chỉ được load cho đúng pageSize bản ghi (giải quyết N+1).
+     */
+    public List<Order> getOrdersByCustomerPaged(String customerId, String keyword, String uiStatus,
+            String startDateStr, String endDateStr, String sort, int page, int pageSize) {
+        List<Order> orders = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT DISTINCT o.* FROM `orders` o"
+            + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
+            + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
+            + " LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID"
+            + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
+            + " WHERE o.Customer_ID = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(customerId);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
+            String kw = "%" + keyword.trim() + "%";
+            params.add(kw);
+            params.add(kw);
+        }
+        appendCustomerStatusFilter(sql, params, uiStatus);
+        if (startDateStr != null && !startDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time >= ?");
+            params.add(startDateStr.trim() + " 00:00:00");
+        }
+        if (endDateStr != null && !endDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time <= ?");
+            params.add(endDateStr.trim() + " 23:59:59");
+        }
+
+        // Sort
+        String orderByClause = " ORDER BY o.Order_Time DESC";
+        if (sort != null) {
+            switch (sort.trim().toLowerCase()) {
+                case "date_asc":   orderByClause = " ORDER BY o.Order_Time ASC"; break;
+                case "price_desc": orderByClause = " ORDER BY o.Total_Cost DESC"; break;
+                case "price_asc":  orderByClause = " ORDER BY o.Total_Cost ASC"; break;
+                default:           orderByClause = " ORDER BY o.Order_Time DESC"; break;
+            }
+        }
+        sql.append(orderByClause).append(" LIMIT ? OFFSET ?");
+        params.add(pageSize);
+        params.add((page - 1) * pageSize);
+
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    orders.add(mapRowToOrder(rs));
+                }
+            }
+            populateOrderItems(orders, conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    /**
+     * Đếm số đơn hàng theo từng trạng thái UI cho customer tab counts.
+     * Trả về Map: "all", "processing", "shipping", "completed", "cancelled".
+     */
+    public java.util.Map<String, Integer> getOrderStatusCountsByCustomer(String customerId,
+            String keyword, String startDateStr, String endDateStr) {
+        java.util.Map<String, Integer> counts = new java.util.HashMap<>();
+        counts.put("all", 0);
+        counts.put("processing", 0);
+        counts.put("shipping", 0);
+        counts.put("completed", 0);
+        counts.put("cancelled", 0);
+
+        StringBuilder sql = new StringBuilder(
+            "SELECT o.OrderStatus, COUNT(DISTINCT o.Order_No) AS cnt FROM `orders` o"
+            + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
+            + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
+            + " LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID"
+            + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
+            + " WHERE o.Customer_ID = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(customerId);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
+            String kw = "%" + keyword.trim() + "%";
+            params.add(kw);
+            params.add(kw);
+        }
+        if (startDateStr != null && !startDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time >= ?");
+            params.add(startDateStr.trim() + " 00:00:00");
+        }
+        if (endDateStr != null && !endDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time <= ?");
+            params.add(endDateStr.trim() + " 23:59:59");
+        }
+        sql.append(" GROUP BY o.OrderStatus");
+
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String dbStatus = rs.getString("OrderStatus");
+                    int cnt = rs.getInt("cnt");
+                    counts.put("all", counts.get("all") + cnt);
+                    if (dbStatus != null) {
+                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing")) {
+                            counts.put("processing", counts.get("processing") + cnt);
+                        } else if (dbStatus.equalsIgnoreCase("Delivering")) {
+                            counts.put("shipping", counts.get("shipping") + cnt);
+                        } else if (dbStatus.equalsIgnoreCase("Completed")) {
+                            counts.put("completed", counts.get("completed") + cnt);
+                        } else if (dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled")) {
+                            counts.put("cancelled", counts.get("cancelled") + cnt);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return counts;
+    }
+
+    /** Helper: Thêm điều kiện WHERE cho uiStatus vào câu SQL đang build. */
+    private void appendCustomerStatusFilter(StringBuilder sql, List<Object> params, String uiStatus) {
+        if (uiStatus == null || uiStatus.equalsIgnoreCase("all")) return;
+        switch (uiStatus.toLowerCase()) {
+            case "processing":
+                sql.append(" AND o.OrderStatus IN ('Pending', 'Confirmed', 'Processing')");
+                break;
+            case "shipping":
+                sql.append(" AND o.OrderStatus = 'Delivering'");
+                break;
+            case "completed":
+                sql.append(" AND o.OrderStatus = 'Completed'");
+                break;
+            case "cancelled":
+                sql.append(" AND o.OrderStatus IN ('Cancelled', 'Canceled')");
+                break;
+        }
+    }
+
 
     public Order getOrderByNo(String orderNo) {
         String sql = "SELECT * FROM `orders` WHERE Order_No = ?";
@@ -69,6 +266,105 @@ public class OrderDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private void populateOrderItems(List<Order> orders, Connection conn) throws Exception {
+        if (orders == null || orders.isEmpty()) {
+            return;
+        }
+        
+        Map<String, Order> orderMap = new HashMap<>();
+        StringBuilder inClause = new StringBuilder();
+        for (int i = 0; i < orders.size(); i++) {
+            Order o = orders.get(i);
+            orderMap.put(o.getOrderNo(), o);
+            inClause.append(i == 0 ? "?" : ", ?");
+        }
+
+        String sql = """
+                SELECT
+                    oi.Order_Item_ID,
+                    oi.Order_No,
+                    oi.Custom_Cake_ID,
+                    oi.Accessory_ID,
+                    oi.Quantity,
+                    oi.Price_At_Purchase,
+                    COALESCE(NULLIF(TRIM(t.Template_Name), ''), NULLIF(TRIM(a.Accessory_Name), '')) AS Item_Name,
+                    COALESCE(NULLIF(TRIM(cc.Canvas_Image_URL), ''), NULLIF(TRIM(t.Image_URL), ''), NULLIF(TRIM(a.Image_URL), '')) AS Item_Image,
+                    cc.Greeting_Text,
+                    COALESCE(NULLIF(TRIM(cat.Category_Name), ''), 'Phụ kiện') AS Category_Name,
+                    t.Template_ID,
+                    COALESCE(NULLIF(TRIM(t.Image_URL), ''), NULLIF(TRIM(a.Image_URL), '')) AS Template_Image,
+                    (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0)
+                     FROM template_ingredient_detail d
+                     JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID
+                     WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost,
+                    t.Default_Margin_Percent,
+                    t.Default_Service_Percent
+                FROM order_item oi
+                LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
+                LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID
+                LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID
+                LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID
+                WHERE oi.Order_No IN (
+                """ + inClause + ")";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 0; i < orders.size(); i++) {
+                ps.setString(i + 1, orders.get(i).getOrderNo());
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    OrderItem item = new OrderItem();
+                    item.setOrderItemId(rs.getString("Order_Item_ID"));
+                    item.setOrderNo(rs.getString("Order_No"));
+                    item.setCustomCakeId(rs.getString("Custom_Cake_ID"));
+                    item.setAccessoryId(rs.getString("Accessory_ID"));
+                    item.setQuantity(rs.getInt("Quantity"));
+                    item.setPriceAtPurchase(rs.getBigDecimal("Price_At_Purchase"));
+                    item.setItemName(rs.getString("Item_Name"));
+                    item.setItemImage(rs.getString("Item_Image"));
+                    item.setGreetingText(rs.getString("Greeting_Text"));
+                    item.setCategoryName(rs.getString("Category_Name"));
+                    item.setTemplateId(rs.getString("Template_ID"));
+                    item.setTemplateImage(rs.getString("Template_Image"));
+
+                    if (item.getCustomCakeId() != null && !item.getCustomCakeId().trim().isEmpty()) {
+                        double ingredientCost = rs.getDouble("Ingredient_Cost");
+                        double margin = rs.getDouble("Default_Margin_Percent");
+                        double service = rs.getDouble("Default_Service_Percent");
+                        double divisor = 1.0 - ((margin + service) / 100.0);
+                        double basePrice = 0.0;
+                        if (divisor > 0.0) {
+                            basePrice = ingredientCost / divisor;
+                        } else {
+                            basePrice = ingredientCost;
+                        }
+
+                        double purchasePrice = item.getPriceAtPurchase() != null
+                                ? item.getPriceAtPurchase().doubleValue()
+                                : 0.0;
+                        double diff = purchasePrice - basePrice;
+                        if (diff <= 40000) {
+                            item.setVariationName("Size 16cm");
+                        } else if (diff <= 120000) {
+                            item.setVariationName("Size 20cm");
+                        } else {
+                            item.setVariationName("Size 24cm");
+                        }
+                    } else if (item.getAccessoryId() != null && !item.getAccessoryId().trim().isEmpty()) {
+                        item.setVariationName("Phụ kiện");
+                    } else {
+                        item.setVariationName("Tiêu chuẩn");
+                    }
+
+                    Order o = orderMap.get(item.getOrderNo());
+                    if (o != null) {
+                        o.getItems().add(item);
+                    }
+                }
+            }
+        }
     }
 
     private List<OrderItem> getOrderItems(String orderNo, Connection conn) throws Exception {
@@ -345,7 +641,7 @@ public class OrderDAO {
     }
 
     public List<Order> getOrdersPaged(String keyword, String status, String startDateStr, String endDateStr,
-            int pageIndex, int pageSize) {
+            String sort, int pageIndex, int pageSize) {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT o.*, c.Full_Name AS Customer_Name FROM `orders` o LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID WHERE 1=1");
@@ -373,7 +669,24 @@ public class OrderDAO {
             params.add(endDateStr + " 23:59:59");
         }
 
-        sql.append(" ORDER BY o.Order_Time DESC LIMIT ? OFFSET ?");
+        String orderByClause = " ORDER BY o.Order_Time DESC ";
+        if (sort != null && !sort.trim().isEmpty()) {
+            switch (sort.trim().toLowerCase()) {
+                case "date_asc":
+                    orderByClause = " ORDER BY o.Order_Time ASC ";
+                    break;
+                case "price_desc":
+                    orderByClause = " ORDER BY o.Total_Cost DESC ";
+                    break;
+                case "price_asc":
+                    orderByClause = " ORDER BY o.Total_Cost ASC ";
+                    break;
+                default:
+                    orderByClause = " ORDER BY o.Order_Time DESC ";
+                    break;
+            }
+        }
+        sql.append(orderByClause).append("LIMIT ? OFFSET ?");
         params.add(pageSize);
         params.add((pageIndex - 1) * pageSize);
 
@@ -394,4 +707,410 @@ public class OrderDAO {
         }
         return orders;
     }
+
+    public double getTotalRevenue(String startDate, String endDate) {
+        StringBuilder sql = new StringBuilder("SELECT SUM(Total_Cost) FROM `orders` WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
+        List<String> params = new ArrayList<>();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append(" AND Order_Time >= ?");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append(" AND Order_Time <= ?");
+            params.add(endDate.trim() + " 23:59:59");
+        }
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setString(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0.0;
+    }
+
+    public int getTotalCustomers(String startDate, String endDate) {
+        if (startDate == null || startDate.trim().isEmpty() || endDate == null || endDate.trim().isEmpty()) {
+            String sql = "SELECT COUNT(*) FROM `customer`";
+            try (Connection conn = DBContext.getJDBCConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql);
+                 ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return 0;
+        } else {
+            String sql = "SELECT COUNT(DISTINCT Customer_ID) FROM `orders` WHERE Order_Time >= ? AND Order_Time <= ?";
+            try (Connection conn = DBContext.getJDBCConnection();
+                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, startDate.trim() + " 00:00:00");
+                ps.setString(2, endDate.trim() + " 23:59:59");
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return 0;
+        }
+    }
+
+    public int getTotalProducts() {
+        String sql = "SELECT COUNT(*) FROM `cake_template`";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public Map<String, Integer> getOrderStatusCounts(String startDate, String endDate) {
+        Map<String, Integer> counts = new LinkedHashMap<>();
+        counts.put("Chờ xác nhận", 0);
+        counts.put("Đã xác nhận", 0);
+        counts.put("Đang xử lý", 0);
+        counts.put("Đang giao", 0);
+        counts.put("Hoàn thành", 0);
+        counts.put("Đã hủy", 0);
+
+        StringBuilder sql = new StringBuilder("SELECT OrderStatus, COUNT(*) AS count FROM `orders` WHERE 1=1");
+        List<String> params = new ArrayList<>();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append(" AND Order_Time >= ?");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append(" AND Order_Time <= ?");
+            params.add(endDate.trim() + " 23:59:59");
+        }
+        sql.append(" GROUP BY OrderStatus");
+
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setString(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String status = rs.getString("OrderStatus");
+                    int count = rs.getInt("count");
+                    if (status != null) {
+                        if (status.equalsIgnoreCase("Pending") || status.equals("Chờ xác nhận")) {
+                            counts.put("Chờ xác nhận", counts.getOrDefault("Chờ xác nhận", 0) + count);
+                        } else if (status.equalsIgnoreCase("Confirmed") || status.equals("Đã xác nhận")) {
+                            counts.put("Đã xác nhận", counts.getOrDefault("Đã xác nhận", 0) + count);
+                        } else if (status.equalsIgnoreCase("Processing") || status.equals("Đang xử lý")) {
+                            counts.put("Đang xử lý", counts.getOrDefault("Đang xử lý", 0) + count);
+                        } else if (status.equalsIgnoreCase("Delivering") || status.equals("Đang giao hàng") || status.equals("Đang giao")) {
+                            counts.put("Đang giao", counts.getOrDefault("Đang giao", 0) + count);
+                        } else if (status.equalsIgnoreCase("Completed") || status.equals("Hoàn thành") || status.equals("Đã giao")) {
+                            counts.put("Hoàn thành", counts.getOrDefault("Hoàn thành", 0) + count);
+                        } else if (status.equalsIgnoreCase("Cancelled") || status.equalsIgnoreCase("Canceled") || status.equals("Đã hủy")) {
+                            counts.put("Đã hủy", counts.getOrDefault("Đã hủy", 0) + count);
+                        } else {
+                            counts.put(status, count);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return counts;
+    }
+
+    public Map<String, Double> getMonthlyRevenueTrend(int monthsLimit) {
+        Map<String, Double> trend = new LinkedHashMap<>();
+        String sql = "SELECT DATE_FORMAT(Order_Time, '%m/%Y') AS month_year, SUM(Total_Cost) AS monthly_revenue " +
+                     "FROM `orders` " +
+                     "WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                     "GROUP BY DATE_FORMAT(Order_Time, '%m/%Y') " +
+                     "ORDER BY MIN(Order_Time) ASC LIMIT ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, monthsLimit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    trend.put(rs.getString("month_year"), rs.getDouble("monthly_revenue"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return trend;
+    }
+
+    public Map<String, Double> getRevenueTrend(String period, int limit) {
+        Map<String, Double> trend = new LinkedHashMap<>();
+        String dateFormat = "month".equalsIgnoreCase(period) ? "%m/%Y" : "%d/%m";
+        String sql = "SELECT time_label, revenue FROM (" +
+                     "  SELECT DATE_FORMAT(Order_Time, '" + dateFormat + "') AS time_label, SUM(Total_Cost) AS revenue, MIN(Order_Time) as min_ot " +
+                     "  FROM `orders` " +
+                     "  WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                     "  GROUP BY DATE_FORMAT(Order_Time, '" + dateFormat + "') " +
+                     "  ORDER BY min_ot DESC LIMIT ?" +
+                     ") AS temp ORDER BY min_ot ASC";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    trend.put(rs.getString("time_label"), rs.getDouble("revenue"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return trend;
+    }
+
+    public Map<String, Integer> getOrdersTrend(String period, int limit) {
+        Map<String, Integer> trend = new LinkedHashMap<>();
+        String dateFormat = "month".equalsIgnoreCase(period) ? "%m/%Y" : "%d/%m";
+        String sql = "SELECT time_label, order_count FROM (" +
+                     "  SELECT DATE_FORMAT(Order_Time, '" + dateFormat + "') AS time_label, COUNT(*) AS order_count, MIN(Order_Time) as min_ot " +
+                     "  FROM `orders` " +
+                     "  GROUP BY DATE_FORMAT(Order_Time, '" + dateFormat + "') " +
+                     "  ORDER BY min_ot DESC LIMIT ?" +
+                     ") AS temp ORDER BY min_ot ASC";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    trend.put(rs.getString("time_label"), rs.getInt("order_count"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return trend;
+    }
+
+    public Map<String, Double> getProfitTrend(String period, int limit) {
+        Map<String, Double> trend = new LinkedHashMap<>();
+        String dateFormat = "month".equalsIgnoreCase(period) ? "%m/%Y" : "%d/%m";
+        String sql = "SELECT time_label, profit FROM (" +
+                     "  SELECT DATE_FORMAT(o.Order_Time, '" + dateFormat + "') AS time_label, " +
+                     "         SUM(o.Total_Cost) - SUM(COALESCE(" +
+                     "             (SELECT SUM(oi.Quantity * (" +
+                     "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
+                     "                 FROM template_ingredient_detail d" +
+                     "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
+                     "                 WHERE d.Template_ID = cc.Template_ID" +
+                     "             ))" +
+                     "              FROM order_item oi" +
+                     "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
+                     "              WHERE oi.Order_No = o.Order_No)," +
+                     "             0" +
+                     "         )) AS profit, " +
+                     "         MIN(o.Order_Time) as min_ot " +
+                     "  FROM `orders` o " +
+                     "  WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                     "  GROUP BY DATE_FORMAT(o.Order_Time, '" + dateFormat + "') " +
+                     "  ORDER BY min_ot DESC LIMIT ?" +
+                     ") AS temp ORDER BY min_ot ASC";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    trend.put(rs.getString("time_label"), rs.getDouble("profit"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return trend;
+    }
+
+    public Map<String, Double> getRevenueTrendCustom(String startDate, String endDate) {
+        Map<String, Double> trend = new LinkedHashMap<>();
+        String sql = "SELECT time_label, revenue FROM (" +
+                     "  SELECT DATE_FORMAT(Order_Time, '%d/%m') AS time_label, SUM(Total_Cost) AS revenue, MIN(Order_Time) as min_ot " +
+                     "  FROM `orders` " +
+                     "  WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                     "    AND Order_Time >= ? AND Order_Time <= ? " +
+                     "  GROUP BY DATE_FORMAT(Order_Time, '%d/%m') " +
+                     "  ORDER BY min_ot DESC LIMIT 31" +
+                     ") AS temp ORDER BY min_ot ASC";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, startDate + " 00:00:00");
+            ps.setString(2, endDate + " 23:59:59");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    trend.put(rs.getString("time_label"), rs.getDouble("revenue"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return trend;
+    }
+
+    public Map<String, Integer> getOrdersTrendCustom(String startDate, String endDate) {
+        Map<String, Integer> trend = new LinkedHashMap<>();
+        String sql = "SELECT time_label, order_count FROM (" +
+                     "  SELECT DATE_FORMAT(Order_Time, '%d/%m') AS time_label, COUNT(*) AS order_count, MIN(Order_Time) as min_ot " +
+                     "  FROM `orders` " +
+                     "  WHERE Order_Time >= ? AND Order_Time <= ? " +
+                     "  GROUP BY DATE_FORMAT(Order_Time, '%d/%m') " +
+                     "  ORDER BY min_ot DESC LIMIT 31" +
+                     ") AS temp ORDER BY min_ot ASC";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, startDate + " 00:00:00");
+            ps.setString(2, endDate + " 23:59:59");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    trend.put(rs.getString("time_label"), rs.getInt("order_count"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return trend;
+    }
+
+    public Map<String, Double> getProfitTrendCustom(String startDate, String endDate) {
+        Map<String, Double> trend = new LinkedHashMap<>();
+        String sql = "SELECT time_label, profit FROM (" +
+                     "  SELECT DATE_FORMAT(o.Order_Time, '%d/%m') AS time_label, " +
+                     "         SUM(o.Total_Cost) - SUM(COALESCE(" +
+                     "             (SELECT SUM(oi.Quantity * (" +
+                     "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
+                     "                 FROM template_ingredient_detail d" +
+                     "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
+                     "                 WHERE d.Template_ID = cc.Template_ID" +
+                     "             ))" +
+                     "              FROM order_item oi" +
+                     "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
+                     "              WHERE oi.Order_No = o.Order_No)," +
+                     "             0" +
+                     "         )) AS profit, " +
+                     "         MIN(o.Order_Time) as min_ot " +
+                     "  FROM `orders` o " +
+                     "  WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                     "    AND o.Order_Time >= ? AND o.Order_Time <= ? " +
+                     "  GROUP BY DATE_FORMAT(o.Order_Time, '%d/%m') " +
+                     "  ORDER BY min_ot DESC LIMIT 31" +
+                     ") AS temp ORDER BY min_ot ASC";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, startDate + " 00:00:00");
+            ps.setString(2, endDate + " 23:59:59");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    trend.put(rs.getString("time_label"), rs.getDouble("profit"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return trend;
+    }
+
+    public List<Map<String, Object>> getBestSellingProducts(String startDate, String endDate, int limit) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT t.Template_ID, t.Template_Name, t.Image_URL, cat.Category_Name, " +
+                     "       SUM(oi.Quantity) AS quantity_sold, SUM(oi.Quantity * oi.Price_At_Purchase) AS total_revenue " +
+                     "FROM order_item oi " +
+                     "JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID " +
+                     "JOIN cake_template t ON cc.Template_ID = t.Template_ID " +
+                     "LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID " +
+                     "JOIN orders o ON oi.Order_No = o.Order_No " +
+                     "WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
+        List<Object> params = new ArrayList<>();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time >= ?");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time <= ?");
+            params.add(endDate.trim() + " 23:59:59");
+        }
+        sql.append(" GROUP BY t.Template_ID, t.Template_Name, t.Image_URL, cat.Category_Name " +
+                     "ORDER BY quantity_sold DESC LIMIT ?");
+        params.add(limit);
+
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("templateId", rs.getString("Template_ID"));
+                    map.put("name", rs.getString("Template_Name"));
+                    map.put("imageUrl", rs.getString("Image_URL"));
+                    map.put("category", rs.getString("Category_Name"));
+                    map.put("quantitySold", rs.getInt("quantity_sold"));
+                    map.put("totalRevenue", rs.getDouble("total_revenue"));
+                    list.add(map);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    public List<Map<String, Object>> getTopCustomers(String startDate, String endDate, int limit) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT c.Customer_ID, c.Full_Name, COUNT(o.Order_No) AS order_count, SUM(o.Total_Cost) AS total_spent " +
+                     "FROM customer c " +
+                     "JOIN orders o ON c.Customer_ID = o.Customer_ID " +
+                     "WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
+        List<Object> params = new ArrayList<>();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time >= ?");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time <= ?");
+            params.add(endDate.trim() + " 23:59:59");
+        }
+        sql.append(" GROUP BY c.Customer_ID, c.Full_Name " +
+                     "ORDER BY total_spent DESC LIMIT ?");
+        params.add(limit);
+
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("customerId", rs.getString("Customer_ID"));
+                    map.put("fullName", rs.getString("Full_Name"));
+                    map.put("orderCount", rs.getInt("order_count"));
+                    map.put("totalSpent", rs.getDouble("total_spent"));
+                    list.add(map);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 }
+

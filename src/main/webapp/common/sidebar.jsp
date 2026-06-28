@@ -29,17 +29,17 @@
 <div class="sidebar">
     <div class="sidebar-brand">
         <i class="fa-solid fa-cake-candles"></i>
-        <span>Bakery<span>Zone</span> Admin</span>
+        <span>${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'} Admin</span>
     </div>
 
     <div class="nav-section-title">Hệ thống chính</div>
-
-    <c:if test="${requestScope.LIVE_PERMISSIONS.contains('/admin/dashboard')}">
-        <li class="menu-item ${param.activeMenu == 'dashboard' ? 'active' : ''}">
-            <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
-        </li>
-    </c:if>
-</ul>
+    <ul class="sidebar-menu">
+        <c:if test="${requestScope.LIVE_PERMISSIONS.contains('/admin/dashboard')}">
+            <li class="menu-item ${param.activeMenu == 'dashboard' ? 'active' : ''}">
+                <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
+            </li>
+        </c:if>
+    </ul>
 
 <div class="nav-section-title">Quản lý</div>
 <ul class="sidebar-menu">
@@ -105,18 +105,17 @@
     </c:if>
         
     <li class="menu-item ${param.activeMenu == 'settings' ? 'active' : ''}">
-        <a href="#"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a>
+        <a href="${pageContext.request.contextPath}/admin/settings"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a>
     </li>
     <li class="menu-item ${param.activeMenu == 'logs' ? 'active' : ''}">
         <a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hoạt động</a>
     </li>
 </ul>
 
-<!-- Grow Your Bakery card -->
-<div class="sidebar-banner">
-    <i class="fa-solid fa-cake-candles cake-icon"></i>
-    <h6>Phát triển tiệm bánh</h6>
-    <p>Tạo ra những chiếc bánh đẹp và trao gửi hạnh phúc!</p>
+<!-- Technical Support button matching mockup -->
+<div class="sidebar-banner support-box">
+    <div class="support-title">HỖ TRỢ</div>
+    <a href="tel:0901234567" class="support-btn">Liên hệ kỹ thuật</a>
 </div>
 </div>
 

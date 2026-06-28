@@ -4,6 +4,7 @@ import com.bakeryzone.dao.UserDAO;
 import com.bakeryzone.model.User;
 import com.bakeryzone.utils.EmailUtils;
 import com.bakeryzone.utils.OtpUtil;
+import com.bakeryzone.utils.ValidationUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,8 +51,9 @@ public class VerifyOtpServlet extends HttpServlet {
 
         otp = otp.trim();
 
-        if (!otp.matches("\\d{6}")) {
-            request.setAttribute("error", "Mã OTP phải gồm đúng 6 chữ số.");
+        String otpError = ValidationUtils.validateOtpInput(otp);
+        if (otpError != null) {
+            request.setAttribute("error", otpError);
             request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
             return;
         }

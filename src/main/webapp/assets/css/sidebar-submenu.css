@@ -21,6 +21,8 @@
 /* Push the main content panel to the right to leave space for fixed sidebar */
 .main-wrapper, .main-panel {
     margin-left: 260px !important;
+    flex-grow: 1 !important;
+    min-width: 0 !important;
 }
 
 /* Webkit custom scrollbars for dark sidebar */
@@ -191,4 +193,57 @@
     font-size: 11px !important;
     margin-bottom: 0 !important;
     line-height: 1.4 !important;
+}
+}
+
+/* Sidebar Seeding Card - Support box styling matching mockup */
+.sidebar .sidebar-banner.support-box {
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    text-align: left !important;
+    padding: 12px !important;
+    margin: auto 15px 15px 15px !important;
+    border-radius: 8px !important;
+}
+.sidebar .sidebar-banner.support-box .support-title {
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    margin-bottom: 8px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.8px !important;
+}
+.sidebar .sidebar-banner.support-box .support-btn {
+    display: block !important;
+    width: 100% !important;
+    background-color: #b5cfa3 !important;
+    color: #131612 !important;
+    text-decoration: none !important;
+    text-align: center !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    padding: 8px 12px !important;
+    border-radius: 6px !important;
+    transition: background 0.2s !important;
+}
+.sidebar .sidebar-banner.support-box .support-btn:hover {
+    background-color: #c4dcb2 !important;
+}
+
+/* Dark mode sidebar override */
+html.dark-theme .sidebar {
+    background-color: #0b0c0a !important;
+    border-right-color: rgba(255, 255, 255, 0.05) !important;
+}
+html.dark-theme .sidebar .sidebar-brand {
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+}
+html.dark-theme .sidebar .sidebar-brand span {
+    color: #eae6df !important;
+}
+html.dark-theme .sidebar .menu-item.active {
+    background-color: #263628 !important;
+}
+html.dark-theme .sidebar .menu-item.active a {
+    color: #b5cfa3 !important;
 }
