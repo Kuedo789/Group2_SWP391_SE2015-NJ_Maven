@@ -54,9 +54,9 @@
                     <h1 class="page-title">Quản lý đơn vị tính</h1>
                     <p class="page-subtitle">Định nghĩa danh mục các đơn vị đo lường sử dụng cho công thức và kho hàng.</p>
                 </div>
-                <button type="button" class="btn btn-cz-primary" onclick="openCreateModal()">
+                <a href="${pageContext.request.contextPath}/admin/unit?action=create&search=${search}" class="btn btn-cz-primary">
                     <i class="fa-solid fa-circle-plus"></i> Thêm đơn vị tính
-                </button>
+                </a>
             </div>
 
             <!-- Filters -->
@@ -101,9 +101,9 @@
                                         <td class="text-muted" style="font-size: 13.5px; font-weight: 400; color: var(--cz-text-muted) !important;">${not empty u.description ? u.description : '—'}</td>
                                         <td>
                                             <div class="actions-cell">
-                                                <button type="button" class="btn-action-edit" title="Chỉnh sửa" onclick="openEditModal('${u.unitId}', '${u.unitName}', '${not empty u.description ? u.description : ''}')">
+                                                <a href="${pageContext.request.contextPath}/admin/unit?action=edit&id=${u.unitId}&search=${search}" class="btn-action-edit" title="Chỉnh sửa">
                                                     <i class="fa-regular fa-pen-to-square"></i>
-                                                </button>
+                                                </a>
                                                 <button type="button" class="btn-action-delete" title="Xóa" onclick="confirmDelete('${u.unitId}', '${u.unitName}')">
                                                     <i class="fa-regular fa-trash-can"></i>
                                                 </button>
@@ -139,54 +139,10 @@
         <input type="hidden" name="search" value="${search}">
     </form>
 
-    <!-- Bootstrap Modal for Add/Edit Unit of Measure -->
-    <div class="modal fade" id="unitModal" tabindex="-1" aria-labelledby="unitModalLabel" aria-hidden="true" style="font-family: 'Be Vietnam Pro', sans-serif;">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content" style="border-radius: 12px; border: none; box-shadow: 0 5px 25px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="background-color: #0f2d1e; color: white; border-top-left-radius: 12px; border-top-right-radius: 12px; padding: 16px 24px;">
-                    <h5 class="modal-title" id="unitModalLabel" style="font-weight: 700; font-size: 16px;">Thêm Đơn Vị Tính</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form id="unitForm" action="${pageContext.request.contextPath}/admin/unit?action=create" method="post">
-                    <input type="hidden" name="search" value="${search}">
-                    
-                    <div class="modal-body" style="padding: 24px;">
-                        <div class="row g-3">
-                            <div class="col-md-12">
-                                <label class="form-label-cz" style="font-weight: 600; color: #374151; margin-bottom: 6px; display: block;">Mã Đơn Vị (ID) <span>*</span></label>
-                                <input type="text" class="form-control-cz" id="modalUnitId" name="unitId" required placeholder="Ví dụ: G, KG, ITEM, BOX" style="border-radius: 8px;">
-                                <div id="modal-error-id" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
-                                <span id="modalIdHelp" class="text-muted small mt-1 d-none"><i class="fa-solid fa-circle-info"></i> Không thể thay đổi Mã đơn vị tính khi đã được khởi tạo.</span>
-                            </div>
-                            
-                            <div class="col-md-12">
-                                <label class="form-label-cz" style="font-weight: 600; color: #374151; margin-bottom: 6px; display: block;">Tên Đơn Vị <span>*</span></label>
-                                <input type="text" class="form-control-cz" id="modalUnitName" name="unitName" required placeholder="Ví dụ: Gram, Kilogram" style="border-radius: 8px;">
-                                <div id="modal-error-name" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
-                            </div>
-                            
-                            <div class="col-md-12">
-                                <label class="form-label-cz" style="font-weight: 600; color: #374151; margin-bottom: 6px; display: block;">Mô Tả Chi Tiết</label>
-                                <textarea class="form-control-cz" id="modalDescription" name="description" rows="3" placeholder="Mô tả cụ thể về đơn vị..." style="border-radius: 8px; height: auto;"></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer" style="border-top: 1px solid #f3f4f6; padding: 16px 24px;">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius: 8px; padding: 8px 16px; font-weight: 600; font-size: 14px;">Hủy bỏ</button>
-                        <button type="submit" class="btn btn-cz-primary" style="border-radius: 8px; padding: 8px 20px; font-weight: 600; font-size: 14px; background-color: #0f2d1e; border-color: #0f2d1e; color: white;">Lưu Lại</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let uModal;
         window.addEventListener('DOMContentLoaded', () => {
-            uModal = new bootstrap.Modal(document.getElementById('unitModal'));
-            
             // Sidebar toggle
             const sidebarToggle = document.querySelector('.sidebar-toggle');
             if (sidebarToggle) {
@@ -203,100 +159,8 @@
                 document.getElementById('deleteForm').submit();
             }
         }
-
-        function openCreateModal() {
-            document.getElementById('unitModalLabel').textContent = 'Thêm Đơn Vị Tính';
-            document.getElementById('unitForm').action = '${pageContext.request.contextPath}/admin/unit?action=create';
-            
-            const idInput = document.getElementById('modalUnitId');
-            idInput.value = '';
-            idInput.removeAttribute('readonly');
-            idInput.style.backgroundColor = '';
-            idInput.style.cursor = '';
-            
-            document.getElementById('modalUnitName').value = '';
-            document.getElementById('modalDescription').value = '';
-            
-            // Validation reset
-            document.getElementById('modal-error-id').style.display = 'none';
-            document.getElementById('modal-error-name').style.display = 'none';
-            idInput.classList.remove('is-invalid');
-            document.getElementById('modalUnitName').classList.remove('is-invalid');
-            document.getElementById('modalIdHelp').classList.add('d-none');
-            
-            uModal.show();
-        }
-
-        function openEditModal(id, name, desc) {
-            document.getElementById('unitModalLabel').textContent = 'Chỉnh Sửa Đơn Vị Tính';
-            document.getElementById('unitForm').action = '${pageContext.request.contextPath}/admin/unit?action=update';
-            
-            const idInput = document.getElementById('modalUnitId');
-            idInput.value = id;
-            idInput.setAttribute('readonly', 'readonly');
-            idInput.style.backgroundColor = '#e9ecef';
-            idInput.style.cursor = 'not-allowed';
-            
-            document.getElementById('modalUnitName').value = name;
-            document.getElementById('modalDescription').value = desc;
-            
-            // Validation reset
-            document.getElementById('modal-error-id').style.display = 'none';
-            document.getElementById('modal-error-name').style.display = 'none';
-            idInput.classList.remove('is-invalid');
-            document.getElementById('modalUnitName').classList.remove('is-invalid');
-            document.getElementById('modalIdHelp').classList.remove('d-none');
-            
-            uModal.show();
-        }
-
-        document.getElementById('unitForm').addEventListener('submit', function(e) {
-            let hasError = false;
-            const errorId = document.getElementById('modal-error-id');
-            const errorName = document.getElementById('modal-error-name');
-            const idInput = document.getElementById('modalUnitId');
-            const nameInput = document.getElementById('modalUnitName');
-            
-            errorId.style.display = 'none';
-            errorName.style.display = 'none';
-            idInput.classList.remove('is-invalid');
-            nameInput.classList.remove('is-invalid');
-
-            // Validate ID only if creating new
-            if (!idInput.hasAttribute('readonly')) {
-                const idVal = idInput.value.trim();
-                if (idVal.length === 0) {
-                    errorId.textContent = 'Mã đơn vị tính không được để trống.';
-                    errorId.style.display = 'block';
-                    idInput.classList.add('is-invalid');
-                    hasError = true;
-                } else if (idVal.length > 10) {
-                    errorId.textContent = 'Mã đơn vị tính tối đa 10 ký tự.';
-                    errorId.style.display = 'block';
-                    idInput.classList.add('is-invalid');
-                    hasError = true;
-                }
-            }
-
-            // Validate name
-            const nameVal = nameInput.value.trim();
-            if (nameVal.length === 0) {
-                errorName.textContent = 'Tên đơn vị tính không được để trống.';
-                errorName.style.display = 'block';
-                nameInput.classList.add('is-invalid');
-                hasError = true;
-            } else if (nameVal.length < 2) {
-                errorName.textContent = 'Tên đơn vị tính tối thiểu 2 ký tự.';
-                errorName.style.display = 'block';
-                nameInput.classList.add('is-invalid');
-                hasError = true;
-            }
-
-            if (hasError) {
-                e.preventDefault();
-                return false;
-            }
-        });
     </script>
+</body>
+</html>
 </body>
 </html>

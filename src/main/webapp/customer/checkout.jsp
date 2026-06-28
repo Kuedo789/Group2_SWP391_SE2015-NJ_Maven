@@ -23,6 +23,7 @@
             <input type="hidden" name="cartData" id="cartDataInput">
             <input type="hidden" name="addressId" id="selectedAddressIdInput" value="${requestScope.selectedAddress.addressId}">
             <input type="hidden" name="timeSlot" id="selectedTimeSlotInput">
+            <input type="hidden" name="shippingFee" id="shippingFeeInput" value="0">
 
             <div class="checkout-layout">
 
@@ -161,10 +162,13 @@
 
                     <!-- Products in Cart Card -->
                     <div class="checkout-card">
-                        <div class="card-header">
-                            <h2 class="card-title">
+                        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 class="card-title" style="margin: 0;">
                                 <i class="fa fa-shopping-bag"></i> Sản phẩm trong giỏ
                             </h2>
+                            <a href="${pageContext.request.contextPath}/products" style="text-decoration: none; font-size: 14px; font-weight: 700; color: var(--primary-dark); display: flex; align-items: center; gap: 6px;">
+                                <i class="fa fa-plus"></i> Thêm sản phẩm
+                            </a>
                         </div>
 
                         <div class="product-checkout-list" id="checkoutProductList">
@@ -287,8 +291,8 @@
                     const lng = parseFloat(firstAddressCard.getAttribute("data-lng"));
                     selectAddress(id, lat, lng, firstAddressCard);
                 } else {
-                    // No addresses saved, use default demo fee
-                    currentShippingFee = 25000;
+                    // No addresses saved, use 0 fee
+                    currentShippingFee = 0;
                     updateSummary();
                 }
             }
@@ -570,7 +574,7 @@
             const distance = getHaversineDistance(shopLat, shopLng, lat, lng) * 1.25;
             const finalDistance = Math.max(1.0, distance);
 
-            currentShippingFee = Math.max(15000, Math.round(finalDistance) * 5000);
+            currentShippingFee = Math.max(5000, Math.ceil(finalDistance) * 5000);
             updateSummary();
         }
 
@@ -638,6 +642,9 @@
             if (subtotalEl) subtotalEl.innerText = productTotal.toLocaleString("vi-VN") + "đ";
             if (shippingEl) shippingEl.innerText = currentShippingFee.toLocaleString("vi-VN") + "đ";
             if (totalEl) totalEl.innerText = finalTotal.toLocaleString("vi-VN") + "đ";
+            
+            const shippingFeeInput = document.getElementById("shippingFeeInput");
+            if (shippingFeeInput) shippingFeeInput.value = currentShippingFee;
         }
     </script>
 </body>

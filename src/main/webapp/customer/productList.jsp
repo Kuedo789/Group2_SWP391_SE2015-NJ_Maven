@@ -49,9 +49,11 @@
                 <div class="product-top-row">
                     <div class="product-count" id="productCount">0 sản phẩm</div>
 
-                    <a href="${pageContext.request.contextPath}/auth/login.jsp" class="voucher-link">
-                        Đăng nhập xem voucher ưu đãi của bạn
-                    </a>
+                    <c:if test="${empty sessionScope.user}">
+                        <a href="${pageContext.request.contextPath}/auth/login.jsp" class="voucher-link">
+                            Đăng nhập xem voucher ưu đãi của bạn
+                        </a>
+                    </c:if>
                 </div>
 
                 <!-- Product List -->

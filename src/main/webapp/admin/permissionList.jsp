@@ -9,6 +9,7 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 
         <style>
             :root {
@@ -36,13 +37,18 @@
             .page-title { font-size: 26px; font-weight: 700; color: #111; margin-bottom: 4px; }
             .page-subtitle { font-size: 13.5px; color: var(--cz-text-muted); margin-bottom: 30px; }
 
-            /* Hàng nút bấm chọn Vai trò */
+            .top-header { height: 70px; background-color: #fff; border-bottom: 1px solid var(--cz-border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 35px; position: sticky; top: 0; z-index: 90; }
+            .breadcrumbs { font-size: 13px; color: var(--cz-text-muted); margin-bottom: 0; }
+            .breadcrumbs a { color: var(--cz-text-muted); text-decoration: none; }
+            .breadcrumbs span { margin: 0 6px; }
+            .profile-section { display: flex; align-items: center; gap: 10px; border-left: 1px solid var(--cz-border-color); padding-left: 20px; }
+            .profile-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--cz-border-color); }
+
             .role-tabs-container { display: flex; background: #fff; border: 2px solid #222; border-radius: 6px; overflow: hidden; width: fit-content; margin-bottom: 35px; }
             .role-tab-item { padding: 14px 35px; font-weight: 700; text-transform: uppercase; text-decoration: none; color: #222; border-right: 2px solid #222; font-size: 13.5px; transition: all 0.2s; }
             .role-tab-item:last-child { border-right: none; }
             .role-tab-item.active-tab { background-color: #ced4da; color: #000; }
 
-            /* Cột Tính năng xếp dọc */
             .table-card { background-color: var(--cz-card-bg); border-radius: 12px; border: 1px solid var(--cz-border-color); overflow: hidden; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02); }
             .feature-matrix-row { display: flex; justify-content: space-between; align-items: center; padding: 20px 15px; border-bottom: 1px solid var(--cz-border-color); }
             .feature-matrix-row:last-child { border-bottom: none; }
@@ -50,11 +56,10 @@
             .feature-meta-info i { color: var(--cz-primary); font-size: 18px; }
             .feature-endpoint { font-size: 13px; color: #999; font-weight: 400; font-family: monospace; }
 
-            /* Nút công tắc đôi trượt On | Off */
             .toggle-switch-box { display: flex; border: 2px solid #222; border-radius: 20px; overflow: hidden; background-color: #fff; }
-            .toggle-btn { padding: 6px 22px; font-size: 12.5px; font-weight: 800; text-transform: uppercase; text-decoration: none; color: #aaa; transition: all 0.2s; }
-            .toggle-btn.on-active { background-color: #ced4da; color: #111; }
-            .toggle-btn.off-active { background-color: #222; color: #fff; } 
+            .toggle-btn { padding: 6px 22px; font-size: 12.5px; font-weight: 800; text-transform: uppercase; text-decoration: none; color: #aaa; transition: all 0.2s; cursor: pointer; border: none; background: none; }
+            .toggle-btn.on-active { background-color: var(--cz-primary); color: #fff; }
+            .toggle-btn.off-active { background-color: #222; color: #fff; }
         </style>
     </head>
     <body>
@@ -64,21 +69,24 @@
         </jsp:include>
 
         <div class="main-panel">
-
             <div class="top-header">
-                <div class="header-left">
-                    <div class="breadcrumbs">
-                        <a href="#">Dashboard</a>
+                <div class="header-left d-flex align-items-center gap-3">
+                    <button class="sidebar-toggle btn p-0 border-0 fs-5 text-secondary"><i class="fa-solid fa-bars"></i></button>
+                    <div class="breadcrumbs m-0">
+                        <a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
                         <span>&gt;</span>
                         <a href="#">System</a>
                         <span>&gt;</span>
-                        <a href="#" class="active text-dark font-weight-bold">Vai trò & Quyền hạn</a>
+                        <a href="#" class="active text-dark fw-bold">Vai trò & Quyền hạn</a>
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="profile-section d-flex align-items-center gap-3">
-                        <span class="fw-bold" style="font-size: 14px;"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></span>
-                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="rounded-circle" width="35" height="35">
+                    <div class="profile-section">
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
+                        <div class="profile-info" style="line-height: 1.2;">
+                            <div class="profile-name" style="font-size: 13.5px; font-weight: 600; color: #333;"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Hoàng Anh'}" /></div>
+                            <div class="profile-role" style="font-size: 10.5px; color: var(--cz-text-muted); font-weight: 500;">Quản trị viên</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -86,12 +94,11 @@
             <div class="content-container">
                 <div class="form-card">
                     <h1 class="page-title">QUẢN LÝ VAI TRÒ & PHÂN QUYỀN ĐỘNG</h1>
-                    <p class="page-subtitle">Bật / Tắt trạng thái để kiểm soát việc Ẩn hoặc Hiện trực tiếp các danh mục tính năng trên Sidebar nội bộ</p>
+                    <p class="page-subtitle">Bật / Tắt trạng thái để cấu hình real-time danh mục quyền hạn truy cập của các nhóm nhân sự</p>
 
                     <div class="role-tabs-container">
                         <c:if test="${not empty ALL_ROLES}">
                             <c:forEach items="${ALL_ROLES}" var="r">
-                                <%-- 🟢 ĐỒNG BỘ: Bỏ tham số action=list thừa để Servlet nhận diện luồng hiển thị chuẩn --%>
                                 <a href="${pageContext.request.contextPath}/admin/role-permissions?roleId=${r.roleId}" 
                                    class="role-tab-item ${CURRENT_ROLE_ID eq r.roleId ? 'active-tab' : ''}">
                                     ${r.roleId}
@@ -104,25 +111,22 @@
                         <c:choose>
                             <c:when test="${not empty SCREEN_LIST}">
                                 <c:forEach items="${SCREEN_LIST}" var="s">
-                                    <div class="feature-matrix-row">
+                                    <div class="feature-matrix-row" id="row-${s.screenId}">
                                         <div class="feature-meta-info">
                                             <i class="fa-solid fa-folder-gear"></i>
                                             <span>${s.screenName}</span>
-                                            <%-- 🟢 ĐỒNG BỘ: Sửa s.endpoint_url thành s.endpointUrl cho đúng Model Java Bean --%>
                                             <span class="feature-endpoint">(${s.endpointUrl})</span>
                                         </div>
-                                        
+
                                         <div class="toggle-switch-box">
-                                            <%-- 🟢 ĐỒNG BỘ: Sửa s.screen_id thành s.screenId, gọi hàm s.activated tường minh để check nút ON --%>
-                                            <a href="${pageContext.request.contextPath}/admin/role-permissions?action=on&roleId=${CURRENT_ROLE_ID}&screenId=${s.screenId}" 
-                                               class="toggle-btn ${s.activated ? 'on-active' : ''}">
+                                            <button type="button" onclick="updatePermission('${CURRENT_ROLE_ID}', '${s.screenId}', 'on')" 
+                                                    class="toggle-btn btn-on ${s.activated ? 'on-active' : ''}">
                                                 On
-                                            </a>
-                                            <%-- 🟢 ĐỒNG BỘ: Gọi nghịch đảo !s.activated để check trạng thái cho nút OFF --%>
-                                            <a href="${pageContext.request.contextPath}/admin/role-permissions?action=off&roleId=${CURRENT_ROLE_ID}&screenId=${s.screenId}" 
-                                               class="toggle-btn ${!s.activated ? 'off-active' : ''}">
+                                            </button>
+                                            <button type="button" onclick="updatePermission('${CURRENT_ROLE_ID}', '${s.screenId}', 'off')" 
+                                                    class="toggle-btn btn-off ${!s.activated ? 'off-active' : ''}">
                                                 Off
-                                            </a>
+                                            </button>
                                         </div>
                                     </div>
                                 </c:forEach>
@@ -137,5 +141,48 @@
             </div>
         </div>
 
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+        <script>
+            function updatePermission(roleId, screenId, action) {
+                const url = "${pageContext.request.contextPath}/admin/role-permissions?action=" + action + "&roleId=" + roleId + "&screenId=" + screenId;
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(data => {
+                    if (data.trim() === "SUCCESS") {
+                        const row = document.getElementById("row-" + screenId);
+                        const btnOn = row.querySelector('.btn-on');
+                        const btnOff = row.querySelector('.btn-off');
+
+                        if (action === 'on') {
+                            btnOn.classList.add('on-active');
+                            btnOff.classList.remove('off-active');
+                        } else {
+                            btnOn.classList.remove('on-active');
+                            btnOff.classList.add('off-active');
+                        }
+
+                        Toastify({
+                            text: "Cập nhật thành công!",
+                            duration: 2500,
+                            close: true,
+                            gravity: "top",
+                            position: "right",
+                            backgroundColor: "linear-gradient(to right, #3f5f36, #5a854e)"
+                        }).showToast();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        </script>
     </body>
 </html>

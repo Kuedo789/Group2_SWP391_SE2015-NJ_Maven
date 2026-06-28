@@ -140,10 +140,28 @@
                             <input type="hidden" name="addressId" value="${isEditMode ? addressToEdit.addressId : ''}">
                             <input type="hidden" name="source" value="${not empty param.source ? param.source : ''}">
 
+                            <c:set var="lockNamePhone" value="${isProfileMode or (isEditMode and addressToEdit.isDefault())}" />
                             <c:choose>
-                            <c:when test="${isProfileMode}">
-                                <input type="hidden" name="receiverName" value="${sessionScope.user.fullName}">
-                                <input type="hidden" name="receiverPhone" value="${sessionScope.user.phone}">
+                            <c:when test="${lockNamePhone}">
+                                <div class="form-field-group">
+                                    <label class="form-field-label">Tên người nhận</label>
+                                    <input type="text"
+                                           name="receiverName"
+                                           class="address-input"
+                                           value="${sessionScope.user.fullName}"
+                                           readonly style="background-color: #f5f5f5; cursor: not-allowed; color: #666;">
+                                    <small style="color: var(--primary-dark); font-size: 12px; margin-top: 4px; display: block;">* Tên mặc định đồng bộ theo hồ sơ cá nhân</small>
+                                </div>
+
+                                <div class="form-field-group">
+                                    <label class="form-field-label">Số điện thoại</label>
+                                    <input type="text"
+                                           name="receiverPhone"
+                                           class="address-input"
+                                           value="${sessionScope.user.phone}"
+                                           readonly style="background-color: #f5f5f5; cursor: not-allowed; color: #666;">
+                                    <small style="color: var(--primary-dark); font-size: 12px; margin-top: 4px; display: block;">* Số điện thoại mặc định đồng bộ theo hồ sơ cá nhân</small>
+                                </div>
                             </c:when>
                             <c:otherwise>
                             <div class="form-field-group">

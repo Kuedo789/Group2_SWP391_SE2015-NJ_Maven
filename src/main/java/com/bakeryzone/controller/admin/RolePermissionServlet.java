@@ -31,25 +31,42 @@ public class RolePermissionServlet extends HttpServlet {
             currentRoleId = "ADMIN";
         }
 
-        // 2. Kiểm tra xem người dùng có thực hiện hành động bấm On/Off không
+        // 🟢 CẢI TIẾN 1: XỬ LÝ GẠT QUYỀN QUA AJAX (KHÔNG LOAD LẠI TRANG)
         String action = request.getParameter("action");
         String screenId = request.getParameter("screenId");
-        if (action != null && screenId != null) {
-            // Gọi xuống DAO để thực hiện INSERT hoặc DELETE tương ứng
-            permissionDAO.togglePermission(currentRoleId, screenId, action);
+        String isAjax = request.getHeader("X-Requested-With"); // Kiểm tra xem có phải request gửi từ JavaScript không
 
-            // Xử lý xong thì chuyển hướng (Redirect) quay lại chính trang này để cập nhật giao diện mới nhất
+        if (action != null && screenId != null) {
+            // Nhận kết quả thật từ DB
+            boolean isSuccess = permissionDAO.togglePermission(currentRoleId, screenId, action);
+
+            if ("XMLHttpRequest".equals(isAjax)) {
+                response.setContentType("text/plain");
+                response.setCharacterEncoding("UTF-8");
+                try (PrintWriter out = response.getWriter()) {
+                    if (isSuccess) {
+                        out.print("SUCCESS");
+                    } else {
+                        out.print("FAILED_DB"); // Trả về lỗi để JS biết đường xử lý
+                    }
+                }
+                return;
+            }
             response.sendRedirect(request.getContextPath() + "/admin/role-permissions?roleId=" + currentRoleId);
             return;
+
         }
 
-        // 3. Đẩy danh sách các Roles và danh sách Màn hình kèm trạng thái On/Off ra trang JSP
-        request.setAttribute("ALL_ROLES", permissionDAO.getAllRoles());
-        request.setAttribute("SCREEN_LIST", permissionDAO.getScreensWithStatus(currentRoleId));
-        request.setAttribute("CURRENT_ROLE_ID", currentRoleId);
+        // 🟢 ĐẨY DỮ LIỆU RA GIAO DIỆN ĐỘNG HOÀN TOÀN
+        request.setAttribute(
+                "ALL_ROLES", permissionDAO.getAllRoles());
+        request.setAttribute(
+                "SCREEN_LIST", permissionDAO.getScreensWithStatus(currentRoleId));
+        request.setAttribute(
+                "CURRENT_ROLE_ID", currentRoleId);
 
-        // Chuyển tiếp (Forward) dữ liệu sang file JSP ở Bước 5
-        request.getRequestDispatcher("/admin/permissionList.jsp").forward(request, response);
+        request.getRequestDispatcher(
+                "/admin/permissionList.jsp").forward(request, response);
     }
 
     /**

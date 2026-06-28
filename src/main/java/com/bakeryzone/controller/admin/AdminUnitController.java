@@ -158,11 +158,16 @@ public class AdminUnitController extends HttpServlet {
 
         boolean idValid = unitId != null && !unitId.isEmpty() && unitId.length() <= 10;
         boolean nameValid = unitName != null && !unitName.isEmpty() && unitName.length() >= 2;
+        boolean descValid = description == null || description.length() <= 255;
 
-        if (!idValid || !nameValid) {
+        if (!idValid || !nameValid || !descValid) {
             UnitMeasure unit = new UnitMeasure(unitId, unitName, description);
             request.setAttribute("unit", unit);
-            request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mã đơn vị tối đa 10 ký tự, Tên đơn vị tối thiểu 2 ký tự.");
+            if (!descValid) {
+                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mô tả chi tiết tối đa 255 ký tự.");
+            } else {
+                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mã đơn vị tối đa 10 ký tự, Tên đơn vị tối thiểu 2 ký tự.");
+            }
             request.setAttribute("formAction", isNew ? "create" : "update");
             request.setAttribute("isEdit", !isNew);
             request.getRequestDispatcher("/admin/unitDetail.jsp").forward(request, response);

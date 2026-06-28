@@ -163,6 +163,20 @@
                 z-index: 90;
             }
 
+            .header-left {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .sidebar-toggle {
+                background: none;
+                border: none;
+                font-size: 18px;
+                color: #555;
+                cursor: pointer;
+            }
+
             .breadcrumbs {
                 font-size: 13px;
                 color: var(--cz-text-muted);
@@ -172,10 +186,46 @@
             .breadcrumbs a {
                 color: var(--cz-text-muted);
                 text-decoration: none;
+                transition: color 0.2s;
+            }
+
+            .breadcrumbs a:hover {
+                color: var(--cz-primary);
             }
 
             .breadcrumbs span {
                 margin: 0 6px;
+            }
+
+            .header-right {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .header-icon-btn {
+                background: none;
+                border: none;
+                font-size: 18px;
+                color: #555;
+                position: relative;
+                cursor: pointer;
+                transition: color 0.2s;
+            }
+
+            .header-icon-btn:hover {
+                color: var(--cz-primary);
+            }
+
+            .header-icon-btn .badge-dot {
+                position: absolute;
+                top: -2px;
+                right: -2px;
+                width: 8px;
+                height: 8px;
+                background-color: var(--cz-primary);
+                border-radius: 50%;
+                border: 1px solid #fff;
             }
 
             .profile-section {
@@ -192,6 +242,22 @@
                 border-radius: 50%;
                 object-fit: cover;
                 border: 2px solid var(--cz-border-color);
+            }
+
+            .profile-info {
+                line-height: 1.2;
+            }
+
+            .profile-name {
+                font-size: 13.5px;
+                font-weight: 600;
+                color: #333;
+            }
+
+            .profile-role {
+                font-size: 10.5px;
+                color: var(--cz-text-muted);
+                font-weight: 500;
             }
 
             .content-container {
@@ -425,29 +491,7 @@
         </jsp:include>
 
         <div class="main-panel">
-            <div class="top-header">
-                <div class="header-left d-flex align-items-center gap-3">
-                    <button class="sidebar-toggle btn p-0 border-0 fs-5 text-secondary">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
-                    <div class="breadcrumbs m-0">
-                        <a href="${pageContext.request.contextPath}/admin/dashboard" class="text-decoration-none text-muted">Dashboard</a>
-                        <span class="text-muted-50">&gt;</span>
-                        <a href="#" class="text-decoration-none text-muted">System</a>
-                        <span class="text-muted-50">&gt;</span>
-                        <a href="#" class="active text-dark text-decoration-none">Quản lý đánh giá</a>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="profile-section">
-                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
-                        <div class="profile-info">
-                            <div class="profile-name">Hoàng Anh</div>
-                            <div class="profile-role">Admin PIC</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+  
 
             <!-- Top Header -->
             <jsp:include page="../common/top-header.jsp">
@@ -490,7 +534,7 @@
                             <option value="Rejected" ${status eq 'Rejected' ? 'selected' : ''}>Đã ẩn / Từ chối</option>
                         </select>
 
-                        <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc dữ liệu</button>
+                        <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
                         <a href="${pageContext.request.contextPath}/admin/reviews?action=list" class="btn-clear-filter text-center">Làm mới</a>
                     </form>
                 </div>

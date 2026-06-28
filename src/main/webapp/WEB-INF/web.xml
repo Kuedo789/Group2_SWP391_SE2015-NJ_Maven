@@ -60,6 +60,14 @@
         <servlet-name>RolePermissionServlet</servlet-name>
         <servlet-class>com.bakeryzone.controller.admin.RolePermissionServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>MembershipController</servlet-name>
+        <servlet-class>com.bakeryzone.controller.customer.MembershipController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>RewardsController</servlet-name>
+        <servlet-class>com.bakeryzone.controller.customer.RewardsController</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>RegisterServlet</servlet-name>
         <url-pattern>/register</url-pattern>
@@ -115,6 +123,14 @@
     <servlet-mapping>
         <servlet-name>RolePermissionServlet</servlet-name>
         <url-pattern>/admin/role-permissions</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>MembershipController</servlet-name>
+        <url-pattern>/membership</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RewardsController</servlet-name>
+        <url-pattern>/rewards</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>
