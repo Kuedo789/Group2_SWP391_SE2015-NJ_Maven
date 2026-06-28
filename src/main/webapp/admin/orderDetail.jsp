@@ -248,6 +248,7 @@
                                 <fmt:formatDate value="${order.deliveryWindowEnd}" pattern="HH:mm" />
                             </div>
                         </div>
+                        
                     </div>
 
                     <!-- Bằng chứng giao hàng (Shipper tải lên, Admin chỉ xem) -->
@@ -366,29 +367,31 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const orderStatus = '${order.orderStatus}';
-            const displayContainer = document.getElementById('admin-proof-display-container');
             const savedProof = localStorage.getItem('proof_of_delivery_' + '${order.orderNo}');
+            const displayContainer = document.getElementById('admin-proof-display-container');
 
-            if (savedProof) {
-                displayContainer.innerHTML = `
-                    <img src="${savedProof}" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
-                    <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
-                        <i class="fa-solid fa-circle-check"></i> Ảnh bằng chứng thực tế từ Shipper
-                    </div>
-                `;
-            } else if (orderStatus.toLowerCase() === 'completed' || orderStatus === 'Hoàn thành' || orderStatus === 'Đã giao') {
-                // Ảnh demo cho đơn hàng đã hoàn thành
-                displayContainer.innerHTML = `
-                    <img src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=500&auto=format&fit=crop" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
-                    <div style="margin-top: 8px; font-size: 12px; color: #555; font-weight: 600;">
-                        <i class="fa-solid fa-circle-check"></i> Bằng chứng giao hàng (Shipper đã giao bánh thành công)
-                    </div>
-                `;
-            } else {
-                displayContainer.innerHTML = `
-                    <i class="fa-regular fa-image" style="font-size: 32px; color: #bbb; margin-bottom: 8px; display: block;"></i>
-                    <span style="font-size: 13px; color: #777; font-weight: 500;">Shipper chưa tải lên ảnh bằng chứng giao hàng cho đơn này.</span>
-                `;
+            // Load saved proof to admin display container
+            if (displayContainer) {
+                if (savedProof) {
+                    displayContainer.innerHTML = `
+                        <img src="${savedProof}" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+                        <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
+                            <i class="fa-solid fa-circle-check"></i> Ảnh bằng chứng thực tế từ Shipper
+                        </div>
+                    `;
+                } else if (orderStatus.toLowerCase() === 'completed' || orderStatus === 'Hoàn thành' || orderStatus === 'Đã giao') {
+                    displayContainer.innerHTML = `
+                        <img src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=500&auto=format&fit=crop" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
+                        <div style="margin-top: 8px; font-size: 12px; color: #555; font-weight: 600;">
+                            <i class="fa-solid fa-circle-check"></i> Bằng chứng giao hàng (Shipper đã giao bánh thành công)
+                        </div>
+                    `;
+                } else {
+                    displayContainer.innerHTML = `
+                        <i class="fa-regular fa-image proof-icon" style="font-size: 32px; color: #bbb; margin-bottom: 8px; display: block;"></i>
+                        <span class="proof-empty-text">Shipper chưa tải lên ảnh bằng chứng giao hàng cho đơn này.</span>
+                    `;
+                }
             }
         });
     </script>

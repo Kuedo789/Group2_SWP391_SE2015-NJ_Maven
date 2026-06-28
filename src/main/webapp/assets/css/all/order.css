@@ -1735,15 +1735,21 @@
     margin-bottom: 12px;
     font-size: 14px;
 }
-.info-label {
+.cz-card .info-label {
     width: 140px;
     color: var(--cz-text-muted);
     font-weight: 500;
     flex-shrink: 0;
+    font-size: 13px;
+    text-transform: none;
+    letter-spacing: normal;
+    margin-bottom: 0;
 }
-.info-value {
+.cz-card .info-value {
     color: #222;
     font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14.5px;
 }
 
 /* Items list */
