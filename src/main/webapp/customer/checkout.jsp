@@ -256,21 +256,7 @@
         let currentShippingFee = 0;
 
         document.addEventListener("DOMContentLoaded", function () {
-            // Dọn dẹp dữ liệu mock cũ nếu tồn tại trong localStorage
-            try {
-                const rawCart = localStorage.getItem("cart");
-                if (rawCart) {
-                    const parsed = JSON.parse(rawCart);
-                    if (Array.isArray(parsed)) {
-                        // Lọc bỏ các item có id bắt đầu bằng "MOCK-"
-                        const cleanCart = parsed.filter(item => item && item.id && !String(item.id).startsWith("MOCK-"));
-                        localStorage.setItem("cart", JSON.stringify(cleanCart));
-                    }
-                }
-            } catch(e) {
-                // Nếu lỗi parse, xóa hẳn
-                localStorage.removeItem("cart");
-            }
+
 
             // 1. Sync & Render Cart Items
             loadCartItems();
@@ -430,24 +416,14 @@
         // toggleAddressList function removed as there is no list to toggle
 
         function loadCartItems() {
-            let localCartStr = localStorage.getItem("cart");
-            let localCart = null;
             try {
-                if (localCartStr) {
-                    localCart = JSON.parse(localCartStr);
-                }
+                const localCartStr = localStorage.getItem("cart");
+                const localCart = localCartStr ? JSON.parse(localCartStr) : [];
+                currentCart = Array.isArray(localCart) ? localCart.filter(item => item && item.id && item.name && item.price != null && !String(item.id).startsWith("MOCK-")) : [];
             } catch(e) {
-                console.error("Failed to parse cart localstorage", e);
-                localCart = null;
-            }
-
-            // Chỉ dùng dữ liệu thực từ localStorage, không fallback mock
-            if (Array.isArray(localCart)) {
-                currentCart = localCart.filter(item => item && item.id && item.name && item.price != null);
-            } else {
                 currentCart = [];
             }
-
+            localStorage.setItem("cart", JSON.stringify(currentCart));
             document.getElementById("cartDataInput").value = JSON.stringify(currentCart);
             renderCartList();
         }
@@ -518,14 +494,7 @@
             localStorage.setItem("cart", JSON.stringify(currentCart));
             document.getElementById("cartDataInput").value = JSON.stringify(currentCart);
             
-            // Sync navbar badge
             window.dispatchEvent(new Event("storage"));
-            const countEl = document.getElementById("navCartCount");
-            if (countEl) {
-                let totalQty = 0;
-                currentCart.forEach(c => { if (c) totalQty += (parseInt(c.qty) || 1); });
-                countEl.innerText = totalQty;
-            }
 
             renderCartList();
         }
@@ -535,14 +504,7 @@
             localStorage.setItem("cart", JSON.stringify(currentCart));
             document.getElementById("cartDataInput").value = JSON.stringify(currentCart);
 
-            // Sync navbar badge
             window.dispatchEvent(new Event("storage"));
-            const countEl = document.getElementById("navCartCount");
-            if (countEl) {
-                let totalQty = 0;
-                currentCart.forEach(c => { if (c) totalQty += (parseInt(c.qty) || 1); });
-                countEl.innerText = totalQty;
-            }
 
             renderCartList();
         }
@@ -622,16 +584,9 @@
         }
 
         function updateSummary() {
-            let productTotal = 0;
-            if (Array.isArray(currentCart)) {
-                currentCart.forEach(item => {
-                    if (item) {
-                        const price = parseFloat(item.price) || 0;
-                        const qty = parseInt(item.qty) || 1;
-                        productTotal += price * qty;
-                    }
-                });
-            }
+            let productTotal = Array.isArray(currentCart) 
+                ? currentCart.reduce((sum, item) => sum + (parseFloat(item?.price || 0) * parseInt(item?.qty || 1)), 0) 
+                : 0;
 
             const finalTotal = productTotal > 0 ? (productTotal + currentShippingFee) : 0;
 

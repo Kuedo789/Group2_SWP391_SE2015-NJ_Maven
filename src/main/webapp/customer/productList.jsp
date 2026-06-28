@@ -164,6 +164,18 @@
                 window.location.href = contextPath + "/product-detail?id=" + id;
             }
 
+            function getResolvedImage(img) {
+                let resolved = "assets/images/products/basic.png";
+                if (img) {
+                    if (img.startsWith("http")) return img;
+                    let imgPath = img;
+                    if (contextPath && imgPath.startsWith(contextPath)) imgPath = imgPath.substring(contextPath.length);
+                    if (imgPath.startsWith("/")) imgPath = imgPath.substring(1);
+                    resolved = imgPath;
+                }
+                return resolved;
+            }
+
             function addToCartFromList(event, productId) {
                 event.stopPropagation();
                 const product = products.find(p => p.id == productId);
@@ -172,31 +184,10 @@
                 let cart = [];
                 try {
                     const cartStr = localStorage.getItem("cart");
-                    if (cartStr) {
-                        cart = JSON.parse(cartStr);
-                    }
-                } catch (e) {
-                    cart = [];
-                }
+                    if (cartStr) cart = JSON.parse(cartStr);
+                } catch (e) {}
                 if (!Array.isArray(cart)) cart = [];
 
-                let resolvedImage = "assets/images/products/basic.png";
-                if (product.image) {
-                    if (product.image.startsWith("http")) {
-                        resolvedImage = product.image;
-                    } else {
-                        let imgPath = product.image;
-                        if (contextPath && imgPath.startsWith(contextPath)) {
-                            imgPath = imgPath.substring(contextPath.length);
-                        }
-                        if (imgPath.startsWith("/")) {
-                            imgPath = imgPath.substring(1);
-                        }
-                        resolvedImage = imgPath;
-                    }
-                }
-
-                // Add with default variant (16cm) just like detail page
                 const item = {
                     id: product.id + "_0",
                     templateId: product.id,
@@ -204,7 +195,7 @@
                     desc: "Size bánh dành cho 4 - 6 người dùng.",
                     price: product.price,
                     qty: 1,
-                    image: resolvedImage
+                    image: getResolvedImage(product.image)
                 };
 
                 const existingItem = cart.find(x => x && x.name === item.name);

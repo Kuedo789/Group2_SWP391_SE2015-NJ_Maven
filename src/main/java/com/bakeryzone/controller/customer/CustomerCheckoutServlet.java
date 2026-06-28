@@ -51,28 +51,14 @@ public class CustomerCheckoutServlet extends HttpServlet {
         // Determine selected address
         DeliveryAddress selectedAddress = null;
         if (addressList != null && !addressList.isEmpty()) {
-            selectedAddress = addressList.get(0);
             String selectedParam = request.getParameter("selectedAddressId");
-            boolean foundParam = false;
-            
-            if (selectedParam != null && !selectedParam.isEmpty()) {
-                for (DeliveryAddress addr : addressList) {
-                    if (String.valueOf(addr.getAddressId()).equals(selectedParam)) {
-                        selectedAddress = addr;
-                        foundParam = true;
-                        break;
-                    }
-                }
-            }
-            
-            if (!foundParam) {
-                for (DeliveryAddress addr : addressList) {
-                    if (addr.isDefault()) {
-                        selectedAddress = addr;
-                        break;
-                    }
-                }
-            }
+            selectedAddress = addressList.stream()
+                .filter(addr -> String.valueOf(addr.getAddressId()).equals(selectedParam))
+                .findFirst()
+                .orElse(addressList.stream()
+                    .filter(DeliveryAddress::isDefault)
+                    .findFirst()
+                    .orElse(addressList.get(0)));
         }
         request.setAttribute("selectedAddress", selectedAddress);
 

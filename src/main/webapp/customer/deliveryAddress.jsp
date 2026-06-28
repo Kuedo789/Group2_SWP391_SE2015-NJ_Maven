@@ -292,7 +292,7 @@
         <script>
             <c:set var="escapedAddress" value="${isEditMode ? addressToEdit.addressDetail : ''}" />
             const isEditMode = ${isEditMode};
-            const isProfileModeJs = ${isProfileMode};
+            const lockNamePhoneJs = ${lockNamePhone};
             const editLat = ${isEditMode ? addressToEdit.latitude : 'null'};
             const editLng = ${isEditMode ? addressToEdit.longitude : 'null'};
             const editAddress = "${escapedAddress}";
@@ -578,7 +578,7 @@
                     const latInput = document.getElementById("latitudeInput");
                     const lngInput = document.getElementById("longitudeInput");
 
-                    if (!isProfileModeJs) {
+                    if (!lockNamePhoneJs) {
                         const nameVal = nameInput ? nameInput.value.trim() : "";
                         if (nameVal === "") {
                             return showError("Vui lòng nhập tên người nhận.", nameInput);

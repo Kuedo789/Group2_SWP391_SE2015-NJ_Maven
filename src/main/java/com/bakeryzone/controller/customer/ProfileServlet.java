@@ -54,7 +54,6 @@ public class ProfileServlet extends HttpServlet {
 
         String fullName = trim(request.getParameter("fullName"));
         String phone = trim(request.getParameter("phone"));
-        String address = request.getParameter("address");
 
         String currentPassword = trim(request.getParameter("currentPassword"));
         String newPassword = trim(request.getParameter("newPassword"));
@@ -154,8 +153,7 @@ public class ProfileServlet extends HttpServlet {
         boolean updated = userDAO.updateProfile(
                 user.getUserId(),
                 fullName,
-                phone,
-                address
+                phone
         );
 
         if (updated) {

@@ -42,12 +42,7 @@
                       action="${pageContext.request.contextPath}/profile"
                       method="post">
 
-                    <!-- Dùng để reset về thông tin gốc khi bấm Hủy -->
-                    <input type="hidden" id="originalFullName" value="${sessionScope.user.fullName}">
-                    <input type="hidden" id="originalPhone" value="${sessionScope.user.phone}">
 
-                    <!-- Giữ address cũ để servlet không update address thành null -->
-                    <input type="hidden" name="address" value="${sessionScope.user.defaultAddress}">
 
                     <div class="form-row">
                         <div class="form-group">
@@ -184,22 +179,10 @@
             }
 
             function resetProfileForm() {
-                document.querySelector('input[name="fullName"]').value =
-                        document.getElementById("originalFullName").value;
-
-                document.querySelector('input[name="phone"]').value =
-                        document.getElementById("originalPhone").value;
-
-                document.getElementById("currentPassword").value = "";
-                document.getElementById("newPassword").value = "";
-                document.getElementById("confirmPassword").value = "";
-
-                document.getElementById("currentPassword").type = "password";
-                document.getElementById("newPassword").type = "password";
-                document.getElementById("confirmPassword").type = "password";
-
-                document.getElementById("showPassword").checked = false;
+                document.getElementById('profileForm').reset();
                 document.getElementById("passwordBox").style.display = "none";
+                document.getElementById("showPassword").checked = false;
+                toggleAllPasswords();
                 
                 const errorBox = document.getElementById("errorBox");
                 if (errorBox) {

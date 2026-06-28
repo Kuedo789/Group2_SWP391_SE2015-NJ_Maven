@@ -969,7 +969,7 @@ public class UserDAO {
         return 0;
     }
 
-    public boolean updateProfile(String userId, String fullName, String phone, String address) {
+    public boolean updateProfile(String userId, String fullName, String phone) {
         User user = getUserById(userId);
 
         if (user == null) {
@@ -980,7 +980,7 @@ public class UserDAO {
 
         if ("CUSTOMER".equalsIgnoreCase(user.getRoleId())) {
             sql = "UPDATE customer "
-                    + "SET Full_Name = ?, Phone = ?, Default_Address = ? "
+                    + "SET Full_Name = ?, Phone = ? "
                     + "WHERE User_ID = ?";
         } else {
             sql = "UPDATE staff "
@@ -998,12 +998,7 @@ public class UserDAO {
             ps.setString(1, fullName);
             ps.setString(2, phone);
 
-            if ("CUSTOMER".equalsIgnoreCase(user.getRoleId())) {
-                ps.setString(3, address);
-                ps.setString(4, userId);
-            } else {
-                ps.setString(3, userId);
-            }
+            ps.setString(3, userId);
 
             return ps.executeUpdate() > 0;
 

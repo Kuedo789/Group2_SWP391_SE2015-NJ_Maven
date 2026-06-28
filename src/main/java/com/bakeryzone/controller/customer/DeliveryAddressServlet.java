@@ -166,6 +166,9 @@ public class DeliveryAddressServlet extends HttpServlet {
             } catch (Exception e) {}
         };
 
+        boolean isLockedName = receiverName.equals(user.getFullName());
+        boolean isLockedPhone = receiverPhone.equals(user.getPhone());
+
         if (isEmpty(receiverName)) {
             request.setAttribute("errorMessage", "Vui lòng nhập tên người nhận.");
             preserveState.run();
@@ -173,14 +176,14 @@ public class DeliveryAddressServlet extends HttpServlet {
             return;
         }
 
-        if (receiverName.length() > 30 || !receiverName.matches("[\\p{L}]+( [\\p{L}]+)*")) {
+        if (!isLockedName && (receiverName.length() > 30 || !receiverName.matches("[\\p{L}]+( [\\p{L}]+)*"))) {
             request.setAttribute("errorMessage", "Tên người nhận không hợp lệ.");
             preserveState.run();
             request.getRequestDispatcher("/customer/deliveryAddress.jsp").forward(request, response);
             return;
         }
 
-        if (isEmpty(receiverPhone) || !receiverPhone.matches("0(3|5|7|8|9)\\d{8}")) {
+        if (isEmpty(receiverPhone) || (!isLockedPhone && !receiverPhone.matches("0(3|5|7|8|9)\\d{8}"))) {
             request.setAttribute("errorMessage", "Số điện thoại người nhận không hợp lệ.");
             preserveState.run();
             request.getRequestDispatcher("/customer/deliveryAddress.jsp").forward(request, response);
