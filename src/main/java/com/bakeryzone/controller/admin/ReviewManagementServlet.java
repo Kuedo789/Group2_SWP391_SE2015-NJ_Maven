@@ -10,7 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "ReviewManagementServlet", urlPatterns = {"/admin/test-reviews"})
+@WebServlet(name = "ReviewManagementServlet", urlPatterns = {"/admin/reviews"})
 public class ReviewManagementServlet extends HttpServlet {
 
     private final ReviewDAO reviewDAO = new ReviewDAO();

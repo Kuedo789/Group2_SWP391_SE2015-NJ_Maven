@@ -33,17 +33,17 @@
     </div>
 
     <div class="nav-section-title">Hệ thống chính</div>
+
     <c:if test="${requestScope.LIVE_PERMISSIONS.contains('/admin/dashboard')}">
-        <ul class="sidebar-menu">
-            <li class="menu-item ${param.activeMenu == 'dashboard' ? 'active' : ''}">
-                <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
-            </li>
-        </ul>
+        <li class="menu-item ${param.activeMenu == 'dashboard' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
+        </li>
     </c:if>
 </ul>
 
 <div class="nav-section-title">Quản lý</div>
 <ul class="sidebar-menu">
+
     <li class="menu-item ${param.activeMenu == 'orders' ? 'active' : ''}">
         <a href="${pageContext.request.contextPath}/admin/orders"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
     </li>
@@ -72,6 +72,7 @@
             <a href="${pageContext.request.contextPath}/admin/customer?action=list"><i class="fa-solid fa-users"></i> Khách hàng</a>
         </li>
     </c:if>
+
     <li class="menu-item ${param.activeMenu == 'promotions' ? 'active' : ''}">
         <a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi <i class="fa-solid fa-chevron-down arrow"></i></a>
     </li>
@@ -84,24 +85,25 @@
 
     <c:if test="${requestScope.LIVE_PERMISSIONS.contains('/admin/reviews')}">
         <li class="menu-item ${param.activeMenu == 'reviews' ? 'active' : ''}">
-            <a href="${pageContext.request.contextPath}/admin/test-reviews?action=list">
-                <i class="fa-solid fa-star-half-stroke"></i> Đánh giá
-            </a>
+            <a href="${pageContext.request.contextPath}/admin/reviews?action=list"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a>
         </li>
     </c:if>
+
 </ul>
+
 
 <div class="nav-section-title">Hệ thống</div>
 <ul class="sidebar-menu">
 
-    <c:if test="${requestScope.LIVE_PERMISSIONS.contains('/admin/staff')}">
+    <c:if test="${sessionScope.user.roleId eq 'ADMIN'}">
         <li class="menu-item ${param.activeMenu == 'users' ? 'active' : ''}">
             <a href="${pageContext.request.contextPath}/admin/staff?action=list"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
         </li>
+        <li class="menu-item ${param.activeMenu == 'roles' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/admin/role-permissions?action=list"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a>
+        </li>
     </c:if>
-    <li class="menu-item ${param.activeMenu == 'roles' ? 'active' : ''}">
-        <a href="${pageContext.request.contextPath}/admin/role-permissions?action=list"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a>
-    </li>
+        
     <li class="menu-item ${param.activeMenu == 'settings' ? 'active' : ''}">
         <a href="#"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a>
     </li>
@@ -170,3 +172,4 @@
     });
 </script>
 
+<div class="nav-section-title">Quản lý</div>
