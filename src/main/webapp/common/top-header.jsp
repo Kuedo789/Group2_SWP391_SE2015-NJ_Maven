@@ -20,12 +20,14 @@
         <button class="header-icon-btn"><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
         <button class="header-icon-btn"><i class="fa-regular fa-circle-question"></i></button>
         
-        <div class="profile-section">
-            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
-            <div class="profile-info">
-                <div class="profile-name"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></div>
-                <div class="profile-role"><c:out value="${not empty sessionScope.user.roleName ? sessionScope.user.roleName : sessionScope.user.roleId}" /></div>
+        <a href="${pageContext.request.contextPath}/profile" style="text-decoration: none; color: inherit;">
+            <div class="profile-section">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
+                <div class="profile-info">
+                    <div class="profile-name"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></div>
+                    <div class="profile-role"><c:out value="${not empty sessionScope.user.roleName ? sessionScope.user.roleName : sessionScope.user.roleId}" /></div>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>

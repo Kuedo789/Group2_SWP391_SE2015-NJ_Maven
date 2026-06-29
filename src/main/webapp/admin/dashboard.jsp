@@ -78,13 +78,15 @@
                     <span class="badge-dot"></span>
                 </button>
                 <div class="header-divider"></div>
-                <div class="user-profile">
-                    <div class="user-info">
-                        <div class="user-name"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></div>
-                        <div class="user-role"><c:out value="${not empty sessionScope.user.roleName ? sessionScope.user.roleName : sessionScope.user.roleId}" /></div>
+                <a href="${pageContext.request.contextPath}/profile" style="text-decoration: none; color: inherit;">
+                    <div class="user-profile">
+                        <div class="user-info">
+                            <div class="user-name"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></div>
+                            <div class="user-role"><c:out value="${not empty sessionScope.user.roleName ? sessionScope.user.roleName : sessionScope.user.roleId}" /></div>
+                        </div>
+                        <div class="avatar" style="background-image: url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde');"></div>
                     </div>
-                    <div class="avatar" style="background-image: url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde');"></div>
-                </div>
+                </a>
             </div>
         </nav>
 
