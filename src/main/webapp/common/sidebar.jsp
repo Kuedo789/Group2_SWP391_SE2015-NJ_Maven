@@ -34,89 +34,120 @@
 
     <div class="nav-section-title">Hệ thống chính</div>
     <ul class="sidebar-menu">
-        <c:if test="${requestScope.LIVE_PERMISSIONS.contains('/admin/dashboard')}">
+        <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/dashboard')}">
             <li class="menu-item ${param.activeMenu == 'dashboard' ? 'active' : ''}">
                 <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
             </li>
         </c:if>
     </ul>
 
-<div class="nav-section-title">Quản lý</div>
-<ul class="sidebar-menu">
+    <div class="nav-section-title">Quản lý</div>
+    <ul class="sidebar-menu">
+        <!-- Đơn hàng -->
+        <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/orders?action=list')}">
+            <li class="menu-item ${param.activeMenu == 'orders' ? 'active' : ''}">
+                <a href="${pageContext.request.contextPath}/admin/orders?action=list"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
+            </li>
+        </c:if>
 
-    <li class="menu-item ${param.activeMenu == 'orders' ? 'active' : ''}">
-        <a href="${pageContext.request.contextPath}/admin/orders"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
-    </li>
-    <c:set var="isProductActive" value="${param.activeMenu == 'products' || param.activeMenu == 'categories' || param.activeMenu == 'ingredients' || param.activeMenu == 'units' || param.activeMenu == 'attributes'}" />
-    <li class="menu-item ${isProductActive ? 'active' : ''}" id="product-parent-menu">
-        <a href="${pageContext.request.contextPath}/admin/product?action=list" id="product-parent-link">
-            <i class="fa-solid fa-cookie-bite"></i> <span>Sản phẩm</span>
-            <i class="fa-solid ${isProductActive ? 'fa-chevron-up' : 'fa-chevron-down'} arrow" id="product-chevron"></i>
-        </a>
-    </li>
-    <li class="menu-item ${param.activeMenu == 'categories' ? 'active' : ''} product-child-item" style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
-        <a href="${pageContext.request.contextPath}/admin/categories" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Danh mục</a>
-    </li>
-    <li class="menu-item ${param.activeMenu == 'ingredients' ? 'active' : ''} product-child-item" style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
-        <a href="${pageContext.request.contextPath}/admin/ingredient?action=list" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Nguyên liệu</a>
-    </li>
-    <li class="menu-item ${param.activeMenu == 'units' ? 'active' : ''} product-child-item" style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
-        <a href="${pageContext.request.contextPath}/admin/unit?action=list" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Đơn vị tính</a>
-    </li>
-    <li class="menu-item ${param.activeMenu == 'attributes' ? 'active' : ''} product-child-item" style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
-        <a href="#" style="font-size: 13px; padding: 8px 25px;"><i class="fa-solid fa-caret-right"></i> Thuộc tính</a>
-    </li>
+        <c:set var="canViewProduct" value="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/product?action=list')}" />
+        <c:set var="canViewCat" value="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/categories?action=list')}" />
+        <c:set var="canViewIng" value="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/ingredient?action=list')}" />
+        <c:set var="canViewUnit" value="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/unit?action=list')}" />
 
-    <c:if test="${requestScope.LIVE_PERMISSIONS.contains('/admin/customer')}">
-        <li class="menu-item ${param.activeMenu == 'customers' ? 'active' : ''}">
-            <a href="${pageContext.request.contextPath}/admin/customer?action=list"><i class="fa-solid fa-users"></i> Khách hàng</a>
+        <c:if test="${canViewProduct || canViewCat || canViewIng || canViewUnit}">
+            <li class="menu-item ${isProductActive ? 'active' : ''}" id="product-parent-menu">
+                <a href="${pageContext.request.contextPath}/admin/product?action=list" id="product-parent-link">
+                    <i class="fa-solid fa-cookie-bite"></i> <span>Sản phẩm</span>
+                    <i class="fa-solid ${isProductActive ? 'fa-chevron-up' : 'fa-chevron-down'} arrow" id="product-chevron"></i>
+                </a>
+            </li>
+
+            <%-- 2. Các mục con (đóng các thẻ if của từng mục con ngay sau mỗi thẻ li) --%>
+            <c:if test="${canViewCat}">
+                <li class="menu-item ${param.activeMenu == 'categories' ? 'active' : ''} product-child-item" style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
+                    <a href="${pageContext.request.contextPath}/admin/categories?action=list" style="font-size: 13px; padding: 8px 25px;">
+                        <i class="fa-solid fa-caret-right"></i> Danh mục
+                    </a>
+                </li>
+            </c:if>
+
+            <c:if test="${canViewIng}">
+                <li class="menu-item ${param.activeMenu == 'ingredients' ? 'active' : ''} product-child-item" style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
+                    <a href="${pageContext.request.contextPath}/admin/ingredient?action=list" style="font-size: 13px; padding: 8px 25px;">
+                        <i class="fa-solid fa-caret-right"></i> Nguyên liệu
+                    </a>
+                </li>
+            </c:if>
+
+            <c:if test="${canViewUnit}">
+                <li class="menu-item ${param.activeMenu == 'units' ? 'active' : ''} product-child-item" style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
+                    <a href="${pageContext.request.contextPath}/admin/unit?action=list" style="font-size: 13px; padding: 8px 25px;">
+                        <i class="fa-solid fa-caret-right"></i> Đơn vị tính
+                    </a>
+                </li>
+            </c:if>
+
+            <li class="menu-item ${param.activeMenu == 'attributes' ? 'active' : ''} product-child-item" style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
+                <a href="#" style="font-size: 13px; padding: 8px 25px;">
+                    <i class="fa-solid fa-caret-right"></i> Thuộc tính
+                </a>
+            </li>
+
+        </c:if>
+
+        <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/customer?action=list')}">
+            <li class="menu-item ${param.activeMenu == 'customers' ? 'active' : ''}">
+                <a href="${pageContext.request.contextPath}/admin/customer?action=list"><i class="fa-solid fa-users"></i> Khách hàng</a>
+            </li>
+        </c:if>
+
+        <li class="menu-item ${param.activeMenu == 'promotions' ? 'active' : ''}">
+            <a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
-    </c:if>
-
-    <li class="menu-item ${param.activeMenu == 'promotions' ? 'active' : ''}">
-        <a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi <i class="fa-solid fa-chevron-down arrow"></i></a>
-    </li>
-    <li class="menu-item ${param.activeMenu == 'inventory' ? 'active' : ''}">
-        <a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
-    </li>
-    <li class="menu-item ${param.activeMenu == 'delivery' ? 'active' : ''}">
-        <a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
-    </li>
-
-    <c:if test="${requestScope.LIVE_PERMISSIONS.contains('/admin/reviews')}">
-        <li class="menu-item ${param.activeMenu == 'reviews' ? 'active' : ''}">
-            <a href="${pageContext.request.contextPath}/admin/reviews?action=list"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a>
+        <li class="menu-item ${param.activeMenu == 'inventory' ? 'active' : ''}">
+            <a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
-    </c:if>
-
-</ul>
-
-
-<div class="nav-section-title">Hệ thống</div>
-<ul class="sidebar-menu">
-
-    <c:if test="${sessionScope.user.roleId eq 'ADMIN'}">
-        <li class="menu-item ${param.activeMenu == 'users' ? 'active' : ''}">
-            <a href="${pageContext.request.contextPath}/admin/staff?action=list"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
+        <li class="menu-item ${param.activeMenu == 'delivery' ? 'active' : ''}">
+            <a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
-        <li class="menu-item ${param.activeMenu == 'roles' ? 'active' : ''}">
-            <a href="${pageContext.request.contextPath}/admin/role-permissions?action=list"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a>
-        </li>
-    </c:if>
-        
-    <li class="menu-item ${param.activeMenu == 'settings' ? 'active' : ''}">
-        <a href="${pageContext.request.contextPath}/admin/settings"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a>
-    </li>
-    <li class="menu-item ${param.activeMenu == 'logs' ? 'active' : ''}">
-        <a href="#"><i class="fa-solid fa-clock-rotate-left"></i> Nhật ký hoạt động</a>
-    </li>
-</ul>
 
-<!-- Technical Support button matching mockup -->
-<div class="sidebar-banner support-box">
-    <div class="support-title">HỖ TRỢ</div>
-    <a href="tel:0901234567" class="support-btn">Liên hệ kỹ thuật</a>
-</div>
+        <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/reviews?action=list')}">
+            <li class="menu-item ${param.activeMenu == 'reviews' ? 'active' : ''}">
+                <a href="${pageContext.request.contextPath}/admin/reviews?action=list"><i class="fa-solid fa-star-half-stroke"></i> Đánh giá</a>
+            </li>
+        </c:if>
+
+    </ul>
+
+
+    <div class="nav-section-title">Hệ thống</div>
+    <ul class="sidebar-menu">
+
+        <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/staff?action=list')}">
+            <li class="menu-item ${param.activeMenu == 'users' ? 'active' : ''}">
+                <a href="${pageContext.request.contextPath}/admin/staff?action=list"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>
+            </li>
+        </c:if>
+
+        <c:if test="${sessionScope.user.roleId eq 'ADMIN'}">
+            <li class="menu-item ${param.activeMenu == 'roles' ? 'active' : ''}">
+                <a href="${pageContext.request.contextPath}/admin/role-permissions?action=list"><i class="fa-solid fa-shield-halved"></i> Vai trò & Quyền hạn</a>
+            </li>
+        </c:if>
+
+        <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/settings')}">
+            <li class="menu-item ${param.activeMenu == 'settings' ? 'active' : ''}">
+                <a href="${pageContext.request.contextPath}/admin/settings"><i class="fa-solid fa-sliders"></i> Cài đặt chung</a>
+            </li>
+        </c:if>
+    </ul>
+
+    <!-- Technical Support button matching mockup -->
+    <div class="sidebar-banner support-box">
+        <div class="support-title">HỖ TRỢ</div>
+        <a href="tel:0901234567" class="support-btn">Liên hệ kỹ thuật</a>
+    </div>
 </div>
 
 <script>
