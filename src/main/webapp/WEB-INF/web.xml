@@ -103,15 +103,18 @@
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
         <url-pattern>/admin/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
     <filter-mapping>
         <filter-name>AuthorizationFilter</filter-name>
         <url-pattern>/staff</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
     </filter-mapping>
-    <filter-mapping>
-        <filter-name>AuthorizationFilter</filter-name>
-        <url-pattern>/customer</url-pattern>
-    </filter-mapping>
+    <!-- NOTE: /customer filter mapping removed. Customer JSPs are never accessed
+         directly by clients — they are always reached via internal servlet forwards
+         (e.g. CustomCakeServlet → /customer/customCakeStudio.jsp). Keeping this
+         mapping caused the AuthorizationFilter to intercept internal FORWARDs and
+         loop: forward → filter → no-permission → home.jsp forward → filter → ... -->
     <servlet-mapping>
         <servlet-name>CustomerCheckoutServlet</servlet-name>
         <url-pattern>/checkout</url-pattern>
@@ -127,6 +130,14 @@
     <servlet-mapping>
         <servlet-name>RewardsController</servlet-name>
         <url-pattern>/rewards</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>CustomCakeServlet</servlet-name>
+        <servlet-class>com.bakeryzone.controller.customer.CustomCakeServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CustomCakeServlet</servlet-name>
+        <url-pattern>/custom-cake</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>

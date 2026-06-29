@@ -163,7 +163,7 @@
                         <a href="${pageContext.request.contextPath}/rewards"
                            class="ms-redeem-btn"
                            title="Đổi điểm thưởng lấy voucher">
-                            🎁 Đổi thưởng ngay
+                            Đổi thưởng ngay
                         </a>
                     </div>
 

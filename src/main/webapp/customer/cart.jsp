@@ -17,8 +17,8 @@
 
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/style.css">
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/cart.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all/style.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all/cart.css">
         <style>
             /* Adjust the 90px value up or down depending on your actual header height */
             .cart-container {
