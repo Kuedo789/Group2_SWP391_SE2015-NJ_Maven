@@ -143,7 +143,7 @@
                                     <span class="summary-label">Tổng cộng</span>
                                     <span class="summary-value-total" id="totalPriceDisplay">0₫</span>
                                 </div>
-                                <button class="checkout-btn-modern" type="button" onclick="addToCart()">THÊM VÀO GIỎ HÀNG 🛒</button>
+                                <button class="checkout-btn-modern" type="button" onclick="addToCart()">THÊM VÀO GIỎ HÀNG</button>
                             </div>
 
                         </div>

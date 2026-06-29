@@ -152,6 +152,11 @@ public class CustomCakeServlet extends HttpServlet {
             boolean success = customCakeDAO.saveCustomCakeAndAddToCart(cake, layers, userId);
 
             if (success) {
+                // Sync the user's HttpSession cart cache block so the browser view updates its badge counter instantly.
+                com.bakeryzone.dao.CartDAO cartDAO = new com.bakeryzone.dao.CartDAO();
+                int cartCount = cartDAO.getCartCountForUser(userId);
+                session.setAttribute("cartCount", cartCount);
+
                 sendJsonResponse(response, true, "Bánh tùy chỉnh đã được thêm vào giỏ hàng!", customCakeId);
             } else {
                 sendJsonResponse(response, false, "Đã xảy ra lỗi khi lưu bánh. Vui lòng thử lại.", null);

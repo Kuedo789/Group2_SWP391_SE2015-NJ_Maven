@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <%-- FIXED: Added explicit model class import so Tomcat compiles without errors --%>
 <%@ page import="com.bakeryzone.model.User" %>
@@ -123,7 +124,30 @@
                                             <img src="${item.imageUrl}" alt="${item.name}" class="item-img">
 
                                             <div class="item-info">
-                                                <div class="item-title">${item.name}</div>
+                                                <c:choose>
+                                                    <c:when test="${fn:startsWith(item.name, 'SIZE_')}">
+                                                        <c:set var="parts" value="${fn:split(item.name, '_')}" />
+                                                        <c:set var="size" value="${parts[1]}" />
+                                                        <c:set var="layers" value="${parts[3]}" />
+                                                        <div class="item-title">Bánh Kem Tùy Chỉnh (${size}cm)</div>
+                                                        <div class="item-desc" style="margin-top: 4px; margin-bottom: 6px;">
+                                                            <strong>${layers} Tầng:</strong> 
+                                                            <c:forEach var="i" begin="4" end="${fn:length(parts) - 1}" varStatus="status">
+                                                                <c:choose>
+                                                                    <c:when test="${parts[i] == 'VANILLA'}">Vani</c:when>
+                                                                    <c:when test="${parts[i] == 'CHOCO'}">Chocolate</c:when>
+                                                                    <c:when test="${parts[i] == 'STRAW'}">Dâu</c:when>
+                                                                    <c:when test="${parts[i] == 'MATCHA'}">Trà xanh</c:when>
+                                                                    <c:otherwise>${parts[i]}</c:otherwise>
+                                                                </c:choose><c:if test="${!status.last}">, </c:if>
+                                                            </c:forEach>
+                                                        </div>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <div class="item-title">${item.name}</div>
+                                                    </c:otherwise>
+                                                </c:choose>
+
                                                 <div class="item-desc">
                                                     <c:choose>
                                                         <c:when test="${not empty item.greetingText}">
