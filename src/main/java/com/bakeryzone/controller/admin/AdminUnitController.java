@@ -72,6 +72,19 @@ public class AdminUnitController extends HttpServlet {
             search = "";
         }
         
+        int page = 1;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null && !pageParam.trim().isEmpty()) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+        }
+        
+        int pageSize = 5; // Default to 5 items per page for units
+        
         List<UnitMeasure> list = unitMeasureDAO.getAllUnitMeasures();
         
         // Let's filter the list based on search term
@@ -83,8 +96,25 @@ public class AdminUnitController extends HttpServlet {
                 .collect(java.util.stream.Collectors.toList());
         }
 
-        request.setAttribute("unitList", list);
+        int totalCount = list.size();
+        int totalPages = (int) Math.ceil((double) totalCount / pageSize);
+        if (totalPages < 1) {
+            totalPages = 1;
+        }
+        if (page > totalPages) {
+            page = totalPages;
+        }
+        
+        int fromIndex = (page - 1) * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, totalCount);
+        List<UnitMeasure> paginatedList = list.subList(fromIndex, toIndex);
+
+        request.setAttribute("unitList", paginatedList);
         request.setAttribute("search", search);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("pageSize", pageSize);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalCount", totalCount);
         request.getRequestDispatcher("/admin/unitList.jsp").forward(request, response);
     }
 
@@ -157,16 +187,18 @@ public class AdminUnitController extends HttpServlet {
         if (description != null) description = description.trim();
 
         boolean idValid = unitId != null && !unitId.isEmpty() && unitId.length() <= 10;
-        boolean nameValid = unitName != null && !unitName.isEmpty() && unitName.length() >= 2;
+        boolean nameValid = unitName != null && !unitName.isEmpty() && unitName.length() >= 2 && unitName.length() <= 50;
         boolean descValid = description == null || description.length() <= 255;
 
         if (!idValid || !nameValid || !descValid) {
             UnitMeasure unit = new UnitMeasure(unitId, unitName, description);
             request.setAttribute("unit", unit);
-            if (!descValid) {
-                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mô tả chi tiết tối đa 255 ký tự.");
+            if (!idValid) {
+                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mã đơn vị tối đa 10 ký tự và không được để trống.");
+            } else if (!nameValid) {
+                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Tên đơn vị phải từ 2 đến 50 ký tự.");
             } else {
-                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mã đơn vị tối đa 10 ký tự, Tên đơn vị tối thiểu 2 ký tự.");
+                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mô tả chi tiết tối đa 255 ký tự.");
             }
             request.setAttribute("formAction", isNew ? "create" : "update");
             request.setAttribute("isEdit", !isNew);

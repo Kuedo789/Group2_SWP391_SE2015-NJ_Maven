@@ -14,6 +14,152 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Custom styling -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductDetail.css?v=1.4">
+    <style>
+        .product-images-container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            font-family: 'Be Vietnam Pro', sans-serif;
+            margin-bottom: 25px;
+        }
+        .product-images-header {
+            margin-bottom: 20px;
+        }
+        .images-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+        .images-subtitle {
+            font-size: 12.5px;
+            color: #6b7280;
+            margin: 0;
+        }
+        .images-layout-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .cover-image-panel {
+            display: flex;
+            flex-direction: column;
+        }
+        .cover-image-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/10;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            cursor: zoom-in;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
+        }
+        .cover-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .cover-image-wrapper:hover img {
+            transform: scale(1.02);
+        }
+        .cover-badge {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background-color: #f97316;
+            color: #ffffff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+            box-shadow: 0 2px 4px rgba(249, 115, 22, 0.3);
+        }
+        .cover-actions {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 8px;
+            background: rgba(31, 41, 55, 0.75);
+            backdrop-filter: blur(4px);
+            padding: 6px;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .cover-image-wrapper:hover .cover-actions {
+            opacity: 1;
+        }
+        .action-btn {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 14px;
+            padding: 6px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        .action-btn:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        .delete-cover-btn:hover {
+            color: #ef4444;
+        }
+        /* Lightbox modal */
+        .lightbox-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .lightbox-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+        .lightbox-content {
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.5);
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+        }
+        .lightbox-modal.show .lightbox-content {
+            transform: scale(1);
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            color: #f1f1f1;
+            font-size: 36px;
+            font-weight: bold;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+        .lightbox-close:hover {
+            color: #f97316;
+        }
+    </style>
 </head>
 <body>
 
@@ -52,9 +198,15 @@
         <!-- Dashboard Container -->
         <div class="content-container">
             
-            <form action="${pageContext.request.contextPath}/admin/ingredient?action=${formAction}" method="post">
+            <form action="${pageContext.request.contextPath}/admin/ingredient?action=${formAction}" method="post" enctype="multipart/form-data">
                 <!-- Keep track of the ingredient ID -->
                 <input type="hidden" name="ingredientId" value="${ingredient.ingredientId}">
+                <!-- Keep track of pagination/filters -->
+                <input type="hidden" name="page" value="${param.page}">
+                <input type="hidden" name="pageSize" value="${param.pageSize}">
+                <input type="hidden" name="search" value="${param.search}">
+                <input type="hidden" name="unitId" value="${param.unitId}">
+                <input type="hidden" name="sortBy" value="${param.sortBy}">
 
                 <!-- Page Title Area -->
                 <div class="page-title-area">
@@ -78,15 +230,57 @@
                 </c:if>
 
                 <div class="row">
-                    <!-- Column -->
-                    <div class="col-lg-12">
-                        
+                    <!-- Left Column: Image Upload -->
+                    <div class="col-lg-5">
+                        <div class="product-images-container">
+                            <div class="product-images-header">
+                                <h5 class="images-title">Hình Ảnh Nguyên Liệu</h5>
+                                <p class="images-subtitle">Tải lên hình ảnh nguyên liệu chất lượng cao. Ảnh bìa lớn bên dưới sẽ được sử dụng làm ảnh đại diện chính.</p>
+                            </div>
+                            
+                            <c:set var="resolvedImageUrl" value="https://images.unsplash.com/photo-1506084868230-bb9d95c24759" />
+                            <c:if test="${not empty ingredient.imageUrl}">
+                                <c:choose>
+                                    <c:when test="${ingredient.imageUrl.startsWith('http://') or ingredient.imageUrl.startsWith('https://')}">
+                                        <c:set var="resolvedImageUrl" value="${ingredient.imageUrl}" />
+                                    </c:when>
+                                    <c:otherwise>
+                                        <c:set var="resolvedImageUrl" value="${pageContext.request.contextPath}/${ingredient.imageUrl}" />
+                                    </c:otherwise>
+                                </c:choose>
+                            </c:if>
+                            
+                            <div class="images-layout-grid">
+                                <!-- Cover Image Panel -->
+                                <div class="cover-image-panel">
+                                    <div class="cover-image-wrapper" title="Nhấp để xem ảnh lớn hơn">
+                                        <img id="mainCoverImage" src="${resolvedImageUrl}" alt="Ảnh Nguyên Liệu" onclick="openLightbox(this.src)" onerror="this.src='https://images.unsplash.com/photo-1506084868230-bb9d95c24759';">
+                                        <div class="cover-badge">Ảnh nguyên liệu</div>
+                                        <div class="cover-actions">
+                                            <button type="button" class="action-btn edit-cover-btn" onclick="event.stopPropagation(); document.getElementById('imageFileInput').click()" title="Thay đổi ảnh">
+                                                <i class="fa-solid fa-pencil"></i>
+                                            </button>
+                                            <button type="button" class="action-btn delete-cover-btn" onclick="event.stopPropagation(); resetCoverImage()" title="Xóa ảnh">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <input type="file" name="imageFile" id="imageFileInput" accept=".jpg,.jpeg,.png" style="display: none;">
+                                    <input type="hidden" name="imageUrl" id="imageUrlHidden" value="${ingredient.imageUrl}">
+                                    <div id="imageError" class="text-danger mt-1" style="font-size: 13px; display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Detail Info -->
+                    <div class="col-lg-7">
                         <!-- Product Information Card -->
                         <div class="detail-card">
                             <h5 class="card-header-title">Thông Tin Nguyên Liệu</h5>
                             
                             <div class="row g-3">
-                                 <div class="col-md-6">
+                                 <div class="col-12">
                                      <label class="form-label-cz">Tên Nguyên Liệu <span>*</span></label>
                                      <input type="text" class="form-control-cz" id="ingredientName" name="ingredientName" value="${ingredient.ingredientName}" required>
                                      <div id="error-name" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
@@ -104,18 +298,12 @@
                                  </div>
 
                                  <div class="col-md-6">
-                                     <label class="form-label-cz">Đường dẫn ảnh (Image URL)</label>
-                                     <input type="text" class="form-control-cz" id="imageUrl" name="imageUrl" value="${ingredient.imageUrl}">
-                                 </div>
-
-                                 <div class="col-md-6">
                                      <label class="form-label-cz">Đơn giá (VND) <span>*</span></label>
                                      <input type="number" step="0.01" class="form-control-cz" id="pricePerUnit" name="pricePerUnit" value="${ingredient.pricePerUnit}" required>
                                      <div id="error-price" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </form>
@@ -126,13 +314,79 @@
     <!-- Hidden delete form for POST request -->
     <form id="deleteIngredientForm" action="${pageContext.request.contextPath}/admin/ingredient?action=delete" method="post" style="display:none;">
         <input type="hidden" name="id" value="${ingredient.ingredientId}">
+        <input type="hidden" name="page" value="${param.page}">
+        <input type="hidden" name="pageSize" value="${param.pageSize}">
+        <input type="hidden" name="search" value="${param.search}">
+        <input type="hidden" name="unitId" value="${param.unitId}">
+        <input type="hidden" name="sortBy" value="${param.sortBy}">
     </form>
+
+    <!-- Lightbox Modal for viewing large images -->
+    <div id="imageLightbox" class="lightbox-modal" onclick="closeLightbox()">
+        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+        <img class="lightbox-content" id="lightboxImg">
+    </div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function deleteIngredient(id) {
             document.getElementById('deleteIngredientForm').submit();
+        }
+
+        // Live preview for image upload
+        document.getElementById('imageFileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const errorDiv = document.getElementById('imageError');
+            const preview = document.getElementById('mainCoverImage');
+            
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            
+            if (file) {
+                // Validate size (5MB = 5 * 1024 * 1024)
+                if (file.size > 5 * 1024 * 1024) {
+                    errorDiv.textContent = 'Dung lượng ảnh vượt quá giới hạn cho phép (tối đa 5MB).';
+                    errorDiv.style.display = 'block';
+                    event.target.value = ''; // Reset file input
+                    return;
+                }
+                
+                // Validate extension
+                const allowedExtensions = /(\.jpg|\.jpeg|\.png)$/i;
+                if (!allowedExtensions.exec(file.name)) {
+                    errorDiv.textContent = 'Định dạng tệp không hợp lệ. Chỉ chấp nhận các đuôi .jpg, .jpeg, .png.';
+                    errorDiv.style.display = 'block';
+                    event.target.value = ''; // Reset file input
+                    return;
+                }
+                
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function resetCoverImage() {
+            document.getElementById('imageFileInput').value = '';
+            document.getElementById('imageUrlHidden').value = '';
+            document.getElementById('mainCoverImage').src = 'https://images.unsplash.com/photo-1506084868230-bb9d95c24759';
+        }
+
+        function openLightbox(src) {
+            const lightbox = document.getElementById('imageLightbox');
+            const lightboxImg = document.getElementById('lightboxImg');
+            lightboxImg.src = src;
+            lightbox.classList.add('show');
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('imageLightbox');
+            document.getElementById('lightboxImg').src = '';
+            lightbox.classList.remove('show');
         }
 
         const form = document.querySelector('form');

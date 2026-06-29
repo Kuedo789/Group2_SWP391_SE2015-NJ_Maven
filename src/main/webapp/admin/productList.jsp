@@ -258,18 +258,7 @@
                             </c:if>
                         </ul>
                         
-                        <form action="${pageContext.request.contextPath}/admin/product" method="get" class="d-inline">
-                            <input type="hidden" name="action" value="list">
-                            <input type="hidden" name="category" value="${category}">
-                            <input type="hidden" name="status" value="${status}">
-                            <input type="hidden" name="search" value="${search}">
-                            <input type="hidden" name="sortBy" value="${sortBy}">
-                            <select class="filter-select" name="pageSize" onchange="this.form.submit()" style="min-width: auto; padding: 5px 25px 5px 10px; font-size: 12.5px;">
-                                <option value="5" ${pageSize == 5 ? 'selected' : ''}>5 / trang</option>
-                                <option value="10" ${pageSize == 10 ? 'selected' : ''}>10 / trang</option>
-                                <option value="20" ${pageSize == 20 ? 'selected' : ''}>20 / trang</option>
-                            </select>
-                        </form>
+
                     </div>
                 </div>
             </div>

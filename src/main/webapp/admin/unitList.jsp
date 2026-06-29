@@ -91,17 +91,17 @@
                             <c:when test="${not empty unitList}">
                                 <c:forEach var="u" items="${unitList}" varStatus="status">
                                     <tr>
-                                        <td>${status.index + 1}</td>
+                                        <td>${((currentPage - 1) * pageSize) + status.index + 1}</td>
                                         <td>
                                             <span class="badge" style="background-color: #f5f5f5; color: #666; border: 1px solid #ddd; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: 4px; display: inline-flex; align-items: center; letter-spacing: 0.5px;">
                                                 ${u.unitId}
                                             </span>
                                         </td>
-                                        <td><strong>${u.unitName}</strong></td>
-                                        <td class="text-muted" style="font-size: 13.5px; font-weight: 400; color: var(--cz-text-muted) !important;">${not empty u.description ? u.description : '—'}</td>
+                                        <td style="max-width: 220px; word-break: break-all; white-space: normal;"><strong>${u.unitName}</strong></td>
+                                        <td class="text-muted" style="font-size: 13.5px; font-weight: 400; color: var(--cz-text-muted) !important; max-width: 300px; word-break: break-all; white-space: normal;">${not empty u.description ? u.description : '—'}</td>
                                         <td>
                                             <div class="actions-cell">
-                                                <a href="${pageContext.request.contextPath}/admin/unit?action=edit&id=${u.unitId}&search=${search}" class="btn-action-edit" title="Chỉnh sửa">
+                                                <a href="${pageContext.request.contextPath}/admin/unit?action=edit&id=${u.unitId}&search=${search}&page=${currentPage}" class="btn-action-edit" title="Chỉnh sửa">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </a>
                                                 <button type="button" class="btn-action-delete" title="Xóa" onclick="confirmDelete('${u.unitId}', '${u.unitName}')">
@@ -126,7 +126,35 @@
 
                 <!-- Pagination area -->
                 <div class="pagination-area">
-                    <span class="pagination-text">Tổng cộng <strong>${not empty unitList ? unitList.size() : 0}</strong> đơn vị tính</span>
+                    <span class="pagination-text">Hiển thị ${totalCount > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} đến ${((currentPage - 1) * pageSize) + unitList.size()} trong tổng số ${totalCount} đơn vị tính</span>
+                    <div class="d-flex align-items-center gap-3">
+                        <ul class="pagination-nav">
+                            <!-- Prev page -->
+                             <c:if test="${currentPage > 1}">
+                                 <li class="page-num-item">
+                                     <a href="${pageContext.request.contextPath}/admin/unit?action=list&page=${currentPage - 1}&search=${search}">
+                                         <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
+                                     </a>
+                                 </li>
+                             </c:if>
+                             
+                             <!-- Page Numbers -->
+                             <c:forEach var="pageNum" begin="1" end="${totalPages}">
+                                 <li class="page-num-item ${pageNum == currentPage ? 'active' : ''}">
+                                     <a href="${pageContext.request.contextPath}/admin/unit?action=list&page=${pageNum}&search=${search}">${pageNum}</a>
+                                 </li>
+                             </c:forEach>
+                             
+                             <!-- Next page -->
+                             <c:if test="${currentPage < totalPages}">
+                                 <li class="page-num-item">
+                                     <a href="${pageContext.request.contextPath}/admin/unit?action=list&page=${currentPage + 1}&search=${search}">
+                                         <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
+                                     </a>
+                                 </li>
+                             </c:if>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
