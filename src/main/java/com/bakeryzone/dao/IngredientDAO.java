@@ -43,7 +43,7 @@ public class IngredientDAO {
         return list;
     }
 
-    public List<Ingredient> getIngredientsFiltered(String search, int page, int pageSize) {
+    public List<Ingredient> getIngredientsFiltered(String search, String unitId, String sortBy, int page, int pageSize) {
         List<Ingredient> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT i.Ingredient_ID, i.Ingredient_Name, i.Price_Per_Unit, i.Unit_ID, u.Unit_Name, i.Image_URL, i.enable " +
@@ -55,7 +55,23 @@ public class IngredientDAO {
         if (search != null && !search.trim().isEmpty()) {
             sql.append("AND (i.Ingredient_Name LIKE ? OR i.Ingredient_ID LIKE ?) ");
         }
-        sql.append("ORDER BY i.Ingredient_ID DESC ");
+        if (unitId != null && !unitId.trim().isEmpty()) {
+            sql.append("AND i.Unit_ID = ? ");
+        }
+
+        // Sorting
+        if ("price_asc".equals(sortBy)) {
+            sql.append("ORDER BY i.Price_Per_Unit ASC ");
+        } else if ("price_desc".equals(sortBy)) {
+            sql.append("ORDER BY i.Price_Per_Unit DESC ");
+        } else if ("name_asc".equals(sortBy)) {
+            sql.append("ORDER BY i.Ingredient_Name ASC ");
+        } else if ("name_desc".equals(sortBy)) {
+            sql.append("ORDER BY i.Ingredient_Name DESC ");
+        } else {
+            sql.append("ORDER BY i.Ingredient_ID DESC ");
+        }
+        
         sql.append("LIMIT ? OFFSET ?");
 
         try (Connection conn = DBContext.getJDBCConnection();
@@ -66,6 +82,9 @@ public class IngredientDAO {
                 String searchPattern = "%" + search.trim() + "%";
                 ps.setString(paramIndex++, searchPattern);
                 ps.setString(paramIndex++, searchPattern);
+            }
+            if (unitId != null && !unitId.trim().isEmpty()) {
+                ps.setString(paramIndex++, unitId.trim());
             }
             
             int offset = (page - 1) * pageSize;
@@ -92,13 +111,16 @@ public class IngredientDAO {
         return list;
     }
 
-    public int getIngredientsCountFiltered(String search) {
+    public int getIngredientsCountFiltered(String search, String unitId) {
         StringBuilder sql = new StringBuilder(
             "SELECT COUNT(*) FROM ingredients WHERE enable = 1 "
         );
         
         if (search != null && !search.trim().isEmpty()) {
             sql.append("AND (Ingredient_Name LIKE ? OR Ingredient_ID LIKE ?) ");
+        }
+        if (unitId != null && !unitId.trim().isEmpty()) {
+            sql.append("AND Unit_ID = ? ");
         }
 
         try (Connection conn = DBContext.getJDBCConnection();
@@ -109,6 +131,9 @@ public class IngredientDAO {
                 String searchPattern = "%" + search.trim() + "%";
                 ps.setString(paramIndex++, searchPattern);
                 ps.setString(paramIndex++, searchPattern);
+            }
+            if (unitId != null && !unitId.trim().isEmpty()) {
+                ps.setString(paramIndex++, unitId.trim());
             }
 
             try (ResultSet rs = ps.executeQuery()) {

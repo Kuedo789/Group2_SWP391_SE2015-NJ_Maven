@@ -88,7 +88,7 @@
                             <div class="row g-3">
                                  <div class="col-md-6">
                                      <label class="form-label-cz">Mã Đơn Vị (ID) <span>*</span></label>
-                                     <input type="text" class="form-control-cz" id="unitId" name="unitId" value="${unit.unitId}" required ${isEdit ? 'readonly style="background-color: #e9ecef; cursor: not-allowed;"' : ''} placeholder="Ví dụ: G, KG, ITEM, BOX">
+                                     <input type="text" class="form-control-cz" id="unitId" name="unitId" value="${unit.unitId}" maxlength="10" required ${isEdit ? 'readonly style="background-color: #e9ecef; cursor: not-allowed;"' : ''} placeholder="Ví dụ: G, KG, ITEM, BOX">
                                      <div id="error-id" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                      <c:if test="${isEdit}">
                                          <span class="text-muted small mt-1 d-block"><i class="fa-solid fa-circle-info"></i> Không thể thay đổi Mã đơn vị tính khi đã được khởi tạo.</span>
@@ -97,7 +97,7 @@
 
                                  <div class="col-md-6">
                                      <label class="form-label-cz">Tên Đơn Vị <span>*</span></label>
-                                     <input type="text" class="form-control-cz" id="unitName" name="unitName" value="${unit.unitName}" required placeholder="Ví dụ: Gram, Kilogram, Hộp / Thùng">
+                                     <input type="text" class="form-control-cz" id="unitName" name="unitName" value="${unit.unitName}" maxlength="50" required placeholder="Ví dụ: Gram, Kilogram, Hộp / Thùng">
                                      <div id="error-name" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
 
@@ -174,6 +174,11 @@
                 hasError = true;
             } else if (nameVal.length < 2) {
                 errorName.textContent = 'Tên đơn vị tính tối thiểu 2 ký tự.';
+                errorName.style.display = 'block';
+                nameInput.classList.add('is-invalid');
+                hasError = true;
+            } else if (nameVal.length > 50) {
+                errorName.textContent = 'Tên đơn vị tính tối đa 50 ký tự.';
                 errorName.style.display = 'block';
                 nameInput.classList.add('is-invalid');
                 hasError = true;
