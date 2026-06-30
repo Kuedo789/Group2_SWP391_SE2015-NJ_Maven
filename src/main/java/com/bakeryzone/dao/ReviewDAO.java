@@ -377,24 +377,26 @@ public class ReviewDAO {
     
     public List<Review> getFeaturedReviewsForHomePage() {
     List<Review> list = new ArrayList<>();
+    // NOTE: custom_cake has no Template_ID column — the old LEFT JOIN through cc.Template_ID
+    // caused SQLSyntaxErrorException on startup. The homepage card only needs rating, comment,
+    // and customer name, so the cake_template join is not required here.
     String sql = """
-        SELECT 
+        SELECT
             r.Review_ID,
             r.Rating_Stars,
             r.Comment,
             c.Full_Name AS Customer_Name,
-            t.Template_Name
+            cc.Cake_Hash_Structure AS Template_Name
         FROM product_review r
         JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
-        LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID
         LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
         WHERE r.Moderation_Status = 'Featured'
         ORDER BY r.Review_ID DESC
         LIMIT 3
-        """; // Lấy tối đa 3 bài nổi bật nhất để vừa vặn khung giao diện
+        """;
 
-    try (Connection conn = com.bakeryzone.utils.DBContext.getJDBCConnection(); 
-         PreparedStatement ps = conn.prepareStatement(sql); 
+    try (Connection conn = com.bakeryzone.utils.DBContext.getJDBCConnection();
+         PreparedStatement ps = conn.prepareStatement(sql);
          ResultSet rs = ps.executeQuery()) {
         while (rs.next()) {
             Review r = new Review();

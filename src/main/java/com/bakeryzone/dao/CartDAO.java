@@ -20,12 +20,11 @@ public class CartDAO {
     public String getCartAggregateStatus(String userId) {
         String sql = "SELECT "
                 + "  COUNT(ci.Cart_Item_ID) AS Total, "
-                + "  SUM(CASE WHEN (a.Status = 'Active' OR ct.Status = 'Active') THEN 1 ELSE 0 END) AS ActiveCount, "
-                + "  SUM(CASE WHEN (a.Status != 'Active' OR ct.Status != 'Active') THEN 1 ELSE 0 END) AS DisabledCount "
+                + "  SUM(CASE WHEN (a.Status = 'Active' OR cc.Custom_Cake_ID IS NOT NULL) THEN 1 ELSE 0 END) AS ActiveCount, "
+                + "  SUM(CASE WHEN (a.Status != 'Active') THEN 1 ELSE 0 END) AS DisabledCount "
                 + "FROM cart_item ci "
                 + "LEFT JOIN accessory a ON ci.Accessory_ID = a.Accessory_ID "
                 + "LEFT JOIN custom_cake cc ON ci.Custom_Cake_ID = cc.Custom_Cake_ID "
-                + "LEFT JOIN cake_template ct ON cc.Template_ID = ct.Template_ID "
                 + "WHERE ci.User_ID = ?";
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -53,10 +52,9 @@ public class CartDAO {
         List<CartItemDTO> items = new ArrayList<>();
         // Joins across your 3NF structure to flatten data for the JSP
         String sql = "SELECT ci.Cart_Item_ID, ci.Quantity, "
-                + "  ct.Template_Name, cc.Calculated_Price, ct.Image_URL AS CakeImg, ct.Status AS CakeStatus, cc.Greeting_Text "
+                + "  cc.Cake_Hash_Structure AS Template_Name, cc.Calculated_Price, cc.Canvas_Image_URL AS CakeImg, 'Active' AS CakeStatus, cc.Greeting_Text "
                 + "FROM cart_item ci "
                 + "JOIN custom_cake cc ON ci.Custom_Cake_ID = cc.Custom_Cake_ID "
-                + "JOIN cake_template ct ON cc.Template_ID = ct.Template_ID "
                 + "WHERE ci.User_ID = ? ORDER BY ci.Added_At DESC";
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
