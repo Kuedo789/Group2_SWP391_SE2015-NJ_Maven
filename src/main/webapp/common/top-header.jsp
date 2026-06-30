@@ -1,19 +1,15 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <div class="top-header">
     <div class="header-left">
         <button class="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
-        <div class="breadcrumbs">
-            <a href="${pageContext.request.contextPath}/admin/dashboard">Bảng điều khiển</a>
-            <c:if test="${not empty param.parentMenu}">
-                <span>&gt;</span>
-                <a href="${not empty param.parentUrl ? param.parentUrl : '#'}">${param.parentMenu}</a>
-            </c:if>
-            <c:if test="${not empty param.activeMenu}">
-                <span>&gt;</span>
-                <a href="#" class="active text-dark font-weight-bold">${param.activeMenu}</a>
-            </c:if>
-        </div>
+        <jsp:include page="breadcrumb.jsp">
+            <jsp:param name="parentMenu" value="${param.parentMenu}" />
+            <jsp:param name="parentUrl" value="${param.parentUrl}" />
+            <jsp:param name="parentMenu2" value="${param.parentMenu2}" />
+            <jsp:param name="parentUrl2" value="${param.parentUrl2}" />
+            <jsp:param name="activeMenu" value="${param.activeMenu}" />
+        </jsp:include>
     </div>
     
     <div class="header-right">

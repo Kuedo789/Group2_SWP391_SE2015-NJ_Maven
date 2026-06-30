@@ -1,4 +1,4 @@
-maj<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%-- Khai báo cả 2 phiên bản URI để đảm bảo NetBeans/Tomcat không bao giờ bị báo đỏ sọc --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="c_old" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -6,13 +6,9 @@ maj<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="
 <html lang="en">
 
     <head>
-        <meta charset="utf-8">
-        <title>CakeZone - Account Manager Form</title>
-        <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <jsp:include page="/common/admin-header.jsp">
+            <jsp:param name="title" value="CakeZone - Account Manager Form" />
+        </jsp:include>
 
         <style>
             :root {
@@ -179,17 +175,7 @@ maj<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="
                 z-index: 90;
             }
 
-            .breadcrumbs {
-                font-size: 13px;
-                color: var(--cz-text-muted);
-            }
-            .breadcrumbs a {
-                color: var(--cz-text-muted);
-                text-decoration: none;
-            }
-            .breadcrumbs span {
-                margin: 0 6px;
-            }
+
 
             .content-container {
                 padding: 35px;
@@ -294,32 +280,17 @@ maj<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="
         </jsp:include>
         <div class="main-panel">
 
-            <div class="top-header">
-                <div class="header-left">
-                    <div class="breadcrumbs">
-                        <a href="#">Dashboard</a>
-                        <span>&gt;</span>
-                        <a href="${pageContext.request.contextPath}/admin/staff?action=list">System</a>
-                        <span>&gt;</span>
-                        <a href="#" class="active text-dark font-weight-bold">
-                            <c:if test="${USER_DATA.staffId != null}">Cập nhật tài khoản</c:if>
-                            <c:if test="${USER_DATA.staffId == null}">Thêm tài khoản mới</c:if>
-                            </a>
-                        </div>
-                    </div>
+            <!-- Top Header -->
+            <jsp:include page="../common/top-header.jsp">
+                <jsp:param name="parentMenu" value="System" />
+                <jsp:param name="parentUrl" value="${pageContext.request.contextPath}/admin/staff?action=list" />
+                <jsp:param name="activeMenu" value="${USER_DATA.staffId != null ? 'Cập nhật tài khoản' : 'Thêm tài khoản mới'}" />
+            </jsp:include>
 
-                    <div class="header-right">
-                        <div class="profile-section d-flex align-items-center gap-3">
-                            <span class="fw-bold" style="font-size: 14px;"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></span>
-                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="rounded-circle" width="35" height="35">
-                    </div>
-                </div>
-            </div>
+                <div class="content-container">
+                    <div class="form-card">
 
-            <div class="content-container">
-                <div class="form-card">
-
-                    <h1 class="page-title text-uppercase">
+                        <h1 class="page-title text-uppercase">
                         <c:if test="${USER_DATA.staffId != null}">Cập nhật tài khoản</c:if>
                         <c:if test="${USER_DATA.staffId == null}">Thêm tài khoản mới</c:if>
                         </h1>
@@ -352,12 +323,12 @@ maj<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="
                                 <input type="email" name="email" value="${USER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required
                                        ${param.action == 'edit' ? ' style=""' : ''}>
                             </div>
-                            <%--
-                                                        <div class="col-md-6">
-                                                            <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
-                                                            <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
-                                                        </div>
-                            --%>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
+                                <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
+                            </div>
+
                             <div class="col-md-6">
                                 <label class="form-label">Chức vụ hệ thống <span class="text-danger">*</span></label>
                                 <select name="roleId" class="form-select">

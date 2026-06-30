@@ -30,8 +30,8 @@ html.dark-theme {
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
     font-family: 'Inter', sans-serif;
-    display: flex;
-    height: 100vh;
+    display: block;
+    min-height: 100vh;
     background-color: var(--bg-cream);
     color: var(--text-dark);
 }
@@ -572,3 +572,491 @@ html.dark-theme .cost-row {
 html.dark-theme .cost-row.total {
     border-top-color: rgba(255, 255, 255, 0.08);
 }
+
+/* ==========================================================
+   GLOBAL DARK THEME OVERRIDES FOR ALL ADMIN PAGES
+   ========================================================== */
+html.dark-theme {
+    /* Variables for admin pages using --cz- variables (productList, customerList, etc.) */
+    --cz-light-bg: #0f110e !important;
+    --cz-card-bg: #131612 !important;
+    --cz-border-color: rgba(255, 255, 255, 0.05) !important;
+    --cz-text-dark: #eae6df !important;
+    --cz-text-muted: #959893 !important;
+    --cz-dark-bg: #0b0c0a !important;
+
+    /* Variables for admin pages using variables from admin-global (dashboard, settings, etc.) */
+    --bg-cream: #0f110e !important;
+    --surface-white: #131612 !important;
+    --border-soft: rgba(255, 255, 255, 0.05) !important;
+    --text-dark: #eae6df !important;
+    --text-muted: #959893 !important;
+
+    background-color: #0f110e !important;
+    color: #eae6df !important;
+}
+
+/* Base Body Override */
+html.dark-theme body {
+    background-color: #0f110e !important;
+    color: #eae6df !important;
+}
+
+/* Table and container overrides for pages with hardcoded white backgrounds */
+html.dark-theme table,
+html.dark-theme .table-responsive,
+html.dark-theme .table-card,
+html.dark-theme .cz-card,
+html.dark-theme .card,
+html.dark-theme .bento-card,
+html.dark-theme .settings-card,
+html.dark-theme .detail-card,
+html.dark-theme .cz-table-wrap,
+html.dark-theme .category-card {
+    background-color: #131612 !important;
+    color: #eae6df !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark-theme th {
+    background-color: #191c18 !important;
+    color: #959893 !important;
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark-theme td {
+    background-color: transparent !important;
+    color: #c4c0b8 !important;
+    border-bottom-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Card Header Override */
+html.dark-theme .settings-card-header,
+html.dark-theme .card-header,
+html.dark-theme .cz-card-header,
+html.dark-theme .detail-header {
+    background-color: #1a1e18 !important;
+    border-bottom-color: rgba(255, 255, 255, 0.07) !important;
+    color: #a5c494 !important;
+}
+
+/* Top Header & Breadcrumbs Override */
+html.dark-theme .top-header,
+html.dark-theme .navbar {
+    background-color: #0f110e !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+}
+html.dark-theme .breadcrumbs,
+html.dark-theme .breadcrumbs a {
+    color: #959893 !important;
+}
+html.dark-theme .breadcrumbs a.active,
+html.dark-theme .breadcrumbs .text-dark,
+html.dark-theme .breadcrumb strong {
+    color: #eae6df !important;
+}
+
+/* Inputs & Form Elements Overrides */
+html.dark-theme input:not(.btn):not([type="submit"]):not([type="button"]),
+html.dark-theme select,
+html.dark-theme textarea {
+    background-color: #1e2219 !important;
+    color: #e8e4dc !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark-theme input::placeholder,
+html.dark-theme textarea::placeholder {
+    color: rgba(149, 152, 147, 0.5) !important;
+}
+
+/* Modal and other white-background utility overrides */
+html.dark-theme .modal-content {
+    background-color: #131612 !important;
+    color: #eae6df !important;
+    border-color: rgba(255, 255, 255, 0.07) !important;
+}
+html.dark-theme .modal-header,
+html.dark-theme .modal-footer {
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark-theme .btn-close {
+    filter: invert(1) grayscale(1) brightness(1.5) !important;
+}
+
+html.dark-theme .pagination-area,
+html.dark-theme .pagination {
+    background-color: #131612 !important;
+    border-top-color: rgba(255, 255, 255, 0.07) !important;
+    color: #9a9690 !important;
+}
+
+html.dark-theme .page-num-item a,
+html.dark-theme .page-btn {
+    background-color: #1e2219 !important;
+    color: #c4c0b8 !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+html.dark-theme .page-num-item.active a,
+html.dark-theme .page-btn.active {
+    background-color: #3f5f36 !important;
+    color: #ffffff !important;
+    border-color: #3f5f36 !important;
+}
+
+/* Button overrides for hardcoded white buttons */
+html.dark-theme button:not(.btn-cz-primary):not(.btn-primary):not(.btn-save):not(.btn-close),
+html.dark-theme .btn-filter-action,
+html.dark-theme .btn-action-view,
+html.dark-theme .btn-action-edit,
+html.dark-theme .btn-action-delete,
+html.dark-theme .customer-index-badge {
+    background-color: #1e2219 !important;
+    color: #eae6df !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+html.dark-theme .btn-filter-action:hover,
+html.dark-theme .btn-action-view:hover,
+html.dark-theme .btn-action-edit:hover,
+html.dark-theme .btn-action-delete:hover {
+    background-color: #242a20 !important;
+    color: #b5cfa3 !important;
+}
+
+html.dark-theme .btn-clear-filter {
+    background-color: #2d2d2d !important;
+    color: #eae6df !important;
+}
+
+html.dark-theme .btn-clear-filter:hover {
+    background-color: #3d3d3d !important;
+}
+
+/* ==========================================================
+   COMMON ADMIN TOP HEADER & PROFILE STYLES
+   ========================================================== */
+.top-header {
+    height: 70px;
+    background-color: #fff;
+    border-bottom: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 35px;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #555;
+    cursor: pointer;
+}
+
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.header-icon-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #555;
+    position: relative;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.header-icon-btn:hover {
+    color: var(--cz-primary);
+}
+
+.header-icon-btn .badge-dot {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--cz-primary);
+    border-radius: 50%;
+    border: 1px solid #fff;
+}
+
+.profile-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-left: 1px solid var(--cz-border-color);
+    padding-left: 20px;
+}
+
+.profile-img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--cz-border-color);
+}
+
+.profile-info {
+    line-height: 1.2;
+}
+
+.profile-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.profile-role {
+    font-size: 10.5px;
+    color: var(--cz-text-muted);
+    font-weight: 500;
+}
+
+/* Dark Mode Overrides for Top Header components */
+html.dark-theme .profile-name {
+    color: #eae6df !important;
+}
+html.dark-theme .profile-role {
+    color: #959893 !important;
+}
+html.dark-theme .profile-img {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark-theme .profile-section {
+    border-left-color: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark-theme .sidebar-toggle,
+html.dark-theme .header-icon-btn {
+    color: #eae6df !important;
+}
+
+/* ==========================================================
+   GLOBAL DARK THEME OVERRIDES FOR ADMIN PAGES
+   ========================================================== */
+html.dark-theme {
+    /* CakeZone theme variables */
+    --cz-primary:         #a5c494 !important;   /* Light Sage Green */
+    --cz-primary-hover:   #b5cfa3 !important;
+    --cz-primary-shadow:  rgba(165, 196, 148, 0.15) !important;
+    --cz-secondary:       #1e2219 !important;
+    --cz-text-dark:       #eae6df !important;
+    --cz-text-muted:      #959893 !important;
+    --cz-light-bg:        #0f110e !important;
+    --cz-border-color:    rgba(255, 255, 255, 0.08) !important;
+    --cz-card-bg:         #131612 !important;
+}
+
+/* Base Body Override */
+html.dark-theme body {
+    background-color: #0f110e !important;
+    color: #eae6df !important;
+}
+
+/* Headings and Titles Overrides */
+html.dark-theme .page-title,
+html.dark-theme .page-title h1,
+html.dark-theme .page-title-area h1,
+html.dark-theme .detail-card h5,
+html.dark-theme .card-header-title,
+html.dark-theme .images-title,
+html.dark-theme h1,
+html.dark-theme h2,
+html.dark-theme h3,
+html.dark-theme h4,
+html.dark-theme h5,
+html.dark-theme h6 {
+    color: #eae6df !important;
+}
+
+/* Subtitles Overrides */
+html.dark-theme .page-subtitle,
+html.dark-theme .page-subtitle p,
+html.dark-theme .card-header-desc,
+html.dark-theme .images-subtitle,
+html.dark-theme p.text-muted,
+html.dark-theme .bom-unit-label {
+    color: #959893 !important;
+}
+
+/* Labels Overrides */
+html.dark-theme label,
+html.dark-theme .form-label,
+html.dark-theme .form-label-cz,
+html.dark-theme .status-radio-label {
+    color: #eae6df !important;
+}
+
+/* Cards and Containers Overrides */
+html.dark-theme .form-card,
+html.dark-theme .detail-card,
+html.dark-theme .table-card,
+html.dark-theme .product-images-container {
+    background-color: #131612 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Form Controls & Inputs Overrides */
+html.dark-theme .form-control-cz,
+html.dark-theme .form-select-cz,
+html.dark-theme .form-control,
+html.dark-theme select,
+html.dark-theme textarea {
+    background-color: #1e2219 !important;
+    color: #e8e4dc !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Info blocks and Comment areas (Reviews Page) */
+html.dark-theme .info-block {
+    background-color: #1e2219 !important;
+    color: #eae6df !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark-theme .comment-area {
+    background-color: #161a14 !important;
+    color: #eae6df !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Product Detail Images Area */
+html.dark-theme .main-cover-wrapper,
+html.dark-theme .cover-image-wrapper,
+html.dark-theme .upload-trigger-card {
+    background-color: #1e2219 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark-theme .upload-trigger-card .upload-text,
+html.dark-theme .upload-trigger-card .upload-hint {
+    color: #959893 !important;
+}
+html.dark-theme .drag-drop-info-card {
+    background-color: #161a14 !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+}
+html.dark-theme .drag-drop-info-card .info-title {
+    color: #eae6df !important;
+}
+html.dark-theme .drag-drop-info-card .info-desc {
+    color: #959893 !important;
+}
+
+/* Tabs Styling */
+html.dark-theme .cz-tab-btn {
+    color: #959893 !important;
+}
+html.dark-theme .cz-tab-btn:hover {
+    color: #a5c494 !important;
+    background-color: rgba(165, 196, 148, 0.08) !important;
+}
+html.dark-theme .cz-tab-btn.active {
+    color: #eae6df !important;
+    border-bottom-color: #a5c494 !important;
+    background-color: rgba(165, 196, 148, 0.15) !important;
+}
+
+/* Pricing suggest cards (Product detail page) */
+html.dark-theme .pricing-suggested-card-tab {
+    background: #112d1b !important;
+    border-color: #1e5e3a !important;
+}
+html.dark-theme .pricing-suggested-card-tab .pricing-title,
+html.dark-theme .pricing-suggested-card-tab .pricing-formula {
+    color: #a4c9ad !important;
+}
+html.dark-theme .pricing-suggested-card-tab .pricing-value {
+    color: #c2e2cb !important;
+}
+
+/* Quill Editor Dark Theme overrides */
+html.dark-theme .ql-toolbar.ql-snow {
+    background-color: #1a1e18 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark-theme .ql-container.ql-snow,
+html.dark-theme #editor-container,
+html.dark-theme #recipe-editor-container {
+    background-color: #1e2219 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    color: #eae6df !important;
+}
+html.dark-theme .ql-snow .ql-stroke {
+    stroke: #eae6df !important;
+}
+html.dark-theme .ql-snow .ql-fill {
+    fill: #eae6df !important;
+}
+html.dark-theme .ql-snow .ql-picker {
+    color: #eae6df !important;
+}
+html.dark-theme .ql-snow .ql-picker-options {
+    background-color: #131612 !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Table elements detail styling */
+html.dark-theme table.table th {
+    color: #eae6df !important;
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark-theme table.table td {
+    color: #c4c0b8 !important;
+}
+
+/* ==========================================================
+   GLOBAL LAYOUT FIXES FOR FLUSH TOP & ZERO GAPS
+   ========================================================== */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+body {
+    font-size: 0 !important;
+    background-color: var(--bg-cream) !important;
+}
+
+.sidebar, .main-panel {
+    font-size: 14px !important;
+}
+
+.main-panel {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.top-header {
+    position: static !important;
+    height: 60px !important;
+    padding: 0 40px !important;
+    margin-top: 0 !important;
+    background-color: var(--bg-cream) !important;
+}
+
+/* Global Content Container padding for consistent margins */
+.content-container {
+    padding: 35px !important;
+    flex: 1 !important;
+}
+
+
+
+
+

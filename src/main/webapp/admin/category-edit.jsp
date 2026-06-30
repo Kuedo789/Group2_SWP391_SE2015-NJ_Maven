@@ -10,10 +10,9 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="UTF-8">
-        <title>CakeZone Admin - Chỉnh Sửa Danh Mục</title>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-        <link href="${pageContext.request.contextPath}/assets/css/admin-global.css?v=1.1" rel="stylesheet">
+        <jsp:include page="/common/admin-header.jsp">
+            <jsp:param name="title" value="CakeZone Admin - Chỉnh Sửa Danh Mục" />
+        </jsp:include>
         <style>
             .form-card { background-color: var(--surface-white); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid var(--border-soft); padding: 40px; max-width: 800px; margin: 0 auto; }
             .form-group { margin-bottom: 24px; }
@@ -29,9 +28,14 @@
         <jsp:include page="/common/sidebar.jsp">
             <jsp:param name="activeMenu" value="categories" />
         </jsp:include>
-        <main class="main-wrapper">
-            <c:set var="pageTitle" value="Chỉnh Sửa Danh Mục" scope="request" />
-            <jsp:include page="/common/admin-navbar.jsp" />
+        <div class="main-panel">
+            <jsp:include page="../common/top-header.jsp">
+                <jsp:param name="parentMenu" value="Sản phẩm" />
+                <jsp:param name="parentUrl" value="${pageContext.request.contextPath}/admin/product?action=list" />
+                <jsp:param name="parentMenu2" value="Danh mục sản phẩm" />
+                <jsp:param name="parentUrl2" value="${pageContext.request.contextPath}/admin/categories" />
+                <jsp:param name="activeMenu" value="Chỉnh sửa danh mục" />
+            </jsp:include>
 
             <div class="content">
                 <div class="page-header">
@@ -84,6 +88,6 @@
                     </form>
                 </div>
             </div>
-        </main>
+        </div>
     </body>
 </html>

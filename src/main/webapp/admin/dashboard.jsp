@@ -29,28 +29,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Dark Mode Init: chạy trước khi render để tránh flash trắng -->
-    <script>
-        (function() {
-            var globalDark = ${not empty settings.darkMode ? settings.darkMode : 'false'};
-            var saved = localStorage.getItem('darkMode');
-            if (globalDark || saved === 'true') {
-                document.documentElement.classList.add('dark-theme');
-            }
-        })();
-    </script>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CakeZone Admin - Dashboard</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <!-- Main Style Link -->
-    <link href="${pageContext.request.contextPath}/assets/css/all/admin-global.css?v=1.3" rel="stylesheet">
+    <jsp:include page="/common/admin-header.jsp">
+        <jsp:param name="title" value="CakeZone Admin - Dashboard" />
+    </jsp:include>
     <!-- Dashboard Specific Style Link -->
     <link href="${pageContext.request.contextPath}/assets/css/admindashbroad.css?v=1.3" rel="stylesheet">
 </head>
@@ -62,33 +43,12 @@
     </jsp:include>
 
     <!-- Main Content Panel -->
-    <main class="main-wrapper">
+    <div class="main-panel">
         
-        <!-- Top Header Navbar -->
-        <nav class="navbar dashboard-navbar">
-            <div class="breadcrumb">
-                <a href="${pageContext.request.contextPath}/admin/dashboard"><i class="fa-solid fa-house"></i> Bảng điều khiển</a>
-                <span>›</span>
-                <strong>Tổng quan hệ thống</strong>
-            </div>
-            
-            <div class="navbar-right">
-                <button class="notification-btn">
-                    <i class="fa-regular fa-bell"></i>
-                    <span class="badge-dot"></span>
-                </button>
-                <div class="header-divider"></div>
-                <a href="${pageContext.request.contextPath}/profile" style="text-decoration: none; color: inherit;">
-                    <div class="user-profile">
-                        <div class="user-info">
-                            <div class="user-name"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></div>
-                            <div class="user-role"><c:out value="${not empty sessionScope.user.roleName ? sessionScope.user.roleName : sessionScope.user.roleId}" /></div>
-                        </div>
-                        <div class="avatar" style="background-image: url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde');"></div>
-                    </div>
-                </a>
-            </div>
-        </nav>
+        <!-- Top Header -->
+        <jsp:include page="../common/top-header.jsp">
+            <jsp:param name="activeMenu" value="Tổng quan hệ thống" />
+        </jsp:include>
 
         <!-- Dashboard Content -->
         <div class="content">
@@ -350,7 +310,7 @@
             </footer>
 
         </div>
-    </main>
+    </div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

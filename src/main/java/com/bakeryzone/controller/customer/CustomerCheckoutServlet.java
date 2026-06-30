@@ -215,7 +215,15 @@ public class CustomerCheckoutServlet extends HttpServlet {
                 }
             }
             BigDecimal totalCost   = productTotal.add(shippingFee);
-            BigDecimal deposit     = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
+
+            double depPercent = 30.0;
+            java.util.Map<String, Object> settings = (java.util.Map<String, Object>) getServletContext().getAttribute("settings");
+            if (settings != null && settings.get("depositPercent") != null) {
+                try {
+                    depPercent = Double.parseDouble(settings.get("depositPercent").toString());
+                } catch (NumberFormatException ignored) {}
+            }
+            BigDecimal deposit     = totalCost.multiply(BigDecimal.valueOf(depPercent / 100.0)).setScale(0, java.math.RoundingMode.HALF_UP);
             BigDecimal remainingCod = totalCost.subtract(deposit);
 
             order.setTotalCost(totalCost);

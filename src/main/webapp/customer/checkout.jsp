@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -154,7 +155,7 @@
                         <div class="summary-row">
                             <div class="summary-row-label">
                                 <span>Phí giao hàng</span>
-                                <span class="summary-sub-label">Tính dựa trên tọa độ khoảng cách (5.000đ/km)</span>
+                                <span class="summary-sub-label">Tính dựa trên tọa độ khoảng cách (<fmt:formatNumber value="${not empty settings.shippingRate ? settings.shippingRate : 5000}" pattern="#,##0"/>đ/km)</span>
                             </div>
                             <span id="shippingFeeSum">0đ</span>
                         </div>
@@ -507,10 +508,11 @@
                 shopLng = 106.7009;
             }
 
+            const shippingRate = parseFloat('${not empty settings.shippingRate ? settings.shippingRate : "5000"}') || 5000;
             const distance = getHaversineDistance(shopLat, shopLng, lat, lng) * 1.25;
             const finalDistance = Math.max(1.0, distance);
 
-            currentShippingFee = Math.max(5000, Math.ceil(finalDistance) * 5000);
+            currentShippingFee = Math.max(shippingRate, Math.ceil(finalDistance) * shippingRate);
             updateSummary();
         }
 

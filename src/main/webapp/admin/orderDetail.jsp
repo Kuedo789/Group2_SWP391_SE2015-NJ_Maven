@@ -33,27 +33,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Dark Mode Init: chạy trước khi render để tránh flash trắng -->
-    <script>
-        (function() {
-            var globalDark = ${not empty settings.darkMode ? settings.darkMode : 'false'};
-            var saved = localStorage.getItem('darkMode');
-            if (globalDark || saved === 'true') {
-                document.documentElement.classList.add('dark-theme');
-            }
-        })();
-    </script>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'} Admin - Chi tiết đơn hàng #${order.orderNo.replace('ORD_', '')}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-
-    <!-- Global Admin Style Link -->
-    <link href="${pageContext.request.contextPath}/assets/css/all/admin-global.css" rel="stylesheet">
+    <jsp:include page="/common/admin-header.jsp">
+        <jsp:param name="title" value="CakeZone Admin - Chi tiết đơn hàng #${order.orderNo.replace('ORD_', '')}" />
+    </jsp:include>
     <!-- Order Specific Style Link -->
     <link href="${pageContext.request.contextPath}/assets/css/all/order.css" rel="stylesheet">
 </head>
@@ -64,31 +46,12 @@
     </jsp:include>
 
     <div class="main-panel">
-        <div class="top-header">
-            <div class="header-left">
-                <button class="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
-                <div class="breadcrumbs">
-                    <a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
-                    <span>&gt;</span>
-                    <a href="${pageContext.request.contextPath}/admin/orders">Quản lý đơn hàng</a>
-                    <span>&gt;</span>
-                    <a href="#" class="active text-dark font-weight-bold">Chi tiết đơn hàng</a>
-                </div>
-            </div>
-
-            <div class="header-right">
-                <button class="header-icon-btn"><i class="fa-regular fa-bell"></i></button>
-                <button class="header-icon-btn"><i class="fa-regular fa-circle-question"></i></button>
-
-                <div class="profile-section">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
-                    <div class="profile-info">
-                        <div class="profile-name"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></div>
-                        <div class="profile-role"><c:out value="${not empty sessionScope.user.roleName ? sessionScope.user.roleName : sessionScope.user.roleId}" /></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Top Header -->
+        <jsp:include page="../common/top-header.jsp">
+            <jsp:param name="parentMenu" value="Quản lý đơn hàng" />
+            <jsp:param name="parentUrl" value="${pageContext.request.contextPath}/admin/orders" />
+            <jsp:param name="activeMenu" value="Chi tiết đơn hàng" />
+        </jsp:include>
 
         <div class="content-container">
             <a href="${pageContext.request.contextPath}/admin/orders" class="btn-back">
