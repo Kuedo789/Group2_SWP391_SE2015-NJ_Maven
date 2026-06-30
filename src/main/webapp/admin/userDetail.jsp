@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+maj<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%-- Khai báo cả 2 phiên bản URI để đảm bảo NetBeans/Tomcat không bao giờ bị báo đỏ sọc --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="c_old" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -311,15 +311,15 @@
                     <div class="header-right">
                         <div class="profile-section d-flex align-items-center gap-3">
                             <span class="fw-bold" style="font-size: 14px;"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></span>
-                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="rounded-circle" width="35" height="35">
-                        </div>
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="rounded-circle" width="35" height="35">
                     </div>
                 </div>
+            </div>
 
-                <div class="content-container">
-                    <div class="form-card">
+            <div class="content-container">
+                <div class="form-card">
 
-                        <h1 class="page-title text-uppercase">
+                    <h1 class="page-title text-uppercase">
                         <c:if test="${USER_DATA.staffId != null}">Cập nhật tài khoản</c:if>
                         <c:if test="${USER_DATA.staffId == null}">Thêm tài khoản mới</c:if>
                         </h1>
@@ -352,12 +352,12 @@
                                 <input type="email" name="email" value="${USER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required
                                        ${param.action == 'edit' ? ' style=""' : ''}>
                             </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
-                            </div>
-
+                            <%--
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
+                                                            <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
+                                                        </div>
+                            --%>
                             <div class="col-md-6">
                                 <label class="form-label">Chức vụ hệ thống <span class="text-danger">*</span></label>
                                 <select name="roleId" class="form-select">

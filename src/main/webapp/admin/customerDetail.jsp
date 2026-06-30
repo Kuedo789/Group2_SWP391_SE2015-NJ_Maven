@@ -289,15 +289,15 @@
                     <div class="header-right">
                         <div class="profile-section d-flex align-items-center gap-3">
                             <span class="fw-bold" style="font-size: 14px;"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></span>
-                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="rounded-circle" width="35" height="35">
-                        </div>
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="rounded-circle" width="35" height="35">
                     </div>
                 </div>
+            </div>
 
-                <div class="content-container">
-                    <div class="form-card">
+            <div class="content-container">
+                <div class="form-card">
 
-                        <h1 class="page-title text-uppercase">
+                    <h1 class="page-title text-uppercase">
                         <c:if test="${cusId != null}">Cập nhật thông tin khách hàng</c:if>
                         <c:if test="${cusId == null}">Thêm khách hàng mới</c:if>
                         </h1>
@@ -329,12 +329,12 @@
                                 <label class="form-label">Email đăng nhập <span class="text-danger">*</span></label>
                                 <input type="email" name="email" value="${CUSTOMER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required>
                             </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
-                            </div>
-
+                            <%--
+                                                        <div class="col-md-6">
+                                                            <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
+                                                            <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
+                                                        </div>
+                            --%>
                             <div class="col-12">
                                 <label class="form-label">Địa chỉ mặc định</label>
                                 <input type="text" name="defaultAddress" value="${CUSTOMER_DATA.defaultAddress}" class="form-control" placeholder="Nhập địa chỉ chi tiết (Ví dụ: Số 12 Nguyễn Trãi, Hà Nội)...">
