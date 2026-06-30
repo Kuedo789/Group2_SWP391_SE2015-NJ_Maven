@@ -6,14 +6,9 @@
 <html lang="en">
 
     <head>
-        <meta charset="utf-8">
-        <title>CakeZone - Customer Manager Form</title>
-        <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
+        <jsp:include page="/common/admin-header.jsp">
+            <jsp:param name="title" value="CakeZone - Customer Manager Form" />
+        </jsp:include>
         <style>
             :root {
                 --cz-primary: #3f5f36;
@@ -165,17 +160,7 @@
                 top: 0;
                 z-index: 90;
             }
-            .breadcrumbs {
-                font-size: 13px;
-                color: var(--cz-text-muted);
-            }
-            .breadcrumbs a {
-                color: var(--cz-text-muted);
-                text-decoration: none;
-            }
-            .breadcrumbs span {
-                margin: 0 6px;
-            }
+
             .content-container {
                 padding: 35px;
                 flex: 1;
@@ -271,28 +256,13 @@
         </jsp:include>
 
         <div class="main-panel">
-            <div class="top-header">
-                <div class="header-left">
-                    <div class="breadcrumbs">
-                        <a href="#">Dashboard</a>
-                        <span>&gt;</span>
-                        <a href="${pageContext.request.contextPath}/admin/customer?action=list">Customer System</a>
-                        <span>&gt;</span>
-                        <a href="#" class="active text-dark font-weight-bold">
-                            <c:set var="cusId" value="${CUSTOMER_DATA.customerId}" />
-                            <c:if test="${cusId != null}">Cập nhật thông tin khách hàng</c:if>
-                            <c:if test="${cusId == null}">Thêm khách hàng mới</c:if>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="header-right">
-                        <div class="profile-section d-flex align-items-center gap-3">
-                            <span class="fw-bold" style="font-size: 14px;"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></span>
-                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="rounded-circle" width="35" height="35">
-                        </div>
-                    </div>
-                </div>
+            <c:set var="cusId" value="${CUSTOMER_DATA.customerId}" />
+            <!-- Top Header -->
+            <jsp:include page="../common/top-header.jsp">
+                <jsp:param name="parentMenu" value="Customer System" />
+                <jsp:param name="parentUrl" value="${pageContext.request.contextPath}/admin/customer?action=list" />
+                <jsp:param name="activeMenu" value="${cusId != null ? 'Cập nhật thông tin khách hàng' : 'Thêm khách hàng mới'}" />
+            </jsp:include>
 
                 <div class="content-container">
                     <div class="form-card">

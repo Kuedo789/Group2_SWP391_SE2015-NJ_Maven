@@ -194,7 +194,7 @@
     margin-bottom: 0 !important;
     line-height: 1.4 !important;
 }
-}
+
 
 /* Sidebar Seeding Card - Support box styling matching mockup */
 .sidebar .sidebar-banner.support-box {
@@ -246,4 +246,34 @@ html.dark-theme .sidebar .menu-item.active {
 }
 html.dark-theme .sidebar .menu-item.active a {
     color: #b5cfa3 !important;
+}
+
+/* ============================================================
+   BREADCRUMBS STYLES (Synchronized)
+   ============================================================ */
+.breadcrumbs {
+    font-size: 13px !important;
+    color: var(--cz-text-muted) !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+}
+.breadcrumbs a {
+    color: var(--cz-text-muted) !important;
+    text-decoration: none !important;
+    transition: color 0.2s !important;
+}
+.breadcrumbs a:hover {
+    color: var(--cz-primary) !important;
+}
+.breadcrumbs a.active {
+    color: var(--cz-text-dark, #333) !important;
+    font-weight: 600 !important;
+}
+.breadcrumbs span {
+    margin: 0 8px !important;
+    color: var(--cz-text-muted) !important;
+}
+html.dark-theme .breadcrumbs a.active {
+    color: #eae6df !important;
 }

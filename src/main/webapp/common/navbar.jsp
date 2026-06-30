@@ -46,8 +46,7 @@
             <a href="<%= contextPath %>/membership"
                class="nav-menu-membership-link">Thành viên</a>
             <% } %>
-            <a href="<%= request.getContextPath() %>/blog">Tin tức</a>
-            <a href="#">Về chúng tôi</a>
+            <a href="<%= request.getContextPath() %>/blog">Tin tức</a>          
             <a href="#">Liên hệ</a>
 
         </div>

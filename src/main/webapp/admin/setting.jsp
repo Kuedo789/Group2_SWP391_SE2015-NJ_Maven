@@ -4,9 +4,9 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <jsp:include page="/common/header.jsp" />
-    <title>CakeZone Admin - Cài đặt hệ thống</title>
-    <link href="${pageContext.request.contextPath}/assets/css/all/admin-global.css" rel="stylesheet">
+    <jsp:include page="/common/admin-header.jsp">
+        <jsp:param name="title" value="CakeZone Admin - Cài đặt hệ thống" />
+    </jsp:include>
 </head>
 <body>
 
@@ -15,35 +15,10 @@
     </jsp:include>
 
     <div class="main-panel">
-        <div class="top-header">
-            <div class="header-left">
-                <button class="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
-                <div class="breadcrumbs">
-                    <a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
-                    <span>&gt;</span>
-                    <a href="#" class="active text-dark font-weight-bold">Cài đặt hệ thống</a>
-                </div>
-            </div>
-
-            <!-- Top Search Bar matching the design -->
-            <div style="flex-grow: 1; max-width: 400px; margin: 0 30px; position: relative;">
-                <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #888; font-size: 14px;"></i>
-                <input type="text" placeholder="Tìm kiếm cài đặt..." style="width: 100%; padding: 10px 20px 10px 48px; background-color: #f1ede8; border: none; border-radius: 24px; font-size: 13px; outline: none; font-weight: 500;" />
-            </div>
-
-            <div class="header-right">
-                <button class="header-icon-btn"><i class="fa-regular fa-bell"></i></button>
-                <button class="header-icon-btn"><i class="fa-regular fa-circle-question"></i></button>
-
-                <div class="profile-section">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
-                    <div class="profile-info">
-                        <div class="profile-name"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></div>
-                        <div class="profile-role"><c:out value="${not empty sessionScope.user.roleName ? sessionScope.user.roleName : sessionScope.user.roleId}" /></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Top Header -->
+        <jsp:include page="../common/top-header.jsp">
+            <jsp:param name="activeMenu" value="Cài đặt hệ thống" />
+        </jsp:include>
 
         <div class="content-container">
             
@@ -113,11 +88,8 @@
                     <div class="settings-card-body">
                         <div class="form-row form-cols-3">
                             <div class="form-group">
-                                <label>% đặt cọc bánh thiết kế</label>
-                                <div class="input-suffix-wrapper">
-                                    <input type="number" name="depositPercent" value="${not empty settings.depositPercent ? settings.depositPercent : '50'}" class="settings-input" required min="0" max="100" />
-                                    <span class="input-suffix">%</span>
-                                </div>
+                                <label>Tỷ lệ đặt cọc bánh thiết kế (%)</label>
+                                <input type="number" name="depositPercent" value="${not empty settings.depositPercent ? settings.depositPercent : '50'}" class="settings-input" required min="0" max="100" />
                             </div>
                             <div class="form-group">
                                 <label>Đơn giá ship/km</label>
@@ -202,7 +174,7 @@
                                 </div>
                                 <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 11px; font-weight: 500; color: #555;">Căn dọc: <span id="banner1AlignVal" style="font-weight: 700;">${not empty settings.banner1Align ? settings.banner1Align : '50'}%</span></span>
+                                        <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner1AlignVal" style="font-weight: 700;">${not empty settings.banner1Align ? settings.banner1Align : '50'}%</span></span>
                                     </div>
                                     <input type="range" name="banner1Align" min="0" max="100" 
                                            value="${not empty settings.banner1Align ? settings.banner1Align : '50'}" 
@@ -234,7 +206,7 @@
                                 </div>
                                 <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 11px; font-weight: 500; color: #555;">Căn dọc: <span id="banner2AlignVal" style="font-weight: 700;">${not empty settings.banner2Align ? settings.banner2Align : '50'}%</span></span>
+                                        <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner2AlignVal" style="font-weight: 700;">${not empty settings.banner2Align ? settings.banner2Align : '50'}%</span></span>
                                     </div>
                                     <input type="range" name="banner2Align" min="0" max="100" 
                                            value="${not empty settings.banner2Align ? settings.banner2Align : '50'}" 
@@ -266,7 +238,7 @@
                                 </div>
                                 <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 11px; font-weight: 500; color: #555;">Căn dọc: <span id="banner3AlignVal" style="font-weight: 700;">${not empty settings.banner3Align ? settings.banner3Align : '50'}%</span></span>
+                                        <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner3AlignVal" style="font-weight: 700;">${not empty settings.banner3Align ? settings.banner3Align : '50'}%</span></span>
                                     </div>
                                     <input type="range" name="banner3Align" min="0" max="100" 
                                            value="${not empty settings.banner3Align ? settings.banner3Align : '50'}" 
@@ -298,7 +270,7 @@
                                 </div>
                                 <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 11px; font-weight: 500; color: #555;">Căn dọc: <span id="banner4AlignVal" style="font-weight: 700;">${not empty settings.banner4Align ? settings.banner4Align : '50'}%</span></span>
+                                        <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner4AlignVal" style="font-weight: 700;">${not empty settings.banner4Align ? settings.banner4Align : '50'}%</span></span>
                                     </div>
                                     <input type="range" name="banner4Align" min="0" max="100" 
                                            value="${not empty settings.banner4Align ? settings.banner4Align : '50'}" 
@@ -314,7 +286,7 @@
                             </div>
                         </div>
                         <div class="form-row" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 14px; font-weight: 500; color: #444;">Giao diện sáng/ tối</span>
+                            <span style="font-size: 14px; font-weight: 500; color: var(--text-dark);">Giao diện sáng/ tối</span>
                             <label class="switch-toggle">
                                 <input type="checkbox" name="darkMode" ${settings.darkMode ? 'checked' : ''} />
                                 <span class="switch-slider"></span>

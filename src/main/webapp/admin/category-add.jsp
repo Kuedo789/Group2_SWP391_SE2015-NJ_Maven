@@ -10,11 +10,9 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>CakeZone Admin - Thêm Danh Mục</title>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-        <link href="${pageContext.request.contextPath}/assets/css/admin-global.css?v=1.1" rel="stylesheet">
+        <jsp:include page="/common/admin-header.jsp">
+            <jsp:param name="title" value="CakeZone Admin - Thêm Danh Mục" />
+        </jsp:include>
         <style>
             /* Specific styles for the form card to keep the global CSS clean */
             .form-card {
@@ -95,10 +93,15 @@
             <jsp:param name="activeMenu" value="categories" />
         </jsp:include>
 
-        <main class="main-wrapper">
+        <div class="main-panel">
 
-            <c:set var="pageTitle" value="Thêm Danh Mục" scope="request" />
-            <jsp:include page="/common/admin-navbar.jsp" />
+            <jsp:include page="../common/top-header.jsp">
+                <jsp:param name="parentMenu" value="Sản phẩm" />
+                <jsp:param name="parentUrl" value="${pageContext.request.contextPath}/admin/product?action=list" />
+                <jsp:param name="parentMenu2" value="Danh mục sản phẩm" />
+                <jsp:param name="parentUrl2" value="${pageContext.request.contextPath}/admin/categories" />
+                <jsp:param name="activeMenu" value="Thêm danh mục" />
+            </jsp:include>
 
             <div class="content">
                 <div class="page-header">
@@ -196,7 +199,7 @@
                     </form>
                 </div>
             </div>
-        </main>
+        </div>
 
     </body>
 </html>

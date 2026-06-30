@@ -223,21 +223,7 @@ body {
 
 .sidebar-toggle:hover { color: var(--cz-primary); }
 
-.breadcrumbs {
-    font-size: 13px;
-    color: var(--cz-text-muted);
-    margin-bottom: 0;
-}
 
-.breadcrumbs a {
-    color: var(--cz-text-muted);
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.breadcrumbs a:hover { color: var(--cz-primary); }
-
-.breadcrumbs span { margin: 0 6px; }
 
 .header-right {
     display: flex;

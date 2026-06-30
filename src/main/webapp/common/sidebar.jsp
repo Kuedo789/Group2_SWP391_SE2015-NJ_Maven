@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ page import="com.bakeryzone.dao.PermissionDAO" %>
 <%@ page import="com.bakeryzone.model.ScreenPermission" %>
@@ -169,6 +169,4 @@
             });
         }
     });
-</script>
-
-<div class="nav-section-title">Quản lý</div>
+</script>

@@ -3,17 +3,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CakeZone Admin - Ingredient Detail</title>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <jsp:include page="/common/admin-header.jsp">
+        <jsp:param name="title" value="CakeZone Admin - Ingredient Detail" />
+    </jsp:include>
     <!-- Custom styling -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductDetail.css?v=1.4">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductDetail.css?v=1.5">
 </head>
 <body>
 
@@ -26,28 +20,11 @@
     <div class="main-panel">
         
         <!-- Top Header -->
-        <div class="top-header">
-            <div class="header-left">
-                <button class="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
-                <div class="breadcrumbs">
-                    <a href="#">Bảng điều khiển</a>
-                    <span>&gt;</span>
-                    <a href="${pageContext.request.contextPath}/admin/ingredient?action=list">Danh sách nguyên liệu</a>
-                    <span>&gt;</span>
-                    <a href="#" class="active text-dark font-weight-bold">Chi tiết nguyên liệu</a>
-                </div>
-            </div>
-            
-            <div class="header-right">
-                <div class="profile-section">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
-                    <div class="profile-info">
-                        <div class="profile-name"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Chưa đăng nhập'}" /></div>
-                        <div class="profile-role"><c:out value="${not empty sessionScope.user.roleName ? sessionScope.user.roleName : sessionScope.user.roleId}" /></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <jsp:include page="../common/top-header.jsp">
+            <jsp:param name="parentMenu" value="Danh sách nguyên liệu" />
+            <jsp:param name="parentUrl" value="${pageContext.request.contextPath}/admin/ingredient?action=list" />
+            <jsp:param name="activeMenu" value="Chi tiết nguyên liệu" />
+        </jsp:include>
 
         <!-- Dashboard Container -->
         <div class="content-container">

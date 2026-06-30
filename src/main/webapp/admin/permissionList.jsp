@@ -3,13 +3,9 @@
 <!DOCTYPE html>
 <html lang="vi">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>CakeZone Admin - Vai trò & Quyền hạn</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+        <jsp:include page="/common/admin-header.jsp">
+            <jsp:param name="title" value="CakeZone Admin - Vai trò & Quyền hạn" />
+        </jsp:include>
 
         <style>
             :root {
@@ -37,10 +33,7 @@
             .page-title { font-size: 26px; font-weight: 700; color: #111; margin-bottom: 4px; }
             .page-subtitle { font-size: 13.5px; color: var(--cz-text-muted); margin-bottom: 30px; }
 
-            .top-header { height: 70px; background-color: #fff; border-bottom: 1px solid var(--cz-border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 35px; position: sticky; top: 0; z-index: 90; }
-            .breadcrumbs { font-size: 13px; color: var(--cz-text-muted); margin-bottom: 0; }
-            .breadcrumbs a { color: var(--cz-text-muted); text-decoration: none; }
-            .breadcrumbs span { margin: 0 6px; }
+
             .profile-section { display: flex; align-items: center; gap: 10px; border-left: 1px solid var(--cz-border-color); padding-left: 20px; }
             .profile-img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--cz-border-color); }
 
@@ -69,27 +62,11 @@
         </jsp:include>
 
         <div class="main-panel">
-            <div class="top-header">
-                <div class="header-left d-flex align-items-center gap-3">
-                    <button class="sidebar-toggle btn p-0 border-0 fs-5 text-secondary"><i class="fa-solid fa-bars"></i></button>
-                    <div class="breadcrumbs m-0">
-                        <a href="${pageContext.request.contextPath}/admin/dashboard">Dashboard</a>
-                        <span>&gt;</span>
-                        <a href="#">System</a>
-                        <span>&gt;</span>
-                        <a href="#" class="active text-dark fw-bold">Vai trò & Quyền hạn</a>
-                    </div>
-                </div>
-                <div class="header-right">
-                    <div class="profile-section">
-                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde" alt="Avatar" class="profile-img">
-                        <div class="profile-info" style="line-height: 1.2;">
-                            <div class="profile-name" style="font-size: 13.5px; font-weight: 600; color: #333;"><c:out value="${not empty sessionScope.user.fullName ? sessionScope.user.fullName : 'Hoàng Anh'}" /></div>
-                            <div class="profile-role" style="font-size: 10.5px; color: var(--cz-text-muted); font-weight: 500;">Quản trị viên</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Top Header -->
+            <jsp:include page="../common/top-header.jsp">
+                <jsp:param name="parentMenu" value="System" />
+                <jsp:param name="activeMenu" value="Vai trò & Quyền hạn" />
+            </jsp:include>
 
             <div class="content-container">
                 <div class="form-card">
