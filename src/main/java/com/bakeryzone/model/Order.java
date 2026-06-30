@@ -22,6 +22,11 @@ public class Order {
     private String productionStatus;
     private String shipperName;
     private BigDecimal remainingCodBalance;
+    private String receiverName;
+    private String receiverPhone;
+    private String customerNote;
+    private BigDecimal discountAmount;
+    private String paymentMethod = "COD";
     private final List<OrderItem> items = new ArrayList<>();
 
     public Order() {
@@ -154,6 +159,45 @@ public class Order {
         return items;
     }
 
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
+    }
+
+    public String getReceiverPhone() {
+        return receiverPhone;
+    }
+
+    public void setReceiverPhone(String receiverPhone) {
+        this.receiverPhone = receiverPhone;
+    }
+
+    public String getCustomerNote() {
+        return customerNote;
+    }
+
+    public void setCustomerNote(String customerNote) {
+        this.customerNote = customerNote;
+    }
+
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
 
     public BigDecimal getRemainingAmount() {
         if (remainingCodBalance != null) {

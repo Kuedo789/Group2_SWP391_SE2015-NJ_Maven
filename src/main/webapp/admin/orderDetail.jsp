@@ -272,14 +272,17 @@
                         <div class="cost-row">
                             <span>Phí vận chuyển:</span>
                             <span class="font-mono">
-                                <c:choose>
-                                    <c:when test="${order.totalCost > subtot}">
-                                        <fmt:formatNumber value="${order.totalCost - subtot}" type="number" pattern="#,##0"/>đ
-                                    </c:when>
-                                    <c:otherwise>0đ</c:otherwise>
-                                </c:choose>
+                                <fmt:formatNumber value="${order.shippingFee}" type="number" pattern="#,##0"/>đ
                             </span>
                         </div>
+                        <c:if test="${order.discountAmount > 0}">
+                            <div class="cost-row">
+                                <span>Giảm giá:</span>
+                                <span class="font-mono text-success">
+                                    -<fmt:formatNumber value="${order.discountAmount}" type="number" pattern="#,##0"/>đ
+                                </span>
+                            </div>
+                        </c:if>
                         <div class="cost-row">
                             <span>Đặt cọc trước:</span>
                             <span class="font-mono text-danger">
