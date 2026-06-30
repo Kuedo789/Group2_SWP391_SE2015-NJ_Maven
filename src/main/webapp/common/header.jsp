@@ -10,6 +10,8 @@
             dbSettings.put("email", "support@bakeryzone.vn");
             dbSettings.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
             dbSettings.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
+            dbSettings.put("shippingRate", "5000");
+            dbSettings.put("depositPercent", "30");
             dbSettings.put("banner1", "assets/images/banner1.jpg");
             dbSettings.put("banner2", "assets/images/banner2.jpg");
             dbSettings.put("banner3", "assets/images/banner3.jpg");

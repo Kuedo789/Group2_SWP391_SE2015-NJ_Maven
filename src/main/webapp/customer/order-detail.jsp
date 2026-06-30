@@ -19,14 +19,18 @@
     }
 
     User sessionUser = (User) session.getAttribute("user");
-    String recipientName = "Khách hàng";
-    String recipientPhone = "";
-    if (customer != null) {
-        recipientName = customer.getFullName();
-        recipientPhone = customer.getPhone();
-    } else if (sessionUser != null && sessionUser.getUserId().equals(order.getCustomerId())) {
-        recipientName = sessionUser.getFullName();
-        recipientPhone = sessionUser.getPhone();
+    String recipientName = order.getReceiverName();
+    String recipientPhone = order.getReceiverPhone();
+    if (recipientName == null || recipientName.trim().isEmpty()) {
+        recipientName = "Khách hàng";
+        recipientPhone = "";
+        if (customer != null) {
+            recipientName = customer.getFullName();
+            recipientPhone = customer.getPhone();
+        } else if (sessionUser != null && sessionUser.getUserId().equals(order.getCustomerId())) {
+            recipientName = sessionUser.getFullName();
+            recipientPhone = sessionUser.getPhone();
+        }
     }
 
     String dbStatus = order.getOrderStatus();
@@ -122,31 +126,34 @@
     }
 
     double totalCost = order.getTotalCost() != null ? order.getTotalCost().doubleValue() : 0;
-    double shippingFee = 0;
-    double discount = 0;
+    double shippingFee = order.getShippingFee() != null ? order.getShippingFee().doubleValue() : 0;
+    double discount = order.getDiscountAmount() != null ? order.getDiscountAmount().doubleValue() : 0;
 
-    if (totalCost > 0) {
-        if (Math.abs(totalCost - subtotal) < 1.0) {
-            shippingFee = 0;
+    // Fallback if shippingFee/discount are zero but subtotal/totalCost mismatch (legacy orders support)
+    if (shippingFee == 0 && discount == 0 && totalCost > 0 && Math.abs(totalCost - subtotal) >= 1.0) {
+        shippingFee = 35000;
+        discount = subtotal + shippingFee - totalCost;
+        if (discount < 0) {
+            shippingFee = totalCost - subtotal;
             discount = 0;
-        } else {
-            shippingFee = 35000; // Phí vận chuyển tiêu chuẩn
-            discount = subtotal + shippingFee - totalCost;
-            if (discount < 0) {
-                shippingFee = totalCost - subtotal;
-                discount = 0;
-            }
         }
     }
 
     // Payment Method & Status
     double depositAmount = order.getDepositAmount() != null ? order.getDepositAmount().doubleValue() : 0;
+    String method = order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD";
     String paymentMethodStr = "Thanh toán khi nhận hàng (COD)";
-    if (depositAmount > 0) {
-        if (Math.abs(depositAmount - totalCost) < 1.0) {
-            paymentMethodStr = "Chuyển khoản Ngân hàng (Đã thanh toán)";
+    if ("COD".equalsIgnoreCase(method)) {
+        if (depositAmount > 0) {
+            paymentMethodStr = "COD (Đã đặt cọc " + currencyFormat.format(depositAmount) + "đ)";
         } else {
-            paymentMethodStr = "Chuyển khoản (Đã đặt cọc " + currencyFormat.format(depositAmount) + "đ)";
+            paymentMethodStr = "Thanh toán khi nhận hàng (COD)";
+        }
+    } else {
+        if (Math.abs(depositAmount - totalCost) < 1.0) {
+            paymentMethodStr = method + " (Đã thanh toán)";
+        } else {
+            paymentMethodStr = method + " (Đã đặt cọc " + currencyFormat.format(depositAmount) + "đ)";
         }
     }
 %>
@@ -420,7 +427,9 @@
                             </div>
                             <div class="delivery-info-wrap">
                                 <span class="delivery-label">Ghi chú giao hàng</span>
-                                <span class="delivery-value">"Vui lòng gọi điện trước khi giao hàng 10 phút, xin cảm ơn!"</span>
+                                <span class="delivery-value">
+                                    <%= (order.getCustomerNote() != null && !order.getCustomerNote().trim().isEmpty()) ? order.getCustomerNote() : "Không có ghi chú." %>
+                                </span>
                             </div>
                         </div>
                         

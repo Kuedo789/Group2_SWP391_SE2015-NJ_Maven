@@ -65,7 +65,7 @@ public class OrderDAO {
             "SELECT COUNT(DISTINCT o.Order_No) FROM `orders` o"
             + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
             + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
-            + " LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID"
+            + " LEFT JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID"
             + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
             + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
@@ -111,7 +111,7 @@ public class OrderDAO {
             "SELECT DISTINCT o.* FROM `orders` o"
             + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
             + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
-            + " LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID"
+            + " LEFT JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID"
             + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
             + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
@@ -179,7 +179,7 @@ public class OrderDAO {
             "SELECT o.OrderStatus, COUNT(DISTINCT o.Order_No) AS cnt FROM `orders` o"
             + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
             + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
-            + " LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID"
+            + " LEFT JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID"
             + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
             + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
@@ -303,7 +303,7 @@ public class OrderDAO {
                     t.Default_Service_Percent
                 FROM order_item oi
                 LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-                LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID
+                LEFT JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID
                 LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID
                 LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID
                 WHERE oi.Order_No IN (
@@ -391,7 +391,7 @@ public class OrderDAO {
                     t.Default_Service_Percent
                 FROM order_item oi
                 LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-                LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID
+                LEFT JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID
                 LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID
                 LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID
                 WHERE oi.Order_No = ?
@@ -464,10 +464,21 @@ public class OrderDAO {
         BigDecimal total = rs.getBigDecimal("Total_Cost");
         order.setTotalCost(total);
         BigDecimal deposit = rs.getBigDecimal("Deposit_Amount");
-        if (total != null && deposit != null) {
-            order.setRemainingCodBalance(total.subtract(deposit));
-        } else {
-            order.setRemainingCodBalance(BigDecimal.ZERO);
+        try {
+            BigDecimal remaining = rs.getBigDecimal("Remaining_COD_Balance");
+            if (remaining != null) {
+                order.setRemainingCodBalance(remaining);
+            } else if (total != null && deposit != null) {
+                order.setRemainingCodBalance(total.subtract(deposit));
+            } else {
+                order.setRemainingCodBalance(BigDecimal.ZERO);
+            }
+        } catch (SQLException e) {
+            if (total != null && deposit != null) {
+                order.setRemainingCodBalance(total.subtract(deposit));
+            } else {
+                order.setRemainingCodBalance(BigDecimal.ZERO);
+            }
         }
         order.setOrderStatus(rs.getString("OrderStatus"));
         try {
@@ -475,6 +486,24 @@ public class OrderDAO {
         } catch (SQLException e) {
             // Ignore if Customer_Name column is not present
         }
+        try {
+            order.setShippingFee(rs.getBigDecimal("Shipping_Fee"));
+        } catch (SQLException ignored) {}
+        try {
+            order.setDiscountAmount(rs.getBigDecimal("Discount_Amount"));
+        } catch (SQLException ignored) {}
+        try {
+            order.setPaymentMethod(rs.getString("Payment_Method"));
+        } catch (SQLException ignored) {}
+        try {
+            order.setReceiverName(rs.getString("Receiver_Name"));
+        } catch (SQLException ignored) {}
+        try {
+            order.setReceiverPhone(rs.getString("Receiver_Phone"));
+        } catch (SQLException ignored) {}
+        try {
+            order.setCustomerNote(rs.getString("Customer_Note"));
+        } catch (SQLException ignored) {}
         return order;
     }
 
@@ -492,8 +521,8 @@ public class OrderDAO {
     }
 
     public boolean insertOrder(Order order) {
-        String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        String sqlCake = "INSERT INTO `custom_cake` (Custom_Cake_ID, Template_ID, Canvas_Image_URL, Greeting_Text, Total_Layers, Calculated_Price) VALUES (?, ?, ?, ?, ?, ?)";
+        String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus, Shipping_Fee, Discount_Amount, Payment_Method, Receiver_Name, Receiver_Phone, Customer_Note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sqlCake = "INSERT INTO `custom_cake` (Custom_Cake_ID, Canvas_Image_URL, Greeting_Text, Cake_Hash_Structure, Calculated_Price) VALUES (?, ?, ?, ?, ?)";
         String sqlItem = "INSERT INTO `order_item` (Order_Item_ID, Order_No, Custom_Cake_ID, Accessory_ID, Quantity, Price_At_Purchase) VALUES (?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
@@ -520,6 +549,22 @@ public class OrderDAO {
             psOrder.setBigDecimal(9, order.getRemainingCodBalance());
             psOrder.setBigDecimal(10, order.getTotalCost());
             psOrder.setString(11, order.getOrderStatus());
+            psOrder.setBigDecimal(12, order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO);
+            psOrder.setBigDecimal(13, order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO);
+            psOrder.setString(14, order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD");
+
+            String receiverName = order.getReceiverName();
+            String receiverPhone = order.getReceiverPhone();
+            if ((receiverName == null || receiverName.trim().isEmpty()) && order.getDeliveryAddress() != null) {
+                String[] parts = order.getDeliveryAddress().split("\\|");
+                if (parts.length >= 3) {
+                    receiverName = parts[0].trim();
+                    receiverPhone = parts[1].trim();
+                }
+            }
+            psOrder.setString(15, receiverName);
+            psOrder.setString(16, receiverPhone);
+            psOrder.setString(17, order.getCustomerNote());
             psOrder.executeUpdate();
 
             psCake = conn.prepareStatement(sqlCake);
@@ -534,17 +579,13 @@ public class OrderDAO {
                 if (item.getCustomCakeId() != null && !item.getCustomCakeId().trim().isEmpty()) {
                     // It's a custom cake template, insert custom_cake first
                     psCake.setString(1, item.getCustomCakeId());
-                    if (item.getTemplateId() != null && !item.getTemplateId().trim().isEmpty()) {
-                        psCake.setString(2, item.getTemplateId());
-                    } else {
-                        psCake.setNull(2, java.sql.Types.VARCHAR);
-                    }
-                    psCake.setString(3,
+                    psCake.setString(2,
                             item.getItemImage() != null ? item.getItemImage() : "assets/images/default-cake.png");
-                    psCake.setString(4,
+                    psCake.setString(3,
                             item.getGreetingText() != null ? item.getGreetingText() : "Chúc mừng sinh nhật!");
-                    psCake.setInt(5, 1); // Total_Layers
-                    psCake.setBigDecimal(6, item.getPriceAtPurchase()); // Calculated_Price
+                    String hash = (item.getTemplateId() != null && !item.getTemplateId().trim().isEmpty()) ? item.getTemplateId().trim() : "STANDARD_CAKE_HASH";
+                    psCake.setString(4, hash);
+                    psCake.setBigDecimal(5, item.getPriceAtPurchase());
                     psCake.executeUpdate();
 
                     psItem.setString(3, item.getCustomCakeId());
@@ -913,7 +954,7 @@ public class OrderDAO {
                      "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
                      "                 FROM template_ingredient_detail d" +
                      "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
-                     "                 WHERE d.Template_ID = cc.Template_ID" +
+                     "                 WHERE d.Template_ID = cc.Cake_Hash_Structure" +
                      "             ))" +
                      "              FROM order_item oi" +
                      "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
@@ -998,7 +1039,7 @@ public class OrderDAO {
                      "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
                      "                 FROM template_ingredient_detail d" +
                      "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
-                     "                 WHERE d.Template_ID = cc.Template_ID" +
+                     "                 WHERE d.Template_ID = cc.Cake_Hash_Structure" +
                      "             ))" +
                      "              FROM order_item oi" +
                      "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
@@ -1033,7 +1074,7 @@ public class OrderDAO {
                      "       SUM(oi.Quantity) AS quantity_sold, SUM(oi.Quantity * oi.Price_At_Purchase) AS total_revenue " +
                      "FROM order_item oi " +
                      "JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID " +
-                     "JOIN cake_template t ON cc.Template_ID = t.Template_ID " +
+                     "JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID " +
                      "LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID " +
                      "JOIN orders o ON oi.Order_No = o.Order_No " +
                      "WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
