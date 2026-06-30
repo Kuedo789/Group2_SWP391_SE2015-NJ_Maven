@@ -436,15 +436,20 @@ public class ProductDAO {
     public List<Product> getHomepageBestSellerProducts(int limit) {
         List<Product> products = new ArrayList<>();
 
+        // Sales are counted per cake_template by joining order_item -> cart_item -> custom_cake_layer_ingredient.
+        // custom_cake has no Template_ID column; best-sellers are ranked by total completed order quantities
+        // matched back to the base cake_template through template_ingredient_detail.
         String sql = "SELECT p.*, COALESCE(sales.total_qty, 0) as total_sold "
                 + "FROM (" + getBaseUnionQuery() + ") AS p "
                 + "LEFT JOIN ("
-                + "    SELECT cc.Template_ID, SUM(oi.Quantity) as total_qty "
+                + "    SELECT tid.Template_ID, SUM(oi.Quantity) as total_qty "
                 + "    FROM order_item oi "
-                + "    JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID "
                 + "    JOIN orders o ON oi.Order_No = o.Order_No "
+                + "    JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID "
+                + "    JOIN custom_cake_layer_ingredient ccli ON cc.Custom_Cake_ID = ccli.Custom_Cake_ID "
+                + "    JOIN template_ingredient_detail tid ON ccli.Ingredient_ID = tid.Ingredient_ID "
                 + "    WHERE o.OrderStatus = 'Completed' "
-                + "    GROUP BY cc.Template_ID"
+                + "    GROUP BY tid.Template_ID"
                 + ") AS sales ON p.Product_ID = sales.Template_ID "
                 + "WHERE p.Status = ? "
                 + "ORDER BY total_sold DESC, p.Is_Featured DESC, p.Product_ID DESC "
@@ -545,7 +550,12 @@ public class ProductDAO {
     }
 
     public boolean hasOrders(String productId) {
-        String sql = "SELECT COUNT(*) FROM order_item oi JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID WHERE cc.Template_ID = ?";
+        // custom_cake has no Template_ID; check by matching through template_ingredient_detail
+        String sql = "SELECT COUNT(*) FROM order_item oi "
+                   + "JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID "
+                   + "JOIN custom_cake_layer_ingredient ccli ON cc.Custom_Cake_ID = ccli.Custom_Cake_ID "
+                   + "JOIN template_ingredient_detail tid ON ccli.Ingredient_ID = tid.Ingredient_ID "
+                   + "WHERE tid.Template_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
