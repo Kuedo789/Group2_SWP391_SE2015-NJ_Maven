@@ -88,7 +88,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
             String cartDataJson  = request.getParameter("cartData");    // JSON array from localStorage
 
             // ── 2. Resolve delivery address string ─────────────────────────────────
-            String deliveryAddressStr = "Chưa có địa chỉ";
+            String deliveryAddressStr = null;
             if (addressIdRaw != null && !addressIdRaw.trim().isEmpty()) {
                 try {
                     int addressId = Integer.parseInt(addressIdRaw.trim());
@@ -99,6 +99,11 @@ public class CustomerCheckoutServlet extends HttpServlet {
                                 + " | " + addr.getAddressDetail();
                     }
                 } catch (NumberFormatException ignored) {}
+            }
+
+            if (deliveryAddressStr == null) {
+                response.sendRedirect(request.getContextPath() + "/checkout?error=empty_address");
+                return;
             }
 
             // ── 3. Build Delivery Window timestamps ────────────────────────────────
@@ -193,6 +198,11 @@ public class CustomerCheckoutServlet extends HttpServlet {
 
                     order.getItems().add(oi);
                 }
+            }
+
+            if (order.getItems().isEmpty()) {
+                response.sendRedirect(request.getContextPath() + "/checkout?error=empty_cart");
+                return;
             }
 
             String shippingFeeStr = request.getParameter("shippingFee");

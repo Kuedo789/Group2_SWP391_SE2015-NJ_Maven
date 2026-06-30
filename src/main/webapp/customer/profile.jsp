@@ -76,19 +76,21 @@
                         <div class="form-note">Email dùng để đăng nhập và không thể thay đổi tại đây.</div>
                     </div>
 
-                    <div class="address-profile-box">
-                        <div class="address-profile-header">
-                            <div class="address-profile-title">
-                                <h3>Địa chỉ giao hàng</h3>
-                                <p>${not empty sessionScope.user.defaultAddress ? sessionScope.user.defaultAddress : 'Chưa thiết lập địa chỉ mặc định. Vui lòng thêm địa chỉ.'}</p>
+                    <c:if test="${sessionScope.user.roleId eq 'CUSTOMER'}">
+                        <div class="address-profile-box">
+                            <div class="address-profile-header">
+                                <div class="address-profile-title">
+                                    <h3>Địa chỉ giao hàng</h3>
+                                    <p>${not empty sessionScope.user.defaultAddress ? sessionScope.user.defaultAddress : 'Chưa thiết lập địa chỉ mặc định. Vui lòng thêm địa chỉ.'}</p>
+                                </div>
+    
+                                <a href="${pageContext.request.contextPath}/delivery-address?action=profile"
+                                   class="btn-address-manage">
+                                    Đổi địa chỉ &rsaquo;
+                                </a>
                             </div>
-
-                            <a href="${pageContext.request.contextPath}/delivery-address?action=profile"
-                               class="btn-address-manage">
-                                Đổi địa chỉ &rsaquo;
-                            </a>
-                        </div>
-                    </div>           
+                        </div>           
+                    </c:if>
 
                     <div class="form-group">
                         <label>Mật khẩu</label>

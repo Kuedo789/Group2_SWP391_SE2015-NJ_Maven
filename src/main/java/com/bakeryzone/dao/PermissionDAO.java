@@ -28,12 +28,23 @@ public class PermissionDAO {
 
     public List<ScreenPermission> getScreensWithStatus(String roleId) {
         List<ScreenPermission> list = new ArrayList<>();
-        // 🟢 KHOANH VÙNG: Chỉ bốc đúng các màn hình bạn phụ trách để cấu hình ON/OFF
+        // Bỏ điều kiện WHERE s.Screen_ID IN (...) để lấy toàn bộ tính năng ra màn hình phân quyền
         String sql = "SELECT s.Screen_ID, s.Screen_Name, s.Endpoint_URL, "
                 + "CASE WHEN rp.Role_ID IS NOT NULL THEN 1 ELSE 0 END as is_active "
                 + "FROM screen_permission s "
                 + "LEFT JOIN role_permission rp ON s.Screen_ID = rp.Screen_ID AND rp.Role_ID = ? "
-                + "WHERE s.Screen_ID IN ('SCR_DASHBOARD', 'SCR_CUSTOMER', 'SCR_REVIEW', 'SCR_USER')";
+                + "ORDER BY FIELD(s.Screen_ID, "
+                + "'FEAT_DASHBOARD_VIEW', 'FEAT_ORDER_VIEW', 'FEAT_ORDER_DETAIL', 'FEAT_ORDER_UPDATE', "
+                + "'FEAT_PROD_VIEW', 'FEAT_PROD_DETAIL', 'FEAT_PROD_ADD', 'FEAT_PROD_EDIT', 'FEAT_PROD_UPDATE', 'FEAT_PROD_DEL', "
+                + "'FEAT_CAT_VIEW', 'FEAT_CAT_ADD', 'FEAT_CAT_EDIT', 'FEAT_CAT_DEL', 'FEAT_CAT_RESTORE', "
+                + "'FEAT_ING_VIEW', 'FEAT_ING_ADD', 'FEAT_ING_EDIT', 'FEAT_ING_UPDATE', 'FEAT_ING_DEL', "
+                + "'FEAT_UNIT_VIEW', 'FEAT_UNIT_ADD', 'FEAT_UNIT_EDIT', 'FEAT_UNIT_UPDATE', 'FEAT_UNIT_DEL', "
+                + "'FEAT_ATTR_VIEW', 'FEAT_ATTR_ADD', "
+                + "'FEAT_CUST_VIEW', 'FEAT_CUST_ADD', 'FEAT_CUST_EDIT', 'FEAT_CUST_DEL', "
+                + "'FEAT_REV_VIEW', 'FEAT_REV_DETAIL', 'FEAT_REV_UPDATE', "
+                + "'FEAT_STAFF_VIEW', 'FEAT_STAFF_ADD', 'FEAT_STAFF_EDIT', 'FEAT_STAFF_DEL', "
+                + "'FEAT_ROLE_VIEW', 'FEAT_SETTING_MNG')";
+
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, roleId);
             try (ResultSet rs = ps.executeQuery()) {
@@ -93,5 +104,9 @@ public class PermissionDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public boolean checkUrlPermission(String roleId, String targetUrl) {
+        return checkPermission(roleId, targetUrl);
     }
 }

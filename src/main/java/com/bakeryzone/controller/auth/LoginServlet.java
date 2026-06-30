@@ -98,9 +98,9 @@ public class LoginServlet extends HttpServlet {
         if ("ADMIN".equalsIgnoreCase(roleId)) {
             response.sendRedirect(request.getContextPath() + "/admin/dashboard");
         } else if ("STAFF".equalsIgnoreCase(roleId)) {
-            response.sendRedirect(request.getContextPath() + "/admin/dashboard");
+            response.sendRedirect(request.getContextPath() + "/admin/orders?action=list");
         } else if ("SHIPPER".equalsIgnoreCase(roleId)) {
-            response.sendRedirect(request.getContextPath() + "/shipper/orders");
+            response.sendRedirect(request.getContextPath() + "/admin/orders?action=list");
         } else {
             response.sendRedirect(request.getContextPath() + "/home");
         }

@@ -16,7 +16,7 @@ public class UnitMeasureDAO {
 
     public List<UnitMeasure> getAllUnitMeasures() {
         List<UnitMeasure> list = new ArrayList<>();
-        String sql = "SELECT Unit_ID, Unit_Name, Description FROM unit_measure ORDER BY Unit_ID ASC";
+        String sql = "SELECT Unit_ID, Unit_Name, Description, enable FROM unit_measure WHERE enable = 1 ORDER BY Unit_ID ASC";
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -24,7 +24,8 @@ public class UnitMeasureDAO {
                 UnitMeasure u = new UnitMeasure(
                     rs.getString("Unit_ID"),
                     rs.getString("Unit_Name"),
-                    rs.getString("Description")
+                    rs.getString("Description"),
+                    rs.getBoolean("enable")
                 );
                 list.add(u);
             }
@@ -36,7 +37,7 @@ public class UnitMeasureDAO {
 
     public UnitMeasure getUnitMeasureById(String id) {
         if (id == null || id.trim().isEmpty()) return null;
-        String sql = "SELECT Unit_ID, Unit_Name, Description FROM unit_measure WHERE Unit_ID = ?";
+        String sql = "SELECT Unit_ID, Unit_Name, Description, enable FROM unit_measure WHERE Unit_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
@@ -45,7 +46,8 @@ public class UnitMeasureDAO {
                     return new UnitMeasure(
                         rs.getString("Unit_ID"),
                         rs.getString("Unit_Name"),
-                        rs.getString("Description")
+                        rs.getString("Description"),
+                        rs.getBoolean("enable")
                     );
                 }
             }
@@ -68,19 +70,21 @@ public class UnitMeasureDAO {
             }
 
             if (exists) {
-                String sql = "UPDATE unit_measure SET Unit_Name = ?, Description = ? WHERE Unit_ID = ?";
+                String sql = "UPDATE unit_measure SET Unit_Name = ?, Description = ?, enable = ? WHERE Unit_ID = ?";
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setString(1, unit.getUnitName());
                     ps.setString(2, unit.getDescription());
-                    ps.setString(3, unit.getUnitId());
+                    ps.setBoolean(3, unit.isEnable());
+                    ps.setString(4, unit.getUnitId());
                     return ps.executeUpdate() > 0;
                 }
             } else {
-                String sql = "INSERT INTO unit_measure (Unit_ID, Unit_Name, Description) VALUES (?, ?, ?)";
+                String sql = "INSERT INTO unit_measure (Unit_ID, Unit_Name, Description, enable) VALUES (?, ?, ?, ?)";
                 try (PreparedStatement ps = conn.prepareStatement(sql)) {
                     ps.setString(1, unit.getUnitId());
                     ps.setString(2, unit.getUnitName());
                     ps.setString(3, unit.getDescription());
+                    ps.setBoolean(4, unit.isEnable());
                     return ps.executeUpdate() > 0;
                 }
             }
@@ -92,13 +96,13 @@ public class UnitMeasureDAO {
 
     public boolean deleteUnitMeasure(String id) {
         if (id == null || id.trim().isEmpty()) return false;
-        String sql = "DELETE FROM unit_measure WHERE Unit_ID = ?";
+        String sql = "UPDATE unit_measure SET enable = 0 WHERE Unit_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed to delete unit measure: " + id, e);
+            LOGGER.log(Level.SEVERE, "Failed to soft delete unit measure: " + id, e);
         }
         return false;
     }

@@ -20,6 +20,24 @@
             <p>Vui lòng kiểm tra lại thông tin và sản phẩm trước khi thanh toán.</p>
         </div>
 
+        <div id="jsErrorBox" class="alert alert-danger" style="display: none; color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;"></div>
+
+        <c:if test="${param.error == 'empty_cart'}">
+            <div class="alert alert-danger" style="color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;">
+                Không có sản phẩm trong giỏ hàng. Không thể đặt bánh!
+            </div>
+        </c:if>
+        <c:if test="${param.error == 'empty_address'}">
+            <div class="alert alert-danger" style="color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;">
+                Vui lòng thêm địa chỉ giao hàng trước khi đặt hàng.
+            </div>
+        </c:if>
+        <c:if test="${param.error == 'server_error' || param.error == 'save_failed'}">
+            <div class="alert alert-danger" style="color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;">
+                Đã có lỗi xảy ra trong quá trình đặt hàng. Vui lòng thử lại sau.
+            </div>
+        </c:if>
+
         <form id="checkoutForm" action="${pageContext.request.contextPath}/checkout" method="POST">
             <input type="hidden" name="cartData" id="cartDataInput">
             <input type="hidden" name="addressId" id="selectedAddressIdInput" value="${requestScope.selectedAddress.addressId}">
@@ -96,63 +114,8 @@
 
                         <div style="font-weight: 700; font-size: 14px; color: var(--text-dark); margin-bottom: 12px;">Chọn khung giờ: <span style="color:#d62828;">*</span></div>
 
-                        <div class="time-slots-grid">
-                            <div class="time-slot-pill" data-slot="08:00 - 09:00" onclick="selectTimeSlot('08:00 - 09:00', this)">
-                                <span class="slot-time">08:00 - 09:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="09:00 - 10:00" onclick="selectTimeSlot('09:00 - 10:00', this)">
-                                <span class="slot-time">09:00 - 10:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="10:00 - 11:00" onclick="selectTimeSlot('10:00 - 11:00', this)">
-                                <span class="slot-time">10:00 - 11:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="11:00 - 12:00" onclick="selectTimeSlot('11:00 - 12:00', this)">
-                                <span class="slot-time">11:00 - 12:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="12:00 - 13:00" onclick="selectTimeSlot('12:00 - 13:00', this)">
-                                <span class="slot-time">12:00 - 13:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="13:00 - 14:00" onclick="selectTimeSlot('13:00 - 14:00', this)">
-                                <span class="slot-time">13:00 - 14:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="14:00 - 15:00" onclick="selectTimeSlot('14:00 - 15:00', this)">
-                                <span class="slot-time">14:00 - 15:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="15:00 - 16:00" onclick="selectTimeSlot('15:00 - 16:00', this)">
-                                <span class="slot-time">15:00 - 16:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="16:00 - 17:00" onclick="selectTimeSlot('16:00 - 17:00', this)">
-                                <span class="slot-time">16:00 - 17:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="17:00 - 18:00" onclick="selectTimeSlot('17:00 - 18:00', this)">
-                                <span class="slot-time">17:00 - 18:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="18:00 - 19:00" onclick="selectTimeSlot('18:00 - 19:00', this)">
-                                <span class="slot-time">18:00 - 19:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="19:00 - 20:00" onclick="selectTimeSlot('19:00 - 20:00', this)">
-                                <span class="slot-time">19:00 - 20:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="20:00 - 21:00" onclick="selectTimeSlot('20:00 - 21:00', this)">
-                                <span class="slot-time">20:00 - 21:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
-                            <div class="time-slot-pill" data-slot="21:00 - 22:00" onclick="selectTimeSlot('21:00 - 22:00', this)">
-                                <span class="slot-time">21:00 - 22:00</span>
-                                <span class="slot-status">Còn chỗ</span>
-                            </div>
+                        <div class="time-slots-grid" id="timeSlotsGrid">
+                            <!-- Populated by JavaScript based on deliveryDate -->
                         </div>
 
                         <div class="banner-info" id="slotConfirmationBanner" style="display: none;">
@@ -307,18 +270,34 @@
 
             // We render the address directly via JSP now, no need to sync display via JS
             document.getElementById("checkoutForm").addEventListener("submit", function(e) {
+                const jsErrorBox = document.getElementById("jsErrorBox");
+                
+                if (!Array.isArray(currentCart) || currentCart.length === 0) {
+                    e.preventDefault();
+                    jsErrorBox.innerText = "Không có sản phẩm trong giỏ hàng. Không thể đặt bánh!";
+                    jsErrorBox.style.display = "block";
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return;
+                }
+
                 const selectedAddressId = document.getElementById("selectedAddressIdInput").value;
                 if (!selectedAddressId || selectedAddressId.trim() === "") {
                     e.preventDefault();
-                    alert("Vui lòng thêm địa chỉ giao hàng trước khi đặt hàng.");
+                    jsErrorBox.innerText = "Vui lòng thêm địa chỉ giao hàng trước khi đặt hàng.";
+                    jsErrorBox.style.display = "block";
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                     return;
                 }
                 const timeSlot = document.getElementById("selectedTimeSlotInput").value;
                 if (!timeSlot || timeSlot.trim() === "") {
                     e.preventDefault();
-                    alert("Vui lòng chọn khung giờ giao hàng hợp lệ.");
+                    jsErrorBox.innerText = "Vui lòng chọn khung giờ giao hàng hợp lệ.";
+                    jsErrorBox.style.display = "block";
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                     return;
                 }
+                
+                jsErrorBox.style.display = "none";
                 localStorage.removeItem("cart");
             });
 
@@ -331,17 +310,21 @@
             const btn = document.getElementById("btnPlaceOrder");
             const banner = document.getElementById("slotConfirmationBanner");
             const inputField = document.getElementById("selectedTimeSlotInput");
+            const grid = document.getElementById("timeSlotsGrid");
+
+            const standardSlots = [
+                "08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00",
+                "12:00 - 13:00", "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00",
+                "16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00",
+                "20:00 - 21:00", "21:00 - 22:00"
+            ];
+            
+            grid.innerHTML = ""; // Clear existing
 
             if (!dateVal) {
-                // Nếu chưa chọn ngày, vô hiệu hóa tất cả các khung giờ
-                const allPills = document.querySelectorAll(".time-slot-pill");
-                for (let i = 0; i < allPills.length; i++) {
-                    const pill = allPills[i];
-                    pill.classList.add("disabled");
-                    pill.classList.remove("active");
-                    const statusSpan = pill.querySelector(".slot-status");
-                    if (statusSpan) statusSpan.innerText = "Vui lòng chọn ngày";
-                }
+                standardSlots.forEach(slot => {
+                    grid.innerHTML += `<div class="time-slot-pill disabled"><span class="slot-time">\${slot}</span><span class="slot-status">Vui lòng chọn ngày</span></div>`;
+                });
                 
                 if (btn) btn.disabled = true;
                 if (banner) banner.style.display = "none";
@@ -351,12 +334,7 @@
             }
             
             const dateParts = dateVal.split('-');
-            let selectedDate;
-            if (dateParts.length === 3) {
-                selectedDate = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
-            } else {
-                selectedDate = new Date(dateVal);
-            }
+            const selectedDate = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
             const today = new Date();
             
             const isToday = selectedDate.getDate() === today.getDate() && 
@@ -366,40 +344,36 @@
             // Check past date by stripping time
             const pastDateLimit = new Date(today.getFullYear(), today.getMonth(), today.getDate());
             const isPastDate = selectedDate < pastDateLimit;
-            
             const currentHour = today.getHours();
+            
             let hasAvailableSlot = false;
+            let previouslySelectedValid = false;
             
-            const timePills = document.querySelectorAll(".time-slot-pill");
-            for (let i = 0; i < timePills.length; i++) {
-                const pill = timePills[i];
-                const slotText = pill.getAttribute("data-slot");
-                const slotHour = parseInt(slotText.substring(0, 2), 10);
+            standardSlots.forEach(slot => {
+                const slotHour = parseInt(slot.substring(0, 2), 10);
+                const isDisabled = isPastDate || (isToday && slotHour <= currentHour); // Can't select slots in the past
                 
-                // Khóa những khung giờ đã qua trong ngày hôm nay hoặc ngày trong quá khứ
-                if (isPastDate || (isToday && slotHour < currentHour)) {
-                    pill.classList.add("disabled");
-                    const statusSpan = pill.querySelector(".slot-status");
-                    if (statusSpan) statusSpan.innerText = "Hết chỗ/Quá hạn";
-                    pill.classList.remove("active");
-                } else {
-                    pill.classList.remove("disabled");
-                    const statusSpan = pill.querySelector(".slot-status");
-                    if (statusSpan) statusSpan.innerText = "Còn chỗ";
-                    hasAvailableSlot = true;
-                }
-            }
+                const pillClass = isDisabled ? "time-slot-pill disabled" : "time-slot-pill";
+                const statusTxt = isDisabled ? "Hết chỗ/Quá hạn" : "Còn chỗ";
+                const clickAttr = isDisabled ? "" : `onclick="selectTimeSlot('\${slot}', this)"`;
+                
+                // Keep selected slot if still valid
+                const isActive = (!isDisabled && selectedTimeSlot === slot) ? "active" : "";
+                if (isActive) previouslySelectedValid = true;
+                if (!isDisabled) hasAvailableSlot = true;
+
+                grid.innerHTML += `<div class="\${pillClass} \${isActive}" data-slot="\${slot}" \${clickAttr}>
+                    <span class="slot-time">\${slot}</span><span class="slot-status">\${statusTxt}</span></div>`;
+            });
             
-            const currentActive = document.querySelector(".time-slot-pill.active");
-            
-            if (!currentActive) {
+            if (!previouslySelectedValid) {
                 if (btn) btn.disabled = true;
                 if (banner) {
                     if (!hasAvailableSlot) {
                         banner.style.display = "flex";
                         banner.innerHTML = `<i class="fa fa-exclamation-circle" style="color:#d62828;"></i> <span style="color:#d62828;">Không còn khung giờ giao hàng trống trong ngày này. Vui lòng chọn ngày khác.</span>`;
                     } else {
-                        banner.style.display = "none"; // Ẩn banner khi chưa chọn giờ
+                        banner.style.display = "none";
                     }
                 }
                 if (inputField) inputField.value = "";
@@ -409,7 +383,7 @@
                 if (btn) btn.disabled = false;
                 if (banner) {
                     banner.style.display = "flex";
-                    banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ ${selectedTimeSlot}</span>`;
+                    banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ \${selectedTimeSlot}</span>`;
                 }
             }
         }

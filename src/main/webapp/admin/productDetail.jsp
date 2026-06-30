@@ -417,60 +417,7 @@
     </style>
 </head>
 <body>
-    <!-- Floating Debug Console -->
-    <div id="cz-debug-console" style="position: fixed; bottom: 10px; right: 10px; width: 450px; height: 250px; background: rgba(0,0,0,0.85); color: #00ff00; font-family: monospace; font-size: 11px; padding: 10px; border-radius: 6px; z-index: 999999; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #333; line-height: 1.4;">
-        <div style="font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
-            <span>CAKEZONE DEBUG CONSOLE</span>
-            <button type="button" onclick="document.getElementById('cz-debug-console').style.display='none'" style="background: none; border: none; color: #ff0000; font-weight: bold; cursor: pointer;">[X]</button>
-        </div>
-        <div id="cz-debug-log-list"></div>
-    </div>
 
-    <script>
-        (function() {
-            const logList = document.getElementById('cz-debug-log-list');
-            function addLog(msg, color = '#00ff00') {
-                if (logList) {
-                    const item = document.createElement('div');
-                    item.style.color = color;
-                    item.style.marginBottom = '4px';
-                    item.style.borderBottom = '1px solid #222';
-                    item.style.paddingBottom = '2px';
-                    item.textContent = new Date().toLocaleTimeString() + ' - ' + msg;
-                    logList.appendChild(item);
-                    logList.scrollTop = logList.scrollHeight;
-                }
-            }
-            
-            // Override console methods
-            const _log = console.log;
-            const _err = console.error;
-            const _warn = console.warn;
-            
-            console.log = function(...args) {
-                _log.apply(console, args);
-                addLog(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), '#00ff00');
-            };
-            console.error = function(...args) {
-                _err.apply(console, args);
-                addLog(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), '#ff3333');
-            };
-            console.warn = function(...args) {
-                _warn.apply(console, args);
-                addLog(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '), '#ffff00');
-            };
-            
-            window.addEventListener('error', function(e) {
-                addLog('Runtime Error: ' + e.message + ' at ' + e.filename + ':' + e.lineno, '#ff0000');
-            });
-            window.addEventListener('unhandledrejection', function(e) {
-                addLog('Promise Rejection: ' + e.reason, '#ff0000');
-            });
-            
-            addLog('Debug console initialized.', '#00ffff');
-            window.czAddLog = addLog;
-        })();
-    </script>
 
     <!-- Left Sidebar -->
     <jsp:include page="../common/sidebar.jsp">
@@ -805,17 +752,17 @@
                                 <!-- Financial markup and pricing suggest cards -->
                                 <h5 class="card-header-title mt-4" style="border-top: 1px solid #e5e7eb; padding-top: 20px;">Cơ Cấu Giá Bán Đề Xuất</h5>
                                 <div class="row g-3 mt-1">
-                                    <div class="col-md-4">
+                                                                    <div class="col-md-4">
                                         <label class="form-label-cz">Biên Lợi Nhuận (%) <span>*</span></label>
                                         <div class="input-group-cz">
-                                            <input type="number" step="0.01" class="form-control-cz" id="defaultMarginPercent" name="defaultMarginPercent" value="${product.defaultMarginPercent}" required>
+                                            <input type="number" step="0.01" class="form-control-cz" id="defaultMarginPercent" name="defaultMarginPercent" value="${product.defaultMarginPercent}" readonly style="background-color: #f3f4f6; cursor: not-allowed;" required>
                                             <span class="input-group-addon">%</span>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <label class="form-label-cz">Phí Dịch Vụ / Bếp (%) <span>*</span></label>
                                         <div class="input-group-cz">
-                                            <input type="number" step="0.01" class="form-control-cz" id="defaultServicePercent" name="defaultServicePercent" value="${product.defaultServicePercent}" required>
+                                            <input type="number" step="0.01" class="form-control-cz" id="defaultServicePercent" name="defaultServicePercent" value="${product.defaultServicePercent}" readonly style="background-color: #f3f4f6; cursor: not-allowed;" required>
                                             <span class="input-group-addon">%</span>
                                         </div>
                                     </div>

@@ -4,6 +4,7 @@ public class UnitMeasure {
     private String unitId;
     private String unitName;
     private String description;
+    private boolean enable;
 
     public UnitMeasure() {
     }
@@ -12,6 +13,14 @@ public class UnitMeasure {
         this.unitId = unitId;
         this.unitName = unitName;
         this.description = description;
+        this.enable = true;
+    }
+
+    public UnitMeasure(String unitId, String unitName, String description, boolean enable) {
+        this.unitId = unitId;
+        this.unitName = unitName;
+        this.description = description;
+        this.enable = enable;
     }
 
     public String getUnitId() {
@@ -36,5 +45,13 @@ public class UnitMeasure {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public void setEnable(boolean enable) {
+        this.enable = enable;
     }
 }

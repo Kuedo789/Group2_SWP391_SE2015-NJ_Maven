@@ -50,7 +50,7 @@
                     <h1 class="page-title">Quản lý nguyên liệu</h1>
                     <p class="page-subtitle">Quản lý định giá và phân nhóm nguyên liệu làm bánh.</p>
                 </div>
-                <a href="${pageContext.request.contextPath}/admin/ingredient?action=create&page=${currentPage}&pageSize=${pageSize}&search=${search}" class="btn btn-cz-primary">
+                <a href="${pageContext.request.contextPath}/admin/ingredient?action=create&page=${currentPage}&pageSize=${pageSize}&search=${search}&unitId=${unitId}&sortBy=${sortBy}" class="btn btn-cz-primary">
                     <i class="fa-solid fa-circle-plus"></i> Thêm nguyên liệu
                 </a>
             </div>
@@ -62,7 +62,20 @@
                     <!-- Maintain page size -->
                     <input type="hidden" name="pageSize" value="${pageSize}">
                     
-                    <!-- Category filter removed -->
+                    <select class="filter-select" name="unitId" onchange="this.form.submit()" style="height: 42px; border-radius: 8px; border: 1px solid #ddd; padding: 0 15px;">
+                        <option value="" ${empty unitId ? 'selected' : ''}>Tất cả đơn vị</option>
+                        <c:forEach var="u" items="${unitMeasures}">
+                            <option value="${u.unitId}" ${unitId eq u.unitId ? 'selected' : ''}>${u.unitName} (${u.unitId})</option>
+                        </c:forEach>
+                    </select>
+
+                    <select class="filter-select" name="sortBy" onchange="this.form.submit()" style="height: 42px; border-radius: 8px; border: 1px solid #ddd; padding: 0 15px;">
+                        <option value="" ${empty sortBy ? 'selected' : ''}>Sắp xếp mặc định</option>
+                        <option value="price_asc" ${sortBy eq 'price_asc' ? 'selected' : ''}>Giá tăng dần</option>
+                        <option value="price_desc" ${sortBy eq 'price_desc' ? 'selected' : ''}>Giá giảm dần</option>
+                        <option value="name_asc" ${sortBy eq 'name_asc' ? 'selected' : ''}>Tên A-Z</option>
+                        <option value="name_desc" ${sortBy eq 'name_desc' ? 'selected' : ''}>Tên Z-A</option>
+                    </select>
 
                     <div class="search-wrapper">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -103,7 +116,15 @@
                                           </td>
                                           <td>
                                               <c:if test="${not empty i.imageUrl}">
-                                                  <img src="${i.imageUrl}" alt="${i.ingredientName}" style="max-height: 40px; max-width: 60px; border-radius: 4px; border: 1px solid #ddd; object-fit: cover;">
+                                                  <c:choose>
+                                                      <c:when test="${i.imageUrl.startsWith('http://') or i.imageUrl.startsWith('https://')}">
+                                                          <c:set var="resolvedUrl" value="${i.imageUrl}" />
+                                                      </c:when>
+                                                      <c:otherwise>
+                                                          <c:set var="resolvedUrl" value="${pageContext.request.contextPath}/${i.imageUrl}" />
+                                                      </c:otherwise>
+                                                  </c:choose>
+                                                  <img src="${resolvedUrl}" alt="${i.ingredientName}" style="max-height: 40px; max-width: 60px; border-radius: 4px; border: 1px solid #ddd; object-fit: cover;">
                                               </c:if>
                                               <c:if test="${empty i.imageUrl}">
                                                   <span class="text-muted" style="font-size: 13.5px;">Không có ảnh</span>
@@ -116,7 +137,7 @@
                                           </td>
                                         <td>
                                             <div class="actions-cell">
-                                                <a href="${pageContext.request.contextPath}/admin/ingredient?action=edit&id=${i.ingredientId}&page=${currentPage}&pageSize=${pageSize}&search=${search}" class="btn-action-edit" title="Chỉnh sửa">
+                                                <a href="${pageContext.request.contextPath}/admin/ingredient?action=edit&id=${i.ingredientId}&page=${currentPage}&pageSize=${pageSize}&search=${search}&unitId=${unitId}&sortBy=${sortBy}" class="btn-action-edit" title="Chỉnh sửa">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </a>
                                                 <button class="btn-action-delete" title="Xóa nguyên liệu" onclick="if(confirm('Bạn có chắc chắn muốn xóa nguyên liệu ${i.ingredientName} không?')) { deleteIngredient('${i.ingredientId}'); }">
@@ -147,38 +168,30 @@
                             <!-- Prev page -->
                              <c:if test="${currentPage > 1}">
                                  <li class="page-num-item">
-                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage - 1}&search=${search}&pageSize=${pageSize}">
+                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage - 1}&search=${search}&pageSize=${pageSize}&unitId=${unitId}&sortBy=${sortBy}">
                                          <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                      </a>
                                  </li>
                              </c:if>
                              
                              <!-- Page Numbers -->
-                             <c:forEach var="i" begin="1" end="${totalPages}">
-                                 <li class="page-num-item ${i == currentPage ? 'active' : ''}">
-                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${i}&search=${search}&pageSize=${pageSize}">${i}</a>
+                             <c:forEach var="pageNum" begin="1" end="${totalPages}">
+                                 <li class="page-num-item ${pageNum == currentPage ? 'active' : ''}">
+                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${pageNum}&search=${search}&pageSize=${pageSize}&unitId=${unitId}&sortBy=${sortBy}">${pageNum}</a>
                                  </li>
                              </c:forEach>
                              
                              <!-- Next page -->
                              <c:if test="${currentPage < totalPages}">
                                  <li class="page-num-item">
-                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage + 1}&search=${search}&pageSize=${pageSize}">
+                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage + 1}&search=${search}&pageSize=${pageSize}&unitId=${unitId}&sortBy=${sortBy}">
                                          <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                      </a>
                                  </li>
                              </c:if>
                         </ul>
                         
-                        <form action="${pageContext.request.contextPath}/admin/ingredient" method="get" class="d-inline">
-                            <input type="hidden" name="action" value="list">
-                             <input type="hidden" name="search" value="${search}">
-                             <select class="filter-select" name="pageSize" onchange="this.form.submit()" style="min-width: auto; padding: 5px 25px 5px 10px; font-size: 12.5px;">
-                                 <option value="5" ${pageSize == 5 ? 'selected' : ''}>5 / trang</option>
-                                 <option value="10" ${pageSize == 10 ? 'selected' : ''}>10 / trang</option>
-                                 <option value="20" ${pageSize == 20 ? 'selected' : ''}>20 / trang</option>
-                             </select>
-                        </form>
+
                     </div>
                 </div>
             </div>
@@ -201,8 +214,6 @@
             document.getElementById('deleteIngredientId').value = id;
             document.getElementById('deleteIngredientForm').submit();
         }
-            }
-        });
     </script>
 </body>
 </html>
