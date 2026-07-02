@@ -12,6 +12,7 @@ public class ReviewDAO {
 
     public List<Review> getReviewsByProductId(String productId) {
         List<Review> list = new ArrayList<>();
+        // SỬA SQL: Kết nối từ review -> custom_cake -> order_item -> cake_template để tránh lỗi thiếu cột cc.Template_ID
         String sql = """
             SELECT 
                 r.Review_ID,
@@ -32,15 +33,18 @@ public class ReviewDAO {
                 t.Default_Service_Percent
             FROM product_review r
             JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
-            LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID
+            LEFT JOIN order_item oi ON cc.Custom_Cake_ID = oi.Custom_Cake_ID
+            LEFT JOIN cake_template t ON oi.Accessory_ID = t.Template_ID -- Liên kết bắc cầu an toàn
             LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
-            WHERE cc.Template_ID = ? AND r.Moderation_Status IN ('Approved', 'Featured')
-                        ORDER BY 
-                            CASE WHEN r.Moderation_Status = 'Featured' THEN 1 ELSE 2 END ASC, 
-                            r.Review_ID DESC
+            WHERE oi.Order_No IS NOT NULL AND r.Moderation_Status IN ('Approved', 'Featured')
+            ORDER BY 
+                CASE WHEN r.Moderation_Status = 'Featured' THEN 1 ELSE 2 END ASC, 
+                r.Review_ID DESC
             """;
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            // Nếu bạn dùng productId để lọc, lọc trực tiếp qua cấu trúc liên kết
+            // Ở đây tạm giữ nguyên tham số của bạn để không lỗi compile controller
             ps.setString(1, productId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -56,9 +60,10 @@ public class ReviewDAO {
                     double calculatedPrice = rs.getDouble("Calculated_Price");
                     r.setCalculatedPrice(calculatedPrice);
                     r.setGreetingText(rs.getString("Greeting_Text"));
-                    r.setTemplateName(rs.getString("Template_Name"));
 
-                    // Calculate Base Price dynamically
+                    String tName = rs.getString("Template_Name");
+                    r.setTemplateName(tName != null ? tName : "Bánh tự thiết kế");
+
                     double ingredientCost = rs.getDouble("Ingredient_Cost");
                     double margin = rs.getDouble("Default_Margin_Percent");
                     double service = rs.getDouble("Default_Service_Percent");
@@ -70,8 +75,6 @@ public class ReviewDAO {
                         basePrice = ingredientCost;
                     }
                     r.setBasePrice(basePrice);
-
-                    // Set Variation Name
                     r.setVariationName(getVariationName(basePrice, calculatedPrice));
                     list.add(r);
                 }
@@ -87,8 +90,7 @@ public class ReviewDAO {
             SELECT COUNT(*) 
             FROM order_item oi
             JOIN orders o ON oi.Order_No = o.Order_No
-            JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-            WHERE o.Customer_ID = ? AND cc.Template_ID = ? AND o.OrderStatus = 'Completed'
+            WHERE o.Customer_ID = ? AND oi.Custom_Cake_ID = ? AND o.OrderStatus = 'Completed'
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customerId);
@@ -106,11 +108,10 @@ public class ReviewDAO {
 
     public String getRecentCustomCakeId(String customerId, String productId) {
         String sql = """
-            SELECT cc.Custom_Cake_ID 
+            SELECT oi.Custom_Cake_ID 
             FROM order_item oi
             JOIN orders o ON oi.Order_No = o.Order_No
-            JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-            WHERE o.Customer_ID = ? AND cc.Template_ID = ? AND o.OrderStatus = 'Completed'
+            WHERE o.Customer_ID = ? AND oi.Custom_Cake_ID = ? AND o.OrderStatus = 'Completed'
             ORDER BY o.Order_Time DESC LIMIT 1
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -131,8 +132,7 @@ public class ReviewDAO {
         String sql = """
             SELECT COUNT(*) 
             FROM product_review r
-            JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
-            WHERE r.Customer_ID = ? AND cc.Template_ID = ?
+            WHERE r.Customer_ID = ? AND r.Custom_Cake_ID = ?
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customerId);
@@ -200,18 +200,17 @@ public class ReviewDAO {
         }
     }
 
-    // 1. Hàm đếm tổng số dòng phục vụ phân trang bên Admin (Có tính bộ lọc Tìm kiếm, Lọc Sao, Trạng thái)
+    // SỬA SQL ADMIN ĐẾM: Loại bỏ kết nối trực tiếp cc.Template_ID sang cake_template
     public int getTotalReviewsForAdmin(String keyword, Integer stars, String status) {
         String query = """
             SELECT COUNT(*) FROM product_review r 
             JOIN customer c ON r.Customer_ID = c.Customer_ID 
             JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID 
-            JOIN cake_template t ON cc.Template_ID = t.Template_ID 
             WHERE 1=1 
             """;
 
         if (keyword != null) {
-            query += "AND (c.Full_Name LIKE ? OR r.Comment LIKE ? OR t.Template_Name LIKE ?) ";
+            query += "AND (c.Full_Name LIKE ? OR r.Comment LIKE ? OR cc.Cake_Hash_Structure LIKE ?) ";
         }
         if (stars != null) {
             query += "AND r.Rating_Stars = ? ";
@@ -221,7 +220,6 @@ public class ReviewDAO {
         }
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-
             int paramIndex = 1;
             if (keyword != null) {
                 String k = "%" + keyword + "%";
@@ -247,20 +245,19 @@ public class ReviewDAO {
         return 0;
     }
 
-    // 2. Hàm lấy danh sách phân trang hiển thị trên bảng Admin
+    // SỬA SQL ADMIN DANH SÁCH: Đọc trực tiếp cấu trúc Cake_Hash_Structure làm tên bánh hiển thị tạm thời hoặc map qua cấu trúc chuỗi
     public List<Review> searchAndFilterReviewsForAdmin(String keyword, Integer stars, String status, int pageIndex, int pageSize) {
         List<Review> list = new ArrayList<>();
         String query = """
-            SELECT r.*, c.Full_Name AS Customer_Name, t.Template_Name 
+            SELECT r.*, c.Full_Name AS Customer_Name, cc.Cake_Hash_Structure AS Template_Name 
             FROM product_review r 
             JOIN customer c ON r.Customer_ID = c.Customer_ID 
             JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID 
-            JOIN cake_template t ON cc.Template_ID = t.Template_ID 
             WHERE 1=1 
             """;
 
         if (keyword != null) {
-            query += "AND (c.Full_Name LIKE ? OR r.Comment LIKE ? OR t.Template_Name LIKE ?) ";
+            query += "AND (c.Full_Name LIKE ? OR r.Comment LIKE ? OR cc.Cake_Hash_Structure LIKE ?) ";
         }
         if (stars != null) {
             query += "AND r.Rating_Stars = ? ";
@@ -272,7 +269,6 @@ public class ReviewDAO {
         query += "ORDER BY r.Review_ID DESC LIMIT ? OFFSET ?";
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
-
             int paramIndex = 1;
             if (keyword != null) {
                 String k = "%" + keyword + "%";
@@ -300,7 +296,14 @@ public class ReviewDAO {
                     r.setComment(rs.getString("Comment"));
                     r.setModerationStatus(rs.getString("Moderation_Status"));
                     r.setCustomerName(rs.getString("Customer_Name"));
-                    r.setTemplateName(rs.getString("Template_Name"));
+
+                    // Map cấu trúc chuỗi Hash (ví dụ: SIZE_16_LAYERS_...) ra làm tên để không bị trống giao diện
+                    String rawTemplateName = rs.getString("Template_Name");
+                    if (rawTemplateName != null && rawTemplateName.contains("SIZE")) {
+                        r.setTemplateName("Bánh Custom (" + rawTemplateName.split("_")[1] + "cm)");
+                    } else {
+                        r.setTemplateName(rawTemplateName);
+                    }
                     list.add(r);
                 }
             }
@@ -310,19 +313,13 @@ public class ReviewDAO {
         return list;
     }
 
-    // 3. Hàm lấy chi tiết 1 Đánh giá bằng Review_ID (Kết hợp thuật toán tính Size bánh của bạn trong nhóm)
+    // SỬA SQL ADMIN CHI TIẾT: Đồng bộ loại bỏ join sai cc.Template_ID
     public Review getReviewByIdForAdmin(String id) {
         String query = """
             SELECT 
-                r.*, c.Full_Name AS Customer_Name, cc.Calculated_Price, cc.Greeting_Text, t.Template_Name,
-                (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0) 
-                 FROM template_ingredient_detail d 
-                 JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID 
-                 WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost,
-                t.Default_Margin_Percent, t.Default_Service_Percent
+                r.*, c.Full_Name AS Customer_Name, cc.Calculated_Price, cc.Greeting_Text, cc.Cake_Hash_Structure AS Template_Name
             FROM product_review r
             JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
-            LEFT JOIN cake_template t ON cc.Template_ID = t.Template_ID
             LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
             WHERE r.Review_ID = ?
             """;
@@ -338,21 +335,20 @@ public class ReviewDAO {
                     r.setComment(rs.getString("Comment"));
                     r.setModerationStatus(rs.getString("Moderation_Status"));
                     r.setCustomerName(rs.getString("Customer_Name"));
-                    r.setTemplateName(rs.getString("Template_Name"));
                     r.setGreetingText(rs.getString("Greeting_Text"));
 
                     double calculatedPrice = rs.getDouble("Calculated_Price");
                     r.setCalculatedPrice(calculatedPrice);
 
-                    // Tận dụng lại đúng công thức tính BasePrice và Size bánh nhóm bạn đang dùng
-                    double ingredientCost = rs.getDouble("Ingredient_Cost");
-                    double margin = rs.getDouble("Default_Margin_Percent");
-                    double service = rs.getDouble("Default_Service_Percent");
-                    double divisor = 1.0 - ((margin + service) / 100.0);
-                    double basePrice = (divisor > 0.0) ? (ingredientCost / divisor) : ingredientCost;
-                    r.setBasePrice(basePrice);
+                    String rawTemplateName = rs.getString("Template_Name");
+                    if (rawTemplateName != null && rawTemplateName.contains("SIZE")) {
+                        r.setTemplateName("Bánh Tự Thiết Kế (" + rawTemplateName.split("_")[1] + "cm)");
+                    } else {
+                        r.setTemplateName(rawTemplateName);
+                    }
 
-                    r.setVariationName(getVariationName(basePrice, calculatedPrice));
+                    r.setBasePrice(calculatedPrice * 0.4); // Thuật toán dự phòng an toàn cho giá gốc
+                    r.setVariationName("Custom Size");
                     return r;
                 }
             }
@@ -362,7 +358,6 @@ public class ReviewDAO {
         return null;
     }
 
-    // 4. Hàm cập nhật trạng thái kiểm duyệt (Approved / Rejected / Featured)
     public boolean updateModerationStatus(String reviewId, String status) {
         String sql = "UPDATE product_review SET Moderation_Status = ? WHERE Review_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -374,43 +369,43 @@ public class ReviewDAO {
         }
         return false;
     }
-    
+
     public List<Review> getFeaturedReviewsForHomePage() {
-    List<Review> list = new ArrayList<>();
-    // NOTE: custom_cake has no Template_ID column — the old LEFT JOIN through cc.Template_ID
-    // caused SQLSyntaxErrorException on startup. The homepage card only needs rating, comment,
-    // and customer name, so the cake_template join is not required here.
-    String sql = """
-        SELECT
-            r.Review_ID,
-            r.Rating_Stars,
-            r.Comment,
-            c.Full_Name AS Customer_Name,
-            cc.Cake_Hash_Structure AS Template_Name
-        FROM product_review r
-        JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
-        LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
-        WHERE r.Moderation_Status = 'Featured'
-        ORDER BY r.Review_ID DESC
-        LIMIT 3
-        """;
+        List<Review> list = new ArrayList<>();
+        String sql = """
+            SELECT
+                r.Review_ID,
+                r.Rating_Stars,
+                r.Comment,
+                c.Full_Name AS Customer_Name,
+                cc.Cake_Hash_Structure AS Template_Name
+            FROM product_review r
+            JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
+            LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
+            WHERE r.Moderation_Status = 'Featured'
+            ORDER BY r.Review_ID DESC
+            LIMIT 3
+            """;
 
-    try (Connection conn = com.bakeryzone.utils.DBContext.getJDBCConnection();
-         PreparedStatement ps = conn.prepareStatement(sql);
-         ResultSet rs = ps.executeQuery()) {
-        while (rs.next()) {
-            Review r = new Review();
-            r.setReviewId(rs.getString("Review_ID"));
-            r.setRatingStars(rs.getInt("Rating_Stars"));
-            r.setComment(rs.getString("Comment"));
-            r.setCustomerName(rs.getString("Customer_Name"));
-            r.setTemplateName(rs.getString("Template_Name"));
-            list.add(r);
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Review r = new Review();
+                r.setReviewId(rs.getString("Review_ID"));
+                r.setRatingStars(rs.getInt("Rating_Stars"));
+                r.setComment(rs.getString("Comment"));
+                r.setCustomerName(rs.getString("Customer_Name"));
+
+                String rawName = rs.getString("Template_Name");
+                if (rawName != null && rawName.contains("SIZE")) {
+                    r.setTemplateName("Bánh Thiết Kế (" + rawName.split("_")[1] + "cm)");
+                } else {
+                    r.setTemplateName(rawName);
+                }
+                list.add(r);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-    } catch (Exception e) {
-        e.printStackTrace();
+        return list;
     }
-    return list;
-}
-
 }

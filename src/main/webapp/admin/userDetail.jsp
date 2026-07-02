@@ -287,10 +287,10 @@
                 <jsp:param name="activeMenu" value="${USER_DATA.staffId != null ? 'Cập nhật tài khoản' : 'Thêm tài khoản mới'}" />
             </jsp:include>
 
-                <div class="content-container">
-                    <div class="form-card">
+            <div class="content-container">
+                <div class="form-card">
 
-                        <h1 class="page-title text-uppercase">
+                    <h1 class="page-title text-uppercase">
                         <c:if test="${USER_DATA.staffId != null}">Cập nhật tài khoản</c:if>
                         <c:if test="${USER_DATA.staffId == null}">Thêm tài khoản mới</c:if>
                         </h1>
@@ -323,12 +323,12 @@
                                 <input type="email" name="email" value="${USER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required
                                        ${param.action == 'edit' ? ' style=""' : ''}>
                             </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
-                                <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
-                            </div>
-
+                            <%--
+                                                      <div class="col-md-6">
+                                                          <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
+                                                          <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
+                                                      </div>
+                            --%>
                             <div class="col-md-6">
                                 <label class="form-label">Chức vụ hệ thống <span class="text-danger">*</span></label>
                                 <select name="roleId" class="form-select">
