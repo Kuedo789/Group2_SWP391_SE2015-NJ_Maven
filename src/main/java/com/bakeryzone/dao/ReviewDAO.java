@@ -10,9 +10,21 @@ import java.util.List;
 
 public class ReviewDAO {
 
+    private String getHashForTemplate(String templateId) {
+        if (templateId == null) return "";
+        switch (templateId) {
+            case "TPL_0001": return "HASH_CC_0001";
+            case "TPL_0005": return "HASH_CC_0002";
+            case "TPL_0009": return "HASH_CC_0003";
+            case "TPL_0011": return "HASH_CC_0004";
+            case "TPL_0013": return "HASH_CC_0005";
+            case "TPL_0017": return "HASH_CC_0006";
+            default: return templateId;
+        }
+    }
+
     public List<Review> getReviewsByProductId(String productId) {
         List<Review> list = new ArrayList<>();
-        // SỬA SQL: Kết nối từ review -> custom_cake -> order_item -> cake_template để tránh lỗi thiếu cột cc.Template_ID
         String sql = """
             SELECT 
                 r.Review_ID,
@@ -33,19 +45,25 @@ public class ReviewDAO {
                 t.Default_Service_Percent
             FROM product_review r
             JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
-            LEFT JOIN order_item oi ON cc.Custom_Cake_ID = oi.Custom_Cake_ID
-            LEFT JOIN cake_template t ON oi.Accessory_ID = t.Template_ID -- Liên kết bắc cầu an toàn
+            LEFT JOIN cake_template t ON (
+                cc.Cake_Hash_Structure = t.Template_ID OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')
+            )
             LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
-            WHERE oi.Order_No IS NOT NULL AND r.Moderation_Status IN ('Approved', 'Featured')
+            WHERE (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) AND r.Moderation_Status IN ('Approved', 'Featured')
             ORDER BY 
                 CASE WHEN r.Moderation_Status = 'Featured' THEN 1 ELSE 2 END ASC, 
                 r.Review_ID DESC
             """;
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-            // Nếu bạn dùng productId để lọc, lọc trực tiếp qua cấu trúc liên kết
-            // Ở đây tạm giữ nguyên tham số của bạn để không lỗi compile controller
             ps.setString(1, productId);
+            ps.setString(2, getHashForTemplate(productId));
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Review r = new Review();
@@ -60,7 +78,7 @@ public class ReviewDAO {
                     double calculatedPrice = rs.getDouble("Calculated_Price");
                     r.setCalculatedPrice(calculatedPrice);
                     r.setGreetingText(rs.getString("Greeting_Text"));
-
+                    
                     String tName = rs.getString("Template_Name");
                     r.setTemplateName(tName != null ? tName : "Bánh tự thiết kế");
 
@@ -68,12 +86,7 @@ public class ReviewDAO {
                     double margin = rs.getDouble("Default_Margin_Percent");
                     double service = rs.getDouble("Default_Service_Percent");
                     double divisor = 1.0 - ((margin + service) / 100.0);
-                    double basePrice = 0.0;
-                    if (divisor > 0.0) {
-                        basePrice = ingredientCost / divisor;
-                    } else {
-                        basePrice = ingredientCost;
-                    }
+                    double basePrice = (divisor > 0.0) ? (ingredientCost / divisor) : ingredientCost;
                     r.setBasePrice(basePrice);
                     r.setVariationName(getVariationName(basePrice, calculatedPrice));
                     list.add(r);
@@ -90,11 +103,13 @@ public class ReviewDAO {
             SELECT COUNT(*) 
             FROM order_item oi
             JOIN orders o ON oi.Order_No = o.Order_No
-            WHERE o.Customer_ID = ? AND oi.Custom_Cake_ID = ? AND o.OrderStatus = 'Completed'
+            JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
+            WHERE o.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) AND o.OrderStatus = 'Completed'
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customerId);
             ps.setString(2, productId);
+            ps.setString(3, getHashForTemplate(productId));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -108,15 +123,17 @@ public class ReviewDAO {
 
     public String getRecentCustomCakeId(String customerId, String productId) {
         String sql = """
-            SELECT oi.Custom_Cake_ID 
+            SELECT cc.Custom_Cake_ID 
             FROM order_item oi
             JOIN orders o ON oi.Order_No = o.Order_No
-            WHERE o.Customer_ID = ? AND oi.Custom_Cake_ID = ? AND o.OrderStatus = 'Completed'
+            JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
+            WHERE o.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) AND o.OrderStatus = 'Completed'
             ORDER BY o.Order_Time DESC LIMIT 1
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customerId);
             ps.setString(2, productId);
+            ps.setString(3, getHashForTemplate(productId));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getString("Custom_Cake_ID");
@@ -132,11 +149,13 @@ public class ReviewDAO {
         String sql = """
             SELECT COUNT(*) 
             FROM product_review r
-            WHERE r.Customer_ID = ? AND r.Custom_Cake_ID = ?
+            JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
+            WHERE r.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?)
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customerId);
             ps.setString(2, productId);
+            ps.setString(3, getHashForTemplate(productId));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -200,17 +219,25 @@ public class ReviewDAO {
         }
     }
 
-    // SỬA SQL ADMIN ĐẾM: Loại bỏ kết nối trực tiếp cc.Template_ID sang cake_template
     public int getTotalReviewsForAdmin(String keyword, Integer stars, String status) {
         String query = """
             SELECT COUNT(*) FROM product_review r 
             JOIN customer c ON r.Customer_ID = c.Customer_ID 
             JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID 
+            LEFT JOIN cake_template t ON (
+                cc.Cake_Hash_Structure = t.Template_ID OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')
+            )
             WHERE 1=1 
             """;
 
         if (keyword != null) {
-            query += "AND (c.Full_Name LIKE ? OR r.Comment LIKE ? OR cc.Cake_Hash_Structure LIKE ?) ";
+            query += "AND (c.Full_Name LIKE ? OR r.Comment LIKE ? OR cc.Cake_Hash_Structure LIKE ? OR t.Template_Name LIKE ?) ";
         }
         if (stars != null) {
             query += "AND r.Rating_Stars = ? ";
@@ -223,6 +250,7 @@ public class ReviewDAO {
             int paramIndex = 1;
             if (keyword != null) {
                 String k = "%" + keyword + "%";
+                ps.setString(paramIndex++, k);
                 ps.setString(paramIndex++, k);
                 ps.setString(paramIndex++, k);
                 ps.setString(paramIndex++, k);
@@ -245,19 +273,27 @@ public class ReviewDAO {
         return 0;
     }
 
-    // SỬA SQL ADMIN DANH SÁCH: Đọc trực tiếp cấu trúc Cake_Hash_Structure làm tên bánh hiển thị tạm thời hoặc map qua cấu trúc chuỗi
     public List<Review> searchAndFilterReviewsForAdmin(String keyword, Integer stars, String status, int pageIndex, int pageSize) {
         List<Review> list = new ArrayList<>();
         String query = """
-            SELECT r.*, c.Full_Name AS Customer_Name, cc.Cake_Hash_Structure AS Template_Name 
+            SELECT r.*, c.Full_Name AS Customer_Name, COALESCE(t.Template_Name, cc.Cake_Hash_Structure) AS Template_Name 
             FROM product_review r 
             JOIN customer c ON r.Customer_ID = c.Customer_ID 
             JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID 
+            LEFT JOIN cake_template t ON (
+                cc.Cake_Hash_Structure = t.Template_ID OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')
+            )
             WHERE 1=1 
             """;
 
         if (keyword != null) {
-            query += "AND (c.Full_Name LIKE ? OR r.Comment LIKE ? OR cc.Cake_Hash_Structure LIKE ?) ";
+            query += "AND (c.Full_Name LIKE ? OR r.Comment LIKE ? OR cc.Cake_Hash_Structure LIKE ? OR t.Template_Name LIKE ?) ";
         }
         if (stars != null) {
             query += "AND r.Rating_Stars = ? ";
@@ -272,6 +308,7 @@ public class ReviewDAO {
             int paramIndex = 1;
             if (keyword != null) {
                 String k = "%" + keyword + "%";
+                ps.setString(paramIndex++, k);
                 ps.setString(paramIndex++, k);
                 ps.setString(paramIndex++, k);
                 ps.setString(paramIndex++, k);
@@ -297,7 +334,6 @@ public class ReviewDAO {
                     r.setModerationStatus(rs.getString("Moderation_Status"));
                     r.setCustomerName(rs.getString("Customer_Name"));
 
-                    // Map cấu trúc chuỗi Hash (ví dụ: SIZE_16_LAYERS_...) ra làm tên để không bị trống giao diện
                     String rawTemplateName = rs.getString("Template_Name");
                     if (rawTemplateName != null && rawTemplateName.contains("SIZE")) {
                         r.setTemplateName("Bánh Custom (" + rawTemplateName.split("_")[1] + "cm)");
@@ -313,13 +349,26 @@ public class ReviewDAO {
         return list;
     }
 
-    // SỬA SQL ADMIN CHI TIẾT: Đồng bộ loại bỏ join sai cc.Template_ID
     public Review getReviewByIdForAdmin(String id) {
         String query = """
             SELECT 
-                r.*, c.Full_Name AS Customer_Name, cc.Calculated_Price, cc.Greeting_Text, cc.Cake_Hash_Structure AS Template_Name
+                r.*, c.Full_Name AS Customer_Name, cc.Calculated_Price, cc.Greeting_Text, COALESCE(t.Template_Name, cc.Cake_Hash_Structure) AS Template_Name,
+                (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0) 
+                 FROM template_ingredient_detail d 
+                 JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID 
+                 WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost,
+                t.Default_Margin_Percent, t.Default_Service_Percent
             FROM product_review r
             JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
+            LEFT JOIN cake_template t ON (
+                cc.Cake_Hash_Structure = t.Template_ID OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')
+            )
             LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
             WHERE r.Review_ID = ?
             """;
@@ -335,20 +384,20 @@ public class ReviewDAO {
                     r.setComment(rs.getString("Comment"));
                     r.setModerationStatus(rs.getString("Moderation_Status"));
                     r.setCustomerName(rs.getString("Customer_Name"));
+                    r.setTemplateName(rs.getString("Template_Name"));
                     r.setGreetingText(rs.getString("Greeting_Text"));
 
                     double calculatedPrice = rs.getDouble("Calculated_Price");
                     r.setCalculatedPrice(calculatedPrice);
 
-                    String rawTemplateName = rs.getString("Template_Name");
-                    if (rawTemplateName != null && rawTemplateName.contains("SIZE")) {
-                        r.setTemplateName("Bánh Tự Thiết Kế (" + rawTemplateName.split("_")[1] + "cm)");
-                    } else {
-                        r.setTemplateName(rawTemplateName);
-                    }
+                    double ingredientCost = rs.getDouble("Ingredient_Cost");
+                    double margin = rs.getDouble("Default_Margin_Percent");
+                    double service = rs.getDouble("Default_Service_Percent");
+                    double divisor = 1.0 - ((margin + service) / 100.0);
+                    double basePrice = (divisor > 0.0) ? (ingredientCost / divisor) : ingredientCost;
+                    r.setBasePrice(basePrice);
 
-                    r.setBasePrice(calculatedPrice * 0.4); // Thuật toán dự phòng an toàn cho giá gốc
-                    r.setVariationName("Custom Size");
+                    r.setVariationName(getVariationName(basePrice, calculatedPrice));
                     return r;
                 }
             }
@@ -378,9 +427,18 @@ public class ReviewDAO {
                 r.Rating_Stars,
                 r.Comment,
                 c.Full_Name AS Customer_Name,
-                cc.Cake_Hash_Structure AS Template_Name
+                COALESCE(t.Template_Name, cc.Cake_Hash_Structure) AS Template_Name
             FROM product_review r
             JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
+            LEFT JOIN cake_template t ON (
+                cc.Cake_Hash_Structure = t.Template_ID OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
+                (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')
+            )
             LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
             WHERE r.Moderation_Status = 'Featured'
             ORDER BY r.Review_ID DESC

@@ -147,7 +147,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
             order.setDeliveryWindowStart(deliveryWindowStart);
             order.setDeliveryWindowEnd(deliveryWindowEnd);
             order.setDeliveryAddress(deliveryAddressStr);
-            order.setOrderStatus("Chờ xác nhận");
+            order.setOrderStatus("Pending");
 
             BigDecimal productTotal = BigDecimal.ZERO;
 

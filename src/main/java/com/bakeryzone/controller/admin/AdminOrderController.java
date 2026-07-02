@@ -190,34 +190,16 @@ public class AdminOrderController extends HttpServlet {
 
         String currentStatus = order.getOrderStatus();
         
-        // Ngăn chặn thay đổi nếu đơn hàng đã bị huỷ hoặc hoàn thành
-        if (currentStatus != null && (currentStatus.equalsIgnoreCase("Cancelled") || currentStatus.equalsIgnoreCase("Completed"))) {
+        // Ngăn chặn thay đổi nếu đơn hàng đã bị huỷ hoặc hoàn thành (hỗ trợ cả Việt/Anh)
+        if (currentStatus != null && (
+                currentStatus.equalsIgnoreCase("Cancelled") || currentStatus.equals("Đã hủy") ||
+                currentStatus.equalsIgnoreCase("Completed") || currentStatus.equals("Hoàn thành") || currentStatus.equals("Đã giao"))) {
             session.setAttribute("errorMessage", "Đơn hàng đã hoàn thành hoặc đã huỷ, không thể thay đổi trạng thái!");
             response.sendRedirect(request.getContextPath() + "/admin/orders?action=detail&orderNo=" + orderNo);
             return;
         }
 
-        // Kiểm tra các bước chuyển tiếp trạng thái hợp lệ
-        boolean isValidTransition = false;
-        if (currentStatus != null) {
-            if (currentStatus.equalsIgnoreCase("Pending")) {
-                isValidTransition = status.equalsIgnoreCase("Confirmed") || status.equalsIgnoreCase("Cancelled");
-            } else if (currentStatus.equalsIgnoreCase("Confirmed")) {
-                isValidTransition = status.equalsIgnoreCase("Processing") || status.equalsIgnoreCase("Cancelled");
-            } else if (currentStatus.equalsIgnoreCase("Processing")) {
-                isValidTransition = status.equalsIgnoreCase("Delivering") || status.equalsIgnoreCase("Cancelled");
-            } else if (currentStatus.equalsIgnoreCase("Delivering")) {
-                isValidTransition = status.equalsIgnoreCase("Completed") || status.equalsIgnoreCase("Cancelled");
-            }
-        } else {
-            isValidTransition = true;
-        }
-
-        if (!isValidTransition) {
-            session.setAttribute("errorMessage", "Không thể chuyển trạng thái từ '" + currentStatus + "' sang '" + status + "'!");
-            response.sendRedirect(request.getContextPath() + "/admin/orders?action=detail&orderNo=" + orderNo);
-            return;
-        }
+        // Admin có quyền chuyển sang bất kỳ trạng thái nào trong whitelist
 
         boolean success = orderDAO.updateOrderStatus(orderNo, status);
         if (success) {

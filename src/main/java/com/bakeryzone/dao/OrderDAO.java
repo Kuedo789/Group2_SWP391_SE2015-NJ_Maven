@@ -1,3 +1,4 @@
+
 package com.bakeryzone.dao;
 
 import com.bakeryzone.model.Order;
@@ -65,7 +66,13 @@ public class OrderDAO {
             "SELECT COUNT(DISTINCT o.Order_No) FROM `orders` o"
             + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
             + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
-            + " LEFT JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID"
+            + " LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
             + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
             + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
@@ -111,7 +118,13 @@ public class OrderDAO {
             "SELECT DISTINCT o.* FROM `orders` o"
             + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
             + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
-            + " LEFT JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID"
+            + " LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
             + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
             + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
@@ -179,7 +192,13 @@ public class OrderDAO {
             "SELECT o.OrderStatus, COUNT(DISTINCT o.Order_No) AS cnt FROM `orders` o"
             + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
             + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
-            + " LEFT JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID"
+            + " LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
+            + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
             + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
             + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
@@ -303,7 +322,13 @@ public class OrderDAO {
                     t.Default_Service_Percent
                 FROM order_item oi
                 LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-                LEFT JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID
+                LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))
                 LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID
                 LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID
                 WHERE oi.Order_No IN (
@@ -391,7 +416,13 @@ public class OrderDAO {
                     t.Default_Service_Percent
                 FROM order_item oi
                 LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-                LEFT JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID
+                LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
+                    (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))
                 LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID
                 LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID
                 WHERE oi.Order_No = ?
@@ -954,7 +985,14 @@ public class OrderDAO {
                      "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
                      "                 FROM template_ingredient_detail d" +
                      "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
-                     "                 WHERE d.Template_ID = cc.Cake_Hash_Structure" +
+                     "                 WHERE d.Template_ID = (CASE" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0001' THEN 'TPL_0001'" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0002' THEN 'TPL_0005'" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0003' THEN 'TPL_0009'" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0004' THEN 'TPL_0011'" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0005' THEN 'TPL_0013'" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0006' THEN 'TPL_0017'" +
+                     "                     ELSE cc.Cake_Hash_Structure END)" +
                      "             ))" +
                      "              FROM order_item oi" +
                      "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
@@ -1039,7 +1077,14 @@ public class OrderDAO {
                      "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
                      "                 FROM template_ingredient_detail d" +
                      "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
-                     "                 WHERE d.Template_ID = cc.Cake_Hash_Structure" +
+                     "                 WHERE d.Template_ID = (CASE" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0001' THEN 'TPL_0001'" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0002' THEN 'TPL_0005'" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0003' THEN 'TPL_0009'" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0004' THEN 'TPL_0011'" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0005' THEN 'TPL_0013'" +
+                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0006' THEN 'TPL_0017'" +
+                     "                     ELSE cc.Cake_Hash_Structure END)" +
                      "             ))" +
                      "              FROM order_item oi" +
                      "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
@@ -1074,7 +1119,13 @@ public class OrderDAO {
                      "       SUM(oi.Quantity) AS quantity_sold, SUM(oi.Quantity * oi.Price_At_Purchase) AS total_revenue " +
                      "FROM order_item oi " +
                      "JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID " +
-                     "JOIN cake_template t ON cc.Cake_Hash_Structure = t.Template_ID " +
+                     "JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR " +
+                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR " +
+                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR " +
+                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR " +
+                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR " +
+                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR " +
+                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')) " +
                      "LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID " +
                      "JOIN orders o ON oi.Order_No = o.Order_No " +
                      "WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");

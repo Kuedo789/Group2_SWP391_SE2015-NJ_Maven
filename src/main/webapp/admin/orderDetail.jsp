@@ -302,36 +302,61 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
 
     <script>
-        <c:if test="${not empty sessionScope.successMessage}">
-            Toastify({
-                text: "${sessionScope.successMessage}",
-                duration: 4000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "linear-gradient(to right, #3f5f36, #5c8350)",
-                stopOnFocus: true
-            }).showToast();
-            <c:remove var="successMessage" scope="session" />
-        </c:if>
-
-        <c:if test="${not empty sessionScope.errorMessage}">
-            Toastify({
-                text: "${sessionScope.errorMessage}",
-                duration: 4000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                stopOnFocus: true
-            }).showToast();
-            <c:remove var="errorMessage" scope="session" />
-        </c:if>
-
         document.addEventListener('DOMContentLoaded', function() {
+            // Hiển thị thông báo Toastify đẹp mắt từ session (có fallback nếu offline/lỗi CDN)
+            <c:if test="${not empty sessionScope.successMessage}">
+                if (typeof Toastify === 'function') {
+                    Toastify({
+                        text: "${sessionScope.successMessage}",
+                        duration: 4000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                        style: {
+                            background: "linear-gradient(to right, #00b09b, #96c93d)"
+                        },
+                        stopOnFocus: true
+                    }).showToast();
+                } else {
+                    // Fallback alert float box if Toastify fails to load
+                    let alertDiv = document.createElement('div');
+                    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; padding: 15px 25px; border-radius: 8px; background: linear-gradient(to right, #00b09b, #96c93d); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: 500; font-family: "Outfit", sans-serif; display: flex; align-items: center; gap: 10px; transition: opacity 0.5s ease;';
+                    alertDiv.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>${sessionScope.successMessage}</span>';
+                    document.body.appendChild(alertDiv);
+                    setTimeout(() => { alertDiv.style.opacity = '0'; setTimeout(() => alertDiv.remove(), 500); }, 3500);
+                }
+                <c:remove var="successMessage" scope="session" />
+            </c:if>
+
+            <c:if test="${not empty sessionScope.errorMessage}">
+                if (typeof Toastify === 'function') {
+                    Toastify({
+                        text: "${sessionScope.errorMessage}",
+                        duration: 4000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
+                        style: {
+                            background: "linear-gradient(to right, #ff5f6d, #ffc371)"
+                        },
+                        stopOnFocus: true
+                    }).showToast();
+                } else {
+                    // Fallback alert float box if Toastify fails to load
+                    let alertDiv = document.createElement('div');
+                    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; padding: 15px 25px; border-radius: 8px; background: linear-gradient(to right, #ff5f6d, #ffc371); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: 500; font-family: "Outfit", sans-serif; display: flex; align-items: center; gap: 10px; transition: opacity 0.5s ease;';
+                    alertDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <span>${sessionScope.errorMessage}</span>';
+                    document.body.appendChild(alertDiv);
+                    setTimeout(() => { alertDiv.style.opacity = '0'; setTimeout(() => alertDiv.remove(), 500); }, 3500);
+                }
+                <c:remove var="errorMessage" scope="session" />
+            </c:if>
+
             const orderStatus = '${order.orderStatus}';
             const savedProof = localStorage.getItem('proof_of_delivery_' + '${order.orderNo}');
             const displayContainer = document.getElementById('admin-proof-display-container');
@@ -343,13 +368,6 @@
                         <img src="${savedProof}" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
                         <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
                             <i class="fa-solid fa-circle-check"></i> Ảnh bằng chứng thực tế từ Shipper
-                        </div>
-                    `;
-                } else if (orderStatus.toLowerCase() === 'completed' || orderStatus === 'Hoàn thành' || orderStatus === 'Đã giao') {
-                    displayContainer.innerHTML = `
-                        <img src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=500&auto=format&fit=crop" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
-                        <div style="margin-top: 8px; font-size: 12px; color: #555; font-weight: 600;">
-                            <i class="fa-solid fa-circle-check"></i> Bằng chứng giao hàng (Shipper đã giao bánh thành công)
                         </div>
                     `;
                 } else {
