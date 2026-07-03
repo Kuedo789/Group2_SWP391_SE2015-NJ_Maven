@@ -68,6 +68,10 @@
         <servlet-name>RewardsController</servlet-name>
         <servlet-class>com.bakeryzone.controller.customer.RewardsController</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>BankTransferServlet</servlet-name>
+        <servlet-class>com.bakeryzone.controller.customer.BankTransferServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>RegisterServlet</servlet-name>
         <url-pattern>/register</url-pattern>
@@ -131,6 +135,10 @@
     <servlet-mapping>
         <servlet-name>RewardsController</servlet-name>
         <url-pattern>/rewards</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>BankTransferServlet</servlet-name>
+        <url-pattern>/bank-transfer</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>

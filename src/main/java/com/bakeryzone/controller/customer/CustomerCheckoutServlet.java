@@ -86,6 +86,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
             String deliveryDate  = request.getParameter("deliveryDate"); // e.g. "2026-06-19"
             String note          = request.getParameter("note");
             String cartDataJson  = request.getParameter("cartData");    // JSON array from localStorage
+            String paymentMethod = request.getParameter("paymentMethod"); // e.g. "BANK_TRANSFER_FULL" or "DIRECT_DEPOSIT_20"
 
             // ── 2. Resolve delivery address string ─────────────────────────────────
             String deliveryAddressStr = null;
@@ -243,8 +244,15 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     + " | success=" + success + " | total=" + totalCost);
 
             if (success) {
-                // Redirect to Order Success page
-                response.sendRedirect(request.getContextPath() + "/order-success?orderNo=" + orderNo);
+                // Redirect based on payment method
+                if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
+                    // Redirect to Bank Transfer page with order info
+                    String totalEncoded = java.net.URLEncoder.encode(totalCost.toPlainString(), "UTF-8");
+                    response.sendRedirect(request.getContextPath() + "/bank-transfer?orderNo=" + orderNo + "&total=" + totalEncoded);
+                } else {
+                    // COD / default: Redirect to Order Success page
+                    response.sendRedirect(request.getContextPath() + "/order-success?orderNo=" + orderNo);
+                }
             } else {
                 // Pass error back to checkout page
                 response.sendRedirect(request.getContextPath() + "/checkout?error=save_failed");
