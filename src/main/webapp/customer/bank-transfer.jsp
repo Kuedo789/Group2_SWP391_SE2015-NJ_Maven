@@ -11,10 +11,10 @@
     long total = (totalAmount != null) ? totalAmount : 0L;
 
     // Bank info (customize as needed)
-    String bankId     = "970436";   // Vietcombank BIN
-    String bankShort  = "VCB";
-    String accountNo  = "1234567890";
-    String accountName = "CONG TY BANH BAKERYZONE";
+    String bankId     = "970407";   // Techcombank BIN
+    String bankShort  = "TCB";
+    String accountNo  = "19038939577015";
+    String accountName = "NGUYEN VAN HUNG";
     String transferContent = orderNo;
 
     // VietQR URL
@@ -577,7 +577,7 @@
                         <!-- Bank name -->
                         <div class="bi-item">
                             <span class="bi-label">Ngân hàng</span>
-                            <span class="bi-value"><%= bankShort %> – Vietcombank</span>
+                            <span class="bi-value"><%= bankShort %> – Techcombank</span>
                         </div>
 
                         <!-- Account number -->
@@ -737,6 +737,19 @@
             toast.classList.add("show");
             setTimeout(() => toast.classList.remove("show"), 2500);
         }
+
+        // ── Real-time Status Polling ──────────────────────────────────
+        let statusPollInterval = setInterval(() => {
+            fetch('${pageContext.request.contextPath}/api/order-status?orderNo=<%= orderNo %>')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status && data.status !== 'Pending') {
+                        clearInterval(statusPollInterval);
+                        window.location.href = '${pageContext.request.contextPath}/order-success?orderNo=<%= orderNo %>';
+                    }
+                })
+                .catch(err => console.error("Error polling status:", err));
+        }, 3000);
     </script>
 </body>
 </html>
