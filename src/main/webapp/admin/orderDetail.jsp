@@ -187,13 +187,45 @@
                         <div class="cz-card-title">
                             <i class="fa-solid fa-truck" style="color: var(--cz-primary);"></i> Thông tin giao hàng & Khách hàng
                         </div>
+                        <%
+                            Order curOrder = (Order) request.getAttribute("order");
+                            com.bakeryzone.model.Customer curCust = (com.bakeryzone.model.Customer) request.getAttribute("customer");
+                            
+                            String rawAddr = curOrder != null ? curOrder.getDeliveryAddress() : "";
+                            String displayAddr = rawAddr;
+                            String recName = curOrder != null ? curOrder.getReceiverName() : "";
+                            String recPhone = curOrder != null ? curOrder.getReceiverPhone() : "";
+
+                            if (rawAddr != null && rawAddr.contains("|")) {
+                                String[] parts = rawAddr.split("\\|");
+                                if (parts.length >= 3) {
+                                    recName = parts[0].trim();
+                                    recPhone = parts[1].trim();
+                                    StringBuilder sb = new StringBuilder();
+                                    for (int i = 2; i < parts.length; i++) {
+                                        if (i > 2) sb.append(" | ");
+                                        sb.append(parts[i].trim());
+                                    }
+                                    displayAddr = sb.toString();
+                                }
+                            }
+
+                            if (recName == null || recName.trim().isEmpty()) {
+                                recName = (curCust != null && curCust.getFullName() != null) ? curCust.getFullName() : "Khách vãng lai";
+                                recPhone = (curCust != null && curCust.getPhone() != null) ? curCust.getPhone() : "Không có";
+                            }
+                        %>
                         <div class="info-row">
-                            <div class="info-label">Khách hàng:</div>
-                            <div class="info-value"><c:out value="${not empty customer.fullName ? customer.fullName : 'Khách vãng lai'}" /></div>
+                            <div class="info-label">Khách hàng đặt:</div>
+                            <div class="info-value"><%= (curCust != null && curCust.getFullName() != null) ? curCust.getFullName() : "Khách vãng lai" %></div>
                         </div>
                         <div class="info-row">
-                            <div class="info-label">Số điện thoại:</div>
-                            <div class="info-value"><c:out value="${not empty customer.phone ? customer.phone : 'Không có'}" /></div>
+                            <div class="info-label">Người nhận:</div>
+                            <div class="info-value"><strong><%= recName %></strong></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">SĐT người nhận:</div>
+                            <div class="info-value"><%= recPhone %></div>
                         </div>
                         <div class="info-row">
                             <div class="info-label">Email tài khoản:</div>
@@ -201,7 +233,7 @@
                         </div>
                         <div class="info-row">
                             <div class="info-label">Địa chỉ giao hàng:</div>
-                            <div class="info-value"><c:out value="${order.deliveryAddress}" /></div>
+                            <div class="info-value"><%= displayAddr %></div>
                         </div>
                         <div class="info-row">
                             <div class="info-label">Giờ giao dự kiến:</div>

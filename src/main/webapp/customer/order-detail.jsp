@@ -21,6 +21,24 @@
     User sessionUser = (User) session.getAttribute("user");
     String recipientName = order.getReceiverName();
     String recipientPhone = order.getReceiverPhone();
+    
+    String rawAddress = order.getDeliveryAddress();
+    String displayAddress = rawAddress;
+    
+    if (rawAddress != null && rawAddress.contains("|")) {
+        String[] parts = rawAddress.split("\\|");
+        if (parts.length >= 3) {
+            recipientName = parts[0].trim();
+            recipientPhone = parts[1].trim();
+            StringBuilder addressBuilder = new StringBuilder();
+            for (int i = 2; i < parts.length; i++) {
+                if (i > 2) addressBuilder.append(" | ");
+                addressBuilder.append(parts[i].trim());
+            }
+            displayAddress = addressBuilder.toString();
+        }
+    }
+
     if (recipientName == null || recipientName.trim().isEmpty()) {
         recipientName = "Khách hàng";
         recipientPhone = "";
@@ -416,7 +434,7 @@
                             </div>
                             <div class="delivery-info-wrap">
                                 <span class="delivery-label">Địa chỉ giao hàng</span>
-                                <span class="delivery-value"><%= order.getDeliveryAddress() %></span>
+                                <span class="delivery-value"><%= displayAddress %></span>
                             </div>
                         </div>
                         
@@ -475,13 +493,44 @@
                         </span>
                     </div>
                     
-                    <% if (dbStatus != null && dbStatus.equalsIgnoreCase("Completed")) { %>
+                    <% 
+                        StringBuilder jsonBuilder = new StringBuilder();
+                        jsonBuilder.append("[");
+                        if (order.getItems() != null) {
+                            for (int idx = 0; idx < order.getItems().size(); idx++) {
+                                OrderItem item = order.getItems().get(idx);
+                                if (idx > 0) jsonBuilder.append(",");
+                                jsonBuilder.append("{");
+                                
+                                String tplId = item.getTemplateId() != null ? item.getTemplateId() : "";
+                                String accId = item.getAccessoryId() != null ? item.getAccessoryId() : "";
+                                String varName = item.getVariationName() != null ? item.getVariationName() : "Tiêu chuẩn";
+                                double price = item.getPriceAtPurchase() != null ? item.getPriceAtPurchase().doubleValue() : 0.0;
+                                int qty = item.getQuantity();
+                                String name = item.getItemName() != null ? item.getItemName().replace("\"", "\\\"") : "";
+                                String image = item.getItemImage() != null ? item.getItemImage() : "";
+                                
+                                jsonBuilder.append("\"templateId\":\"").append(tplId).append("\",");
+                                jsonBuilder.append("\"accessoryId\":\"").append(accId).append("\",");
+                                jsonBuilder.append("\"variationName\":\"").append(varName).append("\",");
+                                jsonBuilder.append("\"price\":").append(price).append(",");
+                                jsonBuilder.append("\"qty\":").append(qty).append(",");
+                                jsonBuilder.append("\"name\":\"").append(name).append("\",");
+                                jsonBuilder.append("\"image\":\"").append(image).append("\"");
+                                
+                                jsonBuilder.append("}");
+                            }
+                        }
+                        jsonBuilder.append("]");
+                        String escapedJson = jsonBuilder.toString().replace("'", "\\'");
+                    %>
+                    <% if (dbStatus != null && (dbStatus.equalsIgnoreCase("Completed") || dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled"))) { %>
                         <div class="reorder-actions-row" style="display: flex; gap: 10px; width: 100%;">
-                            <button class="btn-reorder" style="flex: 1;" onclick="alert('Đã thêm tất cả món ăn trong đơn vào giỏ hàng của bạn!')">
+                            <button class="btn-reorder" style="flex: 1;" onclick="reorderOrder(<%= escapedJson %>)">
                                 <span class="material-symbols-outlined">shopping_bag</span>
                                 Mua lại
                             </button>
-                            <% if (!firstTplId.isEmpty()) { %>
+                            <% if (!firstTplId.isEmpty() && dbStatus.equalsIgnoreCase("Completed")) { %>
                                 <button class="btn-reorder" style="flex: 1; background: var(--bg-soft); color: var(--text); border: 1px solid var(--border);" onclick="window.location.href='<%= request.getContextPath() %>/product-detail?id=<%= firstTplId %>&tab=review&customCakeId=<%= firstCCId %>'">
                                     <span class="material-symbols-outlined">star</span>
                                     Đánh giá
@@ -510,6 +559,67 @@
             if (confirm("Bạn có chắc chắn muốn hủy đơn hàng này không?")) {
                 document.getElementById('cancelOrderForm').submit();
             }
+        }
+
+        function reorderOrder(items) {
+            if (!Array.isArray(items) || items.length === 0) return;
+            
+            const cartItems = items.map(item => {
+                let cartItemId = "";
+                let templateId = item.templateId;
+                
+                if (templateId && templateId.trim() !== "") {
+                    let variantIndex = "0";
+                    if (item.variationName.includes("20cm")) {
+                        variantIndex = "1";
+                    } else if (item.variationName.includes("24cm")) {
+                        variantIndex = "2";
+                    }
+                    cartItemId = templateId.trim() + "_" + variantIndex;
+                } else {
+                    cartItemId = item.accessoryId || "ACC_UNKNOWN";
+                    templateId = "";
+                }
+                
+                let finalName = item.name;
+                let finalDesc = "Bánh ngọt thủ công cao cấp";
+                if (templateId && templateId.trim() !== "") {
+                    if (item.variationName.includes("20cm")) {
+                        if (!finalName.includes("20cm")) finalName += " (Size 20cm)";
+                        finalDesc = "Kích thước vừa vặn cho các bữa tiệc nhỏ";
+                    } else if (item.variationName.includes("24cm")) {
+                        if (!finalName.includes("24cm")) finalName += " (Size 24cm)";
+                        finalDesc = "Phù hợp tiệc sinh nhật đông người";
+                    } else {
+                        if (!finalName.includes("16cm")) finalName += " (Size 16cm)";
+                        finalDesc = "Size bánh dành cho 4 - 6 người dùng.";
+                    }
+                } else {
+                    finalDesc = "Phụ kiện đi kèm";
+                }
+                
+                let resolvedImg = item.image;
+                const ctx = '<%= request.getContextPath() %>';
+                if (ctx && resolvedImg.startsWith(ctx)) {
+                    resolvedImg = resolvedImg.substring(ctx.length);
+                }
+                if (resolvedImg.startsWith("/")) {
+                    resolvedImg = resolvedImg.substring(1);
+                }
+                
+                return {
+                    id: cartItemId,
+                    templateId: templateId,
+                    name: finalName,
+                    desc: finalDesc,
+                    price: item.price,
+                    qty: item.qty,
+                    image: resolvedImg
+                };
+            });
+            
+            localStorage.setItem("cart", JSON.stringify(cartItems));
+            window.location.href = '<%= request.getContextPath() %>/checkout';
         }
     </script>
 </body>

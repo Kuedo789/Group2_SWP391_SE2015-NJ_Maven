@@ -1808,7 +1808,7 @@
     width: 100%;
 }
 .btn-update-status {
-    background-color: var(--cz-primary);
+    background-color: #2e7d32;
     color: #fff;
     border: none;
     padding: 10px 15px;
@@ -1819,7 +1819,7 @@
     width: 100%;
 }
 .btn-update-status:hover {
-    background-color: var(--cz-primary-hover);
+    background-color: #1b5e20;
 }
 
 /* Cost Table */
@@ -2015,21 +2015,26 @@ html.dark-theme .detail-card .card-title {
     border-bottom-color: rgba(255, 255, 255, 0.05) !important;
 }
 html.dark-theme .timeline-line {
-    background: rgba(255, 255, 255, 0.04) !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+html.dark-theme .timeline-line-active {
+    background: #5cc77a !important;
+    box-shadow: 0 0 10px rgba(92, 199, 122, 0.8) !important;
 }
 html.dark-theme .step-circle {
-    background: #191c18 !important;
-    border-color: rgba(255, 255, 255, 0.06) !important;
+    background: #151814 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
     color: #959893 !important;
 }
 html.dark-theme .timeline-step.active .step-circle {
-    background: #263628 !important;
-    border-color: #b5cfa3 !important;
-    color: #b5cfa3 !important;
-    box-shadow: 0 0 0 6px rgba(181, 207, 163, 0.12) !important;
+    background: #1c3322 !important;
+    border-color: #5cc77a !important;
+    color: #5cc77a !important;
+    box-shadow: 0 0 15px rgba(92, 199, 122, 0.45) !important;
 }
 html.dark-theme .timeline-step.active .step-text {
-    color: #b5cfa3 !important;
+    color: #5cc77a !important;
+    text-shadow: 0 0 8px rgba(92, 199, 122, 0.3) !important;
 }
 html.dark-theme .step-text {
     color: #959893 !important;
@@ -2539,4 +2544,36 @@ html.dark-theme .status-select {
     color: #eae6df !important;
     border-color: rgba(255, 255, 255, 0.05) !important;
     color-scheme: dark !important;
+}
+
+html.dark-theme .btn-update-status {
+    background-color: #5cc77a !important;
+    color: #111111 !important;
+    font-weight: 700 !important;
+}
+html.dark-theme .btn-update-status:hover {
+    background-color: #7ce098 !important;
+    box-shadow: 0 0 10px rgba(92, 199, 122, 0.3) !important;
+}
+
+/* ── Unified Navbar Black Background & Dark Green Cards ────────────────────── */
+html.dark-theme body,
+html.dark-theme .order-detail-page,
+html.dark-theme .my-orders-page,
+html.dark-theme .main-panel,
+html.dark-theme .content-container {
+    background-color: #0d0d0d !important;
+    color: #f3f4f6 !important;
+}
+
+html.dark-theme .my-orders-filter-card,
+html.dark-theme .shipping-card,
+html.dark-theme .timeline-card,
+html.dark-theme .detail-card,
+html.dark-theme .cz-card,
+html.dark-theme .order-card,
+html.dark-theme .cost-summary-card {
+    background-color: #152219 !important;
+    border: 1px solid #243629 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
 }

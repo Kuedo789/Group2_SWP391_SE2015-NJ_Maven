@@ -1,4 +1,4 @@
-﻿        :root {
+        :root {
             --primary-dark: #1b3322;
             --primary-light: #2d5037;
             --accent-gold: #c5a880;
@@ -533,3 +533,217 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ── Dark Mode Overrides ─────────────────────────────────────────── */
+        html.dark-theme {
+            --primary-dark: #c5a880;
+            --primary-light: #d4bc9c;
+            --text-dark: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #2e4433;
+            --bg-light: #0d0d0d;
+        }
+
+        html.dark-theme body {
+            background-color: #0d0d0d !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark-theme .checkout-title-section h1 {
+            color: #c5a880;
+        }
+
+        html.dark-theme .checkout-title-section p {
+            color: #9ca3af;
+        }
+
+        html.dark-theme .checkout-card {
+            background: #152219 !important;
+            border-color: #243629 !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        html.dark-theme .card-title {
+            color: #e5e7eb;
+        }
+
+        html.dark-theme .btn-add-address {
+            background-color: #243629;
+            color: #e5e7eb;
+            border-color: rgba(197, 168, 128, 0.3);
+        }
+
+        html.dark-theme .btn-add-address:hover {
+            background-color: #c5a880;
+            color: #1b3322;
+        }
+
+        html.dark-theme .address-card-option {
+            background-color: #1e3023;
+            border-color: #2e4433;
+        }
+
+        html.dark-theme .address-card-option:hover {
+            background-color: #243a2b;
+            border-color: #3e5a45;
+        }
+
+        html.dark-theme .address-card-option.active {
+            background-color: #1c3223 !important;
+            border-color: #c5a880 !important;
+        }
+
+        html.dark-theme .address-name-tag {
+            color: #f3f4f6;
+        }
+
+        html.dark-theme .default-badge {
+            background-color: #2e4433;
+            color: #c5a880;
+        }
+
+        html.dark-theme .address-text {
+            color: #9ca3af;
+        }
+
+        html.dark-theme label[for="deliveryDate"] {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark-theme #deliveryDate {
+            background-color: #1e3023;
+            color: #f3f4f6;
+            border-color: #2e4433;
+        }
+
+        html.dark-theme .time-slots-grid + div {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark-theme .time-slot-pill {
+            background-color: #1e3023;
+            border-color: #2e4433;
+            color: #f3f4f6;
+        }
+
+        html.dark-theme .time-slot-pill:hover:not(.disabled) {
+            background-color: #243a2b;
+            border-color: #c5a880;
+        }
+
+        html.dark-theme .time-slot-pill.active {
+            background-color: #2e7d32;
+            border-color: #2e7d32;
+            color: white;
+        }
+
+        html.dark-theme .time-slot-pill.active .slot-status {
+            color: #c8e6c9;
+        }
+
+        html.dark-theme .time-slot-pill.disabled {
+            background-color: #2a2a2a;
+            border-color: #333333;
+            color: #666666;
+        }
+
+        html.dark-theme .time-slot-pill.disabled .slot-status {
+            color: #666666;
+        }
+
+        html.dark-theme .banner-info {
+            background-color: #1e3023;
+            border-color: #2e4433;
+            color: #c5a880;
+        }
+
+        html.dark-theme .product-item-row {
+            border-bottom-color: #2e4433;
+        }
+
+        html.dark-theme .product-title {
+            color: #f3f4f6;
+        }
+
+        html.dark-theme .product-desc {
+            color: #9ca3af;
+        }
+
+        html.dark-theme .product-price {
+            color: #f3f4f6;
+        }
+
+        html.dark-theme .qty-adjust-box {
+            background-color: #1e3023;
+            border-color: #2e4433;
+        }
+
+        html.dark-theme .btn-qty {
+            color: #f3f4f6;
+        }
+
+        html.dark-theme .btn-qty:hover {
+            background-color: #2e4433;
+        }
+
+        html.dark-theme .qty-display {
+            color: #f3f4f6;
+        }
+
+        html.dark-theme .pm-card {
+            background-color: #1e3023 !important;
+            border-color: #2e4433 !important;
+        }
+
+        html.dark-theme .pm-card.active {
+            background-color: #243a2b !important;
+            border-color: #c5a880 !important;
+        }
+
+        html.dark-theme .pm-title {
+            color: #f3f4f6 !important;
+        }
+
+        html.dark-theme .pm-icon {
+            color: #c5a880 !important;
+        }
+
+        html.dark-theme .pm-radio-circle {
+            border-color: #666;
+        }
+
+        html.dark-theme .pm-card.active .pm-radio-circle {
+            border-color: #c5a880;
+            background: #fff;
+        }
+
+        html.dark-theme .summary-sidebar {
+            background-color: #152219;
+            border: 1px solid #243629;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        html.dark-theme .trust-badges {
+            color: #9ca3af;
+        }
+
+        html.dark-theme .trust-badge-item i {
+            color: #c5a880;
+        }
+
+        html.dark-theme .empty-address-msg, html.dark-theme .empty-cart-state {
+            border-color: #2e4433;
+            color: #9ca3af;
+        }
+
+        html.dark-theme .btn-place-order {
+            background: #c5a880 !important;
+            color: #1b3322 !important;
+            font-weight: 800 !important;
+        }
+
+        html.dark-theme .btn-place-order:hover:not(:disabled) {
+            background: #d4bc9c !important;
+            box-shadow: 0 0 15px rgba(197, 168, 128, 0.4) !important;
+        }
+

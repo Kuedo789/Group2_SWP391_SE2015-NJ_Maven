@@ -367,15 +367,46 @@
                         <span>Tổng thanh toán:</span>
                         <strong><%= formattedTotal %></strong>
                     </div>
+                    <%
+                        StringBuilder jsonBuilder = new StringBuilder();
+                        jsonBuilder.append("[");
+                        if (order.getItems() != null) {
+                            for (int idx = 0; idx < order.getItems().size(); idx++) {
+                                OrderItem item = order.getItems().get(idx);
+                                if (idx > 0) jsonBuilder.append(",");
+                                jsonBuilder.append("{");
+                                
+                                String tplId = item.getTemplateId() != null ? item.getTemplateId() : "";
+                                String accId = item.getAccessoryId() != null ? item.getAccessoryId() : "";
+                                String varName = item.getVariationName() != null ? item.getVariationName() : "Tiêu chuẩn";
+                                double price = item.getPriceAtPurchase() != null ? item.getPriceAtPurchase().doubleValue() : 0.0;
+                                int qty = item.getQuantity();
+                                String name = item.getItemName() != null ? item.getItemName().replace("\"", "\\\"") : "";
+                                String image = item.getItemImage() != null ? item.getItemImage() : "";
+                                
+                                jsonBuilder.append("\"templateId\":\"").append(tplId).append("\",");
+                                jsonBuilder.append("\"accessoryId\":\"").append(accId).append("\",");
+                                jsonBuilder.append("\"variationName\":\"").append(varName).append("\",");
+                                jsonBuilder.append("\"price\":").append(price).append(",");
+                                jsonBuilder.append("\"qty\":").append(qty).append(",");
+                                jsonBuilder.append("\"name\":\"").append(name).append("\",");
+                                jsonBuilder.append("\"image\":\"").append(image).append("\"");
+                                
+                                jsonBuilder.append("}");
+                            }
+                        }
+                        jsonBuilder.append("]");
+                        String escapedJson = jsonBuilder.toString().replace("'", "\\'");
+                    %>
                     <div class="order-actions">
-                        <button class="btn btn-outline" style="min-width: 44px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center;" onclick="alert('Đã thêm tất cả sản phẩm trong đơn vào giỏ hàng của bạn!');" title="Thêm vào giỏ hàng">
+                        <button class="btn btn-outline" style="min-width: 44px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center;" onclick="reorderOrder(<%= escapedJson %>)" title="Thêm vào giỏ hàng">
                             <span class="material-symbols-outlined" style="font-size: 20px;">add_shopping_cart</span>
                         </button>
                         
                         <% if ("completed".equals(dataStatus)) { %>
-                            <button class="btn btn-outline" onclick="alert('Đã thêm tất cả sản phẩm trong đơn vào giỏ hàng của bạn!');">Đặt lại</button>
+                            <button class="btn" onclick="reorderOrder(<%= escapedJson %>)" style="background-color: #2e7d32; color: white; border: none; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#1b5e20'" onmouseout="this.style.backgroundColor='#2e7d32'">Đặt lại</button>
                         <% } else if ("cancelled".equals(dataStatus)) { %>
-                            <button class="btn btn-outline" onclick="alert('Đã thêm tất cả sản phẩm trong đơn vào giỏ hàng của bạn!');">Đặt lại</button>
+                            <button class="btn" onclick="reorderOrder(<%= escapedJson %>)" style="background-color: #2e7d32; color: white; border: none; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#1b5e20'" onmouseout="this.style.backgroundColor='#2e7d32'">Đặt lại</button>
                         <% } else { %>
                             <button class="btn btn-primary" onclick="window.location.href='<%= request.getContextPath() %>/OrderDetail?orderNo=<%= order.getOrderNo() %>'">Xem tiến độ</button>
                         <% } %>
@@ -521,6 +552,67 @@
                 }
             }
         });
+
+        function reorderOrder(items) {
+            if (!Array.isArray(items) || items.length === 0) return;
+            
+            const cartItems = items.map(item => {
+                let cartItemId = "";
+                let templateId = item.templateId;
+                
+                if (templateId && templateId.trim() !== "") {
+                    let variantIndex = "0";
+                    if (item.variationName.includes("20cm")) {
+                        variantIndex = "1";
+                    } else if (item.variationName.includes("24cm")) {
+                        variantIndex = "2";
+                    }
+                    cartItemId = templateId.trim() + "_" + variantIndex;
+                } else {
+                    cartItemId = item.accessoryId || "ACC_UNKNOWN";
+                    templateId = "";
+                }
+                
+                let finalName = item.name;
+                let finalDesc = "Bánh ngọt thủ công cao cấp";
+                if (templateId && templateId.trim() !== "") {
+                    if (item.variationName.includes("20cm")) {
+                        if (!finalName.includes("20cm")) finalName += " (Size 20cm)";
+                        finalDesc = "Kích thước vừa vặn cho các bữa tiệc nhỏ";
+                    } else if (item.variationName.includes("24cm")) {
+                        if (!finalName.includes("24cm")) finalName += " (Size 24cm)";
+                        finalDesc = "Phù hợp tiệc sinh nhật đông người";
+                    } else {
+                        if (!finalName.includes("16cm")) finalName += " (Size 16cm)";
+                        finalDesc = "Size bánh dành cho 4 - 6 người dùng.";
+                    }
+                } else {
+                    finalDesc = "Phụ kiện đi kèm";
+                }
+                
+                let resolvedImg = item.image;
+                const ctx = '<%= request.getContextPath() %>';
+                if (ctx && resolvedImg.startsWith(ctx)) {
+                    resolvedImg = resolvedImg.substring(ctx.length);
+                }
+                if (resolvedImg.startsWith("/")) {
+                    resolvedImg = resolvedImg.substring(1);
+                }
+                
+                return {
+                    id: cartItemId,
+                    templateId: templateId,
+                    name: finalName,
+                    desc: finalDesc,
+                    price: item.price,
+                    qty: item.qty,
+                    image: resolvedImg
+                };
+            });
+            
+            localStorage.setItem("cart", JSON.stringify(cartItems));
+            window.location.href = '<%= request.getContextPath() %>/checkout';
+        }
     </script>
 </body>
 </html>

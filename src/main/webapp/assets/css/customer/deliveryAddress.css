@@ -1,4 +1,4 @@
-﻿            .address-page {
+            .address-page {
                 max-width: 1200px;
                 margin: 0 auto;
                 padding: 110px 24px 90px;
@@ -388,3 +388,173 @@
                     padding: 32px 18px 70px;
                 }
             }
+
+            /* ── Dark Mode Overrides ─────────────────────────────────────────── */
+            html.dark-theme body {
+                background-color: #0d0d0d !important;
+                color: #f3f4f6 !important;
+            }
+
+            html.dark-theme .address-card {
+                background-color: #152219 !important;
+                border: 1px solid #243629 !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+            }
+
+            html.dark-theme .address-header {
+                border-bottom-color: #2e4433 !important;
+            }
+
+            html.dark-theme .address-header h2 {
+                color: #c5a880 !important;
+            }
+
+            html.dark-theme .btn-back {
+                background-color: #1e3023 !important;
+                border-color: #2e4433 !important;
+                color: #f3f4f6 !important;
+            }
+
+            html.dark-theme .btn-back:hover {
+                background-color: #243a2b !important;
+                color: #f3f4f6 !important;
+            }
+
+            html.dark-theme .address-item {
+                background-color: #1e3023 !important;
+                border-color: #2e4433 !important;
+            }
+
+            html.dark-theme .address-item:hover {
+                border-color: #c5a880 !important;
+            }
+
+            html.dark-theme .address-item.default-item {
+                border-left: 4px solid #c5a880 !important;
+                background-color: #1c3223 !important;
+            }
+
+            html.dark-theme .receiver-name {
+                color: #f3f4f6 !important;
+            }
+
+            html.dark-theme .receiver-phone {
+                color: #9ca3af !important;
+            }
+
+            html.dark-theme .address-item-detail {
+                color: #e5e7eb !important;
+            }
+
+            html.dark-theme .divider-pipe {
+                color: #2e4433 !important;
+            }
+
+            html.dark-theme .badge-default {
+                background-color: #1c3223 !important;
+                color: #c5a880 !important;
+                border-color: rgba(197, 168, 128, 0.3) !important;
+            }
+
+            html.dark-theme .btn-set-default {
+                background-color: #1e3023 !important;
+                border-color: #2e4433 !important;
+                color: #f3f4f6 !important;
+            }
+
+            html.dark-theme .btn-set-default:hover {
+                background-color: #243a2b !important;
+                border-color: #c5a880 !important;
+                color: #f3f4f6 !important;
+            }
+
+            html.dark-theme .form-field-label {
+                color: #f3f4f6 !important;
+            }
+
+            html.dark-theme .address-input {
+                background-color: #1e3023 !important;
+                color: #f3f4f6 !important;
+                border-color: #2e4433 !important;
+            }
+
+            html.dark-theme .address-input:focus {
+                border-color: #c5a880 !important;
+            }
+
+            html.dark-theme .suggestion-list {
+                background-color: #152219 !important;
+                border-color: #2e4433 !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+            }
+
+            html.dark-theme .suggestion-item {
+                color: #f3f4f6 !important;
+                border-bottom-color: #2e4433 !important;
+            }
+
+            html.dark-theme .suggestion-item:hover {
+                background-color: #243a2b !important;
+            }
+
+            html.dark-theme .address-info {
+                background-color: #1c3223 !important;
+                border-color: #2e4433 !important;
+                color: #e5e7eb !important;
+            }
+
+            html.dark-theme .address-info strong {
+                color: #c5a880 !important;
+            }
+
+            html.dark-theme .checkbox-row {
+                color: #f3f4f6 !important;
+            }
+
+            html.dark-theme .no-address-state {
+                color: #9ca3af !important;
+            }
+
+            html.dark-theme .no-address-state i {
+                color: #2e4433 !important;
+            }
+
+            html.dark-theme .alert-success {
+                color: #a7f3d0 !important;
+                background-color: #1c3223 !important;
+                border-color: #2e4433 !important;
+            }
+
+            html.dark-theme .alert-danger {
+                color: #fca5a5 !important;
+                background-color: #2d1e1e !important;
+                border-color: #442a2a !important;
+            }
+
+            html.dark-theme .btn-search {
+                background-color: #1e3023 !important;
+                color: #f3f4f6 !important;
+                border: 1px solid #2e4433 !important;
+            }
+
+            html.dark-theme .btn-search:hover {
+                background-color: #243a2b !important;
+                border-color: #c5a880 !important;
+            }
+
+            html.dark-theme .btn-save {
+                background-color: #2e7d32 !important;
+                color: white !important;
+            }
+
+            html.dark-theme .btn-save:hover {
+                background-color: #1b5e20 !important;
+            }
+
+            /* Override the inline style yellow warning box in dark mode */
+            html.dark-theme .address-card div[style*="background:#fff8e1"] {
+                background-color: #2a2005 !important;
+                border-color: #5d4000 !important;
+                color: #ffd54f !important;
+            }
+

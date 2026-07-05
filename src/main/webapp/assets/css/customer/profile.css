@@ -262,3 +262,118 @@
         gap: 10px;
     }
 }
+
+/* ── Dark Mode Overrides ─────────────────────────────────────────── */
+html.dark-theme body {
+    background-color: #0d0d0d !important;
+    color: #f3f4f6 !important;
+}
+
+html.dark-theme .profile-card {
+    background-color: #152219 !important;
+    border: 1px solid #243629 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark-theme .profile-title {
+    color: #c5a880 !important;
+}
+
+html.dark-theme .profile-title i {
+    color: #c5a880 !important;
+}
+
+html.dark-theme .form-group label {
+    color: #f3f4f6 !important;
+}
+
+html.dark-theme .form-control {
+    background-color: #1e3023 !important;
+    color: #f3f4f6 !important;
+    border-color: #2e4433 !important;
+}
+
+html.dark-theme .form-control:focus {
+    border-color: #c5a880 !important;
+    box-shadow: 0 0 0 3px rgba(197, 168, 128, 0.15) !important;
+}
+
+html.dark-theme .form-control[readonly] {
+    background-color: #16281b !important;
+    color: #9ca3af !important;
+}
+
+html.dark-theme .form-note {
+    color: #9ca3af !important;
+}
+
+html.dark-theme .password-box,
+html.dark-theme .address-profile-box {
+    background-color: #1c3223 !important;
+    border-color: #2e4433 !important;
+}
+
+html.dark-theme .address-profile-title h3 {
+    color: #f3f4f6 !important;
+}
+
+html.dark-theme .address-profile-title p {
+    color: #9ca3af !important;
+}
+
+html.dark-theme .btn-address-manage {
+    color: #c5a880 !important;
+}
+
+html.dark-theme .btn-address-manage:hover {
+    color: #d4bc9c !important;
+}
+
+html.dark-theme .change-password-toggle {
+    background-color: #1e3023 !important;
+    color: #f3f4f6 !important;
+    border: 1px solid #2e4433 !important;
+}
+
+html.dark-theme .change-password-toggle:hover {
+    background-color: #243a2b !important;
+    border-color: #c5a880 !important;
+}
+
+html.dark-theme .btn-cancel {
+    background-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+html.dark-theme .btn-cancel:hover {
+    background-color: #4b5563 !important;
+}
+
+html.dark-theme .btn-update {
+    background-color: #2e7d32 !important;
+    color: white !important;
+}
+
+html.dark-theme .btn-update:hover {
+    background-color: #1b5e20 !important;
+}
+
+html.dark-theme .show-password-row {
+    color: #f3f4f6 !important;
+}
+
+html.dark-theme .profile-success {
+    color: #a7f3d0 !important;
+    background-color: #1c3223 !important;
+    border-color: #2e4433 !important;
+}
+
+html.dark-theme .profile-error {
+    color: #fca5a5 !important;
+    background-color: #2d1e1e !important;
+    border-color: #442a2a !important;
+}
+
+html.dark-theme .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+}

@@ -241,3 +241,105 @@ body {
     border-top: 1px solid var(--border-light);
     padding-top: 16px;
 }
+
+/* ── Dark Mode Overrides ─────────────────────────────────────────── */
+html.dark-theme body {
+    background-color: #0d0d0d !important;
+    color: #f3f4f6 !important;
+}
+
+html.dark-theme .cart-header {
+    color: #c5a880 !important;
+}
+
+html.dark-theme .item-card {
+    background-color: #152219 !important;
+    border-color: #243629 !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark-theme .item-title {
+    color: #eae6df !important;
+}
+
+html.dark-theme .item-desc {
+    color: #9ca3af !important;
+}
+
+html.dark-theme .qty-pill {
+    background-color: #1e3023 !important;
+    border: 1px solid #2e4433 !important;
+}
+
+html.dark-theme .qty-btn {
+    color: #f3f4f6 !important;
+}
+
+html.dark-theme .qty-input {
+    color: #f3f4f6 !important;
+}
+
+html.dark-theme .item-price {
+    color: #c5a880 !important;
+}
+
+html.dark-theme .remove-btn {
+    color: #9ca3af !important;
+}
+
+html.dark-theme .summary-card {
+    background-color: #152219 !important;
+    border: 1px solid #243629 !important;
+}
+
+html.dark-theme .summary-title {
+    color: #c5a880 !important;
+}
+
+html.dark-theme .summary-row {
+    color: #9ca3af !important;
+}
+
+html.dark-theme .summary-row.total {
+    border-top-color: #2e4433 !important;
+    color: #f3f4f6 !important;
+}
+
+html.dark-theme .voucher-input {
+    border-color: #2e4433 !important;
+    color: #f3f4f6 !important;
+    background-color: #1e3023 !important;
+}
+
+html.dark-theme .voucher-btn {
+    background-color: #1e3023 !important;
+    color: #f3f4f6 !important;
+    border: 1px solid #2e4433 !important;
+}
+
+html.dark-theme .voucher-btn:hover {
+    background-color: #243a2b !important;
+    border-color: #c5a880 !important;
+}
+
+html.dark-theme .checkout-btn {
+    background: #2e7d32 !important;
+    color: white !important;
+}
+
+html.dark-theme .checkout-btn:hover {
+    background: #1b5e20 !important;
+}
+
+html.dark-theme .continue-shopping {
+    color: #9ca3af !important;
+}
+
+html.dark-theme .continue-shopping:hover {
+    color: #c5a880 !important;
+}
+
+html.dark-theme .system-status-footer {
+    border-top-color: #2e4433 !important;
+    color: #9ca3af !important;
+}

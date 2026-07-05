@@ -201,6 +201,75 @@
                 text-align: center;
             }
         }
+
+        /* ── Dark Mode Overrides ─────────────────────────────────────────── */
+        html.dark-theme .order-success-page {
+            background: #0d0d0d !important;
+            color: #f3f4f6 !important;
+        }
+
+        html.dark-theme .success-title {
+            color: #eae6df !important;
+        }
+
+        html.dark-theme .success-desc {
+            color: #9ca3af !important;
+        }
+
+        html.dark-theme .order-info-card {
+            background-color: #152219 !important;
+            border: 1px solid #243629 !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        html.dark-theme .info-label {
+            color: #9ca3af !important;
+        }
+
+        html.dark-theme .info-value {
+            color: #c5a880 !important;
+        }
+
+        html.dark-theme .info-value-time {
+            color: #e5e7eb !important;
+        }
+
+        html.dark-theme .info-value-time .material-symbols-outlined {
+            color: #c5a880 !important;
+        }
+
+        html.dark-theme .divider {
+            background-color: #2e4433 !important;
+        }
+
+        html.dark-theme .btn-copy {
+            color: #c5a880 !important;
+        }
+
+        html.dark-theme .btn-copy:hover {
+            background-color: #1c3223 !important;
+        }
+
+        html.dark-theme .btn-success {
+            background-color: #2e7d32 !important;
+            color: #ffffff !important;
+        }
+
+        html.dark-theme .btn-success:hover {
+            background-color: #1b5e20 !important;
+        }
+
+        html.dark-theme .btn-outline-success {
+            background-color: #1e3023 !important;
+            color: #f3f4f6 !important;
+            border-color: #2e4433 !important;
+        }
+
+        html.dark-theme .btn-outline-success:hover {
+            background-color: #243a2b !important;
+            border-color: #c5a880 !important;
+            color: #ffffff !important;
+        }
     </style>
 </head>
 <body>
