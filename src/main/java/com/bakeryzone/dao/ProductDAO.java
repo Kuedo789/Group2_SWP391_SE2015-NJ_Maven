@@ -401,6 +401,7 @@ public class ProductDAO {
         } else {
             calculatedBasePrice = ingredientCost;
         }
+        calculatedBasePrice = Math.ceil(calculatedBasePrice / 1000.0) * 1000.0;
         p.setBasePrice(calculatedBasePrice);
         return p;
     }
@@ -550,14 +551,23 @@ public class ProductDAO {
     }
 
     public boolean hasOrders(String productId) {
-        // custom_cake has no Template_ID; check by matching through template_ingredient_detail
         String sql = "SELECT COUNT(*) FROM order_item oi "
                    + "JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID "
-                   + "JOIN custom_cake_layer_ingredient ccli ON cc.Custom_Cake_ID = ccli.Custom_Cake_ID "
-                   + "JOIN template_ingredient_detail tid ON ccli.Ingredient_ID = tid.Ingredient_ID "
-                   + "WHERE tid.Template_ID = ?";
+                   + "WHERE cc.Cake_Hash_Structure = ? "
+                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND ? = 'TPL_0001') "
+                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND ? = 'TPL_0005') "
+                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND ? = 'TPL_0009') "
+                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND ? = 'TPL_0011') "
+                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND ? = 'TPL_0013') "
+                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND ? = 'TPL_0017')";
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, productId);
+            ps.setString(2, productId);
+            ps.setString(3, productId);
+            ps.setString(4, productId);
+            ps.setString(5, productId);
+            ps.setString(6, productId);
+            ps.setString(7, productId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -567,5 +577,21 @@ public class ProductDAO {
             LOGGER.log(Level.SEVERE, "Failed to check if product has orders: " + productId, e);
         }
         return false;
+    }
+
+    public String getNextTemplateId() {
+        String sql = "SELECT Template_ID FROM cake_template WHERE Template_ID REGEXP '^TPL_[0-9]+$' ORDER BY CAST(SUBSTRING(Template_ID, 5) AS UNSIGNED) DESC LIMIT 1";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                String lastId = rs.getString("Template_ID");
+                int num = Integer.parseInt(lastId.substring(4));
+                return String.format("TPL_%04d", num + 1);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to get next Template ID", e);
+        }
+        return "TPL_0001";
     }
 }

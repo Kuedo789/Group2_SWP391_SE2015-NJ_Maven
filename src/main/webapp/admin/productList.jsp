@@ -202,9 +202,18 @@
                                                     <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="btn-action-edit" title="Chỉnh sửa">
                                                         <i class="fa-regular fa-pen-to-square"></i>
                                                     </a>
-                                                    <button class="btn-action-delete" title="Xóa sản phẩm" onclick="if(confirm('Bạn có chắc chắn muốn xóa bánh kem ${p.name} không?')) { deleteProduct('${p.id}'); }">
-                                                        <i class="fa-regular fa-trash-can"></i>
-                                                    </button>
+                                                    <c:choose>
+                                                        <c:when test="${p.status eq 'Active'}">
+                                                            <button class="btn-action-delete" title="Vô hiệu hóa" onclick="if(confirm('Bạn có chắc chắn muốn vô hiệu hóa bánh kem ${p.name} không?')) { deleteProduct('${p.id}'); }">
+                                                                <i class="fa-regular fa-trash-can"></i>
+                                                            </button>
+                                                        </c:when>
+                                                        <c:otherwise>
+                                                            <button class="btn-action-restore" title="Khôi phục" onclick="if(confirm('Bạn có chắc chắn muốn khôi phục bánh kem ${p.name} không?')) { restoreProduct('${p.id}'); }" style="border: none; background: none; color: #10b981; cursor: pointer; padding: 6px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; transition: color 0.2s;">
+                                                                <i class="fa-solid fa-rotate-left"></i>
+                                                            </button>
+                                                        </c:otherwise>
+                                                    </c:choose>
                                                 </div>
                                             </td>
                                         </tr>
@@ -273,12 +282,27 @@
         <input type="hidden" name="sortBy" value="${sortBy}">
     </form>
 
+    <!-- Hidden restore form for POST request -->
+    <form id="restoreProductForm" action="${pageContext.request.contextPath}/admin/product?action=restore" method="post" style="display:none;">
+        <input type="hidden" name="id" id="restoreProductId">
+        <input type="hidden" name="page" value="${currentPage}">
+        <input type="hidden" name="pageSize" value="${pageSize}">
+        <input type="hidden" name="category" value="${category}">
+        <input type="hidden" name="status" value="${status}">
+        <input type="hidden" name="search" value="${search}">
+        <input type="hidden" name="sortBy" value="${sortBy}">
+    </form>
+
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function deleteProduct(id) {
             document.getElementById('deleteProductId').value = id;
             document.getElementById('deleteProductForm').submit();
+        }
+        function restoreProduct(id) {
+            document.getElementById('restoreProductId').value = id;
+            document.getElementById('restoreProductForm').submit();
         }
     </script>
 </body>

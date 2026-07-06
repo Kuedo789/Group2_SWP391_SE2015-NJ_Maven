@@ -87,6 +87,9 @@ public class AdminProductController extends HttpServlet {
             case "delete":
                 deleteProduct(request, response);
                 break;
+            case "restore":
+                restoreProduct(request, response);
+                break;
             default:
                 response.sendRedirect(request.getContextPath() + "/admin/product?action=list");
                 break;
@@ -313,6 +316,40 @@ public class AdminProductController extends HttpServlet {
         }
     }
 
+    private void restoreProduct(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String id = request.getParameter("id");
+        
+        String pageParam = request.getParameter("page");
+        String pageSizeParam = request.getParameter("pageSize");
+        String categoryParam = request.getParameter("category");
+        String statusFilterParam = request.getParameter("status");
+        String searchParam = request.getParameter("search");
+        String sortByParam = request.getParameter("sortBy");
+        
+        StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/admin/product?action=list");
+        if (pageParam != null && !pageParam.trim().isEmpty()) redirectUrl.append("&page=").append(pageParam);
+        if (pageSizeParam != null && !pageSizeParam.trim().isEmpty()) redirectUrl.append("&pageSize=").append(pageSizeParam);
+        if (categoryParam != null && !categoryParam.trim().isEmpty()) redirectUrl.append("&category=").append(java.net.URLEncoder.encode(categoryParam, "UTF-8"));
+        if (statusFilterParam != null && !statusFilterParam.trim().isEmpty()) redirectUrl.append("&status=").append(java.net.URLEncoder.encode(statusFilterParam, "UTF-8"));
+        if (searchParam != null && !searchParam.trim().isEmpty()) redirectUrl.append("&search=").append(java.net.URLEncoder.encode(searchParam, "UTF-8"));
+        if (sortByParam != null && !sortByParam.trim().isEmpty()) redirectUrl.append("&sortBy=").append(java.net.URLEncoder.encode(sortByParam, "UTF-8"));
+
+        if (id != null && !id.trim().isEmpty()) {
+            System.out.println("[INFO] Bat dau khoi phuc banh kem co ID: " + id);
+            try {
+                productDAO.activateProduct(id);
+                System.out.println("[SUCCESS] Khoi phuc banh kem co ID: " + id + " thanh cong!");
+                response.sendRedirect(redirectUrl.toString() + "&msg=restore_success");
+            } catch (Exception e) {
+                System.err.println("[ERROR] Loi khi khoi phuc banh kem co ID: " + id + ". Details: " + e.getMessage());
+                response.sendRedirect(redirectUrl.toString() + "&msg=restore_error");
+            }
+        } else {
+            response.sendRedirect(redirectUrl.toString());
+        }
+    }
+
     private void saveOrUpdateProduct(HttpServletRequest request, HttpServletResponse response, boolean isNew) 
             throws ServletException, IOException {
         
@@ -385,7 +422,7 @@ public class AdminProductController extends HttpServlet {
         
         // File Upload Processing & Validation
         if (isNew || id == null || id.trim().isEmpty() || "new".equalsIgnoreCase(id)) {
-            id = "CZ-PROD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            id = productDAO.getNextTemplateId();
         }
 
         String imageUrl = request.getParameter("imageUrl");

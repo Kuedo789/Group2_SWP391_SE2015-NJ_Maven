@@ -87,6 +87,7 @@ public class ReviewDAO {
                     double service = rs.getDouble("Default_Service_Percent");
                     double divisor = 1.0 - ((margin + service) / 100.0);
                     double basePrice = (divisor > 0.0) ? (ingredientCost / divisor) : ingredientCost;
+                    basePrice = Math.ceil(basePrice / 1000.0) * 1000.0;
                     r.setBasePrice(basePrice);
                     r.setVariationName(getVariationName(basePrice, calculatedPrice));
                     list.add(r);
@@ -395,6 +396,7 @@ public class ReviewDAO {
                     double service = rs.getDouble("Default_Service_Percent");
                     double divisor = 1.0 - ((margin + service) / 100.0);
                     double basePrice = (divisor > 0.0) ? (ingredientCost / divisor) : ingredientCost;
+                    basePrice = Math.ceil(basePrice / 1000.0) * 1000.0;
                     r.setBasePrice(basePrice);
 
                     r.setVariationName(getVariationName(basePrice, calculatedPrice));
