@@ -192,6 +192,16 @@
                             <span id="shippingFeeSum">0đ</span>
                         </div>
 
+                        <c:if test="${requestScope.checkoutDiscount > 0}">
+                            <div class="summary-row" style="color: #d9534f;">
+                                <div class="summary-row-label">
+                                    <span>Giảm giá Voucher</span>
+                                    <span class="summary-sub-label">${requestScope.checkoutVoucherCode}</span>
+                                </div>
+                                <span>- <fmt:formatNumber value="${requestScope.checkoutDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
+                            </div>
+                        </c:if>
+
                         <div class="summary-row total">
                             <span>Tổng cộng</span>
                             <div class="total-price-wrap">
@@ -250,6 +260,7 @@
         let selectedAddressId = null;
         let selectedTimeSlot = ""; // no default selected
         let currentShippingFee = 0;
+        const checkoutDiscount = parseFloat("${requestScope.checkoutDiscount}") || 0;
 
         document.addEventListener("DOMContentLoaded", function () {
             // Dọn dẹp dữ liệu mock cũ nếu tồn tại trong localStorage
@@ -629,7 +640,11 @@
                 });
             }
 
-            const finalTotal = productTotal > 0 ? (productTotal + currentShippingFee) : 0;
+            let finalTotal = productTotal > 0 ? (productTotal + currentShippingFee) : 0;
+            if (finalTotal > 0) {
+                finalTotal = finalTotal - checkoutDiscount;
+                if (finalTotal < 0) finalTotal = 0;
+            }
 
             const subtotalEl = document.getElementById("productTotalSum");
             const shippingEl = document.getElementById("shippingFeeSum");

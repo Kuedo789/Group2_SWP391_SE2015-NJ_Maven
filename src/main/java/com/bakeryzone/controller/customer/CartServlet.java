@@ -2,6 +2,8 @@ package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.CartDAO;
 import com.bakeryzone.model.CartItemDTO; // Required for your list
+import com.bakeryzone.model.Voucher;
+import com.bakeryzone.dao.VoucherDAO;
 import java.io.IOException;
 import java.math.BigDecimal; // Required for total calculations
 import java.util.List; // Required for the cart list
@@ -20,6 +22,7 @@ import jakarta.servlet.http.HttpSession; // Required for session auth
 public class CartServlet extends HttpServlet {
 
     private final CartDAO cartDAO = new CartDAO();
+    private final VoucherDAO voucherDAO = new VoucherDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -61,6 +64,12 @@ public class CartServlet extends HttpServlet {
                 case "restore":
                     // Handled by admin product states.
                     break;
+                case "applyVoucher":
+                    handleApplyVoucher(request, response, userId);
+                    return; // Method redirects, so we return here
+                case "removeVoucher":
+                    handleRemoveVoucher(request, response);
+                    return; // Method redirects, so we return here
                 case "checkout":
                     response.sendRedirect(request.getContextPath() + "/checkout");
                     return;
@@ -105,6 +114,40 @@ public class CartServlet extends HttpServlet {
             }
         }
 
+        // Voucher recalculation to ensure the discount remains valid if cart items change
+        BigDecimal appliedDiscount = BigDecimal.ZERO;
+        String appliedVoucherCode = (String) session.getAttribute("appliedVoucherCode");
+        Integer appliedVoucherId = (Integer) session.getAttribute("appliedVoucherId");
+
+        if (appliedVoucherCode != null && appliedVoucherId != null) {
+            Voucher voucher = voucherDAO.getVoucherByCodeAndUser(appliedVoucherCode, userId);
+            if (voucher != null && subtotal.compareTo(voucher.getMinOrderValue()) >= 0) {
+                if ("PERCENT".equalsIgnoreCase(voucher.getDiscountType())) {
+                    BigDecimal calculatedDiscount = subtotal.multiply(voucher.getDiscountValue()).divide(BigDecimal.valueOf(100));
+                    if (voucher.getMaxDiscountAmount() != null && voucher.getMaxDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
+                        appliedDiscount = calculatedDiscount.min(voucher.getMaxDiscountAmount());
+                    } else {
+                        appliedDiscount = calculatedDiscount;
+                    }
+                } else {
+                    appliedDiscount = voucher.getDiscountValue();
+                }
+                
+                // Final safety check: discount cannot exceed subtotal
+                appliedDiscount = appliedDiscount.min(subtotal);
+                
+                request.setAttribute("appliedDiscount", appliedDiscount);
+                request.setAttribute("appliedVoucherCode", appliedVoucherCode);
+                session.setAttribute("appliedDiscount", appliedDiscount); // Keep synced for checkout
+            } else {
+                // Voucher no longer valid (e.g. subtotal dropped below min)
+                session.removeAttribute("appliedVoucherCode");
+                session.removeAttribute("appliedVoucherId");
+                session.removeAttribute("appliedDiscount");
+                request.setAttribute("voucherError", "Giỏ hàng không còn đủ điều kiện áp dụng voucher này.");
+            }
+        }
+
         // 5. Update the navbar total item quantity badge state
         int totalCount = cartDAO.getCartCountForUser(userId);
         session.setAttribute("cartCount", totalCount);
@@ -124,5 +167,53 @@ public class CartServlet extends HttpServlet {
         if (cartItemId != null && !cartItemId.trim().isEmpty()) {
             cartDAO.removeCartItem(cartItemId, userId);
         }
+    }
+
+    private void handleApplyVoucher(HttpServletRequest request, HttpServletResponse response, String userId) throws IOException {
+        String voucherCode = request.getParameter("voucherCode");
+        if (voucherCode == null || voucherCode.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/cart?voucherError=empty");
+            return;
+        }
+
+        voucherCode = voucherCode.trim();
+        Voucher voucher = voucherDAO.getVoucherByCodeAndUser(voucherCode, userId);
+
+        if (voucher == null) {
+            response.sendRedirect(request.getContextPath() + "/cart?voucherError=notFound");
+            return;
+        }
+
+        // Calculate subtotal to check minimum order condition
+        List<CartItemDTO> cartItems = cartDAO.getCartItemsForUser(userId);
+        BigDecimal subtotal = BigDecimal.ZERO;
+        if (cartItems != null) {
+            for (CartItemDTO item : cartItems) {
+                if (item.isActive() && item.getUnitPrice() != null) {
+                    BigDecimal itemTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+                    subtotal = subtotal.add(itemTotal);
+                }
+            }
+        }
+
+        if (subtotal.compareTo(voucher.getMinOrderValue()) < 0) {
+            response.sendRedirect(request.getContextPath() + "/cart?voucherError=minOrder");
+            return;
+        }
+
+        HttpSession session = request.getSession();
+        session.setAttribute("appliedVoucherId", voucher.getVoucherId());
+        session.setAttribute("appliedVoucherCode", voucher.getVoucherCode());
+        // The actual discount amount is calculated dynamically in renderCartPage
+
+        response.sendRedirect(request.getContextPath() + "/cart?voucherApplied=true");
+    }
+
+    private void handleRemoveVoucher(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        session.removeAttribute("appliedVoucherId");
+        session.removeAttribute("appliedVoucherCode");
+        session.removeAttribute("appliedDiscount");
+        response.sendRedirect(request.getContextPath() + "/cart");
     }
 }

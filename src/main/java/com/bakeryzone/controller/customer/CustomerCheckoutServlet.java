@@ -2,6 +2,7 @@ package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.DeliveryAddressDAO;
 import com.bakeryzone.dao.OrderDAO;
+import com.bakeryzone.dao.VoucherDAO;
 import com.bakeryzone.model.DeliveryAddress;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.model.OrderItem;
@@ -29,6 +30,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
 
     private final DeliveryAddressDAO addressDAO = new DeliveryAddressDAO();
     private final OrderDAO orderDAO = new OrderDAO();
+    private final VoucherDAO voucherDAO = new VoucherDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -75,6 +77,13 @@ public class CustomerCheckoutServlet extends HttpServlet {
             }
         }
         request.setAttribute("selectedAddress", selectedAddress);
+
+        // Fetch voucher discount from session
+        BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
+        String appliedVoucherCode = (String) session.getAttribute("appliedVoucherCode");
+        
+        request.setAttribute("checkoutDiscount", appliedDiscount != null ? appliedDiscount : BigDecimal.ZERO);
+        request.setAttribute("checkoutVoucherCode", appliedVoucherCode);
 
         // Forward to the checkout page
         request.getRequestDispatcher("/customer/checkout.jsp").forward(request, response);
@@ -212,8 +221,19 @@ public class CustomerCheckoutServlet extends HttpServlet {
             // Shipping fee stored in summary total from front-end is not posted; we use a flat 25k default
             // (Real implementation: recalculate from address coords or read from hidden field)
             BigDecimal shippingFee = BigDecimal.valueOf(25000);
-            BigDecimal totalCost   = productTotal.add(shippingFee);
-            BigDecimal deposit     = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
+            
+            // Voucher Discount
+            BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
+            if (appliedDiscount == null) {
+                appliedDiscount = BigDecimal.ZERO;
+            }
+            
+            BigDecimal totalCost = productTotal.add(shippingFee).subtract(appliedDiscount);
+            if (totalCost.compareTo(BigDecimal.ZERO) < 0) {
+                totalCost = BigDecimal.ZERO;
+            }
+            
+            BigDecimal deposit = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
             BigDecimal remainingCod = totalCost.subtract(deposit);
 
             order.setTotalCost(totalCost);
@@ -233,6 +253,15 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     + " | success=" + success + " | total=" + totalCost);
 
             if (success) {
+                // Mark voucher as used if applicable
+                Integer appliedVoucherId = (Integer) session.getAttribute("appliedVoucherId");
+                if (appliedVoucherId != null) {
+                    voucherDAO.markVoucherUsed(appliedVoucherId, currentUser.getUserId());
+                    session.removeAttribute("appliedVoucherId");
+                    session.removeAttribute("appliedVoucherCode");
+                    session.removeAttribute("appliedDiscount");
+                }
+
                 // Redirect to Order Success page
                 response.sendRedirect(request.getContextPath() + "/order-success?orderNo=" + orderNo);
             } else {
