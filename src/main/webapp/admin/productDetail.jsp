@@ -655,20 +655,7 @@
                                              <span class="switch-label-text">Cho phép khách ghi chú chúc mừng lên mặt bánh</span>
                                              <input type="checkbox" class="switch-input" name="allowsGreeting" value="true" ${product.allowsGreeting ? 'checked' : ''}>
                                          </div>
-                                     </div>
-
-                                     <div class="col-md-12">
-                                         <label class="form-label-cz">Trạng Thái Kinh Doanh <span>*</span></label>
-                                         <div class="status-radio-group">
-                                             <label class="status-radio-label">
-                                                 <input type="radio" name="status" class="status-radio-input" value="Active" ${product.status eq 'Active' ? 'checked' : ''}>
-                                                 Đang hoạt động
-                                             </label>
-                                             <label class="status-radio-label">
-                                                 <input type="radio" name="status" class="status-radio-input" value="Inactive" ${product.status eq 'Inactive' ? 'checked' : ''}>
-                                                 Tạm ngưng bán
-                                             </label>
-                                         </div>
+                                         <input type="hidden" name="status" value="${not empty product.status ? product.status : 'Active'}">
                                      </div>
 
                                     <div class="col-md-12">

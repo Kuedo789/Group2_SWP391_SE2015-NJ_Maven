@@ -365,6 +365,7 @@ public class OrderDAO {
                         } else {
                             basePrice = ingredientCost;
                         }
+                        basePrice = Math.ceil(basePrice / 1000.0) * 1000.0;
 
                         double purchasePrice = item.getPriceAtPurchase() != null
                                 ? item.getPriceAtPurchase().doubleValue()
@@ -457,6 +458,7 @@ public class OrderDAO {
                         } else {
                             basePrice = ingredientCost;
                         }
+                        basePrice = Math.ceil(basePrice / 1000.0) * 1000.0;
 
                         double purchasePrice = item.getPriceAtPurchase() != null
                                 ? item.getPriceAtPurchase().doubleValue()
