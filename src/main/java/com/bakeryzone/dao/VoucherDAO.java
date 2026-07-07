@@ -354,6 +354,71 @@ public class VoucherDAO {
         return v;
     }
 
+    /**
+     * Looks up a specific voucher by its code, but ONLY if the user owns it
+     * (in UserVoucher) and it hasn't been used yet.
+     */
+    public Voucher getVoucherByCodeAndUser(String voucherCode, String userId) {
+        String sql =
+            "SELECT v.VoucherID, v.VoucherCode, v.Title, v.DiscountType, v.DiscountValue, "
+            + "       v.MaxDiscountAmount, v.MinOrderValue, v.StartDate, v.EndDate, "
+            + "       v.IsActive, v.UsageLimit, v.RequiredTierID "
+            + "FROM UserVoucher uv "
+            + "JOIN Voucher v ON uv.VoucherID = v.VoucherID "
+            + "WHERE v.VoucherCode = ? "
+            + "  AND uv.UserID = ? "
+            + "  AND uv.IsUsed = 0 "
+            + "  AND v.IsActive = 1 "
+            + "  AND CURDATE() BETWEEN v.StartDate AND v.EndDate";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return null;
+
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, voucherCode);
+            ps.setString(2, userId);
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return mapVoucher(rs);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+
+        return null;
+    }
+
+    /**
+     * Marks a user's private voucher as used after a successful checkout.
+     */
+    public void markVoucherUsed(int voucherId, String userId) {
+        String sql = "UPDATE UserVoucher SET IsUsed = 1 WHERE VoucherID = ? AND UserID = ?";
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return;
+
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, voucherId);
+            ps.setString(2, userId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, null);
+        }
+    }
+
     private void close(Connection conn, PreparedStatement ps, ResultSet rs) {
         try {
             if (rs != null)   rs.close();

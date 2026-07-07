@@ -34,7 +34,7 @@
 
         <!-- Logo -->
         <a href="<%= contextPath %>/home" class="logo">
-            ${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}
+            BakeryZone
         </a>
 
         <!-- Menu chính -->
@@ -46,123 +46,98 @@
             <a href="<%= contextPath %>/membership"
                class="nav-menu-membership-link">Thành viên</a>
             <% } %>
-            <a href="<%= request.getContextPath() %>/blog">Tin tức</a>          
-            <a href="#">Liên hệ</a>
 
         </div>
 
-        <!-- Icons bên phải -->
-        <div class="nav-icons">
+        <!-- Main Right-Side Wrapper: Enforces horizontal alignment and prevents item collapse -->
+        <div class="navbar-right-container" style="display: flex; align-items: center; gap: 24px; margin-left: auto;">
 
-            <!-- Search -->
-            <form action="<%= contextPath %>/products" method="get" class="nav-search-form">
-                <input
-                    type="text"
-                    name="search"
-                    placeholder="Tìm bánh..."
-                    class="nav-search-input">
+            <!-- 1. Search Box Container -->
+            <div class="search-box-wrapper" style="display: flex; align-items: center;">
+                <form action="<%= contextPath %>/products" method="get" class="nav-search-form">
+                    <input type="text" name="search" placeholder="Tìm bánh..." class="nav-search-input">
+                    <button type="submit" class="nav-search-btn" title="Tìm kiếm">
+                        <span class="material-symbols-outlined">search</span>
+                    </button>
+                </form>
+            </div>
 
-                <button type="submit" class="nav-search-btn" title="Tìm kiếm">
-                    <span class="material-symbols-outlined">search</span>
-                </button>
-            </form>
-
-            <!-- Cart -->
-            <button type="button" title="Giỏ hàng" onclick="window.location.href = '${pageContext.request.contextPath}/cart'">
-                <span class="material-symbols-outlined">shopping_cart</span>
-                <%-- Floating count badge tag removed for a clean layout look --%>
-            </button>
-
-            <!-- User dropdown -->
-            <div class="user-dropdown">
-
-                <% if (currentUser == null) { %>
-
-                <!-- Chưa đăng nhập -->
-                <a href="<%= contextPath %>/login"
-                   class="btn btn-primary">
-                    Đăng nhập
+            <!-- 2. Cart Icon Container (clean, no badge, no clipping) -->
+            <div class="cart-icon-wrapper" style="display: flex; align-items: center;">
+                <a href="<%= contextPath %>/cart" class="cart-link" style="display: inline-flex; align-items: center; text-decoration: none; color: inherit; line-height: 1;">
+                    <span class="material-symbols-outlined" style="font-size: 26px;">shopping_cart</span>
                 </a>
+            </div>
 
-                <% } else { %>
+            <!-- 3. User Profile Section -->
+            <% if (currentUser == null) { %>
 
-                <!-- Đã đăng nhập -->
-                <button type="button" class="user-dropdown-btn" id="userDropdownBtn" title="Tài khoản">
-                    <span class="material-symbols-outlined">account_circle</span>
-                </button>
+                <a href="<%= contextPath %>/login" class="btn btn-primary">Đăng nhập</a>
 
-                <div class="user-dropdown-menu" id="userDropdownMenu">
+            <% } else { %>
 
-                    <!-- Header user -->
-                    <div class="user-dropdown-header">
-                        <div class="user-dropdown-avatar">
-                            <span class="material-symbols-outlined">account_circle</span>
+                <!-- Avatar on the left, username on the right, dropdown menu below -->
+                <div class="user-dropdown">
+                    <button type="button" class="user-dropdown-btn" id="userDropdownBtn" title="Tài khoản"
+                            style="display: flex; align-items: center; gap: 8px; border: none; background: transparent; cursor: pointer; padding: 0; white-space: nowrap;">
+                        <div class="avatar-container" style="display: flex; align-items: center; line-height: 1;">
+                            <span class="material-symbols-outlined" style="font-size: 28px; color: var(--text-dark, #333);">account_circle</span>
                         </div>
+                        <span class="navbar-username" style="font-size: 14px; font-weight: 500; color: var(--text-dark, #333); white-space: nowrap; display: inline-block;">
+                            <%= currentUser.getFullName() %>
+                        </span>
+                    </button>
 
-                        <div class="user-dropdown-info">
-                            <div class="user-dropdown-hello">Xin chào,</div>
-
-                            <!-- Name + tier chip on one elegant row -->
-                            <div class="user-dropdown-identity">
-                                <span class="user-dropdown-fullname">
-                                    <%= currentUser.getFullName() %>
-                                </span>
-                                <% if (navTierName != null) { %>
-                                <span class="nav-tier-chip <%= navTierClass %>">
-                                    <%= navTierName %>
-                                </span>
-                                <% } %>
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <div class="user-dropdown-header">
+                            <div class="user-dropdown-avatar">
+                                <span class="material-symbols-outlined">account_circle</span>
+                            </div>
+                            <div class="user-dropdown-info">
+                                <div class="user-dropdown-hello">Xin chào,</div>
+                                <div class="user-dropdown-identity">
+                                    <span class="user-dropdown-fullname"><%= currentUser.getFullName() %></span>
+                                    <% if (navTierName != null) { %>
+                                    <span class="nav-tier-chip <%= navTierClass %>"><%= navTierName %></span>
+                                    <% } %>
+                                </div>
                             </div>
                         </div>
+                        <div class="user-dropdown-item">
+                            <span class="material-symbols-outlined">leaderboard</span>
+                            <%= currentUser.getRoleName() != null ? currentUser.getRoleName() : currentUser.getRoleId() %>
+                        </div>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="<%= contextPath %>/profile" class="user-dropdown-item">
+                            <span class="material-symbols-outlined">person</span>
+                            <span>Hồ sơ cá nhân</span>
+                        </a>
+                        <a href="<%= contextPath %>/OrderList" class="user-dropdown-item">
+                            <span class="material-symbols-outlined">receipt_long</span>
+                            <span>Xem đơn hàng</span>
+                        </a>
+                        <a href="<%= contextPath %>/membership" class="user-dropdown-item">
+                            <span class="material-symbols-outlined">workspace_premium</span>
+                            <span>Xem hạng của bạn</span>
+                        </a>
+                        <a href="<%= contextPath %>/my-designs" class="user-dropdown-item">
+                            <span class="material-symbols-outlined">cake</span>
+                            <span>Thiết kế của tôi</span>
+                        </a>
+                        <div class="user-dropdown-divider"></div>
+                        <a href="<%= contextPath %>/logout" class="user-dropdown-item logout-item">
+                            <span class="material-symbols-outlined">logout</span>
+                            <span>Đăng xuất</span>
+                        </a>
                     </div>
-                    <div class="user-dropdown-item">
-                        <span class="material-symbols-outlined">
-                            leaderboard
-                        </span>
-                        <%= currentUser.getRoleName() != null ? currentUser.getRoleName() : currentUser.getRoleId() %>
-                    </div>
-                    <div class="user-dropdown-divider"></div>
-
-                    <!-- Profile -->
-                    <a href="<%= contextPath %>/profile" class="user-dropdown-item">
-                        <span class="material-symbols-outlined">person</span>
-                        <span>Hồ sơ cá nhân</span>
-                    </a>
-
-                    <!-- Orders -->
-                    <a href="<%= contextPath %>/OrderList" class="user-dropdown-item">
-                        <span class="material-symbols-outlined">receipt_long</span>
-                        <span>Xem đơn hàng</span>
-                    </a>
-
-                    <!-- Membership -->
-                    <a href="<%= contextPath %>/membership" class="user-dropdown-item">
-                        <span class="material-symbols-outlined">workspace_premium</span>
-                        <span>Xem hạng của bạn</span>
-                    </a>
-
-                    <!-- My designs -->
-                    <a href="<%= contextPath %>/my-designs" class="user-dropdown-item">
-                        <span class="material-symbols-outlined">cake</span>
-                        <span>Thiết kế của tôi</span>
-                    </a>
-
-                    <div class="user-dropdown-divider"></div>
-
-                    <!-- Logout -->
-                    <a href="<%= contextPath %>/logout" class="user-dropdown-item logout-item">
-                        <span class="material-symbols-outlined">logout</span>
-                        <span>Đăng xuất</span>
-                    </a>
-
                 </div>
 
-                <% } %>
+            <% } %>
 
-            </div>
         </div>
     </div>
 </nav>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         // Handle search form validation
@@ -179,36 +154,5 @@
                 }
             });
         }
-
-        // Update cart badge from localStorage
-        const updateCartCount = () => {
-            const countEl = document.getElementById("navCartCount");
-            if (countEl) {
-                try {
-                    const cartStr = localStorage.getItem("cart");
-                    if (cartStr) {
-                        const cart = JSON.parse(cartStr);
-                        if (Array.isArray(cart)) {
-                            let totalQty = 0;
-                            cart.forEach(item => {
-                                if (item)
-                                    totalQty += (parseInt(item.qty) || 1);
-                            });
-                            countEl.innerText = totalQty;
-                        } else {
-                            countEl.innerText = "0";
-                        }
-                    } else {
-                        countEl.innerText = "0";
-                    }
-                } catch (e) {
-                    countEl.innerText = "0";
-                }
-            }
-        };
-
-        updateCartCount();
-        // Listen to storage events to keep it synchronized across tabs
-        window.addEventListener("storage", updateCartCount);
     });
 </script>
