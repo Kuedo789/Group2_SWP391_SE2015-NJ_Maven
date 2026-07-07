@@ -189,6 +189,18 @@
                         </div>
                     </div>
 
+                    <!-- Note Card -->
+                    <div class="checkout-card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fa fa-sticky-note"></i> Ghi chú đơn hàng
+                            </h2>
+                        </div>
+                        <div style="margin-top: 16px;">
+                            <textarea name="note" id="note" rows="3" placeholder="Ví dụ: Giao hàng giờ hành chính, gọi điện trước khi giao..." style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 15px; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
+                        </div>
+                    </div>
+
                     <!-- Payment Methods Card -->
                     <div class="checkout-card">
                         <div class="card-header">
@@ -198,7 +210,7 @@
                         </div>
                         <div class="payment-methods-wrapper" style="margin-top: 16px;">
                             <label class="pm-card active" onclick="document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('active')); this.classList.add('active');">
-                                <input type="radio" name="paymentMethod" value="DIRECT_DEPOSIT_20" checked>
+                                <input type="radio" name="paymentMethod" value="COD" checked>
                                 <div class="pm-radio-circle"></div>
                                 <i class="fa fa-truck pm-icon"></i>
                                 <span class="pm-title">Thanh toán khi nhận hàng</span>
@@ -584,7 +596,8 @@
             const distance = getHaversineDistance(shopLat, shopLng, lat, lng) * 1.25;
             const finalDistance = Math.max(1.0, distance);
 
-            currentShippingFee = Math.max(shippingRate, Math.ceil(finalDistance) * shippingRate);
+            // currentShippingFee = Math.max(shippingRate, Math.ceil(finalDistance) * shippingRate);
+            currentShippingFee = 0;
             updateSummary();
         }
 

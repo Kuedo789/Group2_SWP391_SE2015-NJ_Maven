@@ -158,21 +158,12 @@
     }
 
     // Payment Method & Status
-    double depositAmount = order.getDepositAmount() != null ? order.getDepositAmount().doubleValue() : 0;
     String method = order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD";
-    String paymentMethodStr = "Thanh toán khi nhận hàng (COD)";
-    if ("COD".equalsIgnoreCase(method)) {
-        if (depositAmount > 0) {
-            paymentMethodStr = "COD (Đã đặt cọc " + currencyFormat.format(depositAmount) + "đ)";
-        } else {
-            paymentMethodStr = "Thanh toán khi nhận hàng (COD)";
-        }
+    String paymentMethodStr = "";
+    if ("BANK_TRANSFER_FULL".equalsIgnoreCase(method) || "Chuyển khoản".equalsIgnoreCase(method)) {
+        paymentMethodStr = "Chuyển khoản ngân hàng (Cần thanh toán: 0đ)";
     } else {
-        if (Math.abs(depositAmount - totalCost) < 1.0) {
-            paymentMethodStr = method + " (Đã thanh toán)";
-        } else {
-            paymentMethodStr = method + " (Đã đặt cọc " + currencyFormat.format(depositAmount) + "đ)";
-        }
+        paymentMethodStr = "Thanh toán khi nhận hàng (Cần thanh toán: " + currencyFormat.format(totalCost) + "đ)";
     }
 %>
 

@@ -217,20 +217,20 @@ public class CustomerCheckoutServlet extends HttpServlet {
             }
             BigDecimal totalCost   = productTotal.add(shippingFee);
 
-            double depPercent = 30.0;
-            java.util.Map<String, Object> settings = (java.util.Map<String, Object>) getServletContext().getAttribute("settings");
-            if (settings != null && settings.get("depositPercent") != null) {
-                try {
-                    depPercent = Double.parseDouble(settings.get("depositPercent").toString());
-                } catch (NumberFormatException ignored) {}
+            BigDecimal deposit = BigDecimal.ZERO;
+            BigDecimal remainingCod = totalCost;
+
+            if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
+                deposit = totalCost; // Khách chuyển khoản toàn bộ
+                remainingCod = BigDecimal.ZERO;
             }
-            BigDecimal deposit     = totalCost.multiply(BigDecimal.valueOf(depPercent / 100.0)).setScale(0, java.math.RoundingMode.HALF_UP);
-            BigDecimal remainingCod = totalCost.subtract(deposit);
 
             order.setTotalCost(totalCost);
             order.setDepositAmount(deposit);
             order.setRemainingCodBalance(remainingCod);
             order.setShippingFee(shippingFee);
+            order.setPaymentMethod(paymentMethod);
+            order.setCustomerNote(note);
 
             // ── 5. Persist order ───────────────────────────────────────────────────
             System.out.println("[INFO] Attempting to place order: " + orderNo 
