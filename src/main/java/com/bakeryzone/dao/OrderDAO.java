@@ -229,7 +229,7 @@ public class OrderDAO {
                     int cnt = rs.getInt("cnt");
                     counts.put("all", counts.get("all") + cnt);
                     if (dbStatus != null) {
-                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing")) {
+                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing") || dbStatus.equalsIgnoreCase("PAID")) {
                             counts.put("processing", counts.get("processing") + cnt);
                         } else if (dbStatus.equalsIgnoreCase("Delivering")) {
                             counts.put("shipping", counts.get("shipping") + cnt);
@@ -252,7 +252,7 @@ public class OrderDAO {
         if (uiStatus == null || uiStatus.equalsIgnoreCase("all")) return;
         switch (uiStatus.toLowerCase()) {
             case "processing":
-                sql.append(" AND o.OrderStatus IN ('Pending', 'Confirmed', 'Processing')");
+                sql.append(" AND o.OrderStatus IN ('Pending', 'Confirmed', 'Processing', 'PAID')");
                 break;
             case "shipping":
                 sql.append(" AND o.OrderStatus = 'Delivering'");

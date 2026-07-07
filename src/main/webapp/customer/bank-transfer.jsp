@@ -659,11 +659,8 @@
 
             <!-- Action buttons -->
             <div class="bt-actions">
-                <a href="${pageContext.request.contextPath}/OrderList" class="btn-primary-green">
-                    <i class="fa fa-list"></i> Xem đơn hàng của tôi
-                </a>
-                <a href="${pageContext.request.contextPath}/home" class="btn-outline-neutral">
-                    <i class="fa fa-home"></i> Về trang chủ
+                <a href="${pageContext.request.contextPath}/order-success?orderNo=<%= orderNo %>" class="btn-primary-green" style="padding: 15px 40px; font-size: 16px; border-radius: 50px;">
+                    <i class="fa fa-check-circle"></i> Tôi đã chuyển khoản xong
                 </a>
             </div>
 
@@ -738,18 +735,7 @@
             setTimeout(() => toast.classList.remove("show"), 2500);
         }
 
-        // ── Real-time Status Polling ──────────────────────────────────
-        let statusPollInterval = setInterval(() => {
-            fetch('${pageContext.request.contextPath}/api/order-status?orderNo=<%= orderNo %>')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status && data.status !== 'Pending') {
-                        clearInterval(statusPollInterval);
-                        window.location.href = '${pageContext.request.contextPath}/order-success?orderNo=<%= orderNo %>';
-                    }
-                })
-                .catch(err => console.error("Error polling status:", err));
-        }, 3000);
+
     </script>
 </body>
 </html>

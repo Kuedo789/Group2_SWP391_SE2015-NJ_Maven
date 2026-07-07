@@ -243,6 +243,12 @@
                                 <fmt:formatDate value="${order.deliveryWindowEnd}" pattern="HH:mm" />
                             </div>
                         </div>
+                        <div class="info-row">
+                            <div class="info-label">Ghi chú của khách:</div>
+                            <div class="info-value text-danger" style="font-weight: 600;">
+                                <c:out value="${not empty order.customerNote ? order.customerNote : 'Không có ghi chú'}" />
+                            </div>
+                        </div>
                         
                     </div>
 
@@ -315,14 +321,8 @@
                                 </span>
                             </div>
                         </c:if>
-                        <div class="cost-row">
-                            <span>Đặt cọc trước:</span>
-                            <span class="font-mono text-danger">
-                                -<fmt:formatNumber value="${order.depositAmount}" type="number" pattern="#,##0"/>đ
-                            </span>
-                        </div>
                         <div class="cost-row total">
-                            <span>Cần thu COD:</span>
+                            <span>SỐ TIỀN CẦN THU:</span>
                             <span class="font-mono">
                                 <fmt:formatNumber value="${order.remainingCodBalance}" type="number" pattern="#,##0"/>đ
                             </span>
