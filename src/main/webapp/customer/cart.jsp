@@ -120,7 +120,16 @@
                                 <div class="cart-items-wrapper">
                                     <c:forEach var="item" items="${cartItems}">
                                         <%-- Fixed: Changed item.isActive to item.active --%>
-                                        <div class="item-card ${item.active ? '' : 'disabled-item'}">
+                                        <div class="item-card ${item.active ? '' : 'disabled-item'}"
+                                             data-id="${item.cartItemId}"
+                                             data-price="${item.unitPrice}"
+                                             data-qty="${item.quantity}"
+                                             data-name="${item.name}"
+                                             data-image="${item.imageUrl}">
+                                            
+                                            <!-- Item Selection Checkbox -->
+                                            <input type="checkbox" class="cart-item-checkbox" ${item.active ? '' : 'disabled'} style="margin-right: 15px; width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);">
+
                                             <img src="${item.imageUrl}" alt="${item.name}" class="item-img">
 
                                             <div class="item-info">
@@ -222,7 +231,7 @@
 
                                 <div class="summary-row">
                                     <span>Tạm tính</span>
-                                    <span><fmt:formatNumber value="${cartSubtotal}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
+                                    <span id="cartSubtotalDisplay"><fmt:formatNumber value="${cartSubtotal}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
                                 </div>
                                 <div class="summary-row">
                                     <span>Phí vận chuyển</span>
@@ -230,7 +239,7 @@
                                 </div>
                                 <div class="summary-row" style="color: #d9534f;">
                                     <span>Giảm giá</span>
-                                    <span>
+                                    <span id="cartDiscountDisplay">
                                         <c:choose>
                                             <c:when test="${not empty appliedDiscount}">
                                                 -<fmt:formatNumber value="${appliedDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
@@ -242,7 +251,7 @@
 
                                 <div class="summary-row total">
                                     <span>Tổng cộng</span>
-                                    <span class="price">
+                                    <span class="price" id="cartTotalDisplay">
                                         <c:set var="totalValue" value="${cartSubtotal + 30000}" />
                                         <c:if test="${not empty appliedDiscount}">
                                             <c:set var="totalValue" value="${totalValue - appliedDiscount}" />
@@ -280,5 +289,152 @@
             </c:choose>
         </div>
 
+        <script>
+            // 1. Inject Voucher Rules for client-side math
+            const voucherType = "${not empty appliedVoucher ? appliedVoucher.discountType : ''}";
+            const voucherValue = parseFloat("${not empty appliedVoucher ? appliedVoucher.discountValue : 0}") || 0;
+            const voucherMax = parseFloat("${not empty appliedVoucher && not empty appliedVoucher.maxDiscountAmount ? appliedVoucher.maxDiscountAmount : 0}") || 0;
+            const voucherMin = parseFloat("${not empty appliedVoucher && not empty appliedVoucher.minOrderValue ? appliedVoucher.minOrderValue : 0}") || 0;
+
+            const shippingFee = 30000;
+
+            function formatCurrency(amount) {
+                return amount.toLocaleString('vi-VN') + "₫";
+            }
+
+            // 2. Dynamic JS Calculation
+            function updateSummaryTotals() {
+                const checkboxes = document.querySelectorAll('.cart-item-checkbox');
+                let subtotal = 0;
+                let checkedIds = [];
+
+                checkboxes.forEach(cb => {
+                    const card = cb.closest('.item-card');
+                    if (cb.checked) {
+                        const price = parseFloat(card.getAttribute('data-price')) || 0;
+                        const qty = parseInt(card.getAttribute('data-qty')) || 0;
+                        subtotal += (price * qty);
+                        checkedIds.push(card.getAttribute('data-id'));
+                    }
+                });
+
+                // Persist selection across page reloads (e.g. when applying voucher or updating quantity)
+                sessionStorage.setItem("selectedCartItems", JSON.stringify(checkedIds));
+
+                let discount = 0;
+                // Calculate discount if subtotal meets minimum order requirement
+                if (voucherType !== '' && subtotal >= voucherMin) {
+                    const isPercentage = voucherType.toUpperCase() === 'PERCENT' || voucherType.toUpperCase() === 'PERCENTAGE';
+                    if (isPercentage) {
+                        discount = Math.round(subtotal * (voucherValue / 100));
+                        if (voucherMax > 0 && discount > voucherMax) {
+                            discount = voucherMax;
+                        }
+                    } else {
+                        discount = voucherValue;
+                    }
+                }
+                
+                // Discount can't exceed subtotal
+                if (discount > subtotal) {
+                    discount = subtotal;
+                }
+
+                let finalTotal = 0;
+                if (subtotal > 0) {
+                    finalTotal = subtotal - discount + shippingFee;
+                    if (finalTotal < 0) finalTotal = 0;
+                }
+
+                // Update DOM
+                document.getElementById('cartSubtotalDisplay').innerText = formatCurrency(subtotal);
+                document.getElementById('cartDiscountDisplay').innerText = discount > 0 ? "-" + formatCurrency(discount) : "-0₫";
+                document.getElementById('cartTotalDisplay').innerText = formatCurrency(finalTotal);
+                
+                // Disable checkout button if no items selected
+                const checkoutBtn = document.querySelector('.checkout-btn');
+                if (checkoutBtn) {
+                    checkoutBtn.disabled = (subtotal === 0);
+                }
+            }
+
+            // Bind change listeners to checkboxes
+            document.querySelectorAll('.cart-item-checkbox').forEach(cb => {
+                cb.addEventListener('change', updateSummaryTotals);
+            });
+            
+            // Allow clicking the card itself (optional nice UX)
+            document.querySelectorAll('.item-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Don't trigger if they click a button or input inside the card
+                    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT' && !e.target.classList.contains('qty-btn')) {
+                        const cb = this.querySelector('.cart-item-checkbox');
+                        if (cb && !cb.disabled) {
+                            cb.checked = !cb.checked;
+                            updateSummaryTotals();
+                        }
+                    }
+                });
+            });
+
+            // Restore previous selection on page load, or leave unchecked if first visit
+            document.addEventListener("DOMContentLoaded", function() {
+                const savedSelection = sessionStorage.getItem("selectedCartItems");
+                if (savedSelection) {
+                    try {
+                        const checkedIds = JSON.parse(savedSelection);
+                        document.querySelectorAll('.cart-item-checkbox').forEach(cb => {
+                            const cardId = cb.closest('.item-card').getAttribute('data-id');
+                            if (checkedIds.includes(cardId) && !cb.disabled) {
+                                cb.checked = true;
+                            }
+                        });
+                    } catch (e) {
+                        console.warn("Could not parse selected cart items from sessionStorage");
+                    }
+                }
+                
+                // Initialize totals based on restored state (or completely unchecked state)
+                updateSummaryTotals();
+            });
+
+            // 3. Checkout Submission Interceptor
+            document.querySelector('.checkout-btn')?.addEventListener('click', function(e) {
+                // Determine which button triggered the form. If it's the checkout button:
+                const checkboxes = document.querySelectorAll('.cart-item-checkbox');
+                let checkoutCart = [];
+
+                checkboxes.forEach(cb => {
+                    if (cb.checked) {
+                        const card = cb.closest('.item-card');
+                        
+                        // Map to the format expected by checkout.jsp's localStorage reader
+                        const itemObj = {
+                            id: card.getAttribute('data-id'),
+                            name: card.getAttribute('data-name'),
+                            price: parseFloat(card.getAttribute('data-price')),
+                            qty: parseInt(card.getAttribute('data-qty')),
+                            image: card.getAttribute('data-image')
+                        };
+                        
+                        // Special handling for Custom Cakes: pass the cartItemId as templateId 
+                        // so checkout logic knows it's a generated cake template
+                        if (itemObj.name && itemObj.name.startsWith("SIZE_")) {
+                            itemObj.templateId = card.getAttribute('data-id'); 
+                        }
+                        
+                        checkoutCart.push(itemObj);
+                    }
+                });
+
+                // Write the filtered array to localStorage before the form submits and redirects
+                if (checkoutCart.length > 0) {
+                    localStorage.setItem("cart", JSON.stringify(checkoutCart));
+                } else {
+                    e.preventDefault();
+                    alert("Vui lòng chọn ít nhất 1 sản phẩm để thanh toán.");
+                }
+            });
+        </script>
     </body>
 </html>

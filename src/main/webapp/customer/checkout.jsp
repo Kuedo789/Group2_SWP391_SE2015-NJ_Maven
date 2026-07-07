@@ -484,13 +484,34 @@
                 const imgUrl = (item.image && typeof item.image === "string" && item.image.startsWith("http")) ? item.image : "${pageContext.request.contextPath}/" + (item.image || "assets/images/products/basic.png");
                 const priceFormatted = (parseFloat(item.price) || 0).toLocaleString("vi-VN") + "đ";
                 
+                let cleanName = item.name || '';
+                let cleanDesc = item.desc || 'Bánh ngọt thủ công cao cấp';
+                
+                if (cleanName.startsWith("SIZE_")) {
+                    const parts = cleanName.split("_");
+                    const size = parts[1] || "16";
+                    const layers = parts[3] || "1";
+                    cleanName = `Bánh Kem Tùy Chỉnh (${size}cm)`;
+                    
+                    let flavorStr = [];
+                    for(let i = 4; i < parts.length; i++) {
+                        let f = parts[i];
+                        if(f === 'VANILLA') f = 'Vani';
+                        else if (f === 'CHOCO') f = 'Chocolate';
+                        else if (f === 'STRAW') f = 'Dâu';
+                        else if (f === 'MATCHA') f = 'Trà xanh';
+                        flavorStr.push(f);
+                    }
+                    cleanDesc = `\${layers} Tầng: \${flavorStr.join(', ')}`;
+                }
+
                 const itemHtml = `
                     <div class="product-item-row" id="cart-item-\${item.id}">
-                        <div class="product-item-left">
-                            <img src="\${imgUrl}" class="product-img" alt="\${item.name || ''}" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=120'">
-                            <div class="product-details-text">
-                                <span class="product-title">\${item.name || ''}</span>
-                                <span class="product-desc">\${item.desc || 'Bánh ngọt thủ công cao cấp'}</span>
+                        <div class="product-item-left" style="min-width: 0; flex: 1; margin-right: 15px;">
+                            <img src="\${imgUrl}" class="product-img" alt="\${cleanName}" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=120'">
+                            <div class="product-details-text" style="min-width: 0; overflow: hidden; display: flex; flex-direction: column;">
+                                <span class="product-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">\${cleanName}</span>
+                                <span class="product-desc" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">\${cleanDesc}</span>
                             </div>
                         </div>
                         <div class="product-item-right-actions">
