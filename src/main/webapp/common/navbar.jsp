@@ -53,8 +53,8 @@
         <div class="navbar-right-container" style="display: flex; align-items: center; gap: 24px;">
 
             <!-- 1. Search Box Container -->
-            <div class="search-box-wrapper" style="display: flex; align-items: center;">
-                <form action="<%= contextPath %>/products" method="get" class="nav-search-form">
+            <div class="search-box-wrapper">
+                <form id="navSearchForm" action="<%= contextPath %>/products" method="get" class="nav-search-form">
                     <input type="text" name="search" placeholder="Tìm bánh..." class="nav-search-input">
                     <button type="submit" class="nav-search-btn" title="Tìm kiếm">
                         <span class="material-symbols-outlined">search</span>
@@ -63,9 +63,9 @@
             </div>
 
             <!-- 2. Cart Icon Container (clean, no badge, no clipping) -->
-            <div class="cart-icon-wrapper" style="display: flex; align-items: center;">
-                <a href="<%= contextPath %>/cart" class="cart-link" style="display: inline-flex; align-items: center; text-decoration: none; color: inherit; line-height: 1;">
-                    <span class="material-symbols-outlined" style="font-size: 26px;">shopping_cart</span>
+            <div class="cart-icon-wrapper">
+                <a href="<%= contextPath %>/cart" class="cart-link">
+                    <span class="material-symbols-outlined">shopping_cart</span>
                 </a>
             </div>
 
@@ -112,6 +112,10 @@
                         <a href="<%= contextPath %>/OrderList" class="user-dropdown-item">
                             <span class="material-symbols-outlined">receipt_long</span>
                             <span>Xem đơn hàng</span>
+                        </a>
+                        <a href="<%= contextPath %>/my-vouchers" class="user-dropdown-item">
+                            <span class="material-symbols-outlined">local_activity</span>
+                            <span>Ví Voucher</span>
                         </a>
                         <a href="<%= contextPath %>/membership" class="user-dropdown-item">
                             <span class="material-symbols-outlined">workspace_premium</span>

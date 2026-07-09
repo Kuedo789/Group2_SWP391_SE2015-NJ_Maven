@@ -102,9 +102,18 @@
             </li>
         </c:if>
 
-        <li class="menu-item ${param.activeMenu == 'promotions' ? 'active' : ''}">
-            <a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi <i class="fa-solid fa-chevron-down arrow"></i></a>
+<<<<<<< HEAD
+        <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/vouchers')}">
+            <li class="menu-item ${param.activeMenu == 'vouchers' ? 'active' : ''}">
+                <a href="${pageContext.request.contextPath}/admin/vouchers"><i class="fa-solid fa-ticket"></i> Quản lý Voucher</a>
+            </li>
+        </c:if>
+=======
+        <li class="menu-item ${param.activeMenu == 'vouchers' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/admin/vouchers"><i class="fa-solid fa-ticket"></i> Voucher &amp; Khuyến mãi</a>
         </li>
+
+>>>>>>> 912ce15d2702de5d933c7b6afb23a7c1e75d5526
         <li class="menu-item ${param.activeMenu == 'inventory' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>

@@ -197,8 +197,16 @@ button {
 
 /* =========================================================
    05. Navbar
+   Architecture (Flexbox contract):
+
+   .navbar-inner  →  [Logo | Nav-menu | ············ Right]
+                      fixed   fixed        auto-push   fixed-group
+
+   .navbar-right-container  →  [Search | Cart | User]
+                                 shrinks   fixed  fixed
 ========================================================= */
 
+/* ── Navbar Base ── */
 .navbar {
     position: fixed;
     top: 0;
@@ -210,27 +218,41 @@ button {
     border-bottom: 1px solid rgba(238, 229, 216, 0.8);
 }
 
+/* ── Container ──
+   Logo and nav-menu sit at the start.
+   Right container is pushed to the far end via margin-left:auto.
+   Neither Logo nor nav-menu are allowed to shrink.
+   The right container itself must not shrink from the outer
+   layout's perspective (flex-shrink:0), so the browser never
+   collapses it and triggers vertical stacking inside. */
 .navbar-inner {
-    width: min(1180px, calc(100% - 32px));
+    width: min(1400px, calc(100% - 48px));
     height: 76px;
     margin: 0 auto;
     display: flex;
+    flex-direction: row;
     align-items: center;
-    justify-content: space-between;
+    gap: 32px;
 }
 
+/* ── Logo ── */
 .logo {
     font-family: "Playfair Display", serif;
     font-size: 24px;
     font-weight: 700;
     color: var(--text);
     letter-spacing: -0.4px;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
+/* ── Navigation Menu ── */
 .nav-menu {
     display: flex;
+    flex-direction: row;
     align-items: center;
     gap: 30px;
+    flex-shrink: 0;
 }
 
 .nav-menu a {
@@ -239,6 +261,7 @@ button {
     font-weight: 600;
     color: #4d463f;
     padding: 8px 0;
+    white-space: nowrap;
     transition: color 0.25s ease;
 }
 
@@ -264,66 +287,199 @@ button {
     width: 100%;
 }
 
-.nav-icons {
-    display: flex;
+.nav-menu-membership-link {
+    display: inline-flex;
     align-items: center;
-    gap: 12px;
+    gap: 5px;
+    color: var(--primary) !important;
+    font-weight: 700 !important;
 }
 
-.nav-icons button {
-    position: relative;
-    width: 38px;
-    height: 38px;
+.nav-menu-membership-link::before {
+    content: '✦';
+    font-size: 9px;
+    opacity: 0.7;
+}
+
+/* ── Right Section ──
+   This is a fixed-width group from the outer layout's perspective.
+   flex-shrink:0 is critical — it tells .navbar-inner never to
+   compress this group below its natural width.
+   margin-left:auto pushes it to the far right end.
+   Inside, items are always one horizontal row (nowrap). */
+.navbar-right-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 16px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* ── Search ──
+   The only element allowed to shrink within the right section.
+   flex: 0 1 240px  means: don't grow beyond 240px, but shrink
+   gracefully down to min-width:120px before the layout breaks.
+   This gives the search box a natural, fluid size without
+   competing with the cart or user button. */
+.search-box-wrapper {
+    flex: 0 1 240px;
+    min-width: 120px;
+}
+
+.nav-search-form {
+    height: 42px;
+    width: 100%;
+    padding: 0 6px 0 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(154, 117, 82, 0.22);
+    border-radius: 999px;
+    box-shadow: 0 8px 22px rgba(61, 91, 49, 0.06);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+
+.nav-search-form:focus-within {
+    background: #fff;
+    border-color: rgba(61, 91, 49, 0.45);
+    box-shadow: 0 10px 26px rgba(61, 91, 49, 0.12);
+}
+
+/* Input fills available space within the pill.
+   min-width:0 overrides browser default min-width so it can
+   shrink below its content width without overflow. */
+.nav-search-input {
+    flex: 1 1 0;
+    min-width: 0;
     border: none;
-    border-radius: 50%;
+    outline: none;
     background: transparent;
     color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.nav-search-input::placeholder {
+    color: rgba(77, 70, 63, 0.55);
+}
+
+/* Submit button inside the pill — never shrinks */
+.nav-search-btn {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.25s ease, color 0.25s ease;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text);
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
-.nav-icons button:hover {
+.nav-search-btn:hover {
     background: var(--primary-soft);
     color: var(--primary);
 }
 
-.cart-count {
-    position: absolute;
-    top: 2px;
-    right: 1px;
-    min-width: 16px;
-    height: 16px;
-    padding: 0 4px;
-    border-radius: 999px;
-    background: var(--accent);
-    color: #fff;
-    font-size: 10px;
-    line-height: 16px;
-    font-weight: 700;
-}
-.user-dropdown {
-    position: relative;
+.nav-search-btn .material-symbols-outlined {
+    font-size: 22px;
+    line-height: 1;
+    display: block;
 }
 
-.user-dropdown-btn {
-    width: 38px;
-    height: 38px;
-    border: none;
-    background: transparent;
-    border-radius: 50%;
+/* ── Cart Icon ── fixed-size, never grows or shrinks */
+.cart-icon-wrapper {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.cart-link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    text-decoration: none;
+    color: var(--text);
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
-.user-dropdown-btn .material-symbols-outlined {
+.cart-link:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.cart-link .material-symbols-outlined {
     font-size: 26px;
+    line-height: 1;
+    display: block;
 }
 
+/* ── User Dropdown ──
+   The outer div is flex-shrink:0 so it is always visible.
+   The button inside is a flex row: [avatar | username].
+   Username truncates at 150px — never wraps, never pushes
+   the cart or login button away. */
+.user-dropdown {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.user-dropdown-btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 6px 10px 6px 6px;
+    border-radius: 999px;
+    transition: background 0.2s ease;
+}
+
+.user-dropdown-btn:hover {
+    background: var(--primary-soft);
+}
+
+.avatar-container {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.avatar-container .material-symbols-outlined {
+    font-size: 28px;
+    color: var(--text);
+    line-height: 1;
+    display: block;
+}
+
+.navbar-username {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    line-height: 1;
+}
+
+/* ── Dropdown Panel ── */
 .user-dropdown-menu {
+    display: none;
     position: absolute;
     top: calc(100% + 12px);
     right: 0;
@@ -333,6 +489,10 @@ button {
     border-radius: 14px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
     z-index: 1000;
+}
+
+.user-dropdown-menu.show {
+    display: block;
 }
 
 .user-dropdown-header {
@@ -363,20 +523,28 @@ button {
     min-width: 0;
 }
 
+.user-dropdown-hello {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 2px;
+}
+
+.user-dropdown-identity {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    flex-wrap: wrap;
+}
+
 .user-dropdown-fullname {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
-    color: var(--text-main);
-    line-height: 1.25;
+    color: var(--text);
+    line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-}
-
-.user-dropdown-divider {
-    height: 1px;
-    background: rgba(0, 0, 0, 0.12);
-    margin: 0 4px 8px;
+    max-width: 160px;
 }
 
 .user-dropdown-item {
@@ -385,7 +553,7 @@ button {
     gap: 10px;
     padding: 11px 10px;
     border-radius: 10px;
-    color: var(--text-main);
+    color: var(--text);
     text-decoration: none;
     font-size: 14px;
     font-weight: 600;
@@ -399,144 +567,14 @@ button {
 .user-dropdown-item:hover {
     background: rgba(61, 91, 49, 0.08);
 }
-.user-dropdown-menu {
-    display: none;
-    position: absolute;
-    top: calc(100% + 12px);
-    right: 0;
-    width: 330px;
-    padding: 12px;
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
-    z-index: 1000;
+
+.user-dropdown-divider {
+    height: 1px;
+    background: rgba(0, 0, 0, 0.12);
+    margin: 4px;
 }
 
-.user-dropdown-menu.show {
-    display: block;
-}
-.nav-search-form {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.nav-search-input {
-    width: 150px;
-    padding: 7px 10px;
-    border: 1px solid #ead6c1;
-    border-radius: 999px;
-    outline: none;
-    font-size: 14px;
-}
-
-.nav-search-form button {
-    border: none;
-    background: transparent;
-    cursor: pointer;
-}
-.nav-search-form {
-    height: 42px;
-    min-width: 220px;
-    padding: 0 6px 0 16px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.72);
-    border: 1px solid rgba(154, 117, 82, 0.22);
-    border-radius: 999px;
-    box-shadow: 0 8px 22px rgba(61, 91, 49, 0.06);
-    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
-}
-
-.nav-search-form:focus-within {
-    background: #fff;
-    border-color: rgba(61, 91, 49, 0.45);
-    box-shadow: 0 10px 26px rgba(61, 91, 49, 0.12);
-}
-
-.nav-search-input {
-    width: 150px;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.nav-search-input::placeholder {
-    color: rgba(77, 70, 63, 0.55);
-}
-
-.nav-icons .nav-search-btn {
-    width: 34px;
-    height: 34px;
-    flex: 0 0 34px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
-.nav-icons .nav-search-btn .material-symbols-outlined {
-    font-size: 22px;
-}
-.user-dropdown-role {
-    margin-top: 3px;
-    font-size: 12px;
-    font-weight: 600;
-    color: rgba(77, 70, 63, 0.65);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* ----------------------------------------------------------
-   Navbar – membership link (center nav)
-   Only shown to logged-in users.
----------------------------------------------------------- */
-.nav-menu-membership-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: var(--primary) !important;
-    font-weight: 700 !important;
-}
-
-.nav-menu-membership-link::before {
-    content: '✦';
-    font-size: 9px;
-    opacity: 0.7;
-}
-
-/* ----------------------------------------------------------
-   Dropdown header – identity row  (name · tier chip)
----------------------------------------------------------- */
-.user-dropdown-identity {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    flex-wrap: wrap;
-    margin-top: 2px;
-}
-
-/* Name inside the identity row keeps its existing sizing */
-.user-dropdown-identity .user-dropdown-fullname {
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 160px;
-}
-
-/* ----------------------------------------------------------
-   Tier chip – shared base
----------------------------------------------------------- */
+/* ── Membership Tier Badges ── */
 .nav-tier-chip {
     display: inline-flex;
     align-items: center;
@@ -548,13 +586,11 @@ button {
     text-transform: uppercase;
     white-space: nowrap;
     flex-shrink: 0;
-    /* default neutral – overridden by modifier classes below */
     background: rgba(139, 144, 168, 0.15);
     color: #6e6e82;
     border: 1px solid rgba(139, 144, 168, 0.25);
 }
 
-/* Per-tier colour modifiers  – mirror membership.css tier tokens */
 .nav-tier-chip--member {
     background: rgba(139, 144, 168, 0.14);
     color: #6a6e82;
