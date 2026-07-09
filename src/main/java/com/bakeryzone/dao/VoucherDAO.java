@@ -102,6 +102,72 @@ public class VoucherDAO {
     }
 
     /**
+     * Fetches all vouchers for Admin dashboard.
+     */
+    public List<Voucher> getAllVouchers() {
+        List<Voucher> list = new ArrayList<>();
+        String sql = "SELECT VoucherID, VoucherCode, Title, DiscountType, DiscountValue, "
+                   + "MaxDiscountAmount, MinOrderValue, StartDate, EndDate, "
+                   + "IsActive, UsageLimit, RequiredTierID "
+                   + "FROM Voucher ORDER BY VoucherID DESC";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn != null) {
+                ps = conn.prepareStatement(sql);
+                rs = ps.executeQuery();
+                while (rs.next()) {
+                    list.add(mapVoucher(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return list;
+    }
+
+    /**
+     * Fetches all unused vouchers owned by a specific user.
+     */
+    public List<Voucher> getUserOwnedVouchers(String userId) {
+        List<Voucher> list = new ArrayList<>();
+        String sql = "SELECT v.VoucherID, v.VoucherCode, v.Title, v.DiscountType, v.DiscountValue, "
+                   + "v.MaxDiscountAmount, v.MinOrderValue, v.StartDate, v.EndDate, "
+                   + "v.IsActive, v.UsageLimit, v.RequiredTierID "
+                   + "FROM Voucher v "
+                   + "INNER JOIN UserVoucher uv ON v.VoucherID = uv.VoucherID "
+                   + "WHERE uv.UserID = ? AND uv.IsUsed = 0 "
+                   + "ORDER BY uv.AssignedAt DESC";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn != null) {
+                ps = conn.prepareStatement(sql);
+                ps.setString(1, userId);
+                rs = ps.executeQuery();
+                while (rs.next()) {
+                    list.add(mapVoucher(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return list;
+    }
+
+    /**
      * Looks up a single active, in-date voucher by its primary key.
      * Used by RewardsController to resolve the point cost before executing
      * the redemption transaction.
