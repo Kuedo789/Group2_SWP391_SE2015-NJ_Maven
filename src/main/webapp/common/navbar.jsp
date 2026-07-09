@@ -135,6 +135,12 @@
                         <span>Xem đơn hàng</span>
                     </a>
 
+                    <!-- Vouchers -->
+                    <a href="<%= contextPath %>/my-vouchers" class="user-dropdown-item">
+                        <span class="material-symbols-outlined">local_activity</span>
+                        <span>Ví Voucher</span>
+                    </a>
+
                     <!-- Membership -->
                     <a href="<%= contextPath %>/membership" class="user-dropdown-item">
                         <span class="material-symbols-outlined">workspace_premium</span>
