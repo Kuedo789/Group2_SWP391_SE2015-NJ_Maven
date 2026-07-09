@@ -112,6 +112,7 @@
                             <th style="width: 120px;">Mã đơn</th>
                             <th>Khách hàng</th>
                             <th style="width: 160px;">Thời gian đặt</th>
+                            <th style="width: 120px; text-align: right;">Phí ship</th>
                             <th style="width: 150px; text-align: right;">Tiền cọc</th>
                             <th style="width: 150px; text-align: right;">Tổng cộng</th>
                             <th style="width: 150px; text-align: center;">Trạng thái</th>
@@ -135,7 +136,9 @@
                                         <td>
                                             <fmt:formatDate value="${o.orderTime}" pattern="dd/MM/yyyy HH:mm" />
                                         </td>
-
+                                        <td style="text-align: right;" class="font-monospace text-muted">
+                                            <fmt:formatNumber value="${o.shippingFee}" type="number" pattern="#,##0"/>đ
+                                        </td>
                                         <td style="text-align: right;" class="font-monospace admin-order-deposit">
                                             <fmt:formatNumber value="${o.depositAmount}" type="number" pattern="#,##0"/>đ
                                         </td>
@@ -175,7 +178,7 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">
+                                    <td colspan="8" class="text-center py-5 text-muted">
                                         <i class="fa-solid fa-box-open d-block fs-3 mb-3" style="color: #ccc;"></i>
                                         Không tìm thấy đơn hàng nào phù hợp với bộ lọc.
                                     </td>

@@ -209,14 +209,14 @@
                             </h2>
                         </div>
                         <div class="payment-methods-wrapper" style="margin-top: 16px;">
-                            <label class="pm-card active" onclick="document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('active')); this.classList.add('active');">
+                            <label class="pm-card active" onclick="document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); updateSummary();">
                                 <input type="radio" name="paymentMethod" value="COD" checked>
                                 <div class="pm-radio-circle"></div>
                                 <i class="fa fa-truck pm-icon"></i>
                                 <span class="pm-title">Thanh toán khi nhận hàng</span>
                             </label>
                             
-                            <label class="pm-card" onclick="document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('active')); this.classList.add('active');">
+                            <label class="pm-card" onclick="document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('active')); this.classList.add('active'); updateSummary();">
                                 <input type="radio" name="paymentMethod" value="BANK_TRANSFER_FULL">
                                 <div class="pm-radio-circle"></div>
                                 <i class="fa fa-university pm-icon"></i>
@@ -259,6 +259,23 @@
                             <div class="total-price-wrap">
                                 <span class="total-price" id="finalTotalSum">0đ</span>
                             </div>
+                        </div>
+
+                        <!-- Đặt cọc & COD -->
+                        <div class="summary-row" id="depositRow" style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 12px;">
+                            <div class="summary-row-label">
+                                <span>Tiền đặt cọc (<span id="depositPercentLabel">30</span>%)</span>
+                                <span class="summary-sub-label">Yêu cầu thanh toán trước</span>
+                            </div>
+                            <span id="depositSum" style="font-weight: 700; color: var(--primary-dark);">0đ</span>
+                        </div>
+
+                        <div class="summary-row" id="remainingCodRow">
+                            <div class="summary-row-label">
+                                <span>Còn lại (COD)</span>
+                                <span class="summary-sub-label">Thanh toán khi nhận bánh</span>
+                            </div>
+                            <span id="remainingCodSum" style="font-weight: 700;">0đ</span>
                         </div>
 
                         <div class="banner-kitchen-verify">
@@ -319,6 +336,11 @@
 
             // 1. Sync & Render Cart Items
             loadCartItems();
+
+            // Listen to payment method radio checks
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+                radio.addEventListener("change", updateSummary);
+            });
 
             // 2. Select initial active address and calculate shipping fee
             const activeAddressCard = document.querySelector(".address-card-option.active");
@@ -628,8 +650,7 @@
             const distance = getHaversineDistance(shopLat, shopLng, lat, lng) * 1.25;
             const finalDistance = Math.max(1.0, distance);
 
-            // currentShippingFee = Math.max(shippingRate, Math.ceil(finalDistance) * shippingRate);
-            currentShippingFee = 0;
+            currentShippingFee = Math.max(shippingRate, Math.ceil(finalDistance) * shippingRate);
             updateSummary();
         }
 
@@ -697,6 +718,46 @@
             
             const shippingFeeInput = document.getElementById("shippingFeeInput");
             if (shippingFeeInput) shippingFeeInput.value = currentShippingFee;
+
+            // Tính toán tiền đặt cọc và COD còn lại động
+            const depositPercentSetting = parseFloat('${not empty settings.depositPercent ? settings.depositPercent : "30"}') || 30;
+            const pmRadio = document.querySelector('input[name="paymentMethod"]:checked');
+            const pmValue = pmRadio ? pmRadio.value : "COD";
+            
+            let depositRate = 0.3; // Mặc định 30%
+            if (pmValue === "BANK_TRANSFER_FULL") {
+                depositRate = 1.0;
+            } else {
+                depositRate = depositPercentSetting / 100.0;
+            }
+
+            let depositAmount = Math.round(finalTotal * depositRate);
+            let remainingAmount = finalTotal - depositAmount;
+            if (remainingAmount < 0) remainingAmount = 0;
+
+            const depositPercentLabel = document.getElementById("depositPercentLabel");
+            if (depositPercentLabel) {
+                depositPercentLabel.innerText = Math.round(depositRate * 100);
+            }
+
+            const depositSum = document.getElementById("depositSum");
+            if (depositSum) {
+                depositSum.innerText = depositAmount.toLocaleString("vi-VN") + "đ";
+            }
+
+            const remainingCodSum = document.getElementById("remainingCodSum");
+            if (remainingCodSum) {
+                remainingCodSum.innerText = remainingAmount.toLocaleString("vi-VN") + "đ";
+            }
+
+            const remainingCodRow = document.getElementById("remainingCodRow");
+            if (remainingCodRow) {
+                if (remainingAmount <= 0) {
+                    remainingCodRow.style.display = "none";
+                } else {
+                    remainingCodRow.style.display = "flex";
+                }
+            }
         }
     </script>
 </body>
