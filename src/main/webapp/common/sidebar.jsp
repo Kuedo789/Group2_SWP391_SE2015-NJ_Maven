@@ -102,9 +102,10 @@
             </li>
         </c:if>
 
-        <li class="menu-item ${param.activeMenu == 'promotions' ? 'active' : ''}">
-            <a href="#"><i class="fa-solid fa-percent"></i> Khuyến mãi <i class="fa-solid fa-chevron-down arrow"></i></a>
+        <li class="menu-item ${param.activeMenu == 'vouchers' ? 'active' : ''}">
+            <a href="${pageContext.request.contextPath}/admin/vouchers"><i class="fa-solid fa-ticket"></i> Voucher &amp; Khuyến mãi</a>
         </li>
+
         <li class="menu-item ${param.activeMenu == 'inventory' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>

@@ -140,6 +140,14 @@
         <servlet-name>BankTransferServlet</servlet-name>
         <url-pattern>/bank-transfer</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>VoucherManagementServlet</servlet-name>
+        <servlet-class>com.bakeryzone.controller.admin.VoucherManagementServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>VoucherManagementServlet</servlet-name>
+        <url-pattern>/admin/vouchers</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>30</session-timeout>
     </session-config>

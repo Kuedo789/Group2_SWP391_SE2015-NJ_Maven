@@ -50,11 +50,11 @@
         </div>
 
         <!-- Main Right-Side Wrapper: Enforces horizontal alignment and prevents item collapse -->
-        <div class="navbar-right-container" style="display: flex; align-items: center; gap: 24px; margin-left: auto;">
+        <div class="navbar-right-container">
 
             <!-- 1. Search Box Container -->
-            <div class="search-box-wrapper" style="display: flex; align-items: center;">
-                <form action="<%= contextPath %>/products" method="get" class="nav-search-form">
+            <div class="search-box-wrapper">
+                <form id="navSearchForm" action="<%= contextPath %>/products" method="get" class="nav-search-form">
                     <input type="text" name="search" placeholder="Tìm bánh..." class="nav-search-input">
                     <button type="submit" class="nav-search-btn" title="Tìm kiếm">
                         <span class="material-symbols-outlined">search</span>
@@ -63,9 +63,9 @@
             </div>
 
             <!-- 2. Cart Icon Container (clean, no badge, no clipping) -->
-            <div class="cart-icon-wrapper" style="display: flex; align-items: center;">
-                <a href="<%= contextPath %>/cart" class="cart-link" style="display: inline-flex; align-items: center; text-decoration: none; color: inherit; line-height: 1;">
-                    <span class="material-symbols-outlined" style="font-size: 26px;">shopping_cart</span>
+            <div class="cart-icon-wrapper">
+                <a href="<%= contextPath %>/cart" class="cart-link">
+                    <span class="material-symbols-outlined">shopping_cart</span>
                 </a>
             </div>
 
@@ -78,12 +78,11 @@
 
                 <!-- Avatar on the left, username on the right, dropdown menu below -->
                 <div class="user-dropdown">
-                    <button type="button" class="user-dropdown-btn" id="userDropdownBtn" title="Tài khoản"
-                            style="display: flex; align-items: center; gap: 8px; border: none; background: transparent; cursor: pointer; padding: 0; white-space: nowrap;">
-                        <div class="avatar-container" style="display: flex; align-items: center; line-height: 1;">
-                            <span class="material-symbols-outlined" style="font-size: 28px; color: var(--text-dark, #333);">account_circle</span>
+                    <button type="button" class="user-dropdown-btn" id="userDropdownBtn" title="Tài khoản">
+                        <div class="avatar-container">
+                            <span class="material-symbols-outlined">account_circle</span>
                         </div>
-                        <span class="navbar-username" style="font-size: 14px; font-weight: 500; color: var(--text-dark, #333); white-space: nowrap; display: inline-block;">
+                        <span class="navbar-username">
                             <%= currentUser.getFullName() %>
                         </span>
                     </button>
