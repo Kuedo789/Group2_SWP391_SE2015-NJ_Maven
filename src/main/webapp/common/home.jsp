@@ -13,74 +13,6 @@
 <html lang="vi">
     <head>
         <jsp:include page="header.jsp" />
-        <style>
-            /* 🎨 STYLE CHO KHỐI ĐÁNH GIÁ NỔI BẬT */
-            .review-section {
-                background-color: #fffaf5;
-                padding: 60px 0;
-            }
-            .center-title-sub {
-                text-align: center;
-                color: #666;
-                font-size: 14px;
-                margin-top: -10px;
-                margin-bottom: 40px;
-            }
-            .review-home-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 30px;
-                max-width: 1200px;
-                margin: 0 auto;
-                padding: 0 20px;
-            }
-            .review-home-card {
-                background: #ffffff;
-                padding: 30px;
-                border-radius: 12px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-                border: 1px solid #f3ebe1;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-            }
-            .review-home-stars {
-                color: #ffc107;
-                margin-bottom: 15px;
-                display: flex;
-                gap: 2px;
-            }
-            .review-home-comment {
-                font-style: italic;
-                color: #555;
-                font-size: 15px;
-                line-height: 1.6;
-                margin-bottom: 20px;
-                flex-grow: 1;
-            }
-            .review-home-user {
-                border-top: 1px solid #f5f5f5;
-                padding-top: 15px;
-            }
-            .review-home-name {
-                font-weight: 700;
-                color: #222;
-                margin: 0 0 4px 0;
-                font-size: 16px;
-            }
-            .review-home-cake {
-                color: #888;
-                font-size: 12.5px;
-                display: block;
-            }
-            .review-empty {
-                grid-column: span 3;
-                text-align: center;
-                color: #999;
-                font-style: italic;
-                padding: 20px;
-            }
-        </style>
     </head>
 
     <body>
@@ -127,11 +59,10 @@
                             </span>
                         </div>
 
-                        <h1>Bánh tươi mỗi ngày, ngọt lành từng khoảnh khắc</h1>
+                        <h1>${not empty settings.heroTitle ? settings.heroTitle : 'Bánh tươi mỗi ngày, ngọt lành từng khoảnh khắc'}</h1>
 
                         <p>
-                            Khám phá những chiếc bánh ngọt, bánh sinh nhật và quà tặng
-                            được làm thủ công từ nguyên liệu tự nhiên.
+                            ${not empty settings.heroSubtitle ? settings.heroSubtitle : 'Khám phá những chiếc bánh ngọt, bánh sinh nhật và quà tặng được làm thủ công từ nguyên liệu tự nhiên.'}
                         </p>
 
                         <div class="hero-actions">

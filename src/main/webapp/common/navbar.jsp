@@ -38,7 +38,7 @@
         </a>
 
         <!-- Menu chính -->
-        <div class="nav-menu" style="gap: 35px;">
+        <div class="nav-menu" style="gap: 35px; margin: 0 auto;">
             <a href="<%= request.getContextPath() %>/home">Trang Chủ</a>
             <a href="<%= request.getContextPath() %>/products">Menu bánh</a>
             <a href="<%= request.getContextPath() %>/custom-cake">Thiết kế bánh</a>

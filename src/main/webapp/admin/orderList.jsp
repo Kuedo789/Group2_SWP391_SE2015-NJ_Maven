@@ -1,31 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<%
-    if (application.getAttribute("settings") == null) {
-        com.bakeryzone.dao.SettingDAO settingDAO = new com.bakeryzone.dao.SettingDAO();
-        java.util.Map<String, Object> dbSettings = settingDAO.getSettings();
-        if (dbSettings == null || dbSettings.isEmpty()) {
-            dbSettings = new java.util.HashMap<>();
-            dbSettings.put("bakeryName", "BakeryZone");
-            dbSettings.put("hotline", "0901234567");
-            dbSettings.put("email", "support@bakeryzone.vn");
-            dbSettings.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
-            dbSettings.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
-            dbSettings.put("banner1", "assets/images/banner1.jpg");
-            dbSettings.put("banner2", "assets/images/banner2.jpg");
-            dbSettings.put("banner3", "assets/images/banner3.jpg");
-            dbSettings.put("banner4", "assets/images/hero/hero-4.jpg");
-            dbSettings.put("darkMode", false);
-        } else {
-            String currentHotline = (String) dbSettings.get("hotline");
-            if (currentHotline != null) {
-                dbSettings.put("hotline", currentHotline.replaceAll("\\s+", ""));
-            }
-        }
-        application.setAttribute("settings", dbSettings);
-    }
-%>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -49,14 +24,6 @@
         </jsp:include>
 
         <div class="content-container">
-            <c:if test="${not empty errorMessage}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 20px; border-radius: 12px; font-weight: 500;">
-                    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i>
-                    <c:out value="${errorMessage}" />
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <c:remove var="errorMessage" scope="session" />
-            </c:if>
             <div class="page-title-area">
                 <div>
                     <h1 class="page-title">Quản lý đơn hàng</h1>
@@ -137,7 +104,7 @@
                                             <fmt:formatDate value="${o.orderTime}" pattern="dd/MM/yyyy HH:mm" />
                                         </td>
                                         <td style="text-align: right;" class="font-monospace text-muted">
-                                            <fmt:formatNumber value="${o.shippingFee}" type="number" pattern="#,##0"/>đ
+                                            <fmt:formatNumber value="${not empty o.shippingFee ? o.shippingFee : 0}" type="number" pattern="#,##0"/>đ
                                         </td>
                                         <td style="text-align: right;" class="font-monospace admin-order-deposit">
                                             <fmt:formatNumber value="${o.depositAmount}" type="number" pattern="#,##0"/>đ
@@ -219,34 +186,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <script>
-        <c:if test="${not empty sessionScope.successMessage}">
-            Toastify({
-                text: "${sessionScope.successMessage}",
-                duration: 4000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "linear-gradient(to right, #3f5f36, #5c8350)",
-                stopOnFocus: true
-            }).showToast();
-            <c:remove var="successMessage" scope="session" />
-        </c:if>
-
-        <c:if test="${not empty sessionScope.errorMessage}">
-            Toastify({
-                text: "${sessionScope.errorMessage}",
-                duration: 4000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                stopOnFocus: true
-            }).showToast();
-            <c:remove var="errorMessage" scope="session" />
-        </c:if>
+        // JS helpers for orderList can be placed here if needed.
     </script>
 </body>
 </html>

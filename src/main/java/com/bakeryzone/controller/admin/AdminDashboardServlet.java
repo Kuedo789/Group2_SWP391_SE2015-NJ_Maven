@@ -32,19 +32,15 @@ public class AdminDashboardServlet extends HttpServlet {
         List<Map<String, Object>> bestSellers = null;
         List<Map<String, Object>> topCustomers = null;
 
-        // 0. Parse Custom Dates if present
+        // 0. Trích xuất khoảng ngày tùy chỉnh nếu có
         String startDate = request.getParameter("startDate");
         String endDate = request.getParameter("endDate");
         
-        // Validate
-        if (!ValidationUtils.isValidDateFormat(startDate) || !ValidationUtils.isValidDateFormat(endDate)) {
-            request.setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
-            request.getSession().setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
-            startDate = null;
-            endDate = null;
-        } else if (!ValidationUtils.isValidDateRange(startDate, endDate)) {
-            request.setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
-            request.getSession().setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
+        // Xác thực khoảng ngày
+        String dateError = ValidationUtils.validateDateFilter(startDate, endDate);
+        if (dateError != null) {
+            request.setAttribute("errorMessage", dateError);
+            request.getSession().setAttribute("errorMessage", dateError);
             startDate = null;
             endDate = null;
         }

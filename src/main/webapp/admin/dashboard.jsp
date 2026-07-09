@@ -1,31 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<%
-    if (application.getAttribute("settings") == null) {
-        com.bakeryzone.dao.SettingDAO settingDAO = new com.bakeryzone.dao.SettingDAO();
-        java.util.Map<String, Object> dbSettings = settingDAO.getSettings();
-        if (dbSettings == null || dbSettings.isEmpty()) {
-            dbSettings = new java.util.HashMap<>();
-            dbSettings.put("bakeryName", "BakeryZone");
-            dbSettings.put("hotline", "0901234567");
-            dbSettings.put("email", "support@bakeryzone.vn");
-            dbSettings.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
-            dbSettings.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
-            dbSettings.put("banner1", "assets/images/banner1.jpg");
-            dbSettings.put("banner2", "assets/images/banner2.jpg");
-            dbSettings.put("banner3", "assets/images/banner3.jpg");
-            dbSettings.put("banner4", "assets/images/hero/hero-4.jpg");
-            dbSettings.put("darkMode", false);
-        } else {
-            String currentHotline = (String) dbSettings.get("hotline");
-            if (currentHotline != null) {
-                dbSettings.put("hotline", currentHotline.replaceAll("\\s+", ""));
-            }
-        }
-        application.setAttribute("settings", dbSettings);
-    }
-%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,14 +27,6 @@
 
         <!-- Dashboard Content -->
         <div class="content">
-            <c:if test="${not empty errorMessage}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin: 20px 0; border-radius: 12px; font-weight: 500;">
-                    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i>
-                    <c:out value="${errorMessage}" />
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <c:remove var="errorMessage" scope="session" />
-            </c:if>
             
             <!-- Page Title Area -->
             <div class="page-header dashboard-page-header">
@@ -71,7 +38,7 @@
 
             <!-- Stats Grid -->
             <div class="stats-grid">
-                <div class="stat-card stat-revenue">
+                <a href="${pageContext.request.contextPath}/admin/orders?action=list&status=Completed" class="stat-card stat-revenue" style="text-decoration: none; color: inherit;">
                     <div class="stat-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
                     <div class="stat-info">
                         <div class="stat-label">
@@ -82,9 +49,9 @@
                             <fmt:formatNumber value="${totalRevenue}" type="number" pattern="#,##0"/>đ
                         </div>
                     </div>
-                </div>
+                </a>
 
-                <div class="stat-card stat-orders">
+                <a href="${pageContext.request.contextPath}/admin/orders?action=list" class="stat-card stat-orders" style="text-decoration: none; color: inherit;">
                     <div class="stat-icon"><i class="fa-solid fa-cart-shopping"></i></div>
                     <div class="stat-info">
                         <div class="stat-label">
@@ -93,9 +60,9 @@
                         </div>
                         <div class="stat-value">${totalOrders}</div>
                     </div>
-                </div>
+                </a>
 
-                <a href="${pageContext.request.contextPath}/customer" class="stat-card stat-customers">
+                <a href="${pageContext.request.contextPath}/admin/customer?action=list" class="stat-card stat-customers" style="text-decoration: none; color: inherit;">
                     <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
                     <div class="stat-info">
                         <div class="stat-label">
@@ -106,7 +73,7 @@
                     </div>
                 </a>
 
-                <a href="${pageContext.request.contextPath}/admin/product?action=list" class="stat-card stat-products">
+                <a href="${pageContext.request.contextPath}/admin/product?action=list" class="stat-card stat-products" style="text-decoration: none; color: inherit;">
                     <div class="stat-icon"><i class="fa-solid fa-cake-candles"></i></div>
                     <div class="stat-info">
                         <div class="stat-label">
@@ -297,17 +264,7 @@
                 </div>
             </div>
 
-            <!-- Footer at Bottom -->
-            <footer class="text-center py-4 mt-auto border-top" style="font-size: 13px; color: var(--cz-text-muted); background-color: #ffffff; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.01);">
-                <div class="container d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <span>&copy; 2024 Crumb & Craft. Sourdough with Soul.</span>
-                    <div class="d-flex gap-3">
-                        <a href="#" style="color: inherit; text-decoration: none;">Điều khoản</a>
-                        <a href="#" style="color: inherit; text-decoration: none;">Bảo mật</a>
-                        <a href="#" style="color: inherit; text-decoration: none;">Liên hệ hỗ trợ</a>
-                    </div>
-                </div>
-            </footer>
+
 
         </div>
     </div>
@@ -646,6 +603,7 @@
             }
             return dateStr;
         }
+
     </script>
 </body>
 </html>

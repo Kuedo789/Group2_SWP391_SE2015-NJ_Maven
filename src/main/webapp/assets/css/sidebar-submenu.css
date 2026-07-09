@@ -246,3 +246,15 @@ html.dark-theme .sidebar .menu-item.active {
 html.dark-theme .sidebar .menu-item.active a {
     color: #b5cfa3 !important;
 }
+
+/* Custom breadcrumbs style for admin: same color, no underline */
+.breadcrumb a, .breadcrumbs a, .breadcrumb strong, .breadcrumbs span, .breadcrumbs li,
+html.dark-theme .breadcrumbs a, html.dark-theme .breadcrumbs span, html.dark-theme .breadcrumb strong {
+    color: var(--text-muted, #756d64) !important;
+    text-decoration: none !important;
+    font-weight: normal !important;
+}
+.breadcrumb a:hover, .breadcrumbs a:hover, html.dark-theme .breadcrumbs a:hover {
+    color: var(--primary-green, #315038) !important;
+    text-decoration: none !important;
+}

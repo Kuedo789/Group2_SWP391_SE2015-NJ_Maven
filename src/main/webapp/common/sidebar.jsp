@@ -25,7 +25,7 @@
     request.setAttribute("LIVE_PERMISSIONS", liveAllowedUrls);
 %>
 
-<link href="${pageContext.request.contextPath}/assets/css/sidebar-submenu.css" rel="stylesheet">
+<link href="${pageContext.request.contextPath}/assets/css/sidebar-submenu.css?v=2.0" rel="stylesheet">
 <div class="sidebar">
     <div class="sidebar-brand">
         <i class="fa-solid fa-cake-candles"></i>
