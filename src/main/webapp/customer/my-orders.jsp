@@ -363,9 +363,14 @@
                     %>
                 </div>
                 <div class="order-card-footer">
-                    <div class="order-total">
-                        <span>Tổng thanh toán:</span>
-                        <strong><%= formattedTotal %></strong>
+                    <div class="order-total" style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
+                        <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">
+                            Phí vận chuyển: <%= currencyFormat.format(order.getShippingFee() != null ? order.getShippingFee().doubleValue() : 0) %>đ
+                        </div>
+                        <div style="display: flex; align-items: baseline; gap: 8px;">
+                            <span>Tổng thanh toán:</span>
+                            <strong><%= formattedTotal %></strong>
+                        </div>
                     </div>
                     <%
                         StringBuilder jsonBuilder = new StringBuilder();
@@ -399,7 +404,7 @@
                         String escapedJson = jsonBuilder.toString().replace("'", "\\'");
                     %>
                     <div class="order-actions">
-                        <button class="btn btn-outline" style="min-width: 44px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center;" onclick="reorderOrder(<%= escapedJson %>)" title="Thêm vào giỏ hàng">
+                        <button class="btn btn-outline" style="min-width: 44px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center;" onclick="addOrderToCart(<%= escapedJson %>)" title="Thêm vào giỏ hàng">
                             <span class="material-symbols-outlined" style="font-size: 20px;">add_shopping_cart</span>
                         </button>
                         
@@ -552,6 +557,90 @@
                 }
             }
         });
+
+        function addOrderToCart(items) {
+            if (!Array.isArray(items) || items.length === 0) return;
+            
+            let cart = [];
+            try {
+                const cartStr = localStorage.getItem("cart");
+                if (cartStr) cart = JSON.parse(cartStr);
+            } catch (e) {}
+            if (!Array.isArray(cart)) cart = [];
+
+            items.forEach(item => {
+                let cartItemId = "";
+                let templateId = item.templateId;
+                
+                if (templateId && templateId.trim() !== "") {
+                    let variantIndex = "0";
+                    if (item.variationName.includes("20cm")) {
+                        variantIndex = "1";
+                    } else if (item.variationName.includes("24cm")) {
+                        variantIndex = "2";
+                    }
+                    cartItemId = templateId.trim() + "_" + variantIndex;
+                } else {
+                    cartItemId = item.accessoryId || "ACC_UNKNOWN";
+                    templateId = "";
+                }
+                
+                let finalName = item.name;
+                let finalDesc = "Bánh ngọt thủ công cao cấp";
+                if (templateId && templateId.trim() !== "") {
+                    if (item.variationName.includes("20cm")) {
+                        if (!finalName.includes("20cm")) finalName += " (Size 20cm)";
+                        finalDesc = "Kích thước vừa vặn cho các bữa tiệc nhỏ";
+                    } else if (item.variationName.includes("24cm")) {
+                        if (!finalName.includes("24cm")) finalName += " (Size 24cm)";
+                        finalDesc = "Phù hợp tiệc sinh nhật đông người";
+                    } else {
+                        if (!finalName.includes("16cm")) finalName += " (Size 16cm)";
+                        finalDesc = "Size bánh dành cho 4 - 6 người dùng.";
+                    }
+                } else {
+                    finalDesc = "Phụ kiện đi kèm";
+                }
+                
+                let resolvedImg = item.image;
+                const ctx = '<%= request.getContextPath() %>';
+                if (ctx && resolvedImg.startsWith(ctx)) {
+                    resolvedImg = resolvedImg.substring(ctx.length);
+                }
+                if (resolvedImg.startsWith("/")) {
+                    resolvedImg = resolvedImg.substring(1);
+                }
+
+                const cartItem = {
+                    id: cartItemId,
+                    templateId: templateId,
+                    name: finalName,
+                    desc: finalDesc,
+                    price: item.price,
+                    qty: item.qty,
+                    image: resolvedImg
+                };
+
+                const existing = cart.find(x => x && x.id === cartItem.id);
+                if (existing) {
+                    existing.qty = (parseInt(existing.qty) || 0) + parseInt(cartItem.qty);
+                } else {
+                    cart.push(cartItem);
+                }
+            });
+            
+            localStorage.setItem("cart", JSON.stringify(cart));
+            window.dispatchEvent(new Event("storage"));
+            
+            const countEl = document.getElementById("navCartCount");
+            if (countEl) {
+                let totalQty = 0;
+                cart.forEach(c => { if (c) totalQty += (parseInt(c.qty) || 1); });
+                countEl.innerText = totalQty;
+            }
+            
+            alert("Đã thêm các sản phẩm từ đơn hàng này vào giỏ hàng thành công!");
+        }
 
         function reorderOrder(items) {
             if (!Array.isArray(items) || items.length === 0) return;

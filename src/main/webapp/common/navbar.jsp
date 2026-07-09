@@ -34,11 +34,11 @@
 
         <!-- Logo -->
         <a href="<%= contextPath %>/home" class="logo">
-            BakeryZone
+            ${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}
         </a>
 
         <!-- Menu chính -->
-        <div class="nav-menu">
+        <div class="nav-menu" style="gap: 35px;">
             <a href="<%= request.getContextPath() %>/home">Trang Chủ</a>
             <a href="<%= request.getContextPath() %>/products">Menu bánh</a>
             <a href="<%= request.getContextPath() %>/custom-cake">Thiết kế bánh</a>
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Main Right-Side Wrapper: Enforces horizontal alignment and prevents item collapse -->
-        <div class="navbar-right-container" style="display: flex; align-items: center; gap: 24px; margin-left: auto;">
+        <div class="navbar-right-container" style="display: flex; align-items: center; gap: 24px;">
 
             <!-- 1. Search Box Container -->
             <div class="search-box-wrapper" style="display: flex; align-items: center;">
@@ -79,13 +79,10 @@
                 <!-- Avatar on the left, username on the right, dropdown menu below -->
                 <div class="user-dropdown">
                     <button type="button" class="user-dropdown-btn" id="userDropdownBtn" title="Tài khoản"
-                            style="display: flex; align-items: center; gap: 8px; border: none; background: transparent; cursor: pointer; padding: 0; white-space: nowrap;">
+                            style="display: flex; align-items: center; border: none; background: transparent; cursor: pointer; padding: 0;">
                         <div class="avatar-container" style="display: flex; align-items: center; line-height: 1;">
                             <span class="material-symbols-outlined" style="font-size: 28px; color: var(--text-dark, #333);">account_circle</span>
                         </div>
-                        <span class="navbar-username" style="font-size: 14px; font-weight: 500; color: var(--text-dark, #333); white-space: nowrap; display: inline-block;">
-                            <%= currentUser.getFullName() %>
-                        </span>
                     </button>
 
                     <div class="user-dropdown-menu" id="userDropdownMenu">

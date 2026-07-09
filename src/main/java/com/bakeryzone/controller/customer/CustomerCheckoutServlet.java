@@ -246,8 +246,19 @@ if (order.getItems().isEmpty()) {
                 deposit = totalCost; // Full upfront bank transfer
                 remainingCod = BigDecimal.ZERO;
             } else {
-                // Default COD: Calculate a standard 30% upfront commitment deposit
-                deposit = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
+                // Default COD: Calculate upfront commitment deposit dynamically from settings
+                double depositPercent = 30.0; // Default fallback
+                try {
+                    @SuppressWarnings("unchecked")
+                    java.util.Map<String, Object> sysSettings = (java.util.Map<String, Object>) getServletContext().getAttribute("settings");
+                    if (sysSettings != null && sysSettings.get("depositPercent") != null) {
+                        depositPercent = Double.parseDouble(sysSettings.get("depositPercent").toString());
+                    }
+                } catch (Exception e) {
+                    System.err.println("[WARN] Failed to read depositPercent from settings: " + e.getMessage());
+                }
+                double depositRate = depositPercent / 100.0;
+                deposit = totalCost.multiply(BigDecimal.valueOf(depositRate)).setScale(0, java.math.RoundingMode.HALF_UP);
                 remainingCod = totalCost.subtract(deposit);
             }
 
