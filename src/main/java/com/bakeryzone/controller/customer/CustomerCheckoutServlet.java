@@ -2,6 +2,7 @@ package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.DeliveryAddressDAO;
 import com.bakeryzone.dao.OrderDAO;
+import com.bakeryzone.dao.VoucherDAO;
 import com.bakeryzone.model.DeliveryAddress;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.model.OrderItem;
@@ -29,6 +30,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
 
     private final DeliveryAddressDAO addressDAO = new DeliveryAddressDAO();
     private final OrderDAO orderDAO = new OrderDAO();
+    private final VoucherDAO voucherDAO = new VoucherDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -61,6 +63,13 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     .orElse(addressList.get(0)));
         }
         request.setAttribute("selectedAddress", selectedAddress);
+
+        // Fetch voucher discount from session
+        BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
+        String appliedVoucherCode = (String) session.getAttribute("appliedVoucherCode");
+        
+        request.setAttribute("checkoutDiscount", appliedDiscount != null ? appliedDiscount : BigDecimal.ZERO);
+        request.setAttribute("checkoutVoucherCode", appliedVoucherCode);
 
         // Forward to the checkout page
         request.getRequestDispatcher("/customer/checkout.jsp").forward(request, response);
@@ -201,28 +210,45 @@ public class CustomerCheckoutServlet extends HttpServlet {
                 }
             }
 
-            if (order.getItems().isEmpty()) {
+if (order.getItems().isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/checkout?error=empty_cart");
                 return;
             }
 
+            // 1. Resolve Shipping Fee (Parse from request, fallback to 25k default if missing)
             String shippingFeeStr = request.getParameter("shippingFee");
-            BigDecimal shippingFee = BigDecimal.ZERO;
+            BigDecimal shippingFee = BigDecimal.valueOf(25000); // Default fallback
             if (shippingFeeStr != null && !shippingFeeStr.trim().isEmpty()) {
                 try {
                     shippingFee = new BigDecimal(shippingFeeStr.trim());
                 } catch (NumberFormatException e) {
-                    shippingFee = BigDecimal.ZERO;
+                    // Keep default 25000 if parsing fails
                 }
             }
-            BigDecimal totalCost   = productTotal.add(shippingFee);
 
+            // 2. Extract and Apply Voucher Discount
+            BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
+            if (appliedDiscount == null) {
+                appliedDiscount = BigDecimal.ZERO;
+            }
+            
+            // 3. Compute Final Total Cost
+            BigDecimal totalCost = productTotal.add(shippingFee).subtract(appliedDiscount);
+            if (totalCost.compareTo(BigDecimal.ZERO) < 0) {
+                totalCost = BigDecimal.ZERO;
+            }
+            
+            // 4. Determine Deposit and COD Splits based on Payment Method
             BigDecimal deposit = BigDecimal.ZERO;
             BigDecimal remainingCod = totalCost;
 
             if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
-                deposit = totalCost; // Khách chuyển khoản toàn bộ
+                deposit = totalCost; // Full upfront bank transfer
                 remainingCod = BigDecimal.ZERO;
+            } else {
+                // Default COD: Calculate a standard 30% upfront commitment deposit
+                deposit = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
+                remainingCod = totalCost.subtract(deposit);
             }
 
             order.setTotalCost(totalCost);
@@ -244,17 +270,23 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     + " | success=" + success + " | total=" + totalCost);
 
             if (success) {
-                // Redirect based on payment method
+                // Mark voucher as used if applicable and clear session attributes
+                Integer appliedVoucherId = (Integer) session.getAttribute("appliedVoucherId");
+                if (appliedVoucherId != null) {
+                    voucherDAO.markVoucherUsed(appliedVoucherId, currentUser.getUserId());
+                    session.removeAttribute("appliedVoucherId");
+                    session.removeAttribute("appliedVoucherCode");
+                    session.removeAttribute("appliedDiscount");
+                }
+
+                // Redirect target evaluation based on payment configuration
                 if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
-                    // Redirect to Bank Transfer page with order info
                     String totalEncoded = java.net.URLEncoder.encode(totalCost.toPlainString(), "UTF-8");
                     response.sendRedirect(request.getContextPath() + "/bank-transfer?orderNo=" + orderNo + "&total=" + totalEncoded);
                 } else {
-                    // COD / default: Redirect to Order Success page
                     response.sendRedirect(request.getContextPath() + "/order-success?orderNo=" + orderNo);
                 }
             } else {
-                // Pass error back to checkout page
                 response.sendRedirect(request.getContextPath() + "/checkout?error=save_failed");
             }
 

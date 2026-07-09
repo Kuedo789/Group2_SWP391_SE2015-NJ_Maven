@@ -244,6 +244,16 @@
                             <span id="shippingFeeSum">0đ</span>
                         </div>
 
+                        <c:if test="${requestScope.checkoutDiscount > 0}">
+                            <div class="summary-row" style="color: #d9534f;">
+                                <div class="summary-row-label">
+                                    <span>Giảm giá Voucher</span>
+                                    <span class="summary-sub-label">${requestScope.checkoutVoucherCode}</span>
+                                </div>
+                                <span>- <fmt:formatNumber value="${requestScope.checkoutDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
+                            </div>
+                        </c:if>
+
                         <div class="summary-row total">
                             <span>Tổng cộng</span>
                             <div class="total-price-wrap">
@@ -302,6 +312,7 @@
         let selectedAddressId = null;
         let selectedTimeSlot = ""; // no default selected
         let currentShippingFee = 0;
+        const checkoutDiscount = parseFloat("${requestScope.checkoutDiscount}") || 0;
 
         document.addEventListener("DOMContentLoaded", function () {
 
@@ -512,13 +523,34 @@
                 const imgUrl = (item.image && typeof item.image === "string" && item.image.startsWith("http")) ? item.image : "${pageContext.request.contextPath}/" + (item.image || "assets/images/products/basic.png");
                 const priceFormatted = (parseFloat(item.price) || 0).toLocaleString("vi-VN") + "đ";
                 
+                let cleanName = item.name || '';
+                let cleanDesc = item.desc || 'Bánh ngọt thủ công cao cấp';
+                
+                if (cleanName.startsWith("SIZE_")) {
+                    const parts = cleanName.split("_");
+                    const size = parts[1] || "16";
+                    const layers = parts[3] || "1";
+                    cleanName = `Bánh Kem Tùy Chỉnh (${size}cm)`;
+                    
+                    let flavorStr = [];
+                    for(let i = 4; i < parts.length; i++) {
+                        let f = parts[i];
+                        if(f === 'VANILLA') f = 'Vani';
+                        else if (f === 'CHOCO') f = 'Chocolate';
+                        else if (f === 'STRAW') f = 'Dâu';
+                        else if (f === 'MATCHA') f = 'Trà xanh';
+                        flavorStr.push(f);
+                    }
+                    cleanDesc = `\${layers} Tầng: \${flavorStr.join(', ')}`;
+                }
+
                 const itemHtml = `
                     <div class="product-item-row" id="cart-item-\${item.id}">
-                        <div class="product-item-left">
-                            <img src="\${imgUrl}" class="product-img" alt="\${item.name || ''}" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=120'">
-                            <div class="product-details-text">
-                                <span class="product-title">\${item.name || ''}</span>
-                                <span class="product-desc">\${item.desc || 'Bánh ngọt thủ công cao cấp'}</span>
+                        <div class="product-item-left" style="min-width: 0; flex: 1; margin-right: 15px;">
+                            <img src="\${imgUrl}" class="product-img" alt="\${cleanName}" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=120'">
+                            <div class="product-details-text" style="min-width: 0; overflow: hidden; display: flex; flex-direction: column;">
+                                <span class="product-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">\${cleanName}</span>
+                                <span class="product-desc" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">\${cleanDesc}</span>
                             </div>
                         </div>
                         <div class="product-item-right-actions">
@@ -649,7 +681,11 @@
                 ? currentCart.reduce((sum, item) => sum + (parseFloat(item?.price || 0) * parseInt(item?.qty || 1)), 0) 
                 : 0;
 
-            const finalTotal = productTotal > 0 ? (productTotal + currentShippingFee) : 0;
+            let finalTotal = productTotal > 0 ? (productTotal + currentShippingFee) : 0;
+            if (finalTotal > 0) {
+                finalTotal = finalTotal - checkoutDiscount;
+                if (finalTotal < 0) finalTotal = 0;
+            }
 
             const subtotalEl = document.getElementById("productTotalSum");
             const shippingEl = document.getElementById("shippingFeeSum");

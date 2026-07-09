@@ -390,11 +390,13 @@ public class VoucherDAO {
         v.setMaxDiscountAmount(rs.getBigDecimal("MaxDiscountAmount"));
         v.setMinOrderValue(rs.getBigDecimal("MinOrderValue"));
 
-        // Convert java.sql.Date safely
-        Date startDate = rs.getDate("StartDate");
-        Date endDate   = rs.getDate("EndDate");
-        v.setStartDate(startDate);
-        v.setEndDate(endDate);
+        // The schema defines StartDate/EndDate as DATETIME (not DATE).
+        // rs.getDate() on a DATETIME column can return null in MySQL JDBC 8 strict mode.
+        // Use getTimestamp() and convert to java.sql.Date via the millisecond value.
+        java.sql.Timestamp startTs = rs.getTimestamp("StartDate");
+        java.sql.Timestamp endTs   = rs.getTimestamp("EndDate");
+        v.setStartDate(startTs != null ? new Date(startTs.getTime()) : null);
+        v.setEndDate(endTs   != null ? new Date(endTs.getTime())   : null);
 
         v.setActive(rs.getBoolean("IsActive"));
         v.setUsageLimit(rs.getInt("UsageLimit"));
@@ -420,6 +422,71 @@ public class VoucherDAO {
         return v;
     }
 
+    /**
+     * Looks up a specific voucher by its code, but ONLY if the user owns it
+     * (in UserVoucher) and it hasn't been used yet.
+     */
+    public Voucher getVoucherByCodeAndUser(String voucherCode, String userId) {
+        String sql =
+            "SELECT v.VoucherID, v.VoucherCode, v.Title, v.DiscountType, v.DiscountValue, "
+            + "       v.MaxDiscountAmount, v.MinOrderValue, v.StartDate, v.EndDate, "
+            + "       v.IsActive, v.UsageLimit, v.RequiredTierID "
+            + "FROM UserVoucher uv "
+            + "JOIN Voucher v ON uv.VoucherID = v.VoucherID "
+            + "WHERE v.VoucherCode = ? "
+            + "  AND uv.UserID = ? "
+            + "  AND uv.IsUsed = 0 "
+            + "  AND v.IsActive = 1 "
+            + "  AND CURDATE() BETWEEN v.StartDate AND v.EndDate";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return null;
+
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, voucherCode);
+            ps.setString(2, userId);
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return mapVoucher(rs);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+
+        return null;
+    }
+
+    /**
+     * Marks a user's private voucher as used after a successful checkout.
+     */
+    public void markVoucherUsed(int voucherId, String userId) {
+        String sql = "UPDATE UserVoucher SET IsUsed = 1 WHERE VoucherID = ? AND UserID = ?";
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return;
+
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, voucherId);
+            ps.setString(2, userId);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, null);
+        }
+    }
+
     private void close(Connection conn, PreparedStatement ps, ResultSet rs) {
         try {
             if (rs != null)   rs.close();
@@ -427,6 +494,278 @@ public class VoucherDAO {
             if (conn != null) conn.close();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    // =========================================================================
+    // ADMIN MANAGEMENT METHODS
+    // =========================================================================
+
+    /**
+     * Returns aggregate statistics for the admin dashboard metric cards.
+     * Executes a single round-trip query using conditional aggregation.
+     *
+     * @return int[3]:  [0] = total count, [1] = active count, [2] = expired/inactive count
+     */
+    public int[] getVoucherStats() {
+        int[] stats = {0, 0, 0};
+
+        String sql = "SELECT "
+            + "  COUNT(*) AS TotalCount, "
+            + "  COALESCE(SUM(CASE WHEN IsActive = 1 AND EndDate >= CURDATE() THEN 1 ELSE 0 END), 0) AS ActiveCount, "
+            + "  COALESCE(SUM(CASE WHEN IsActive = 0 OR EndDate < CURDATE() THEN 1 ELSE 0 END), 0) AS ExpiredCount "
+            + "FROM voucher";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return stats;
+
+            ps = conn.prepareStatement(sql);
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                stats[0] = rs.getInt("TotalCount");
+                stats[1] = rs.getInt("ActiveCount");
+                stats[2] = rs.getInt("ExpiredCount");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+
+        return stats;
+    }
+
+    /**
+     * Returns the total number of vouchers matching the given filters.
+     * Used by the servlet to calculate totalPages for the pagination widget.
+     *
+     * @param searchKeyword  text to match against VoucherCode or Title (null = no filter)
+     * @param statusFilter   "ACTIVE", "EXPIRED", "INACTIVE", or null/"all" for all records
+     * @return count of matching rows
+     */
+    public int getVoucherCount(String searchKeyword, String statusFilter) {
+        boolean hasSearch = isNonBlank(searchKeyword) && !"all".equalsIgnoreCase(searchKeyword.trim());
+        boolean hasStatus = isNonBlank(statusFilter)  && !"all".equalsIgnoreCase(statusFilter.trim());
+
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM voucher WHERE 1=1 ");
+        appendStatusClause(sql, statusFilter, hasStatus);
+        if (hasSearch) sql.append("AND (VoucherCode LIKE ? OR Title LIKE ?) ");
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        int count = 0;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return 0;
+
+            ps = conn.prepareStatement(sql.toString());
+            int idx = 1;
+            if (hasSearch) {
+                String p = "%" + searchKeyword.trim() + "%";
+                ps.setString(idx++, p);
+                ps.setString(idx++, p);
+            }
+            rs = ps.executeQuery();
+            if (rs.next()) count = rs.getInt(1);
+
+        } catch (Exception e) {
+            System.err.println("[VoucherDAO.getVoucherCount] " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return count;
+    }
+
+    /**
+     * Fetches one page of vouchers for the admin management table.
+     *
+     * @param searchKeyword  text to match against VoucherCode or Title (null = no filter)
+     * @param statusFilter   "ACTIVE", "EXPIRED", "INACTIVE", or null/"all" for all records
+     * @param offset         0-based row offset (= (page-1) * limit)
+     * @param limit          page size (e.g. 6)
+     * @return list of Voucher objects for the requested page (may be empty, never null)
+     */
+    public List<Voucher> getAllVouchersPaged(String searchKeyword, String statusFilter,
+                                            int offset, int limit) {
+        List<Voucher> list = new ArrayList<>();
+
+        boolean hasSearch = isNonBlank(searchKeyword) && !"all".equalsIgnoreCase(searchKeyword.trim());
+        boolean hasStatus = isNonBlank(statusFilter)  && !"all".equalsIgnoreCase(statusFilter.trim());
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT VoucherID, VoucherCode, Title, DiscountType, DiscountValue, ")
+           .append("       MaxDiscountAmount, MinOrderValue, StartDate, EndDate, ")
+           .append("       IsActive, UsageLimit, RequiredTierID ")
+           .append("FROM voucher WHERE 1=1 ");
+        appendStatusClause(sql, statusFilter, hasStatus);
+        if (hasSearch) sql.append("AND (VoucherCode LIKE ? OR Title LIKE ?) ");
+        sql.append("ORDER BY VoucherID DESC LIMIT ? OFFSET ?");
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return list;
+
+            ps = conn.prepareStatement(sql.toString());
+            int idx = 1;
+            if (hasSearch) {
+                String p = "%" + searchKeyword.trim() + "%";
+                ps.setString(idx++, p);
+                ps.setString(idx++, p);
+            }
+            ps.setInt(idx++, limit);
+            ps.setInt(idx,   offset);
+
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                list.add(mapVoucher(rs));
+            }
+
+        } catch (Exception e) {
+            System.err.println("[VoucherDAO.getAllVouchersPaged] Exception – returning empty list. Cause: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+
+        return list;
+    }
+
+    // -----------------------------------------------------------------------
+    // Shared SQL helpers
+    // -----------------------------------------------------------------------
+
+    /** Appends the status-based WHERE fragment to sql when hasStatus is true. */
+    private void appendStatusClause(StringBuilder sql, String statusFilter, boolean hasStatus) {
+        if (!hasStatus) return;
+        if ("ACTIVE".equalsIgnoreCase(statusFilter)) {
+            sql.append("AND IsActive = 1 AND EndDate >= CURDATE() ");
+        } else if ("EXPIRED".equalsIgnoreCase(statusFilter)) {
+            sql.append("AND (IsActive = 0 OR EndDate < CURDATE()) ");
+        } else if ("INACTIVE".equalsIgnoreCase(statusFilter)) {
+            sql.append("AND IsActive = 0 ");
+        }
+    }
+
+    /** Returns true when s is non-null and non-blank. */
+    private boolean isNonBlank(String s) {
+        return s != null && !s.trim().isEmpty();
+    }
+
+    /**
+     * Inserts a new voucher row from the admin add form.
+     *
+     * @param v  a Voucher object populated from the POST form
+     * @return true on success
+     */
+    public boolean addVoucher(Voucher v) {
+        String sql = "INSERT INTO voucher "
+            + "(VoucherCode, Title, DiscountType, DiscountValue, MaxDiscountAmount, "
+            + " MinOrderValue, StartDate, EndDate, IsActive, UsageLimit) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, v.getVoucherCode());
+            ps.setString(2, v.getTitle());
+            ps.setString(3, v.getDiscountType());
+            ps.setBigDecimal(4, v.getDiscountValue());
+            ps.setBigDecimal(5, v.getMaxDiscountAmount());
+            ps.setBigDecimal(6, v.getMinOrderValue() != null ? v.getMinOrderValue() : java.math.BigDecimal.ZERO);
+            ps.setDate(7, v.getStartDate());
+            ps.setDate(8, v.getEndDate());
+            ps.setBoolean(9, v.isActive());
+            if (v.getUsageLimit() > 0) {
+                ps.setInt(10, v.getUsageLimit());
+            } else {
+                ps.setNull(10, java.sql.Types.INTEGER);
+            }
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            close(conn, ps, null);
+        }
+    }
+
+    /**
+     * Hard-deletes a voucher by its primary key.
+     * Note: will fail with a FK constraint if UserVoucher rows reference this ID.
+     * Consider using updateVoucherStatus(id, false) for safe archival instead.
+     *
+     * @param voucherId  the PK of the voucher to remove
+     * @return true on success
+     */
+    public boolean deleteVoucher(int voucherId) {
+        String sql = "DELETE FROM voucher WHERE VoucherID = ?";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, voucherId);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            close(conn, ps, null);
+        }
+    }
+
+    /**
+     * Toggles the IsActive flag of a voucher (soft-enable / soft-disable).
+     *
+     * @param voucherId  the PK
+     * @param active     true = activate, false = deactivate
+     * @return true on success
+     */
+    public boolean updateVoucherStatus(int voucherId, boolean active) {
+        String sql = "UPDATE voucher SET IsActive = ? WHERE VoucherID = ?";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+
+            ps = conn.prepareStatement(sql);
+            ps.setBoolean(1, active);
+            ps.setInt(2, voucherId);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            close(conn, ps, null);
         }
     }
 }
