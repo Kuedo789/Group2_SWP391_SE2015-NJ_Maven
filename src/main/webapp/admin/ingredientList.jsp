@@ -127,12 +127,14 @@
                                                   <img src="${resolvedUrl}" alt="${i.ingredientName}" style="max-height: 40px; max-width: 60px; border-radius: 4px; border: 1px solid #ddd; object-fit: cover;">
                                               </c:if>
                                               <c:if test="${empty i.imageUrl}">
-                                                  <span class="text-muted" style="font-size: 13.5px;">Không có ảnh</span>
+                                                  <div style="width: 50px; height: 40px; border-radius: 6px; border: 1px dashed #ccc; background-color: #fafafa; display: inline-flex; align-items: center; justify-content: center;" title="Không có ảnh">
+                                                      <i class="fa-regular fa-image text-muted" style="font-size: 16px;"></i>
+                                                  </div>
                                               </c:if>
                                           </td>
                                           <td>
                                               <span style="font-size: 14px; font-weight: 600; color: var(--cz-primary);">
-                                                  <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0.00"/> đ / ${i.unitName}
+                                                  <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0"/> đ / ${i.unitName}
                                               </span>
                                           </td>
                                         <td>
