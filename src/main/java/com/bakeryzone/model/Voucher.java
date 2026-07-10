@@ -155,7 +155,7 @@ public class Voucher {
      * "Giảm 20%" or "Giảm 50.000 ₫"
      */
     public String getDiscountLabel() {
-        if ("PERCENT".equalsIgnoreCase(discountType)) {
+        if ("PERCENT".equalsIgnoreCase(discountType) && discountValue != null) {
             return "Giảm " + discountValue.stripTrailingZeros().toPlainString() + "%";
         }
         if ("FIXED".equalsIgnoreCase(discountType) && discountValue != null) {
