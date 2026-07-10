@@ -26,31 +26,6 @@
                 <h1 style="font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 700; color: #2c3e2b; margin: 0;">Cài đặt hệ thống</h1>
             </div>
 
-            <c:if test="${not empty sessionScope.errorMessage}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 12px; font-weight: 500; margin-bottom: 25px;">
-                    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i>
-                    <c:out value="${sessionScope.errorMessage}" />
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <c:remove var="errorMessage" scope="session" />
-            </c:if>
-            <c:if test="${not empty requestScope.errorMessage}">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 12px; font-weight: 500; margin-bottom: 25px;">
-                    <i class="fa-solid fa-triangle-exclamation" style="margin-right: 8px;"></i>
-                    <c:out value="${requestScope.errorMessage}" />
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </c:if>
-
-            <c:if test="${not empty successMessage}">
-                <div class="alert alert-success alert-dismissible fade show" role="alert" style="border-radius: 12px; font-weight: 500; margin-bottom: 25px;">
-                    <i class="fa-solid fa-circle-check" style="margin-right: 8px;"></i>
-                    <c:out value="${successMessage}" />
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                <c:remove var="successMessage" scope="session" />
-            </c:if>
-
             <form action="${pageContext.request.contextPath}/admin/settings" method="POST" enctype="multipart/form-data">
                 
                 <!-- Cài đặt chung -->
@@ -89,7 +64,7 @@
                         <div class="form-row form-cols-3">
                             <div class="form-group">
                                 <label>Tỷ lệ đặt cọc bánh thiết kế (%)</label>
-                                <input type="number" name="depositPercent" value="${not empty settings.depositPercent ? settings.depositPercent : '50'}" class="settings-input" required min="0" max="100" />
+                                <input type="number" name="depositPercent" value="${not empty settings.depositPercent ? settings.depositPercent : '30'}" class="settings-input" required min="0" max="100" />
                             </div>
                             <div class="form-group">
                                 <label>Đơn giá ship/km</label>
@@ -281,8 +256,14 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group full-width">
-                                <label>Nội dung thanh thông báo (Announcement Bar)</label>
-                                <textarea name="announcement" class="settings-textarea" placeholder="Nhập nội dung khuyến mãi hoặc thông báo quan trọng...">${not empty settings.announcement ? settings.announcement : ''}</textarea>
+                                <label>Tiêu đề ảnh Banner trang chủ</label>
+                                <input type="text" name="heroTitle" value="${not empty settings.heroTitle ? settings.heroTitle : ''}" class="settings-input" placeholder="Bánh tươi mỗi ngày, ngọt lành từng khoảnh khắc" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label>Mô tả phụ ảnh Banner trang chủ</label>
+                                <textarea name="heroSubtitle" class="settings-textarea" placeholder="Khám phá những chiếc bánh ngọt, bánh sinh nhật và quà tặng được làm thủ công từ nguyên liệu tự nhiên...">${not empty settings.heroSubtitle ? settings.heroSubtitle : ''}</textarea>
                             </div>
                         </div>
                         <div class="form-row" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
@@ -297,8 +278,8 @@
 
                 <!-- Bottom Actions -->
                 <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 15px; margin-top: 30px; margin-bottom: 50px;">
-                    <button type="button" id="btnResetDefaults" class="btn-cancel" style="background-color: #fff0f0; color: #b73a3a; border-color: #f5c2c2;">Đặt về mặc định</button>
-                    <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn-cancel">Hủy bỏ</a>
+                    <button type="button" id="btnResetDefaults" class="btn-cancel" style="background-color: #f0f7f0; color: #2e5a2e; border: 1px solid #c2e5c2;">Đặt về mặc định</button>
+                    <a href="${pageContext.request.contextPath}/admin/dashboard" class="btn-cancel" style="background-color: #fff0f0; color: #b73a3a; border: 1px solid #f5c2c2; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">Hủy bỏ</a>
                     <button type="submit" class="btn-save">Lưu thay đổi</button>
                 </div>
             </form>
@@ -306,25 +287,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <script>
-        // ==============================
-        // 1. Toast thành công từ server
-        // ==============================
-        <c:if test="${not empty sessionScope.successMessage}">
-            Toastify({
-                text: "${sessionScope.successMessage}",
-                duration: 4000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "linear-gradient(to right, #3f5f36, #5c8350)",
-                stopOnFocus: true
-            }).showToast();
-            <c:remove var="successMessage" scope="session" />
-        </c:if>
-
         // ==============================
         // 2. Hiện/ẩn mật khẩu ứng dụng
         // ==============================
@@ -508,15 +472,7 @@
                 e.preventDefault();
                 const firstError = document.querySelector('.field-error-msg');
                 if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                Toastify({
-                    text: "⚠️ Vui lòng kiểm tra lại thông tin nhập. Có trường chưa hợp lệ!",
-                    duration: 4000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "linear-gradient(to right, #c0392b, #e74c3c)",
-                    stopOnFocus: true
-                }).showToast();
+                showFloatingAlert("⚠️ Vui lòng kiểm tra lại thông tin nhập. Có trường chưa hợp lệ!", 'error');
             }
         });
     </script>

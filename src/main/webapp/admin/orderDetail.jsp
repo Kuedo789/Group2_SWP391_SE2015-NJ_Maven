@@ -4,31 +4,6 @@
 <%@ page import="java.text.DecimalFormat" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<%
-    if (application.getAttribute("settings") == null) {
-        com.bakeryzone.dao.SettingDAO settingDAO = new com.bakeryzone.dao.SettingDAO();
-        java.util.Map<String, Object> dbSettings = settingDAO.getSettings();
-        if (dbSettings == null || dbSettings.isEmpty()) {
-            dbSettings = new java.util.HashMap<>();
-            dbSettings.put("bakeryName", "BakeryZone");
-            dbSettings.put("hotline", "0901234567");
-            dbSettings.put("email", "support@bakeryzone.vn");
-            dbSettings.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
-            dbSettings.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
-            dbSettings.put("banner1", "assets/images/banner1.jpg");
-            dbSettings.put("banner2", "assets/images/banner2.jpg");
-            dbSettings.put("banner3", "assets/images/banner3.jpg");
-            dbSettings.put("banner4", "assets/images/hero/hero-4.jpg");
-            dbSettings.put("darkMode", false);
-        } else {
-            String currentHotline = (String) dbSettings.get("hotline");
-            if (currentHotline != null) {
-                dbSettings.put("hotline", currentHotline.replaceAll("\\s+", ""));
-            }
-        }
-        application.setAttribute("settings", dbSettings);
-    }
-%>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -38,6 +13,42 @@
     </jsp:include>
     <!-- Order Specific Style Link -->
     <link href="${pageContext.request.contextPath}/assets/css/all/order.css" rel="stylesheet">
+    <style>
+        .page-title-area .status-badge {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 30px;
+            display: inline-block;
+            text-align: center;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+        .page-title-area .status-badge.status-pending {
+            background-color: #fef9c3;
+            color: #a16207;
+        }
+        .page-title-area .status-badge.status-confirmed {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .page-title-area .status-badge.status-processing {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+        }
+        .page-title-area .status-badge.status-delivering {
+            background-color: #ffedd5;
+            color: #9a3412;
+        }
+        .page-title-area .status-badge.status-completed {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .page-title-area .status-badge.status-cancelled {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
 </head>
 <body>
 
@@ -310,7 +321,42 @@
                         <div class="cost-row">
                             <span>Phí vận chuyển:</span>
                             <span class="font-mono">
-                                <fmt:formatNumber value="${order.shippingFee}" type="number" pattern="#,##0"/>đ
+                                <fmt:formatNumber value="${not empty order.shippingFee ? order.shippingFee : 0}" type="number" pattern="#,##0"/>đ
+                            </span>
+                        </div>
+                        <div class="cost-row">
+                            <span>Phương thức thanh toán:</span>
+                            <span style="font-weight: 500;">
+                                <c:choose>
+                                    <c:when test="${order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
+                                        Chuyển khoản
+                                    </c:when>
+                                    <c:otherwise>
+                                        COD (Nhận hàng)
+                                    </c:otherwise>
+                                </c:choose>
+                            </span>
+                        </div>
+                        <div class="cost-row">
+                            <span>
+                                <c:choose>
+                                    <c:when test="${order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
+                                        Tiền đặt cọc (0%):
+                                    </c:when>
+                                    <c:otherwise>
+                                        Tiền đặt cọc (${not empty settings.depositPercent ? settings.depositPercent : '30'}%):
+                                    </c:otherwise>
+                                </c:choose>
+                            </span>
+                            <span class="font-mono">
+                                <c:choose>
+                                    <c:when test="${order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
+                                        0đ
+                                    </c:when>
+                                    <c:otherwise>
+                                        <fmt:formatNumber value="${not empty order.depositAmount ? order.depositAmount : 0}" type="number" pattern="#,##0"/>đ
+                                    </c:otherwise>
+                                </c:choose>
                             </span>
                         </div>
                         <c:if test="${order.discountAmount > 0}">
@@ -334,60 +380,9 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Hiển thị thông báo Toastify đẹp mắt từ session (có fallback nếu offline/lỗi CDN)
-            <c:if test="${not empty sessionScope.successMessage}">
-                if (typeof Toastify === 'function') {
-                    Toastify({
-                        text: "${sessionScope.successMessage}",
-                        duration: 4000,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                        style: {
-                            background: "linear-gradient(to right, #00b09b, #96c93d)"
-                        },
-                        stopOnFocus: true
-                    }).showToast();
-                } else {
-                    // Fallback alert float box if Toastify fails to load
-                    let alertDiv = document.createElement('div');
-                    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; padding: 15px 25px; border-radius: 8px; background: linear-gradient(to right, #00b09b, #96c93d); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: 500; font-family: "Outfit", sans-serif; display: flex; align-items: center; gap: 10px; transition: opacity 0.5s ease;';
-                    alertDiv.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>${sessionScope.successMessage}</span>';
-                    document.body.appendChild(alertDiv);
-                    setTimeout(() => { alertDiv.style.opacity = '0'; setTimeout(() => alertDiv.remove(), 500); }, 3500);
-                }
-                <c:remove var="successMessage" scope="session" />
-            </c:if>
-
-            <c:if test="${not empty sessionScope.errorMessage}">
-                if (typeof Toastify === 'function') {
-                    Toastify({
-                        text: "${sessionScope.errorMessage}",
-                        duration: 4000,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                        style: {
-                            background: "linear-gradient(to right, #ff5f6d, #ffc371)"
-                        },
-                        stopOnFocus: true
-                    }).showToast();
-                } else {
-                    // Fallback alert float box if Toastify fails to load
-                    let alertDiv = document.createElement('div');
-                    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; padding: 15px 25px; border-radius: 8px; background: linear-gradient(to right, #ff5f6d, #ffc371); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: 500; font-family: "Outfit", sans-serif; display: flex; align-items: center; gap: 10px; transition: opacity 0.5s ease;';
-                    alertDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <span>${sessionScope.errorMessage}</span>';
-                    document.body.appendChild(alertDiv);
-                    setTimeout(() => { alertDiv.style.opacity = '0'; setTimeout(() => alertDiv.remove(), 500); }, 3500);
-                }
-                <c:remove var="errorMessage" scope="session" />
-            </c:if>
 
             const orderStatus = '${order.orderStatus}';
             const savedProof = localStorage.getItem('proof_of_delivery_' + '${order.orderNo}');

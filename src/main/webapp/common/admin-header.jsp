@@ -15,6 +15,8 @@
             dbSettings.put("banner2", "assets/images/banner2.jpg");
             dbSettings.put("banner3", "assets/images/banner3.jpg");
             dbSettings.put("banner4", "assets/images/hero/hero-4.jpg");
+            dbSettings.put("heroTitle", "Bánh tươi mỗi ngày, ngọt lành từng khoảnh khắc");
+            dbSettings.put("heroSubtitle", "Khám phá những chiếc bánh ngọt, bánh sinh nhật và quà tặng được làm thủ công từ nguyên liệu tự nhiên.");
             dbSettings.put("darkMode", false);
         } else {
             String currentHotline = (String) dbSettings.get("hotline");
@@ -52,7 +54,7 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/v4-shims.min.css" rel="stylesheet">
 
 <!-- Toastify CSS -->
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.css">
 
 <!-- Global Admin CSS -->
 <link href="${pageContext.request.contextPath}/assets/css/all/admin-global.css?v=1.5" rel="stylesheet">

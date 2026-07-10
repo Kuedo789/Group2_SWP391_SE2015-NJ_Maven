@@ -261,6 +261,8 @@
                             </div>
                         </div>
 
+
+
                         <div class="banner-kitchen-verify">
                             <i class="fa fa-utensils"></i>
                             <span>Bếp đã xác nhận đủ năng lực sản xuất cho các sản phẩm và khung giờ được chọn.</span>
@@ -319,6 +321,8 @@
 
             // 1. Sync & Render Cart Items
             loadCartItems();
+
+
 
             // 2. Select initial active address and calculate shipping fee
             const activeAddressCard = document.querySelector(".address-card-option.active");
@@ -628,8 +632,7 @@
             const distance = getHaversineDistance(shopLat, shopLng, lat, lng) * 1.25;
             const finalDistance = Math.max(1.0, distance);
 
-            // currentShippingFee = Math.max(shippingRate, Math.ceil(finalDistance) * shippingRate);
-            currentShippingFee = 0;
+            currentShippingFee = Math.max(shippingRate, Math.ceil(finalDistance) * shippingRate);
             updateSummary();
         }
 

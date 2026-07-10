@@ -20,6 +20,7 @@
     15. Auth Page Variants: Login / Forgot / OTP / Reset
     16. Animations
     17. Responsive (CSS của Đơn hàng đã được di dời sang tệp order.css)
+    18. Featured Reviews
 */
 
 /* =========================================================
@@ -2357,4 +2358,108 @@ html.dark-theme .socials a:hover {
     background: #3f5f36;
     color: #fff;
 }
+
+/* Custom breadcrumbs style: same color, no underline */
+.breadcrumb a, .breadcrumbs a, .breadcrumb strong, .breadcrumbs span, .breadcrumbs li,
+html.dark-theme .breadcrumb a, html.dark-theme .breadcrumbs a, html.dark-theme .breadcrumb strong, html.dark-theme .breadcrumbs span {
+    color: var(--muted, #756d64) !important;
+    text-decoration: none !important;
+    font-weight: normal !important;
+}
+.breadcrumb a:hover, .breadcrumbs a:hover, html.dark-theme .breadcrumb a:hover, html.dark-theme .breadcrumbs a:hover {
+    color: var(--primary, #3f5f36) !important;
+    text-decoration: none !important;
+}
+
+/* =========================================================
+   18. Featured Reviews
+========================================================= */
+.review-section {
+    background-color: #fffaf5;
+    padding: 60px 0;
+}
+.center-title-sub {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    margin-top: -10px;
+    margin-bottom: 40px;
+}
+.review-home-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+.review-home-card {
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    border: 1px solid #f3ebe1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.review-home-stars {
+    color: #ffc107;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 2px;
+}
+.review-home-comment {
+    font-style: italic;
+    color: #555;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex-grow: 1;
+}
+.review-home-user {
+    border-top: 1px solid #f5f5f5;
+    padding-top: 15px;
+}
+.review-home-name {
+    font-weight: 700;
+    color: #222;
+    margin: 0 0 4px 0;
+    font-size: 16px;
+}
+.review-home-cake {
+    color: #888;
+    font-size: 12.5px;
+    display: block;
+}
+.review-empty {
+    grid-column: span 3;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 20px;
+}
+
+/* Dark theme support for Featured Reviews */
+html.dark-theme .review-section {
+    background-color: var(--bg-soft);
+}
+html.dark-theme .review-home-card {
+    background: var(--card);
+    border-color: var(--border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+html.dark-theme .review-home-comment {
+    color: #ccc;
+}
+html.dark-theme .review-home-user {
+    border-top-color: var(--border);
+}
+html.dark-theme .review-home-name {
+    color: var(--text);
+}
+html.dark-theme .review-home-cake {
+    color: var(--muted);
+}
+
 

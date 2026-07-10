@@ -26,28 +26,27 @@ public class AdminSettingsServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Ensure user is admin (Simple guard)
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
-
-        // Retrieve settings from Database
+        // Lấy cấu hình từ Cơ sở dữ liệu
         Map<String, Object> settings = settingDAO.getSettings();
         if (settings.isEmpty()) {
             settings = initDefaultSettings();
-            // If empty, save default to database
+            // Nếu trống, lưu cấu hình mặc định vào cơ sở dữ liệu
             settingDAO.updateSettings(settings);
         } else {
-            // Clean up old invalid hotline spacing if present
+            // Làm sạch khoảng trắng hotline không hợp lệ cũ nếu có
             String currentHotline = (String) settings.get("hotline");
             if (currentHotline != null) {
                 settings.put("hotline", currentHotline.replaceAll("\\s+", ""));
             }
+            if (!settings.containsKey("heroTitle")) {
+                settings.put("heroTitle", "Bánh tươi mỗi ngày, ngọt lành từng khoảnh khắc");
+            }
+            if (!settings.containsKey("heroSubtitle")) {
+                settings.put("heroSubtitle", "Khám phá những chiếc bánh ngọt, bánh sinh nhật và quà tặng được làm thủ công từ nguyên liệu tự nhiên.");
+            }
         }
 
-        // Sync to application scope so other components can access it
+        // Đồng bộ vào phạm vi ứng dụng (application scope) để các thành phần khác có thể truy cập
         getServletContext().setAttribute(SETTINGS_ATTR, settings);
 
         request.setAttribute(SETTINGS_ATTR, settings);
@@ -58,13 +57,9 @@ public class AdminSettingsServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/login");
-            return;
-        }
+        HttpSession session = request.getSession();
 
-        // Check for Reset to Defaults action
+        // Kiểm tra hành động khôi phục cấu hình mặc định
         String resetDefaults = request.getParameter("resetDefaults");
         if (resetDefaults != null && "true".equals(resetDefaults)) {
             Map<String, Object> defaults = initDefaultSettings();
@@ -75,13 +70,13 @@ public class AdminSettingsServlet extends HttpServlet {
             return;
         }
 
-        // Retrieve existing settings from DB to check for old banner paths
+        // Lấy cấu hình hiện tại từ DB để kiểm tra các đường dẫn banner cũ
         Map<String, Object> currentSettings = settingDAO.getSettings();
         if (currentSettings.isEmpty()) {
             currentSettings = initDefaultSettings();
         }
 
-        // Extract settings values
+        // Trích xuất các giá trị cấu hình
         String bakeryName = request.getParameter("bakeryName");
         String hotline = request.getParameter("hotline");
         String email = request.getParameter("email");
@@ -97,8 +92,9 @@ public class AdminSettingsServlet extends HttpServlet {
         String appPassword = request.getParameter("appPassword");
         String otpExpiry = request.getParameter("otpExpiry");
 
-        String announcement = request.getParameter("announcement");
         boolean darkMode = request.getParameter("darkMode") != null;
+        String heroTitle = request.getParameter("heroTitle");
+        String heroSubtitle = request.getParameter("heroSubtitle");
 
         String banner1Align = request.getParameter("banner1Align");
         String banner2Align = request.getParameter("banner2Align");
@@ -110,7 +106,7 @@ public class AdminSettingsServlet extends HttpServlet {
         if (banner3Align == null) banner3Align = "50";
         if (banner4Align == null) banner4Align = "50";
 
-        // Validate inputs using ValidationUtils
+        // Xác thực dữ liệu đầu vào bằng ValidationUtils
         String errorMsg = com.bakeryzone.utils.ValidationUtils.validateSystemSettings(
             bakeryName, hotline, email, address,
             depositPercent, shippingRate, maxCakesPerHour,
@@ -120,7 +116,7 @@ public class AdminSettingsServlet extends HttpServlet {
         if (errorMsg != null) {
             request.setAttribute("errorMessage", errorMsg);
             
-            // Re-populate settings map with current inputs so the user doesn't lose their data
+            // Tái điền dữ liệu cấu hình với các dữ liệu hiện tại để người dùng không bị mất dữ liệu đã nhập
             Map<String, Object> settings = new HashMap<>(currentSettings);
             settings.put("bakeryName", bakeryName);
             settings.put("hotline", hotline);
@@ -134,9 +130,10 @@ public class AdminSettingsServlet extends HttpServlet {
             settings.put("systemEmail", systemEmail);
             settings.put("appPassword", appPassword);
             settings.put("otpExpiry", otpExpiry);
-            settings.put("announcement", announcement);
             settings.put("darkMode", darkMode);
             settings.put("banner1Align", banner1Align);
+            settings.put("heroTitle", heroTitle);
+            settings.put("heroSubtitle", heroSubtitle);
             settings.put("banner2Align", banner2Align);
             settings.put("banner3Align", banner3Align);
             settings.put("banner4Align", banner4Align);
@@ -146,7 +143,7 @@ public class AdminSettingsServlet extends HttpServlet {
             return;
         }
 
-        // Process image uploads for banners
+        // Xử lý tải ảnh lên cho các banner
         jakarta.servlet.http.Part banner1Part = request.getPart("banner1");
         jakarta.servlet.http.Part banner2Part = request.getPart("banner2");
         jakarta.servlet.http.Part banner3Part = request.getPart("banner3");
@@ -157,7 +154,7 @@ public class AdminSettingsServlet extends HttpServlet {
         String banner3 = uploadFile(banner3Part, request);
         String banner4 = uploadFile(banner4Part, request);
 
-        // Keep current banners if no new files were uploaded
+        // Giữ nguyên các banner hiện tại nếu không có tệp mới nào được tải lên
         if (banner1 == null) {
             banner1 = (String) currentSettings.get("banner1");
             if (banner1 == null) banner1 = "assets/images/hero/hero-1.jpg";
@@ -191,9 +188,10 @@ public class AdminSettingsServlet extends HttpServlet {
         settings.put("appPassword", appPassword);
         settings.put("otpExpiry", otpExpiry);
 
-        settings.put("announcement", announcement);
         settings.put("darkMode", darkMode);
         settings.put("banner1", banner1);
+        settings.put("heroTitle", heroTitle != null ? heroTitle.trim() : "");
+        settings.put("heroSubtitle", heroSubtitle != null ? heroSubtitle.trim() : "");
         settings.put("banner2", banner2);
         settings.put("banner3", banner3);
         settings.put("banner4", banner4);
@@ -202,13 +200,13 @@ public class AdminSettingsServlet extends HttpServlet {
         settings.put("banner3Align", banner3Align);
         settings.put("banner4Align", banner4Align);
 
-        // Update database
+        // Cập nhật cơ sở dữ liệu
         settingDAO.updateSettings(settings);
 
-        // Save back to servlet context for global access
+        // Lưu lại vào ServletContext để truy cập toàn cục
         getServletContext().setAttribute(SETTINGS_ATTR, settings);
 
-        // Flash message
+        // Thông báo nhanh (Flash message)
         session.setAttribute("successMessage", "Cập nhật cấu hình hệ thống thành công!");
         response.sendRedirect(request.getContextPath() + "/admin/settings");
     }
@@ -220,7 +218,7 @@ public class AdminSettingsServlet extends HttpServlet {
         defaults.put("email", "support@bakeryzone.vn");
         defaults.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
 
-        defaults.put("depositPercent", "50");
+        defaults.put("depositPercent", "30");
         defaults.put("shippingRate", "5000");
         defaults.put("maxCakesPerHour", "15000");
         defaults.put("openingTime", "07:00 AM");
@@ -230,8 +228,9 @@ public class AdminSettingsServlet extends HttpServlet {
         defaults.put("appPassword", "erqx uoeu fsdv nwlk");
         defaults.put("otpExpiry", "5");
 
-        defaults.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
         defaults.put("darkMode", false);
+        defaults.put("heroTitle", "Bánh tươi mỗi ngày, ngọt lành từng khoảnh khắc");
+        defaults.put("heroSubtitle", "Khám phá những chiếc bánh ngọt, bánh sinh nhật và quà tặng được làm thủ công từ nguyên liệu tự nhiên.");
         defaults.put("banner1", "assets/images/hero/hero-1.jpg");
         defaults.put("banner2", "assets/images/hero/hero-2.jpg");
         defaults.put("banner3", "assets/images/hero/hero-3.jpg");
@@ -250,7 +249,7 @@ public class AdminSettingsServlet extends HttpServlet {
         if (fileName == null || fileName.isEmpty())
             return null;
 
-        // Create folder assets/images/banners inside the application
+        // Tạo thư mục assets/images/banners bên trong ứng dụng
         String uploadPath = request.getServletContext().getRealPath("") + java.io.File.separator + "assets"
                 + java.io.File.separator + "images" + java.io.File.separator + "banners";
         java.io.File uploadDir = new java.io.File(uploadPath);

@@ -75,22 +75,18 @@ public class AdminOrderController extends HttpServlet {
         if (keyword != null && keyword.trim().isEmpty()) {
             keyword = null;
         }
-        // Normalize status for DAO: null means no filter
+        // Chuẩn hóa trạng thái cho DAO: null nghĩa là không lọc
         String statusForDao = null;
-        String statusForView = "all"; // Always send 'all' or a specific status to the view
+        String statusForView = "all"; // Luôn gửi 'all' hoặc trạng thái cụ thể tới trang hiển thị (view)
         if (statusParam != null && !statusParam.trim().isEmpty() && !statusParam.equalsIgnoreCase("all")) {
             statusForDao = statusParam.trim();
             statusForView = statusForDao;
         }
-        // Validate Dates
-        if (!ValidationUtils.isValidDateFormat(startDate) || !ValidationUtils.isValidDateFormat(endDate)) {
-            request.setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
-            request.getSession().setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
-            startDate = null;
-            endDate = null;
-        } else if (!ValidationUtils.isValidDateRange(startDate, endDate)) {
-            request.setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
-            request.getSession().setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
+        // Xác thực ngày tháng
+        String dateError = ValidationUtils.validateDateFilter(startDate, endDate);
+        if (dateError != null) {
+            request.setAttribute("errorMessage", dateError);
+            request.getSession().setAttribute("errorMessage", dateError);
             startDate = null;
             endDate = null;
         }
@@ -106,7 +102,7 @@ public class AdminOrderController extends HttpServlet {
             sort = "date_desc";
         }
 
-        // Reset to page 1 when filters change (no page param means fresh filter)
+        // Reset về trang 1 khi thay đổi bộ lọc (không có tham số page nghĩa là bộ lọc mới)
         int page = 1;
         String pageStr = request.getParameter("page");
         if (pageStr != null && !pageStr.trim().isEmpty()) {

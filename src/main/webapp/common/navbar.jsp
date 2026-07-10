@@ -34,11 +34,11 @@
 
         <!-- Logo -->
         <a href="<%= contextPath %>/home" class="logo">
-            BakeryZone
+            ${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}
         </a>
 
         <!-- Menu chính -->
-        <div class="nav-menu">
+        <div class="nav-menu" style="gap: 35px; margin: 0 auto;">
             <a href="<%= request.getContextPath() %>/home">Trang Chủ</a>
             <a href="<%= request.getContextPath() %>/products">Menu bánh</a>
             <a href="<%= request.getContextPath() %>/custom-cake">Thiết kế bánh</a>
@@ -50,7 +50,7 @@
         </div>
 
         <!-- Main Right-Side Wrapper: Enforces horizontal alignment and prevents item collapse -->
-        <div class="navbar-right-container">
+        <div class="navbar-right-container" style="display: flex; align-items: center; gap: 24px;">
 
             <!-- 1. Search Box Container -->
             <div class="search-box-wrapper">
@@ -78,13 +78,11 @@
 
                 <!-- Avatar on the left, username on the right, dropdown menu below -->
                 <div class="user-dropdown">
-                    <button type="button" class="user-dropdown-btn" id="userDropdownBtn" title="Tài khoản">
-                        <div class="avatar-container">
-                            <span class="material-symbols-outlined">account_circle</span>
+                    <button type="button" class="user-dropdown-btn" id="userDropdownBtn" title="Tài khoản"
+                            style="display: flex; align-items: center; border: none; background: transparent; cursor: pointer; padding: 0;">
+                        <div class="avatar-container" style="display: flex; align-items: center; line-height: 1;">
+                            <span class="material-symbols-outlined" style="font-size: 28px; color: var(--text-dark, #333);">account_circle</span>
                         </div>
-                        <span class="navbar-username">
-                            <%= currentUser.getFullName() %>
-                        </span>
                     </button>
 
                     <div class="user-dropdown-menu" id="userDropdownMenu">
@@ -115,6 +113,10 @@
                             <span class="material-symbols-outlined">receipt_long</span>
                             <span>Xem đơn hàng</span>
                         </a>
+                        <a href="<%= contextPath %>/my-vouchers" class="user-dropdown-item">
+                            <span class="material-symbols-outlined">local_activity</span>
+                            <span>Ví Voucher</span>
+                        </a>
                         <a href="<%= contextPath %>/membership" class="user-dropdown-item">
                             <span class="material-symbols-outlined">workspace_premium</span>
                             <span>Xem hạng của bạn</span>
@@ -129,55 +131,6 @@
                             <span>Đăng xuất</span>
                         </a>
                     </div>
-<<<<<<< HEAD
-                    <div class="user-dropdown-item">
-                        <span class="material-symbols-outlined">
-                            leaderboard
-                        </span>
-                        <%= currentUser.getRoleName() != null ? currentUser.getRoleName() : currentUser.getRoleId() %>
-                    </div>
-                    <div class="user-dropdown-divider"></div>
-
-                    <!-- Profile -->
-                    <a href="<%= contextPath %>/profile" class="user-dropdown-item">
-                        <span class="material-symbols-outlined">person</span>
-                        <span>Hồ sơ cá nhân</span>
-                    </a>
-
-                    <!-- Orders -->
-                    <a href="<%= contextPath %>/OrderList" class="user-dropdown-item">
-                        <span class="material-symbols-outlined">receipt_long</span>
-                        <span>Xem đơn hàng</span>
-                    </a>
-
-                    <!-- Vouchers -->
-                    <a href="<%= contextPath %>/my-vouchers" class="user-dropdown-item">
-                        <span class="material-symbols-outlined">local_activity</span>
-                        <span>Ví Voucher</span>
-                    </a>
-
-                    <!-- Membership -->
-                    <a href="<%= contextPath %>/membership" class="user-dropdown-item">
-                        <span class="material-symbols-outlined">workspace_premium</span>
-                        <span>Xem hạng của bạn</span>
-                    </a>
-
-                    <!-- My designs -->
-                    <a href="<%= contextPath %>/my-designs" class="user-dropdown-item">
-                        <span class="material-symbols-outlined">cake</span>
-                        <span>Thiết kế của tôi</span>
-                    </a>
-
-                    <div class="user-dropdown-divider"></div>
-
-                    <!-- Logout -->
-                    <a href="<%= contextPath %>/logout" class="user-dropdown-item logout-item">
-                        <span class="material-symbols-outlined">logout</span>
-                        <span>Đăng xuất</span>
-                    </a>
-
-=======
->>>>>>> 912ce15d2702de5d933c7b6afb23a7c1e75d5526
                 </div>
 
             <% } %>

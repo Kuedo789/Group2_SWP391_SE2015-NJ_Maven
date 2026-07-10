@@ -15,6 +15,8 @@
             dbSettings.put("banner1", "assets/images/banner1.jpg");
             dbSettings.put("banner2", "assets/images/banner2.jpg");
             dbSettings.put("banner3", "assets/images/banner3.jpg");
+            dbSettings.put("heroTitle", "Bánh tươi mỗi ngày, ngọt lành từng khoảnh khắc");
+            dbSettings.put("heroSubtitle", "Khám phá những chiếc bánh ngọt, bánh sinh nhật và quà tặng được làm thủ công từ nguyên liệu tự nhiên.");
         } else {
             String currentHotline = (String) dbSettings.get("hotline");
             if (currentHotline != null) {
@@ -41,6 +43,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all/style.css?v=1">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.css">
+<link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all/style.css?v=1.1">
 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all/order.css">
