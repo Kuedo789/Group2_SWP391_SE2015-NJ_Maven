@@ -2,7 +2,6 @@ package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.DeliveryAddressDAO;
 import com.bakeryzone.dao.OrderDAO;
-import com.bakeryzone.dao.VoucherDAO;
 import com.bakeryzone.model.DeliveryAddress;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.model.OrderItem;
@@ -30,7 +29,6 @@ public class CustomerCheckoutServlet extends HttpServlet {
 
     private final DeliveryAddressDAO addressDAO = new DeliveryAddressDAO();
     private final OrderDAO orderDAO = new OrderDAO();
-    private final VoucherDAO voucherDAO = new VoucherDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -64,12 +62,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
         }
         request.setAttribute("selectedAddress", selectedAddress);
 
-        // Fetch voucher discount from session
-        BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
-        String appliedVoucherCode = (String) session.getAttribute("appliedVoucherCode");
-        
-        request.setAttribute("checkoutDiscount", appliedDiscount != null ? appliedDiscount : BigDecimal.ZERO);
-        request.setAttribute("checkoutVoucherCode", appliedVoucherCode);
+
 
         // Forward to the checkout page
         request.getRequestDispatcher("/customer/checkout.jsp").forward(request, response);
@@ -226,14 +219,8 @@ if (order.getItems().isEmpty()) {
                 }
             }
 
-            // 2. Extract and Apply Voucher Discount
-            BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
-            if (appliedDiscount == null) {
-                appliedDiscount = BigDecimal.ZERO;
-            }
-            
             // 3. Compute Final Total Cost
-            BigDecimal totalCost = productTotal.add(shippingFee).subtract(appliedDiscount);
+            BigDecimal totalCost = productTotal.add(shippingFee);
             if (totalCost.compareTo(BigDecimal.ZERO) < 0) {
                 totalCost = BigDecimal.ZERO;
             }
@@ -281,15 +268,6 @@ if (order.getItems().isEmpty()) {
                     + " | success=" + success + " | total=" + totalCost);
 
             if (success) {
-                // Mark voucher as used if applicable and clear session attributes
-                Integer appliedVoucherId = (Integer) session.getAttribute("appliedVoucherId");
-                if (appliedVoucherId != null) {
-                    voucherDAO.markVoucherUsed(appliedVoucherId, currentUser.getUserId());
-                    session.removeAttribute("appliedVoucherId");
-                    session.removeAttribute("appliedVoucherCode");
-                    session.removeAttribute("appliedDiscount");
-                }
-
                 // Redirect target evaluation based on payment configuration
                 if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
                     String totalEncoded = java.net.URLEncoder.encode(totalCost.toPlainString(), "UTF-8");

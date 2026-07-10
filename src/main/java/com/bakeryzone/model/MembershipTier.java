@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 
 /**
  * MembershipTier - maps to the `MembershipTier` table.
- * Holds tier rules: spending threshold, point multiplier, and monthly voucher allowance.
+ * Holds tier rules: spending threshold, point multiplier.
  * TierName values: MEMBER, BRONZE, SILVER, GOLD, DIAMOND
  */
 public class MembershipTier {
@@ -13,19 +13,17 @@ public class MembershipTier {
     private String tierName;
     private BigDecimal minSpending;
     private double pointMultiplier;
-    private int monthlyVouchers;
     private String description;
 
     public MembershipTier() {
     }
 
     public MembershipTier(int tierId, String tierName, BigDecimal minSpending,
-                          double pointMultiplier, int monthlyVouchers, String description) {
+                          double pointMultiplier, String description) {
         this.tierId = tierId;
         this.tierName = tierName;
         this.minSpending = minSpending;
         this.pointMultiplier = pointMultiplier;
-        this.monthlyVouchers = monthlyVouchers;
         this.description = description;
     }
 
@@ -65,13 +63,6 @@ public class MembershipTier {
         this.pointMultiplier = pointMultiplier;
     }
 
-    public int getMonthlyVouchers() {
-        return monthlyVouchers;
-    }
-
-    public void setMonthlyVouchers(int monthlyVouchers) {
-        this.monthlyVouchers = monthlyVouchers;
-    }
 
     public String getDescription() {
         return description;

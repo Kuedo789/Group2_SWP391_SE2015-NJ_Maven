@@ -113,10 +113,7 @@
                             <span class="material-symbols-outlined">receipt_long</span>
                             <span>Xem đơn hàng</span>
                         </a>
-                        <a href="<%= contextPath %>/my-vouchers" class="user-dropdown-item">
-                            <span class="material-symbols-outlined">local_activity</span>
-                            <span>Ví Voucher</span>
-                        </a>
+
                         <a href="<%= contextPath %>/membership" class="user-dropdown-item">
                             <span class="material-symbols-outlined">workspace_premium</span>
                             <span>Xem hạng của bạn</span>

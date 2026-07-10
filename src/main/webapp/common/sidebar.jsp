@@ -102,11 +102,6 @@
             </li>
         </c:if>
 
-        <c:if test="${sessionScope.user.roleId eq 'ADMIN'}">
-            <li class="menu-item ${param.activeMenu == 'vouchers' ? 'active' : ''}">
-                <a href="${pageContext.request.contextPath}/admin/vouchers"><i class="fa-solid fa-ticket"></i> Voucher &amp; Khuyến mãi</a>
-            </li>
-        </c:if>
         <li class="menu-item ${param.activeMenu == 'inventory' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>

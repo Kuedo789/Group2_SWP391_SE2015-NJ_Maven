@@ -522,9 +522,7 @@ public class OrderDAO {
         try {
             order.setShippingFee(rs.getBigDecimal("Shipping_Fee"));
         } catch (SQLException ignored) {}
-        try {
-            order.setDiscountAmount(rs.getBigDecimal("Discount_Amount"));
-        } catch (SQLException ignored) {}
+
         try {
             order.setPaymentMethod(rs.getString("Payment_Method"));
         } catch (SQLException ignored) {}
@@ -583,7 +581,7 @@ public class OrderDAO {
             psOrder.setBigDecimal(10, order.getTotalCost());
             psOrder.setString(11, order.getOrderStatus());
             psOrder.setBigDecimal(12, order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO);
-            psOrder.setBigDecimal(13, order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO);
+            psOrder.setBigDecimal(13, BigDecimal.ZERO);
             psOrder.setString(14, order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD");
 
             String receiverName = order.getReceiverName();

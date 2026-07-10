@@ -25,7 +25,6 @@ public class Order {
     private String receiverName;
     private String receiverPhone;
     private String customerNote;
-    private BigDecimal discountAmount;
     private String paymentMethod = "COD";
     private final List<OrderItem> items = new ArrayList<>();
 
@@ -183,13 +182,6 @@ public class Order {
         this.customerNote = customerNote;
     }
 
-    public BigDecimal getDiscountAmount() {
-        return discountAmount;
-    }
-
-    public void setDiscountAmount(BigDecimal discountAmount) {
-        this.discountAmount = discountAmount;
-    }
 
     public String getPaymentMethod() {
         return paymentMethod;
