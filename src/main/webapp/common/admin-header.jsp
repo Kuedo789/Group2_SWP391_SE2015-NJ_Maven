@@ -54,7 +54,18 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/v4-shims.min.css" rel="stylesheet">
 
 <!-- Toastify CSS -->
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.css">
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<style>
+    /* Force Toastify text visibility and design consistency */
+    .toastify {
+        color: #ffffff !important;
+        font-weight: 500 !important;
+        font-size: 14px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+        border-radius: 8px !important;
+        padding: 12px 24px !important;
+    }
+</style>
 
 <!-- Global Admin CSS -->
 <link href="${pageContext.request.contextPath}/assets/css/all/admin-global.css?v=1.5" rel="stylesheet">

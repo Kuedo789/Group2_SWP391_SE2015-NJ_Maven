@@ -491,7 +491,9 @@
                     close: true,
                     gravity: "top",
                     position: "right",
-                    backgroundColor: "linear-gradient(to right, #3f5f36, #5a854e)"
+                    style: {
+                        background: "linear-gradient(to right, #3f5f36, #5a854e)"
+                    }
                 }).showToast();
                 <c:remove var="successMessage" scope="session" />
             </c:if>
@@ -503,7 +505,9 @@
                     close: true,
                     gravity: "top",
                     position: "right",
-                    backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)"
+                    style: {
+                        background: "linear-gradient(to right, #ff5f6d, #ffc371)"
+                    }
                 }).showToast();
                 <c:remove var="errorMessage" scope="session" />
             </c:if>
@@ -548,7 +552,9 @@
                             close: true,
                             gravity: "top",
                             position: "right",
-                            backgroundColor: "linear-gradient(to right, #3f5f36, #5a854e)"
+                            style: {
+                                background: "linear-gradient(to right, #3f5f36, #5a854e)"
+                            }
                         }).showToast();
                     }
                 })

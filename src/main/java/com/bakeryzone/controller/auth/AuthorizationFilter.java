@@ -78,11 +78,13 @@ public class AuthorizationFilter implements Filter {
             }
         }
 
+        System.out.println("--> [AUTH FILTER] Check roleId: " + roleId + " for targetUrl: " + targetUrl);
         boolean hasPermission = permissionDAO.checkUrlPermission(roleId, targetUrl);
 
         if (hasPermission) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
+            System.out.println("--> [AUTH FILTER BLOCKED] Role: " + roleId + " was BLOCKED for URL: " + targetUrl);
             String isAjax = request.getHeader("X-Requested-With");
             if ("XMLHttpRequest".equals(isAjax)) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -91,7 +93,7 @@ public class AuthorizationFilter implements Filter {
                 return;
             }
 
-            request.setAttribute("error", "Tài khoản của bạn chưa được kích hai hệ thống tính năng này.");
+            request.setAttribute("error", "Tài khoản của bạn chưa được kích hoạt hệ thống tính năng này.");
             request.getRequestDispatcher("/common/403.jsp").forward(request, response);
         }
     }

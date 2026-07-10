@@ -535,6 +535,9 @@ public class OrderDAO {
         try {
             order.setCustomerNote(rs.getString("Customer_Note"));
         } catch (SQLException ignored) {}
+        try {
+            order.setShipperNote(rs.getString("Shipper_Note"));
+        } catch (SQLException ignored) {}
         return order;
     }
 
@@ -544,6 +547,20 @@ public class OrderDAO {
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setString(2, orderNo);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateOrderStatusWithNote(String orderNo, String status, String shipperNote) {
+        String sql = "UPDATE `orders` SET OrderStatus = ?, Shipper_Note = ? WHERE Order_No = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setString(2, shipperNote);
+            ps.setString(3, orderNo);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -771,6 +788,125 @@ public class OrderDAO {
                 while (rs.next()) {
                     Order order = mapRowToOrder(rs);
                     // NOTE: Don't load items in list view - only needed in detail view
+                    orders.add(order);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    public int getTotalOrdersCountByShipper(String shipperId, String keyword, String status, String startDateStr, String endDateStr) {
+        int count = 0;
+        StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) FROM `orders` o " +
+                "JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
+                "WHERE t.Shipper_ID = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(shipperId);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
+            String kw = "%" + keyword.trim() + "%";
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
+        }
+
+        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("all")) {
+            sql.append(" AND o.OrderStatus = ?");
+            params.add(status);
+        }
+
+        if (startDateStr != null && !startDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time >= ?");
+            params.add(startDateStr + " 00:00:00");
+        }
+        if (endDateStr != null && !endDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time <= ?");
+            params.add(endDateStr + " 23:59:59");
+        }
+
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    public List<Order> getOrdersByShipperPaged(String shipperId, String keyword, String status, String startDateStr, String endDateStr,
+            String sort, int pageIndex, int pageSize) {
+        List<Order> orders = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT o.*, c.Full_Name AS Customer_Name FROM `orders` o " +
+                "JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
+                "WHERE t.Shipper_ID = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(shipperId);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
+            String kw = "%" + keyword.trim() + "%";
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
+        }
+
+        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("all")) {
+            sql.append(" AND o.OrderStatus = ?");
+            params.add(status);
+        }
+
+        if (startDateStr != null && !startDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time >= ?");
+            params.add(startDateStr + " 00:00:00");
+        }
+        if (endDateStr != null && !endDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time <= ?");
+            params.add(endDateStr + " 23:59:59");
+        }
+
+        String orderByClause = " ORDER BY o.Order_Time DESC ";
+        if (sort != null && !sort.trim().isEmpty()) {
+            switch (sort.trim().toLowerCase()) {
+                case "date_asc":
+                    orderByClause = " ORDER BY o.Order_Time ASC ";
+                    break;
+                case "price_desc":
+                    orderByClause = " ORDER BY o.Total_Cost DESC ";
+                    break;
+                case "price_asc":
+                    orderByClause = " ORDER BY o.Total_Cost ASC ";
+                    break;
+                default:
+                    orderByClause = " ORDER BY o.Order_Time DESC ";
+                    break;
+            }
+        }
+        sql.append(orderByClause).append("LIMIT ? OFFSET ?");
+        params.add(pageSize);
+        params.add((pageIndex - 1) * pageSize);
+
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = mapRowToOrder(rs);
                     orders.add(order);
                 }
             }

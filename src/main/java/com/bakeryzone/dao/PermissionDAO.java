@@ -166,7 +166,7 @@ public class PermissionDAO {
         try (ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 int count = rs.getInt(1);
-                // System.out.println("--> [DEBUG AUTH] Role: " + roleId + " | URL: " + currentUrl + " | Match Count: " + count);
+                System.out.println("--> [DEBUG AUTH] Role: " + roleId + " | URL: " + currentUrl + " | Match Count: " + count);
                 return count > 0;
             }
         }

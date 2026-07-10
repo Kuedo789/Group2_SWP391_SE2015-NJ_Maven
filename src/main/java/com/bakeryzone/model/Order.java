@@ -25,6 +25,7 @@ public class Order {
     private String receiverName;
     private String receiverPhone;
     private String customerNote;
+    private String shipperNote;
     private String paymentMethod = "COD";
     private final List<OrderItem> items = new ArrayList<>();
 
@@ -180,6 +181,14 @@ public class Order {
 
     public void setCustomerNote(String customerNote) {
         this.customerNote = customerNote;
+    }
+
+    public String getShipperNote() {
+        return shipperNote;
+    }
+
+    public void setShipperNote(String shipperNote) {
+        this.shipperNote = shipperNote;
     }
 
 

@@ -46,7 +46,7 @@
         <!-- Đơn hàng -->
         <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/orders?action=list')}">
             <li class="menu-item ${param.activeMenu == 'orders' ? 'active' : ''}">
-                <a href="${pageContext.request.contextPath}/admin/orders?action=list"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
+                <a href="${pageContext.request.contextPath}/${sessionScope.user.roleId eq 'SHIPPER' ? 'shipper' : 'admin'}/orders?action=list"><i class="fa-solid fa-receipt"></i> Đơn hàng</a>
             </li>
         </c:if>
 
