@@ -59,13 +59,21 @@ public class AuthorizationFilter implements Filter {
             return;
         }
 
+
+        String normalizedPath = servletPath;
+        if (servletPath.startsWith("/staff/")) {
+            normalizedPath = "/admin/" + servletPath.substring(7);
+        } else if (servletPath.startsWith("/shipper/")) {
+            normalizedPath = "/admin/" + servletPath.substring(9);
+        }
+
         String action = request.getParameter("action");
-        String targetUrl = servletPath;
+        String targetUrl = normalizedPath;
 
         if (action != null && !action.trim().isEmpty()) {
             targetUrl += "?action=" + action.trim();
         } else {
-            if (!NON_CRUD_URLS.contains(servletPath)) {
+            if (!NON_CRUD_URLS.contains(normalizedPath)) {
                 targetUrl += "?action=list";
             }
         }
@@ -78,11 +86,12 @@ public class AuthorizationFilter implements Filter {
             String isAjax = request.getHeader("X-Requested-With");
             if ("XMLHttpRequest".equals(isAjax)) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("text/plain;charset=UTF-8");
                 response.getWriter().write("Tài khoản của bạn không được cấp quyền cho thao tác này!");
                 return;
             }
 
-            request.setAttribute("error", "Tài khoản của bạn chưa được kích hoạt tính năng này.");
+            request.setAttribute("error", "Tài khoản của bạn chưa được kích hai hệ thống tính năng này.");
             request.getRequestDispatcher("/common/403.jsp").forward(request, response);
         }
     }

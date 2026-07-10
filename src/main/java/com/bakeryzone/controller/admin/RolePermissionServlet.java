@@ -31,13 +31,22 @@ public class RolePermissionServlet extends HttpServlet {
             currentRoleId = "ADMIN";
         }
 
-        // 🟢 CẢI TIẾN 1: XỬ LÝ GẠT QUYỀN QUA AJAX (KHÔNG LOAD LẠI TRANG)
         String action = request.getParameter("action");
         String screenId = request.getParameter("screenId");
-        String isAjax = request.getHeader("X-Requested-With"); // Kiểm tra xem có phải request gửi từ JavaScript không
+        String isAjax = request.getHeader("X-Requested-With");
 
-        if (action != null && screenId != null) {
-            // Nhận kết quả thật từ DB
+        if ("delete-feature".equals(action)) {
+            String id = request.getParameter("id");
+            if (permissionDAO.deleteScreen(id)) {
+                request.getSession().setAttribute("successMessage", "Xóa mềm (ẩn) tính năng khỏi hệ thống thành công!");
+            } else {
+                request.getSession().setAttribute("errorMessage", "Xóa tính năng thất bại!");
+            }
+            response.sendRedirect(request.getContextPath() + "/admin/role-permissions?roleId=" + currentRoleId);
+            return;
+        }
+
+        if (action != null && screenId != null && ("on".equals(action) || "off".equals(action))) {
             boolean isSuccess = permissionDAO.togglePermission(currentRoleId, screenId, action);
 
             if ("XMLHttpRequest".equals(isAjax)) {
@@ -47,26 +56,20 @@ public class RolePermissionServlet extends HttpServlet {
                     if (isSuccess) {
                         out.print("SUCCESS");
                     } else {
-                        out.print("FAILED_DB"); // Trả về lỗi để JS biết đường xử lý
+                        out.print("FAILED_DB");
                     }
                 }
                 return;
             }
             response.sendRedirect(request.getContextPath() + "/admin/role-permissions?roleId=" + currentRoleId);
             return;
-
         }
 
-        // 🟢 ĐẨY DỮ LIỆU RA GIAO DIỆN ĐỘNG HOÀN TOÀN
-        request.setAttribute(
-                "ALL_ROLES", permissionDAO.getAllRoles());
-        request.setAttribute(
-                "SCREEN_LIST", permissionDAO.getScreensWithStatus(currentRoleId));
-        request.setAttribute(
-                "CURRENT_ROLE_ID", currentRoleId);
+        request.setAttribute("ALL_ROLES", permissionDAO.getAllRoles());
+        request.setAttribute("SCREEN_LIST", permissionDAO.getScreensWithStatus(currentRoleId));
+        request.setAttribute("CURRENT_ROLE_ID", currentRoleId);
 
-        request.getRequestDispatcher(
-                "/admin/permissionList.jsp").forward(request, response);
+        request.getRequestDispatcher("/admin/permissionList.jsp").forward(request, response);
     }
 
     /**
@@ -80,6 +83,42 @@ public class RolePermissionServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        String action = request.getParameter("action");
+        String currentRoleId = request.getParameter("roleId");
+        if (currentRoleId == null || currentRoleId.trim().isEmpty()) {
+            currentRoleId = "ADMIN";
+        }
+
+        if ("add-feature".equals(action)) {
+            String screenId = request.getParameter("screenId");
+            String screenName = request.getParameter("screenName");
+            String endpointUrl = request.getParameter("endpointUrl");
+
+            boolean isSuccess = permissionDAO.insertScreen(screenId, screenName, endpointUrl);
+            if (isSuccess) {
+                request.getSession().setAttribute("successMessage", "Khai báo tính năng hệ thống mới thành công!");
+            } else {
+                request.getSession().setAttribute("errorMessage", "Thêm thất bại! Mã ID tính năng đã tồn tại.");
+            }
+            response.sendRedirect(request.getContextPath() + "/admin/role-permissions?roleId=" + currentRoleId);
+            return;
+        } 
+        else if ("edit-feature".equals(action)) {
+            String screenId = request.getParameter("screenId");
+            String screenName = request.getParameter("screenName");
+            String endpointUrl = request.getParameter("endpointUrl");
+
+            boolean isSuccess = permissionDAO.updateScreen(screenId, screenName, endpointUrl);
+            if (isSuccess) {
+                request.getSession().setAttribute("successMessage", "Cập nhật thông tin tính năng thành công!");
+            } else {
+                request.getSession().setAttribute("errorMessage", "Cập nhật tính năng thất bại! Vui lòng kiểm tra lại.");
+            }
+            response.sendRedirect(request.getContextPath() + "/admin/role-permissions?roleId=" + currentRoleId);
+            return;
+        }
+
         doGet(request, response);
     }
 
