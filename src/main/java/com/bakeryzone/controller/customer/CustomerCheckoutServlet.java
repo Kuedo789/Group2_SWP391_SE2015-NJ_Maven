@@ -62,7 +62,12 @@ public class CustomerCheckoutServlet extends HttpServlet {
         }
         request.setAttribute("selectedAddress", selectedAddress);
 
-
+        // Fetch voucher discount from session
+        BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
+        String appliedVoucherCode = (String) session.getAttribute("appliedVoucherCode");
+        
+        request.setAttribute("checkoutDiscount", appliedDiscount != null ? appliedDiscount : BigDecimal.ZERO);
+        request.setAttribute("checkoutVoucherCode", appliedVoucherCode);
 
         // Forward to the checkout page
         request.getRequestDispatcher("/customer/checkout.jsp").forward(request, response);
@@ -219,8 +224,15 @@ if (order.getItems().isEmpty()) {
                 }
             }
 
+            // 2. Extract and Apply Voucher Discount
+            BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
+            String appliedVoucherCode = (String) session.getAttribute("appliedVoucherCode");
+            if (appliedDiscount == null) {
+                appliedDiscount = BigDecimal.ZERO;
+            }
+            
             // 3. Compute Final Total Cost
-            BigDecimal totalCost = productTotal.add(shippingFee);
+            BigDecimal totalCost = productTotal.add(shippingFee).subtract(appliedDiscount);
             if (totalCost.compareTo(BigDecimal.ZERO) < 0) {
                 totalCost = BigDecimal.ZERO;
             }
@@ -255,6 +267,8 @@ if (order.getItems().isEmpty()) {
             order.setShippingFee(shippingFee);
             order.setPaymentMethod(paymentMethod);
             order.setCustomerNote(note);
+            order.setAppliedVoucherCode(appliedVoucherCode);
+            order.setDiscountAmount(appliedDiscount);
 
             // ── 5. Persist order ───────────────────────────────────────────────────
             System.out.println("[INFO] Attempting to place order: " + orderNo 
@@ -268,6 +282,13 @@ if (order.getItems().isEmpty()) {
                     + " | success=" + success + " | total=" + totalCost);
 
             if (success) {
+                if (appliedVoucherCode != null) {
+                    com.bakeryzone.dao.VoucherDAO voucherDAO = new com.bakeryzone.dao.VoucherDAO();
+                    voucherDAO.decrementQuantity(appliedVoucherCode);
+                    session.removeAttribute("appliedVoucherCode");
+                    session.removeAttribute("appliedDiscount");
+                    session.removeAttribute("appliedVoucherMinOrder");
+                }
                 // Redirect target evaluation based on payment configuration
                 if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
                     String totalEncoded = java.net.URLEncoder.encode(totalCost.toPlainString(), "UTF-8");

@@ -214,7 +214,23 @@
                             <div class="summary-card">
                                 <div class="summary-title">Tóm tắt đơn hàng</div>
 
-
+                                <!-- Flash messages for voucher -->
+                                <c:if test="${param.voucherRemoved == 'true'}">
+                                    <div style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px;">
+                                        <i class="fa fa-check-circle"></i> Đã gỡ bỏ mã giảm giá.
+                                    </div>
+                                </c:if>
+                                <c:if test="${not empty sessionScope.voucherError}">
+                                    <div style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px;">
+                                        <i class="fa fa-exclamation-circle"></i> ${sessionScope.voucherError}
+                                    </div>
+                                    <c:remove var="voucherError" scope="session" />
+                                </c:if>
+                                <c:if test="${not empty sessionScope.appliedVoucherCode}">
+                                    <div style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px;">
+                                        <i class="fa fa-check-circle"></i> Đã áp dụng mã <strong>${sessionScope.appliedVoucherCode}</strong> thành công!
+                                    </div>
+                                </c:if>
 
                                 <div class="summary-row">
                                     <span>Tạm tính</span>
@@ -224,17 +240,44 @@
                                     <span>Phí vận chuyển</span>
                                     <span>30.000₫</span>
                                 </div>
+                                <div class="summary-row" style="color: #d9534f;">
+                                    <span>Giảm giá</span>
+                                    <span id="cartDiscountDisplay">
+                                        <c:choose>
+                                            <c:when test="${not empty sessionScope.appliedDiscount}">
+                                                -<fmt:formatNumber value="${sessionScope.appliedDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
+                                            </c:when>
+                                            <c:otherwise>-0₫</c:otherwise>
+                                        </c:choose>
+                                    </span>
+                                </div>
 
                                 <div class="summary-row total">
                                     <span>Tổng cộng</span>
                                     <span class="price" id="cartTotalDisplay">
                                         <c:set var="totalValue" value="${cartSubtotal + 30000}" />
+                                        <c:if test="${not empty sessionScope.appliedDiscount}">
+                                            <c:set var="totalValue" value="${totalValue - sessionScope.appliedDiscount}" />
+                                        </c:if>
                                         <c:if test="${totalValue < 0}"><c:set var="totalValue" value="0" /></c:if>
                                         <fmt:formatNumber value="${totalValue}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                     </span>
                                 </div>
 
-
+                                <div class="voucher-group">
+                                    <c:choose>
+                                        <c:when test="${not empty sessionScope.appliedVoucherCode}">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
+                                                <span style="font-weight: 600; color: var(--primary);">${sessionScope.appliedVoucherCode}</span>
+                                                <button type="submit" name="action" value="removeVoucher" style="background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; font-weight: 600;">✕ Bỏ</button>
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <input type="text" placeholder="Nhập mã giảm giá" class="voucher-input" name="voucherCode">
+                                            <button type="submit" name="action" value="applyVoucher" class="voucher-btn">Áp dụng</button>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
                                 <button type="submit" name="action" value="checkout" class="checkout-btn" ${empty cartItems ? 'disabled' : ''}>Thanh toán ngay</button>
 
                                 <div style="text-align: center; margin-top: 16px; font-size: 11px; color: var(--text-muted);">
@@ -275,14 +318,22 @@
                 // Persist selection across page reloads (e.g. when applying voucher or updating quantity)
                 sessionStorage.setItem("selectedCartItems", JSON.stringify(checkedIds));
 
+                let discount = parseFloat("${not empty sessionScope.appliedDiscount ? sessionScope.appliedDiscount : 0}") || 0;
+                
+                // Discount can't exceed subtotal
+                if (discount > subtotal) {
+                    discount = subtotal;
+                }
+
                 let finalTotal = 0;
                 if (subtotal > 0) {
-                    finalTotal = subtotal + shippingFee;
+                    finalTotal = subtotal + shippingFee - discount;
                     if (finalTotal < 0) finalTotal = 0;
                 }
 
                 // Update DOM
                 document.getElementById('cartSubtotalDisplay').innerText = formatCurrency(subtotal);
+                document.getElementById('cartDiscountDisplay').innerText = discount > 0 ? "-" + formatCurrency(discount) : "-0₫";
                 document.getElementById('cartTotalDisplay').innerText = formatCurrency(finalTotal);
                 
                 // Disable checkout button if no items selected

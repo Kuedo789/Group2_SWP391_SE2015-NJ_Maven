@@ -1,7 +1,8 @@
 package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.CartDAO;
-import com.bakeryzone.model.CartItemDTO; // Required for your list
+import com.bakeryzone.dao.VoucherDAO;
+import com.bakeryzone.model.CartItemDTO;
 import java.io.IOException;
 import java.math.BigDecimal; // Required for total calculations
 import java.math.RoundingMode;
@@ -21,6 +22,7 @@ import jakarta.servlet.http.HttpSession; // Required for session auth
 public class CartServlet extends HttpServlet {
 
     private final CartDAO cartDAO = new CartDAO();
+    private final VoucherDAO voucherDAO = new VoucherDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -62,6 +64,14 @@ public class CartServlet extends HttpServlet {
                 case "restore":
                     // Handled by admin product states.
                     break;
+                case "applyVoucher":
+                    handleApplyVoucher(request, session);
+                    break;
+                case "removeVoucher":
+                    session.removeAttribute("appliedVoucherCode");
+                    session.removeAttribute("appliedDiscount");
+                    response.sendRedirect(request.getContextPath() + "/cart?voucherRemoved=true");
+                    return;
                 case "checkout":
                     response.sendRedirect(request.getContextPath() + "/checkout");
                     return;
@@ -126,4 +136,48 @@ public class CartServlet extends HttpServlet {
         if (cartItemId != null && !cartItemId.trim().isEmpty()) {
             cartDAO.removeCartItem(cartItemId, userId);
         }
-    }}
+    }
+
+    private void handleApplyVoucher(HttpServletRequest request, HttpSession session) throws IOException {
+        String code = request.getParameter("voucherCode");
+        if (code == null || code.trim().isEmpty()) {
+            session.setAttribute("voucherError", "Vui lòng nhập mã voucher!");
+            return;
+        }
+        
+        com.bakeryzone.model.Voucher v = voucherDAO.getVoucherByCode(code.trim().toUpperCase());
+        if (v == null || !v.isActive()) {
+            session.setAttribute("voucherError", "Mã voucher không tồn tại hoặc đã bị khóa!");
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        if (v.getStartDate().getTime() > now || v.getEndDate().getTime() < now) {
+            session.setAttribute("voucherError", "Mã voucher chưa bắt đầu hoặc đã hết hạn!");
+            return;
+        }
+
+        if (v.getTotalQuantity() <= 0) {
+            session.setAttribute("voucherError", "Mã voucher này đã hết số lượng!");
+            return;
+        }
+
+        com.bakeryzone.model.User user = (com.bakeryzone.model.User) session.getAttribute("user");
+        int userUsage = voucherDAO.getUserUsageCount(user.getUserId(), v.getVoucherCode());
+        if (userUsage >= v.getUsagePerUser()) {
+            session.setAttribute("voucherError", "Bạn đã sử dụng hết lượt cho mã này!");
+            return;
+        }
+
+        // Tier check could go here if Membership was fully loaded in session. 
+        // For now, we will assume pass or check if user.getTierId() exists.
+
+        // Also we need cart subtotal. Since we do this on POST before GET, we could calculate here,
+        // but easier to just save code to session and let GET (renderCartPage) validate minOrderValue.
+        // Actually, we can just save it, and let Checkout validate.
+        session.setAttribute("appliedVoucherCode", v.getVoucherCode());
+        session.setAttribute("appliedDiscount", v.getDiscountAmount());
+        session.setAttribute("appliedVoucherMinOrder", v.getMinOrderValue());
+        session.removeAttribute("voucherError");
+    }
+}

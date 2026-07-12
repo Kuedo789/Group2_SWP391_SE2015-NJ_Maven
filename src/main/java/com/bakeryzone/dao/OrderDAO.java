@@ -552,7 +552,7 @@ public class OrderDAO {
     }
 
     public boolean insertOrder(Order order) {
-        String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus, Shipping_Fee, Discount_Amount, Payment_Method, Receiver_Name, Receiver_Phone, Customer_Note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus, Shipping_Fee, Discount_Amount, Payment_Method, Receiver_Name, Receiver_Phone, Customer_Note, Applied_Voucher_Code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String sqlCake = "INSERT INTO `custom_cake` (Custom_Cake_ID, Canvas_Image_URL, Greeting_Text, Cake_Hash_Structure, Calculated_Price) VALUES (?, ?, ?, ?, ?)";
         String sqlItem = "INSERT INTO `order_item` (Order_Item_ID, Order_No, Custom_Cake_ID, Accessory_ID, Quantity, Price_At_Purchase) VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -581,7 +581,7 @@ public class OrderDAO {
             psOrder.setBigDecimal(10, order.getTotalCost());
             psOrder.setString(11, order.getOrderStatus());
             psOrder.setBigDecimal(12, order.getShippingFee() != null ? order.getShippingFee() : BigDecimal.ZERO);
-            psOrder.setBigDecimal(13, BigDecimal.ZERO);
+            psOrder.setBigDecimal(13, order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO);
             psOrder.setString(14, order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD");
 
             String receiverName = order.getReceiverName();
@@ -596,6 +596,7 @@ public class OrderDAO {
             psOrder.setString(15, receiverName);
             psOrder.setString(16, receiverPhone);
             psOrder.setString(17, order.getCustomerNote());
+            psOrder.setString(18, order.getAppliedVoucherCode());
             psOrder.executeUpdate();
 
             psCake = conn.prepareStatement(sqlCake);

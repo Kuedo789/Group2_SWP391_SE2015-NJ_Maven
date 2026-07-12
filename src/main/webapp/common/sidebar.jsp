@@ -121,6 +121,12 @@
     <div class="nav-section-title">Hệ thống</div>
     <ul class="sidebar-menu">
 
+        <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/vouchers')}">
+            <li class="menu-item ${param.activeMenu == 'vouchers' ? 'active' : ''}">
+                <a href="${pageContext.request.contextPath}/admin/vouchers"><i class="fa-solid fa-ticket"></i> Mã giảm giá</a>
+            </li>
+        </c:if>
+
         <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/staff?action=list')}">
             <li class="menu-item ${param.activeMenu == 'users' ? 'active' : ''}">
                 <a href="${pageContext.request.contextPath}/admin/staff?action=list"><i class="fa-solid fa-user-gear"></i> Tài khoản</a>

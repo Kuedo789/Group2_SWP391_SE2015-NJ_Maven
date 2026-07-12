@@ -26,9 +26,27 @@ public class Order {
     private String receiverPhone;
     private String customerNote;
     private String paymentMethod = "COD";
+    private String appliedVoucherCode;
+    private BigDecimal discountAmount;
     private final List<OrderItem> items = new ArrayList<>();
 
     public Order() {
+    }
+
+    public String getAppliedVoucherCode() {
+        return appliedVoucherCode;
+    }
+
+    public void setAppliedVoucherCode(String appliedVoucherCode) {
+        this.appliedVoucherCode = appliedVoucherCode;
+    }
+
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
     }
 
     public BigDecimal getRemainingCodBalance() {
