@@ -40,6 +40,7 @@ public class PermissionDAO {
                 + "'FEAT_ATTR_VIEW', 'FEAT_ATTR_ADD', "
                 + "'FEAT_CUST_VIEW', 'FEAT_CUST_ADD', 'FEAT_CUST_EDIT', 'FEAT_CUST_DEL', "
                 + "'FEAT_REV_VIEW', 'FEAT_REV_DETAIL', 'FEAT_REV_UPDATE', "
+                + "'FEAT_BLOG_MANAGE', "
                 + "'FEAT_STAFF_VIEW', 'FEAT_STAFF_ADD', 'FEAT_STAFF_EDIT', 'FEAT_STAFF_DEL', "
                 + "'FEAT_ROLE_VIEW', 'FEAT_SETTING_MNG', 'FEAT_VOUCHER_VIEW')";
 
