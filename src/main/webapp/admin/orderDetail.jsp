@@ -260,6 +260,18 @@
                                 <c:out value="${not empty order.customerNote ? order.customerNote : 'Không có ghi chú'}" />
                             </div>
                         </div>
+                        <c:if test="${not empty order.tripId && order.orderStatus ne 'Pending' && order.orderStatus ne 'Chờ xác nhận'}">
+                            <div class="info-row" style="background-color: #f0fdf4; border-radius: 6px; padding: 10px; margin-top: 15px; border-left: 4px solid #16a34a; display: flex; flex-direction: column; gap: 4px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 13.5px;">
+                                    <span style="color: #15803d; font-weight: 700;"><i class="fa-solid fa-route"></i> Chuyến giao hàng:</span>
+                                    <span style="font-family: monospace; font-weight: 700; color: #166534;"><c:out value="${order.tripId}" /></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13.5px; margin-top: 2px;">
+                                    <span style="color: #15803d; font-weight: 700;"><i class="fa-solid fa-user-ninja"></i> Shipper phụ trách:</span>
+                                    <span style="font-weight: 700; color: #166534;"><c:out value="${not empty order.shipperName ? order.shipperName : 'Chưa gán'}" /></span>
+                                </div>
+                            </div>
+                        </c:if>
                         <c:if test="${not empty order.shipperNote}">
                             <div style="background-color: #fff5f5; border: 1px solid #feb2b2; border-radius: 8px; padding: 15px; margin-top: 15px; display: flex; flex-direction: column; gap: 6px;">
                                 <div style="color: #c53030; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
@@ -274,13 +286,46 @@
 
                     <!-- Bằng chứng giao hàng (Shipper tải lên, Admin chỉ xem) -->
                     <div class="cz-card">
-                        <div class="cz-card-title">
-                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Bằng chứng giao hàng
+                        <div class="cz-card-title" style="margin-bottom: 15px;">
+                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Minh chứng hình ảnh (Từ Shipper)
                         </div>
-                        <div class="shipper-proof-box">
-                            <div id="admin-proof-display-container" style="text-align: center; width: 100%;">
-                                <i class="fa-regular fa-image proof-icon" style="font-size: 32px; margin-bottom: 8px; display: block;"></i>
-                                <span class="proof-empty-text">Shipper chưa tải lên ảnh bằng chứng giao hàng cho đơn này.</span>
+                        <div class="row">
+                            <!-- 1. Minh chứng lấy bánh tại tiệm -->
+                            <div class="col-md-6 text-center" style="border-right: 1px dashed #ddd; padding: 15px;">
+                                <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">1. Ảnh lấy bánh tại tiệm (Pickup)</h6>
+                                <div style="margin-bottom: 10px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                    <c:choose>
+                                        <c:when test="${not empty pickupPhoto}">
+                                            <img src="${pageContext.request.contextPath}/${pickupPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
+                                            <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
+                                                <i class="fa-solid fa-circle-check"></i> Đã chụp lúc lấy hàng
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
+                                            <span style="font-size: 12px; color: #888;">Shipper chưa chụp ảnh lấy bánh.</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </div>
+                            
+                            <!-- 2. Minh chứng giao bánh cho khách -->
+                            <div class="col-md-6 text-center" style="padding: 15px;">
+                                <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">2. Ảnh bàn giao cho khách (Delivery)</h6>
+                                <div style="margin-bottom: 10px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                    <c:choose>
+                                        <c:when test="${not empty deliveryPhoto}">
+                                            <img src="${pageContext.request.contextPath}/${deliveryPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
+                                            <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
+                                                <i class="fa-solid fa-circle-check"></i> Đã chụp lúc giao xong
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
+                                            <span style="font-size: 12px; color: #888;">Shipper chưa chụp ảnh giao bánh.</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -382,30 +427,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            const orderStatus = '${order.orderStatus}';
-            const savedProof = localStorage.getItem('proof_of_delivery_' + '${order.orderNo}');
-            const displayContainer = document.getElementById('admin-proof-display-container');
-
-            // Load saved proof to admin display container
-            if (displayContainer) {
-                if (savedProof) {
-                    displayContainer.innerHTML = `
-                        <img src="${savedProof}" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
-                        <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
-                            <i class="fa-solid fa-circle-check"></i> Ảnh bằng chứng thực tế từ Shipper
-                        </div>
-                    `;
-                } else {
-                    displayContainer.innerHTML = `
-                        <i class="fa-regular fa-image proof-icon" style="font-size: 32px; color: #bbb; margin-bottom: 8px; display: block;"></i>
-                        <span class="proof-empty-text">Shipper chưa tải lên ảnh bằng chứng giao hàng cho đơn này.</span>
-                    `;
-                }
-            }
-        });
-    </script>
 </body>
 </html>

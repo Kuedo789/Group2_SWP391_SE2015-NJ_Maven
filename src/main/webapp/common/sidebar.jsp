@@ -105,9 +105,6 @@
         <li class="menu-item ${param.activeMenu == 'inventory' ? 'active' : ''}">
             <a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
         </li>
-        <li class="menu-item ${param.activeMenu == 'delivery' ? 'active' : ''}">
-            <a href="#"><i class="fa-solid fa-truck-ramp-box"></i> Giao hàng <i class="fa-solid fa-chevron-down arrow"></i></a>
-        </li>
 
         <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/reviews?action=list')}">
             <li class="menu-item ${param.activeMenu == 'reviews' ? 'active' : ''}">

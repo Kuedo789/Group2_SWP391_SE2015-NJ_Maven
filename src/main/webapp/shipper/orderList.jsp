@@ -27,7 +27,12 @@
             <div class="page-title-area">
                 <div>
                     <h1 class="page-title">Đơn hàng được phân công</h1>
-                    <p class="page-subtitle">Danh sách các đơn hàng bạn cần chịu trách nhiệm giao và cập nhật trạng thái</p>
+                    <p class="page-subtitle" style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
+                        Khu vực giao hàng phụ trách của bạn: 
+                        <span class="badge" style="font-size: 13px; padding: 5px 10px; border-radius: 4px; font-weight: 700; background-color: #dcfce7; color: #166534; border: 1px solid #bbf7d0; display: inline-flex; align-items: center; gap: 4px;">
+                            <i class="fa-solid fa-location-dot"></i> <c:out value="${not empty managedZone ? managedZone : 'Toàn thành phố'}" />
+                        </span>
+                    </p>
                 </div>
             </div>
 
@@ -95,7 +100,10 @@
                                         </td>
                                         <td>
                                             <div class="fw-bold"><c:out value="${not empty o.customerName ? o.customerName : 'Khách vãng lai'}" /></div>
-                                            <div class="text-muted" style="font-size: 12px;">ID: ${o.customerId}</div>
+                                            <div class="text-muted" style="font-size: 11px; margin-bottom: 4px;">ID: ${o.customerId}</div>
+                                            <div style="font-size: 11px; color: #555; background-color: #f3f4f6; border: 1px solid #e5e7eb; padding: 2px 6px; border-radius: 4px; display: inline-block; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${o.deliveryAddress}">
+                                                <i class="fa-solid fa-map-location-dot" style="color: #6b7280;"></i> <c:out value="${o.deliveryAddress}" />
+                                            </div>
                                         </td>
                                         <td>
                                             <fmt:formatDate value="${o.orderTime}" pattern="dd/MM/yyyy HH:mm" />

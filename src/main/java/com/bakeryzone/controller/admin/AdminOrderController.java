@@ -152,10 +152,28 @@ public class AdminOrderController extends HttpServlet {
 
         Customer customer = customerDAO.getCustomerById(order.getCustomerId());
 
+        String realPath = request.getServletContext().getRealPath("/");
+        String pickupPhoto = findEvidenceFile(realPath, orderNo, "pickup");
+        String deliveryPhoto = findEvidenceFile(realPath, orderNo, "delivery");
+
         request.setAttribute("order", order);
         request.setAttribute("customer", customer);
+        request.setAttribute("pickupPhoto", pickupPhoto);
+        request.setAttribute("deliveryPhoto", deliveryPhoto);
 
         request.getRequestDispatcher("/admin/orderDetail.jsp").forward(request, response);
+    }
+
+    private String findEvidenceFile(String realPath, String orderNo, String type) {
+        java.io.File dir = new java.io.File(realPath + "assets/images/evidence");
+        if (dir.exists() && dir.isDirectory()) {
+            String prefix = "evidence_" + orderNo + "_" + type;
+            java.io.File[] files = dir.listFiles((d, name) -> name.startsWith(prefix));
+            if (files != null && files.length > 0) {
+                return "assets/images/evidence/" + files[0].getName();
+            }
+        }
+        return "";
     }
 
     private void handleUpdateStatus(HttpServletRequest request, HttpServletResponse response)
@@ -199,6 +217,10 @@ public class AdminOrderController extends HttpServlet {
 
         boolean success = orderDAO.updateOrderStatus(orderNo, status);
         if (success) {
+            // Tự động phân công Shipper & Gom đơn khi Admin xác nhận hoặc bắt đầu xử lý đơn hàng
+            if ("Confirmed".equalsIgnoreCase(status) || "Processing".equalsIgnoreCase(status)) {
+                orderDAO.autoAssignShipperAndTrip(orderNo);
+            }
             session.setAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + orderNo + " thành công!");
         } else {
             session.setAttribute("errorMessage", "Không thể cập nhật trạng thái đơn hàng.");

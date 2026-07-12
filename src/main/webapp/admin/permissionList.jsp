@@ -354,7 +354,6 @@
                                         <div class="feature-meta-info ${isMainFeature ? 'feature-main' : 'feature-sub'}">
                                             <i class="fa-solid ${isMainFeature ? 'fa-star' : 'fa-caret-right'}"></i> 
                                             <span>${s.screenName.contains(':') ? s.screenName.split(':')[1] : s.screenName}</span>
-                                            <span class="feature-endpoint">(${s.endpointUrl})</span>
                                         </div>
 
                                         <div class="d-flex align-items-center gap-2">
@@ -393,7 +392,6 @@
                                         <div style="font-size: 14px;">
                                             <i class="fa-solid fa-ghost text-muted me-2"></i>
                                             <span class="fw-bold text-secondary">${hs.screenName}</span> 
-                                            <span class="text-muted font-monospace" style="font-size: 12px;">(${hs.endpointUrl})</span>
                                         </div>
                                         <a href="${pageContext.request.contextPath}/admin/role-permissions?action=restore-feature&id=${hs.screenId}&roleId=${CURRENT_ROLE_ID}" 
                                            class="btn btn-sm btn-outline-success px-3" style="font-size: 12px; font-weight: 600; border-radius: 6px;">

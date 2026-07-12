@@ -298,17 +298,54 @@
                     <!-- Bằng chứng giao hàng (Shipper tải lên) -->
                     <div class="cz-card">
                         <div class="cz-card-title">
-                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Tải ảnh bằng chứng giao hàng (Bắt buộc khi hoàn thành)
+                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Ảnh minh chứng giao nhận (Yêu cầu thực tế)
                         </div>
-                        <div class="shipper-proof-box" style="text-align: center; padding: 20px;">
-                            <div id="proof-preview-container" style="margin-bottom: 15px;">
-                                <i class="fa-regular fa-image" style="font-size: 48px; color: #ccc; display: block; margin-bottom: 8px;"></i>
-                                <span style="font-size: 13px; color: #888;">Chưa tải lên ảnh bằng chứng giao hàng thực tế.</span>
+                        <div class="row" style="padding: 10px 20px;">
+                            <!-- 1. Minh chứng lấy bánh tại tiệm -->
+                            <div class="col-md-6 text-center" style="border-right: 1px dashed #ddd; padding: 15px;">
+                                <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">1. Ảnh lấy bánh tại tiệm (Pickup)</h6>
+                                <div id="pickup-preview-container" style="margin-bottom: 15px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                    <c:choose>
+                                        <c:when test="${not empty pickupPhoto}">
+                                            <img src="${pageContext.request.contextPath}/${pickupPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
+                                            <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
+                                                <i class="fa-solid fa-circle-check"></i> Đã có ảnh lấy bánh
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
+                                            <span style="font-size: 12px; color: #888;">Chưa chụp ảnh lấy bánh.</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <input type="file" id="pickup-file-input" accept="image/*" capture="camera" style="display: none;" onchange="uploadEvidence(this, 'pickup')">
+                                <button type="button" class="btn" style="background-color: var(--cz-primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="document.getElementById('pickup-file-input').click()">
+                                    <i class="fa-solid fa-camera"></i> Chụp ảnh lấy bánh
+                                </button>
                             </div>
-                            <input type="file" id="proof-file-input" accept="image/*" style="display: none;" onchange="previewAndSaveProof(event)">
-                            <button type="button" class="btn" style="background-color: var(--cz-primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;" onclick="document.getElementById('proof-file-input').click()">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> Tải ảnh / Chụp hình bằng chứng
-                            </button>
+                            
+                            <!-- 2. Minh chứng giao bánh cho khách -->
+                            <div class="col-md-6 text-center" style="padding: 15px;">
+                                <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">2. Ảnh bàn giao cho khách (Delivery)</h6>
+                                <div id="delivery-preview-container" style="margin-bottom: 15px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                    <c:choose>
+                                        <c:when test="${not empty deliveryPhoto}">
+                                            <img src="${pageContext.request.contextPath}/${deliveryPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
+                                            <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
+                                                <i class="fa-solid fa-circle-check"></i> Đã có ảnh giao bánh
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
+                                            <span style="font-size: 12px; color: #888;">Chưa chụp ảnh giao bánh.</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                                <input type="file" id="delivery-file-input" accept="image/*" capture="camera" style="display: none;" onchange="uploadEvidence(this, 'delivery')" ${empty pickupPhoto ? 'disabled' : ''}>
+                                <button type="button" class="btn" id="btn-delivery-upload" style="background-color: ${empty pickupPhoto ? '#aaa' : 'var(--cz-primary)'}; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="${empty pickupPhoto ? "alert('Bạn cần chụp ảnh lấy bánh tại tiệm trước!')" : "document.getElementById('delivery-file-input').click()"}" ${empty pickupPhoto ? 'disabled' : ''}>
+                                    <i class="fa-solid fa-camera"></i> Chụp ảnh giao bánh
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -415,39 +452,73 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        function previewAndSaveProof(event) {
-            const file = event.target.files[0];
+        function uploadEvidence(inputElement, type) {
+            const file = inputElement.files[0];
             if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const base64Data = e.target.result;
-                localStorage.setItem('proof_of_delivery_' + '${order.orderNo}', base64Data);
-                renderProof(base64Data);
-            };
-            reader.readAsDataURL(file);
-        }
 
-        function renderProof(base64Data) {
-            const container = document.getElementById('proof-preview-container');
-            if (container) {
-                container.innerHTML = `
-                    <img src="${base64Data}" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.15);" />
-                    <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
-                        <i class="fa-solid fa-circle-check"></i> Đã đính kèm ảnh bằng chứng giao hàng!
-                    </div>
-                `;
+            // Kiểm tra kích thước file (giới hạn 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert("⚠️ Kích thước ảnh quá lớn, vui lòng chụp/chọn ảnh dưới 10MB!");
+                return;
             }
+
+            // Hiển thị trạng thái đang tải lên
+            const previewContainer = document.getElementById(type + '-preview-container');
+            const originalHTML = previewContainer.innerHTML;
+            previewContainer.innerHTML = `
+                <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem; margin-bottom: 8px;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span style="font-size: 12px; color: #555; display: block;">Đang tải lên ảnh...</span>
+            `;
+
+            // Chuẩn bị dữ liệu FormData gửi lên Servlet
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("tripId", "${order.tripId}");
+            formData.append("orderNo", "${order.orderNo}");
+            formData.append("type", type);
+
+            // Gửi Fetch POST lên servlet
+            fetch("${pageContext.request.contextPath}/shipper/orders", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("🎉 " + data.message);
+                    // Tải lại trang để đồng bộ hoàn toàn trạng thái mới từ database
+                    window.location.reload();
+                } else {
+                    alert("❌ Lỗi: " + data.message);
+                    previewContainer.innerHTML = originalHTML;
+                }
+            })
+            .catch(error => {
+                console.error("Lỗi upload minh chứng:", error);
+                alert("❌ Đã xảy ra lỗi kết nối khi tải ảnh lên!");
+                previewContainer.innerHTML = originalHTML;
+            });
         }
 
         function validateStatusChange() {
             const statusSelect = document.getElementById('shipper-status-select');
             const selectedStatus = statusSelect.value;
             
+            // Ràng buộc ảnh minh chứng với từng trạng thái
+            if (selectedStatus === 'Delivering') {
+                const hasPickupPhoto = "${not empty pickupPhoto}" === "true";
+                if (!hasPickupPhoto) {
+                    alert('⚠️ LỖI: Bạn phải chụp ảnh lấy bánh thành công tại tiệm trước khi cập nhật đơn hàng thành "Đang giao hàng"!');
+                    return false;
+                }
+            }
+            
             if (selectedStatus === 'Completed') {
-                const savedProof = localStorage.getItem('proof_of_delivery_' + '${order.orderNo}');
-                if (!savedProof) {
-                    alert('⚠️ LỖI: Bạn phải tải lên hoặc chụp ảnh bằng chứng giao hàng trước khi chuyển trạng thái đơn sang "Hoàn thành"!');
+                const hasDeliveryPhoto = "${not empty deliveryPhoto}" === "true";
+                if (!hasDeliveryPhoto) {
+                    alert('⚠️ LỖI: Bạn phải chụp ảnh giao bánh thành công cho khách trước khi cập nhật đơn hàng thành "Hoàn thành"!');
                     return false;
                 }
             }
@@ -465,12 +536,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const savedProof = localStorage.getItem('proof_of_delivery_' + '${order.orderNo}');
-            if (savedProof) {
-                renderProof(savedProof);
-            }
-            
-            // Toggle lý do hủy
+            // Toggle hiển thị lý do hủy đơn
             const statusSelect = document.getElementById('shipper-status-select');
             const cancelReasonContainer = document.getElementById('cancel-reason-container');
             
@@ -483,7 +549,7 @@
                     }
                 });
                 
-                // Initial check
+                // Kiểm tra trạng thái lúc khởi tạo
                 if (statusSelect.value === 'Cancelled') {
                     cancelReasonContainer.style.display = 'block';
                 }
