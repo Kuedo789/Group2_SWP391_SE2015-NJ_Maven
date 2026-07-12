@@ -42,6 +42,7 @@
             <a href="<%= request.getContextPath() %>/home">Trang Chủ</a>
             <a href="<%= request.getContextPath() %>/products">Menu bánh</a>
             <a href="<%= request.getContextPath() %>/custom-cake">Thiết kế bánh</a>
+            <a href="<%= request.getContextPath() %>/blog">Tin tức</a>
             <% if (currentUser != null) { %>
             <a href="<%= contextPath %>/membership"
                class="nav-menu-membership-link">Thành viên</a>
