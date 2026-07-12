@@ -26,22 +26,22 @@
 
                     <div class="hero-slide active"
                          style="background-image: url('${pageContext.request.contextPath}/${not empty settings.banner1 ? settings.banner1 : 'assets/images/hero/hero-1.jpg'}');
-                                background-position: center ${settings.banner1Align eq 'top' ? '0' : (settings.banner1Align eq 'bottom' ? '100' : (settings.banner1Align eq 'center' ? '50' : (not empty settings.banner1Align ? settings.banner1Align : '50')))}%;">
+                         background-position: center ${settings.banner1Align eq 'top' ? '0' : (settings.banner1Align eq 'bottom' ? '100' : (settings.banner1Align eq 'center' ? '50' : (not empty settings.banner1Align ? settings.banner1Align : '50')))}%;">
                     </div>
 
                     <div class="hero-slide"
                          style="background-image: url('${pageContext.request.contextPath}/${not empty settings.banner2 ? settings.banner2 : 'assets/images/hero/hero-2.jpg'}');
-                                background-position: center ${settings.banner2Align eq 'top' ? '0' : (settings.banner2Align eq 'bottom' ? '100' : (settings.banner2Align eq 'center' ? '50' : (not empty settings.banner2Align ? settings.banner2Align : '50')))}%;">
+                         background-position: center ${settings.banner2Align eq 'top' ? '0' : (settings.banner2Align eq 'bottom' ? '100' : (settings.banner2Align eq 'center' ? '50' : (not empty settings.banner2Align ? settings.banner2Align : '50')))}%;">
                     </div>
 
                     <div class="hero-slide"
                          style="background-image: url('${pageContext.request.contextPath}/${not empty settings.banner3 ? settings.banner3 : 'assets/images/hero/hero-3.jpg'}');
-                                background-position: center ${settings.banner3Align eq 'top' ? '0' : (settings.banner3Align eq 'bottom' ? '100' : (settings.banner3Align eq 'center' ? '50' : (not empty settings.banner3Align ? settings.banner3Align : '50')))}%;">
+                         background-position: center ${settings.banner3Align eq 'top' ? '0' : (settings.banner3Align eq 'bottom' ? '100' : (settings.banner3Align eq 'center' ? '50' : (not empty settings.banner3Align ? settings.banner3Align : '50')))}%;">
                     </div>
 
                     <div class="hero-slide"
                          style="background-image: url('${pageContext.request.contextPath}/${not empty settings.banner4 ? settings.banner4 : 'assets/images/hero/hero-4.jpg'}');
-                                background-position: center ${settings.banner4Align eq 'top' ? '0' : (settings.banner4Align eq 'bottom' ? '100' : (settings.banner4Align eq 'center' ? '50' : (not empty settings.banner4Align ? settings.banner4Align : '50')))}%;">
+                         background-position: center ${settings.banner4Align eq 'top' ? '0' : (settings.banner4Align eq 'bottom' ? '100' : (settings.banner4Align eq 'center' ? '50' : (not empty settings.banner4Align ? settings.banner4Align : '50')))}%;">
                     </div>
 
                     <div class="hero-overlay"></div>
@@ -197,42 +197,42 @@
                                     badgeClass = "badge-yellow";
                                     badgeText = "Nổi bật";
                                 }
-                        %>
+                    %>
 
-                        <div class="product-card">
-                            <div class="product-image">
-                                <a href="<%= request.getContextPath() %>/product-detail?id=<%= productId %>">
-                                    <img src="<%= finalImageUrl %>" alt="<%= productName %>">
-                                </a>
+                    <div class="product-card">
+                        <div class="product-image">
+                            <a href="<%= request.getContextPath() %>/product-detail?id=<%= productId %>">
+                                <img src="<%= finalImageUrl %>" alt="<%= productName %>">
+                            </a>
 
-                                <% if (!badgeText.isEmpty()) { %>
-                                <span class="badge <%= badgeClass %>"><%= badgeText %></span>
-                                <% } %>
-                            </div>
-
-                            <h3><%= productName %></h3>
-                            <p><%= description %></p>
-
-                            <div class="product-bottom">
-                                <strong><%= String.format("%,.0f", product.getBasePrice()).replace(",", ".") %>đ</strong>
-
-                                <button type="button"
-                                        onclick="window.location.href = '<%= request.getContextPath() %>/product-detail?id=<%= productId %>'">
-                                    <span class="material-symbols-outlined">add_shopping_cart</span>
-                                </button>
-                            </div>
+                            <% if (!badgeText.isEmpty()) { %>
+                            <span class="badge <%= badgeClass %>"><%= badgeText %></span>
+                            <% } %>
                         </div>
 
-                        <%
-                            }
-                        } else {
-                        %>
-                        <div class="category-empty" style="grid-column: span 4; text-align: center; padding: 40px;">
-                            <p>Hiện chưa có bánh bán chạy nào.</p>
+                        <h3><%= productName %></h3>
+                        <p><%= description %></p>
+
+                        <div class="product-bottom">
+                            <strong><%= String.format("%,.0f", product.getBasePrice()).replace(",", ".") %>đ</strong>
+
+                            <button type="button"
+                                    onclick="window.location.href = '<%= request.getContextPath() %>/product-detail?id=<%= productId %>'">
+                                <span class="material-symbols-outlined">add_shopping_cart</span>
+                            </button>
                         </div>
-                        <%
-                            }
-                        %>
+                    </div>
+
+                    <%
+                        }
+                    } else {
+                    %>
+                    <div class="category-empty" style="grid-column: span 4; text-align: center; padding: 40px;">
+                        <p>Hiện chưa có bánh bán chạy nào.</p>
+                    </div>
+                    <%
+                        }
+                    %>
                 </div>
             </section>
 
@@ -384,40 +384,63 @@
                     </div>
                 </div>
             </section>
-            
-            <section class="section review-section">
-                <h2 class="center-title">Khách hàng nói về Bakery Zone</h2>
-                <p class="center-title-sub">Những lời phản hồi chân thực nhất từ những trải nghiệm ngọt ngào</p>
 
-                <div class="review-home-grid">
+            <section class="section review-section" style="padding: 60px 0; background-color: #f8f6f4;">
+                <h2 class="center-title" style="font-family: 'Outfit', sans-serif; font-weight: 700; text-align: center; margin-bottom: 8px;">Khách hàng nói về Bakery Zone</h2>
+                <p class="center-title-sub" style="text-align: center; color: #777; margin-bottom: 40px;">Những lời phản hồi chân thực nhất từ những trải nghiệm ngọt ngào</p>
+
+                <div class="review-home-grid" style="display: flex; flex-direction: column; align-items: center; gap: 24px; width: 100%; padding: 0 15px; box-sizing: border-box;">
                     <%
                         List<Review> featuredReviews = (List<Review>) request.getAttribute("FEATURED_REVIEWS");
                         if (featuredReviews != null && !featuredReviews.isEmpty()) {
                             for (Review rev : featuredReviews) {
                     %>
-                    <div class="review-home-card">
-                        <div>
-                            <!-- Tạo số sao động dựa vào thuộc tính ratingStars -->
-                            <div class="review-home-stars">
-                                <% for (int s = 0; s < rev.getRatingStars(); s++) { %>
-                                    <span class="material-symbols-outlined" style="font-size: 20px;">star</span>
-                                <% } %>
+                    <%-- BỐ CỤC CARD CHUẨN: Sử dụng Flexbox để chia đôi trái phải --%>
+                    <div class="review-home-card" style="display: flex; flex-direction: row; align-items: center; background: #ffffff; border-radius: 20px; padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 800px; width: 100%; border: 1px solid #eee; gap: 30px;">
+
+                        <%-- CỘT TRÁI: Nội dung (Sao, Lời bình, Tên khách) --%>
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 12px;">
+                            <div style="color: #ffb400; font-size: 18px;">
+                                <% for (int s = 0; s < rev.getRatingStars(); s++) { %>★<% } %>
+                                <% for (int s = rev.getRatingStars(); s < 5; s++) { %><span style="color: #ddd;">★</span><% } %>
                             </div>
-                            <p class="review-home-comment">"<%= rev.getComment() %>"</p>
+                            <p style="font-size: 15px; font-style: italic; color: #555; line-height: 1.5; margin: 0;">"<%= rev.getComment() %>"</p>
+                            <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                                <img src="https://ui-avatars.com/api/?name=<%= java.net.URLEncoder.encode(rev.getCustomerName() != null ? rev.getCustomerName() : "A", "UTF-8") %>&background=3f5f36&color=fff&size=40" style="border-radius: 50%; width: 40px; height: 40px;">
+                                <div>
+                                    <h4 style="margin: 0; font-size: 14px; font-weight: 700;"><%= rev.getCustomerName() %></h4>
+                                    <small style="color: #888; font-size: 12px;">Mẫu: <%= rev.getTemplateName() %></small>
+                                </div>
+                            </div>
                         </div>
-                        <div class="review-home-user">
-                            <h4 class="review-home-name"><%= rev.getCustomerName() != null ? rev.getCustomerName() : "Khách hàng ẩn danh" %></h4>
-                            <small class="review-home-cake">Mẫu bánh: <%= rev.getTemplateName() != null ? rev.getTemplateName() : "Bánh ngọt" %></small>
+
+                        <div style="width: 160px; border-left: 1px solid #f1ede8; padding-left: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 160px;">
+                            <%-- Lấy đường dẫn từ đối tượng Review hiện tại --%>
+                            <%
+                                String imgPath = rev.getProductImageUrl();
+                                if (imgPath == null || imgPath.trim().isEmpty()) {
+                                    imgPath = "assets/images/products/basic.png";
+                                }
+                                String finalImgPath;
+                                if (imgPath.startsWith("http://") || imgPath.startsWith("https://") || imgPath.startsWith("data:")) {
+                                    finalImgPath = imgPath;
+                                } else {
+                                    finalImgPath = request.getContextPath() + "/" + imgPath;
+                                }
+                            %>
+
+                            <img src="<%= finalImgPath %>" 
+                                 alt="<%= rev.getTemplateName() != null ? rev.getTemplateName() : "Bánh" %>" 
+                                 onerror="this.src='<%= request.getContextPath() %>/assets/images/products/basic.png'"
+                                 style="width: 110px; height: 110px; object-fit: cover; border-radius: 14px; border: 1px solid #f1ede8; box-shadow: 0 8px 20px rgba(0,0,0,0.04);">
+
+                            <span style="background-color: #f1ede8; color: #3f5f36; font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 20px; margin-top: 10px;">
+                                ✓ Đã mua hàng
+                            </span>
                         </div>
                     </div>
                     <%
                             }
-                        } else {
-                    %>
-                    <div class="review-empty">
-                        <p>Chưa có đánh giá nổi bật nào được chọn hiển thị.</p>
-                    </div>
-                    <%
                         }
                     %>
                 </div>

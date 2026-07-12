@@ -9,7 +9,7 @@
 <html lang="en">
 <head>
     <jsp:include page="/common/admin-header.jsp">
-        <jsp:param name="title" value="CakeZone Admin - Chi tiết đơn hàng #${order.orderNo.replace('ORD_', '')}" />
+        <jsp:param name="title" value="CakeZone Shipper - Chi tiết đơn hàng #${order.orderNo.replace('ORD_', '')}" />
     </jsp:include>
     <!-- Order Specific Style Link -->
     <link href="${pageContext.request.contextPath}/assets/css/all/order.css" rel="stylesheet">
@@ -58,16 +58,30 @@
 
     <div class="main-panel">
         <!-- Top Header -->
-        <jsp:include page="../common/top-header.jsp">
-            <jsp:param name="parentMenu" value="Quản lý đơn hàng" />
-            <jsp:param name="parentUrl" value="${pageContext.request.contextPath}/admin/orders" />
-            <jsp:param name="activeMenu" value="Chi tiết đơn hàng" />
+        <jsp:include page="/common/top-header.jsp">
+            <jsp:param name="parentMenu" value="Đơn hàng được phân công" />
+            <jsp:param name="parentUrl" value="${pageContext.request.contextPath}/shipper/orders" />
+            <jsp:param name="activeMenu" value="Chi tiết giao hàng" />
         </jsp:include>
 
         <div class="content-container">
-            <a href="${pageContext.request.contextPath}/admin/orders" class="btn-back">
+            <a href="${pageContext.request.contextPath}/shipper/orders" class="btn-back">
                 <i class="fa-solid fa-arrow-left-long"></i> Quay lại danh sách đơn hàng
             </a>
+
+            <!-- Popups notification standard -->
+            <c:if test="${not empty sessionScope.successMessage}">
+                <div style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; border: 1px solid #c3e6cb;">
+                    <i class="fa-solid fa-circle-check me-2"></i> ${sessionScope.successMessage}
+                </div>
+                <c:remove var="successMessage" scope="session" />
+            </c:if>
+            <c:if test="${not empty sessionScope.errorMessage}">
+                <div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; border: 1px solid #f5c6cb;">
+                    <i class="fa-solid fa-circle-exclamation me-2"></i> ${sessionScope.errorMessage}
+                </div>
+                <c:remove var="errorMessage" scope="session" />
+            </c:if>
 
             <div class="page-title-area">
                 <div>
@@ -91,7 +105,7 @@
                             <span class="status-badge status-completed">Hoàn thành</span>
                         </c:when>
                         <c:otherwise>
-                            <span class="status-badge status-cancelled">Đã hủy</span>
+                            <span class="status-badge status-cancelled">Đã hủy / Thất bại</span>
                         </c:otherwise>
                     </c:choose>
                 </div>
@@ -225,6 +239,7 @@
                                 recName = (curCust != null && curCust.getFullName() != null) ? curCust.getFullName() : "Khách vãng lai";
                                 recPhone = (curCust != null && curCust.getPhone() != null) ? curCust.getPhone() : "Không có";
                             }
+                            request.setAttribute("googleMapsQueryAddress", displayAddr);
                         %>
                         <div class="info-row">
                             <div class="info-label">Khách hàng đặt:</div>
@@ -236,15 +251,23 @@
                         </div>
                         <div class="info-row">
                             <div class="info-label">SĐT người nhận:</div>
-                            <div class="info-value"><%= recPhone %></div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Email tài khoản:</div>
-                            <div class="info-value"><c:out value="${not empty customer.user.email ? customer.user.email : 'Không có'}" /></div>
+                            <div class="info-value">
+                                <a href="tel:<%= recPhone %>" style="color: var(--cz-primary); font-weight: bold; text-decoration: none;">
+                                    <i class="fa-solid fa-phone me-1"></i> <%= recPhone %> (Nhấp để gọi)
+                                </a>
+                            </div>
                         </div>
                         <div class="info-row">
                             <div class="info-label">Địa chỉ giao hàng:</div>
-                            <div class="info-value"><%= displayAddr %></div>
+                            <div class="info-value">
+                                <c:url var="googleMapsUrl" value="https://www.google.com/maps/search/">
+                                    <c:param name="api" value="1" />
+                                    <c:param name="query" value="${googleMapsQueryAddress}" />
+                                </c:url>
+                                <a href="${googleMapsUrl}" target="_blank" style="color: #0d6efd; font-weight: 500; text-decoration: none;">
+                                    <i class="fa-solid fa-map-location-dot me-1"></i> <%= displayAddr %> (Xem trên Google Maps)
+                                </a>
+                            </div>
                         </div>
                         <div class="info-row">
                             <div class="info-label">Giờ giao dự kiến:</div>
@@ -260,18 +283,6 @@
                                 <c:out value="${not empty order.customerNote ? order.customerNote : 'Không có ghi chú'}" />
                             </div>
                         </div>
-                        <c:if test="${not empty order.tripId && order.orderStatus ne 'Pending' && order.orderStatus ne 'Chờ xác nhận'}">
-                            <div class="info-row" style="background-color: #f0fdf4; border-radius: 6px; padding: 10px; margin-top: 15px; border-left: 4px solid #16a34a; display: flex; flex-direction: column; gap: 4px;">
-                                <div style="display: flex; justify-content: space-between; font-size: 13.5px;">
-                                    <span style="color: #15803d; font-weight: 700;"><i class="fa-solid fa-route"></i> Chuyến giao hàng:</span>
-                                    <span style="font-family: monospace; font-weight: 700; color: #166534;"><c:out value="${order.tripId}" /></span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; font-size: 13.5px; margin-top: 2px;">
-                                    <span style="color: #15803d; font-weight: 700;"><i class="fa-solid fa-user-ninja"></i> Shipper phụ trách:</span>
-                                    <span style="font-weight: 700; color: #166534;"><c:out value="${not empty order.shipperName ? order.shipperName : 'Chưa gán'}" /></span>
-                                </div>
-                            </div>
-                        </c:if>
                         <c:if test="${not empty order.shipperNote}">
                             <div style="background-color: #fff5f5; border: 1px solid #feb2b2; border-radius: 8px; padding: 15px; margin-top: 15px; display: flex; flex-direction: column; gap: 6px;">
                                 <div style="color: #c53030; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
@@ -284,48 +295,56 @@
                         </c:if>
                     </div>
 
-                    <!-- Bằng chứng giao hàng (Shipper tải lên, Admin chỉ xem) -->
+                    <!-- Bằng chứng giao hàng (Shipper tải lên) -->
                     <div class="cz-card">
-                        <div class="cz-card-title" style="margin-bottom: 15px;">
-                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Minh chứng hình ảnh (Từ Shipper)
+                        <div class="cz-card-title">
+                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Ảnh minh chứng giao nhận (Yêu cầu thực tế)
                         </div>
-                        <div class="row">
+                        <div class="row" style="padding: 10px 20px;">
                             <!-- 1. Minh chứng lấy bánh tại tiệm -->
                             <div class="col-md-6 text-center" style="border-right: 1px dashed #ddd; padding: 15px;">
                                 <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">1. Ảnh lấy bánh tại tiệm (Pickup)</h6>
-                                <div style="margin-bottom: 10px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                <div id="pickup-preview-container" style="margin-bottom: 15px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
                                     <c:choose>
                                         <c:when test="${not empty pickupPhoto}">
                                             <img src="${pageContext.request.contextPath}/${pickupPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
                                             <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
-                                                <i class="fa-solid fa-circle-check"></i> Đã chụp lúc lấy hàng
+                                                <i class="fa-solid fa-circle-check"></i> Đã có ảnh lấy bánh
                                             </div>
                                         </c:when>
                                         <c:otherwise>
                                             <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
-                                            <span style="font-size: 12px; color: #888;">Shipper chưa chụp ảnh lấy bánh.</span>
+                                            <span style="font-size: 12px; color: #888;">Chưa chụp ảnh lấy bánh.</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
+                                <input type="file" id="pickup-file-input" accept="image/*" capture="camera" style="display: none;" onchange="uploadEvidence(this, 'pickup')">
+                                <button type="button" class="btn" style="background-color: var(--cz-primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="document.getElementById('pickup-file-input').click()">
+                                    <i class="fa-solid fa-camera"></i> Chụp ảnh lấy bánh
+                                </button>
                             </div>
                             
                             <!-- 2. Minh chứng giao bánh cho khách -->
                             <div class="col-md-6 text-center" style="padding: 15px;">
                                 <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">2. Ảnh bàn giao cho khách (Delivery)</h6>
-                                <div style="margin-bottom: 10px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                <div id="delivery-preview-container" style="margin-bottom: 15px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
                                     <c:choose>
                                         <c:when test="${not empty deliveryPhoto}">
                                             <img src="${pageContext.request.contextPath}/${deliveryPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
                                             <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
-                                                <i class="fa-solid fa-circle-check"></i> Đã chụp lúc giao xong
+                                                <i class="fa-solid fa-circle-check"></i> Đã có ảnh giao bánh
                                             </div>
                                         </c:when>
                                         <c:otherwise>
                                             <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
-                                            <span style="font-size: 12px; color: #888;">Shipper chưa chụp ảnh giao bánh.</span>
+                                            <span style="font-size: 12px; color: #888;">Chưa chụp ảnh giao bánh.</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
+                                <input type="file" id="delivery-file-input" accept="image/*" capture="camera" style="display: none;" onchange="uploadEvidence(this, 'delivery')" ${empty pickupPhoto ? 'disabled' : ''}>
+                                <button type="button" class="btn" id="btn-delivery-upload" style="background-color: ${empty pickupPhoto ? '#aaa' : 'var(--cz-primary)'}; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="${empty pickupPhoto ? "alert('Bạn cần chụp ảnh lấy bánh tại tiệm trước!')" : "document.getElementById('delivery-file-input').click()"}" ${empty pickupPhoto ? 'disabled' : ''}>
+                                    <i class="fa-solid fa-camera"></i> Chụp ảnh giao bánh
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -338,23 +357,44 @@
                         <div class="cz-card-title">
                             <i class="fa-solid fa-arrows-spin" style="color: var(--cz-primary);"></i> Xử lý trạng thái đơn
                         </div>
-                        <form action="${pageContext.request.contextPath}/admin/orders" method="POST" class="status-form">
-                            <input type="hidden" name="action" value="update-status">
-                            <input type="hidden" name="orderNo" value="${order.orderNo}">
-                            
-                            <select name="status" class="status-select">
-                                <option value="Pending" ${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận' ? 'selected' : ''}>Chờ xác nhận</option>
-                                <option value="Confirmed" ${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận' ? 'selected' : ''}>Đã xác nhận (Bắt đầu làm)</option>
-                                <option value="Processing" ${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý' ? 'selected' : ''}>Đang xử lý (Làm bánh xong)</option>
-                                <option value="Delivering" ${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao' ? 'selected' : ''}>Đang giao hàng</option>
-                                <option value="Completed" ${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' ? 'selected' : ''}>Đã hoàn thành</option>
-                                <option value="Cancelled" ${order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Đã hủy' ? 'selected' : ''}>Hủy đơn hàng</option>
-                            </select>
+                        <c:choose>
+                            <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' || order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Đã hủy'}">
+                                <div style="padding: 20px; text-align: center; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px; font-weight: bold;">
+                                    <i class="fa-solid fa-lock" style="font-size: 24px; margin-bottom: 8px; display: block; color: #721c24;"></i>
+                                    Đơn hàng đã hoàn thành hoặc đã hủy. Không thể thay đổi trạng thái nữa.
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <form action="${pageContext.request.contextPath}/shipper/orders" method="POST" class="status-form" onsubmit="return validateStatusChange()">
+                                    <input type="hidden" name="action" value="update-status">
+                                    <input type="hidden" name="orderNo" value="${order.orderNo}">
+                                    
+                                    <select name="status" id="shipper-status-select" class="status-select" style="padding: 12px; width: 100%; border-radius: 6px; border: 1px solid #ccc; font-weight: 500; font-size: 14.5px; margin-bottom: 15px;">
+                                        <c:if test="${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận'}">
+                                            <option value="Pending" selected disabled>Chờ xác nhận (Chỉ đọc)</option>
+                                        </c:if>
+                                        <c:if test="${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận'}">
+                                            <option value="Confirmed" selected disabled>Đã xác nhận (Chỉ đọc)</option>
+                                        </c:if>
+                                        <c:if test="${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý'}">
+                                            <option value="Processing" selected disabled>Đang xử lý (Chỉ đọc)</option>
+                                        </c:if>
+                                        <option value="Delivering" ${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao' ? 'selected' : ''}>Đang giao hàng</option>
+                                        <option value="Completed" ${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' ? 'selected' : ''}>Hoàn thành đơn hàng</option>
+                                        <option value="Cancelled" ${order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Đã hủy' ? 'selected' : ''}>Hủy đơn / Giao thất bại</option>
+                                    </select>
+                                    
+                                    <div id="cancel-reason-container" style="display: none; margin-bottom: 15px;">
+                                        <label for="shipper-note-input" style="font-weight: 600; font-size: 13px; margin-bottom: 6px; display: block; color: #b91c1c;">Lý do hủy / Giao thất bại (*):</label>
+                                        <textarea name="shipperNote" id="shipper-note-input" rows="3" style="width: 100%; border-radius: 6px; padding: 10px; border: 1px solid #f8b4b4; font-size: 13.5px; box-sizing: border-box;" placeholder="Nhập lý do giao hàng thất bại (ví dụ: Khách hẹn hôm khác, Không liên lạc được...)"></textarea>
+                                    </div>
 
-                            <button type="submit" class="btn-update-status" onclick="return confirm('Bạn có chắc chắn muốn chuyển trạng thái đơn hàng này không?')">
-                                Cập nhật trạng thái
-                            </button>
-                        </form>
+                                    <button type="submit" class="btn-update-status" style="width: 100%; padding: 12px; font-weight: bold;">
+                                        Cập nhật trạng thái
+                                    </button>
+                                </form>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
 
                     <!-- Payment Summary -->
@@ -392,30 +432,14 @@
                             </span>
                         </div>
                         <div class="cost-row">
-                            <span>
-                                <c:choose>
-                                    <c:when test="${order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
-                                        Tiền đặt cọc (0%):
-                                    </c:when>
-                                    <c:otherwise>
-                                        Tiền đặt cọc (${not empty settings.depositPercent ? settings.depositPercent : '30'}%):
-                                    </c:otherwise>
-                                </c:choose>
-                            </span>
+                            <span>Tiền cọc:</span>
                             <span class="font-mono">
-                                <c:choose>
-                                    <c:when test="${order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
-                                        0đ
-                                    </c:when>
-                                    <c:otherwise>
-                                        <fmt:formatNumber value="${not empty order.depositAmount ? order.depositAmount : 0}" type="number" pattern="#,##0"/>đ
-                                    </c:otherwise>
-                                </c:choose>
+                                <fmt:formatNumber value="${not empty order.depositAmount ? order.depositAmount : 0}" type="number" pattern="#,##0"/>đ
                             </span>
-                        </div>
-                        <div class="cost-row total">
-                            <span>SỐ TIỀN CẦN THU:</span>
-                            <span class="font-mono">
+                         </div>
+                        <div class="cost-row total" style="background-color: #fdf2f2; border: 1px dashed #f8b4b4; padding: 10px; border-radius: 6px; margin-top: 15px;">
+                            <span style="color: #9b1c1c; font-weight: 800;">TIỀN THU HỘ (COD):</span>
+                            <span class="font-mono" style="color: #9b1c1c; font-size: 18px; font-weight: 800;">
                                 <fmt:formatNumber value="${order.remainingCodBalance}" type="number" pattern="#,##0"/>đ
                             </span>
                         </div>
@@ -427,5 +451,110 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script>
+        function uploadEvidence(inputElement, type) {
+            const file = inputElement.files[0];
+            if (!file) return;
+
+            // Kiểm tra kích thước file (giới hạn 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                alert("⚠️ Kích thước ảnh quá lớn, vui lòng chụp/chọn ảnh dưới 10MB!");
+                return;
+            }
+
+            // Hiển thị trạng thái đang tải lên
+            const previewContainer = document.getElementById(type + '-preview-container');
+            const originalHTML = previewContainer.innerHTML;
+            previewContainer.innerHTML = `
+                <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem; margin-bottom: 8px;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span style="font-size: 12px; color: #555; display: block;">Đang tải lên ảnh...</span>
+            `;
+
+            // Chuẩn bị dữ liệu FormData gửi lên Servlet
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("tripId", "${order.tripId}");
+            formData.append("orderNo", "${order.orderNo}");
+            formData.append("type", type);
+
+            // Gửi Fetch POST lên servlet
+            fetch("${pageContext.request.contextPath}/shipper/orders", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("🎉 " + data.message);
+                    // Tải lại trang để đồng bộ hoàn toàn trạng thái mới từ database
+                    window.location.reload();
+                } else {
+                    alert("❌ Lỗi: " + data.message);
+                    previewContainer.innerHTML = originalHTML;
+                }
+            })
+            .catch(error => {
+                console.error("Lỗi upload minh chứng:", error);
+                alert("❌ Đã xảy ra lỗi kết nối khi tải ảnh lên!");
+                previewContainer.innerHTML = originalHTML;
+            });
+        }
+
+        function validateStatusChange() {
+            const statusSelect = document.getElementById('shipper-status-select');
+            const selectedStatus = statusSelect.value;
+            
+            // Ràng buộc ảnh minh chứng với từng trạng thái
+            if (selectedStatus === 'Delivering') {
+                const hasPickupPhoto = "${not empty pickupPhoto}" === "true";
+                if (!hasPickupPhoto) {
+                    alert('⚠️ LỖI: Bạn phải chụp ảnh lấy bánh thành công tại tiệm trước khi cập nhật đơn hàng thành "Đang giao hàng"!');
+                    return false;
+                }
+            }
+            
+            if (selectedStatus === 'Completed') {
+                const hasDeliveryPhoto = "${not empty deliveryPhoto}" === "true";
+                if (!hasDeliveryPhoto) {
+                    alert('⚠️ LỖI: Bạn phải chụp ảnh giao bánh thành công cho khách trước khi cập nhật đơn hàng thành "Hoàn thành"!');
+                    return false;
+                }
+            }
+            
+            if (selectedStatus === 'Cancelled') {
+                const reasonInput = document.getElementById('shipper-note-input');
+                if (!reasonInput || !reasonInput.value.trim()) {
+                    alert('⚠️ LỖI: Bạn phải nhập lý do hủy / giao hàng thất bại!');
+                    if (reasonInput) reasonInput.focus();
+                    return false;
+                }
+            }
+            
+            return confirm('Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng này?');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle hiển thị lý do hủy đơn
+            const statusSelect = document.getElementById('shipper-status-select');
+            const cancelReasonContainer = document.getElementById('cancel-reason-container');
+            
+            if (statusSelect && cancelReasonContainer) {
+                statusSelect.addEventListener('change', function() {
+                    if (this.value === 'Cancelled') {
+                        cancelReasonContainer.style.display = 'block';
+                    } else {
+                        cancelReasonContainer.style.display = 'none';
+                    }
+                });
+                
+                // Kiểm tra trạng thái lúc khởi tạo
+                if (statusSelect.value === 'Cancelled') {
+                    cancelReasonContainer.style.display = 'block';
+                }
+            }
+        });
+    </script>
 </body>
 </html>

@@ -278,6 +278,9 @@ public class OrderDAO {
                 if (rs.next()) {
                     Order order = mapRowToOrder(rs);
                     order.getItems().addAll(getOrderItems(order.getOrderNo(), conn));
+                    if (order.getTripId() != null && !order.getTripId().trim().isEmpty()) {
+                        order.setShipperName(getShipperNameByTripId(order.getTripId()));
+                    }
                     return order;
                 }
             }
@@ -285,6 +288,38 @@ public class OrderDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public String getShipperNameByTripId(String tripId) {
+        String sql = "SELECT s.Full_Name FROM `staff` s JOIN `delivery_trip` dt ON s.Staff_ID = dt.Shipper_ID WHERE dt.Trip_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tripId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("Full_Name");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    public String getManagedZoneByStaffId(String staffId) {
+        String sql = "SELECT Managed_Zone FROM `staff` WHERE Staff_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, staffId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("Managed_Zone");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     private void populateOrderItems(List<Order> orders, Connection conn) throws Exception {
@@ -535,6 +570,9 @@ public class OrderDAO {
         try {
             order.setCustomerNote(rs.getString("Customer_Note"));
         } catch (SQLException ignored) {}
+        try {
+            order.setShipperNote(rs.getString("Shipper_Note"));
+        } catch (SQLException ignored) {}
         return order;
     }
 
@@ -544,6 +582,20 @@ public class OrderDAO {
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
             ps.setString(2, orderNo);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean updateOrderStatusWithNote(String orderNo, String status, String shipperNote) {
+        String sql = "UPDATE `orders` SET OrderStatus = ?, Shipper_Note = ? WHERE Order_No = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, status);
+            ps.setString(2, shipperNote);
+            ps.setString(3, orderNo);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -772,6 +824,126 @@ public class OrderDAO {
                 while (rs.next()) {
                     Order order = mapRowToOrder(rs);
                     // NOTE: Don't load items in list view - only needed in detail view
+                    orders.add(order);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    public int getTotalOrdersCountByShipper(String shipperId, String keyword, String status, String startDateStr, String endDateStr) {
+        int count = 0;
+        StringBuilder sql = new StringBuilder(
+                "SELECT COUNT(*) FROM `orders` o " +
+                "JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
+                "WHERE t.Shipper_ID = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(shipperId);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
+            String kw = "%" + keyword.trim() + "%";
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
+        }
+
+        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("all")) {
+            sql.append(" AND o.OrderStatus = ?");
+            params.add(status);
+        }
+
+        if (startDateStr != null && !startDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time >= ?");
+            params.add(startDateStr + " 00:00:00");
+        }
+        if (endDateStr != null && !endDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time <= ?");
+            params.add(endDateStr + " 23:59:59");
+        }
+
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    count = rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    public List<Order> getOrdersByShipperPaged(String shipperId, String keyword, String status, String startDateStr, String endDateStr,
+            String sort, int pageIndex, int pageSize) {
+        List<Order> orders = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT o.*, c.Full_Name AS Customer_Name, s.Managed_Zone FROM `orders` o " +
+                "JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                "JOIN `staff` s ON t.Shipper_ID = s.Staff_ID " +
+                "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
+                "WHERE t.Shipper_ID = ?");
+        List<Object> params = new ArrayList<>();
+        params.add(shipperId);
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
+            String kw = "%" + keyword.trim() + "%";
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
+        }
+
+        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("all")) {
+            sql.append(" AND o.OrderStatus = ?");
+            params.add(status);
+        }
+
+        if (startDateStr != null && !startDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time >= ?");
+            params.add(startDateStr + " 00:00:00");
+        }
+        if (endDateStr != null && !endDateStr.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time <= ?");
+            params.add(endDateStr + " 23:59:59");
+        }
+
+        String orderByClause = " ORDER BY (o.Delivery_Address LIKE CONCAT('%', IFNULL(s.Managed_Zone, '___'), '%')) DESC, o.Order_Time DESC ";
+        if (sort != null && !sort.trim().isEmpty()) {
+            switch (sort.trim().toLowerCase()) {
+                case "date_asc":
+                    orderByClause = " ORDER BY (o.Delivery_Address LIKE CONCAT('%', IFNULL(s.Managed_Zone, '___'), '%')) DESC, o.Order_Time ASC ";
+                    break;
+                case "price_desc":
+                    orderByClause = " ORDER BY (o.Delivery_Address LIKE CONCAT('%', IFNULL(s.Managed_Zone, '___'), '%')) DESC, o.Total_Cost DESC ";
+                    break;
+                case "price_asc":
+                    orderByClause = " ORDER BY (o.Delivery_Address LIKE CONCAT('%', IFNULL(s.Managed_Zone, '___'), '%')) DESC, o.Total_Cost ASC ";
+                    break;
+                default:
+                    orderByClause = " ORDER BY (o.Delivery_Address LIKE CONCAT('%', IFNULL(s.Managed_Zone, '___'), '%')) DESC, o.Order_Time DESC ";
+                    break;
+            }
+        }
+        sql.append(orderByClause).append("LIMIT ? OFFSET ?");
+        params.add(pageSize);
+        params.add((pageIndex - 1) * pageSize);
+
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Order order = mapRowToOrder(rs);
                     orders.add(order);
                 }
             }
@@ -1204,6 +1376,284 @@ public class OrderDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public String[] getEvidencePhotosByTripId(String tripId) {
+        String sql = "SELECT Pickup_Photo_URL, Delivery_Photo_URL FROM `delivery_evidence` WHERE Trip_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tripId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return new String[]{rs.getString("Pickup_Photo_URL"), rs.getString("Delivery_Photo_URL")};
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new String[]{"", ""};
+    }
+
+    public boolean saveDeliveryEvidence(String tripId, String photoUrl, String type) {
+        String checkSql = "SELECT Evidence_ID FROM `delivery_evidence` WHERE Trip_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection()) {
+            if (conn == null) return false;
+            conn.setAutoCommit(false);
+            
+            boolean exists = false;
+            try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                ps.setString(1, tripId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        exists = true;
+                    }
+                }
+            }
+            
+            boolean success = false;
+            if (exists) {
+                String updateSql;
+                if ("pickup".equalsIgnoreCase(type)) {
+                    updateSql = "UPDATE `delivery_evidence` SET Pickup_Photo_URL = ? WHERE Trip_ID = ?";
+                } else {
+                    updateSql = "UPDATE `delivery_evidence` SET Delivery_Photo_URL = ? WHERE Trip_ID = ?";
+                }
+                try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
+                    ps.setString(1, photoUrl);
+                    ps.setString(2, tripId);
+                    success = ps.executeUpdate() > 0;
+                }
+            } else {
+                String evidenceId = generateEvidenceId(conn);
+                String insertSql;
+                if ("pickup".equalsIgnoreCase(type)) {
+                    insertSql = "INSERT INTO `delivery_evidence` (Evidence_ID, Trip_ID, Pickup_Photo_URL, Delivery_Photo_URL) VALUES (?, ?, ?, '')";
+                } else {
+                    insertSql = "INSERT INTO `delivery_evidence` (Evidence_ID, Trip_ID, Pickup_Photo_URL, Delivery_Photo_URL) VALUES (?, ?, '', ?)";
+                }
+                try (PreparedStatement ps = conn.prepareStatement(insertSql)) {
+                    ps.setString(1, evidenceId);
+                    ps.setString(2, tripId);
+                    ps.setString(3, photoUrl);
+                    success = ps.executeUpdate() > 0;
+                }
+            }
+            
+            if (success) {
+                conn.commit();
+                return true;
+            } else {
+                conn.rollback();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private String generateEvidenceId(Connection conn) {
+        String sql = "SELECT MAX(CAST(SUBSTRING(Evidence_ID, 5) AS UNSIGNED)) FROM `delivery_evidence` WHERE Evidence_ID LIKE 'EVI_%'";
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                int maxId = rs.getInt(1);
+                if (maxId > 0) {
+                    return String.format("EVI_%04d", maxId + 1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "EVI_" + System.currentTimeMillis();
+    }
+
+    public boolean autoAssignShipperAndTrip(String orderNo) {
+        String selectOrderSql = "SELECT Delivery_Address, Delivery_Window_Start, Delivery_Window_End FROM `orders` WHERE Order_No = ?";
+        
+        try (Connection conn = DBContext.getJDBCConnection()) {
+            if (conn == null) return false;
+            conn.setAutoCommit(false);
+
+            String deliveryAddress = null;
+            java.sql.Timestamp windowStart = null;
+            java.sql.Timestamp windowEnd = null;
+
+            // 1. Lấy thông tin đơn hàng
+            try (PreparedStatement ps = conn.prepareStatement(selectOrderSql)) {
+                ps.setString(1, orderNo);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        deliveryAddress = rs.getString("Delivery_Address");
+                        windowStart = rs.getTimestamp("Delivery_Window_Start");
+                        windowEnd = rs.getTimestamp("Delivery_Window_End");
+                    }
+                }
+            }
+
+            if (deliveryAddress == null) {
+                conn.rollback();
+                return false;
+            }
+
+            // 2. Lấy toàn bộ shipper đang hoạt động và danh sách Managed_Zone của họ
+            List<Map<String, Object>> shippers = new java.util.ArrayList<>();
+            String shipperQuery = "SELECT s.Staff_ID, s.Full_Name, s.Managed_Zone FROM `staff` s "
+                                + "JOIN `user` u ON s.User_ID = u.User_ID "
+                                + "WHERE u.Role_ID = 'SHIPPER' AND s.Is_Active_Staff = 1";
+            try (PreparedStatement ps = conn.prepareStatement(shipperQuery);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> sh = new java.util.HashMap<>();
+                    sh.put("id", rs.getString("Staff_ID"));
+                    sh.put("name", rs.getString("Full_Name"));
+                    sh.put("zone", rs.getString("Managed_Zone"));
+                    shippers.add(sh);
+                }
+            }
+
+            // 3. Lọc ra các Shipper ứng viên có Managed_Zone khớp với địa chỉ đơn hàng (hỗ trợ phân tách dấu phẩy)
+            List<String> candidates = new java.util.ArrayList<>();
+            for (Map<String, Object> sh : shippers) {
+                String zoneStr = (String) sh.get("zone");
+                if (zoneStr != null && !zoneStr.trim().isEmpty()) {
+                    // Cắt các khu vực quản lý bằng dấu phẩy
+                    String[] zones = zoneStr.split(",");
+                    for (String z : zones) {
+                        z = z.trim();
+                        if (!z.isEmpty() && deliveryAddress.toLowerCase().contains(z.toLowerCase())) {
+                            candidates.add((String) sh.get("id"));
+                            break; // Đã khớp 1 khu vực, dừng kiểm tra shipper này
+                        }
+                    }
+                }
+            }
+
+            String optimalShipperId = null;
+            String pooledTripId = null;
+
+            if (!candidates.isEmpty()) {
+                // 4. KIỂM TRA ROUTE POOLING (Gom đơn): Tìm chuyến đi đang hoạt động cùng khung giờ của các shipper ứng viên này
+                StringBuilder poolingQuery = new StringBuilder(
+                    "SELECT o.Trip_ID, dt.Shipper_ID FROM `orders` o " +
+                    "JOIN `delivery_trip` dt ON o.Trip_ID = dt.Trip_ID " +
+                    "WHERE o.Delivery_Window_Start = ? AND o.Delivery_Window_End = ? " +
+                    "AND dt.Shipper_ID IN ("
+                );
+                for (int i = 0; i < candidates.size(); i++) {
+                    poolingQuery.append(i == 0 ? "?" : ", ?");
+                }
+                poolingQuery.append(") LIMIT 1");
+
+                try (PreparedStatement ps = conn.prepareStatement(poolingQuery.toString())) {
+                    ps.setTimestamp(1, windowStart);
+                    ps.setTimestamp(2, windowEnd);
+                    for (int i = 0; i < candidates.size(); i++) {
+                        ps.setString(3 + i, candidates.get(i));
+                    }
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            pooledTripId = rs.getString("Trip_ID");
+                        }
+                    }
+                }
+
+                if (pooledTripId != null) {
+                    // Gom đơn vào chuyến đi có sẵn
+                    String updateOrderSql = "UPDATE `orders` SET Trip_ID = ? WHERE Order_No = ?";
+                    try (PreparedStatement ps = conn.prepareStatement(updateOrderSql)) {
+                        ps.setString(1, pooledTripId);
+                        ps.setString(2, orderNo);
+                        ps.executeUpdate();
+                    }
+                    conn.commit();
+                    return true;
+                }
+
+                // 5. PHÂN TẢI CÂN BẰNG (Load Balancing): Tìm shipper ứng viên có lượng đơn đang giao ít nhất
+                StringBuilder loadQuery = new StringBuilder(
+                    "SELECT s.Staff_ID, COUNT(o.Order_No) AS active_orders FROM `staff` s " +
+                    "LEFT JOIN `delivery_trip` dt ON s.Staff_ID = dt.Shipper_ID " +
+                    "LEFT JOIN `orders` o ON dt.Trip_ID = o.Trip_ID AND o.OrderStatus IN ('Processing', 'Delivering') " +
+                    "WHERE s.Staff_ID IN ("
+                );
+                for (int i = 0; i < candidates.size(); i++) {
+                    loadQuery.append(i == 0 ? "?" : ", ?");
+                }
+                loadQuery.append(") GROUP BY s.Staff_ID ORDER BY active_orders ASC LIMIT 1");
+
+                try (PreparedStatement ps = conn.prepareStatement(loadQuery.toString())) {
+                    for (int i = 0; i < candidates.size(); i++) {
+                        ps.setString(1 + i, candidates.get(i));
+                    }
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            optimalShipperId = rs.getString("Staff_ID");
+                        }
+                    }
+                }
+            }
+
+            // 6. CƠ CHẾ DỰ PHÒNG (Fallback): Chọn shipper rảnh nhất toàn hệ thống nếu địa chỉ không khớp bất kì ai
+            if (optimalShipperId == null) {
+                String fallbackQuery = 
+                    "SELECT s.Staff_ID, COUNT(o.Order_No) AS active_orders FROM `staff` s " +
+                    "JOIN `user` u ON s.User_ID = u.User_ID " +
+                    "LEFT JOIN `delivery_trip` dt ON s.Staff_ID = dt.Shipper_ID " +
+                    "LEFT JOIN `orders` o ON dt.Trip_ID = o.Trip_ID AND o.OrderStatus IN ('Processing', 'Delivering') " +
+                    "WHERE u.Role_ID = 'SHIPPER' AND s.Is_Active_Staff = 1 " +
+                    "GROUP BY s.Staff_ID ORDER BY active_orders ASC LIMIT 1";
+                try (PreparedStatement ps = conn.prepareStatement(fallbackQuery);
+                     ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        optimalShipperId = rs.getString("Staff_ID");
+                    }
+                }
+            }
+
+            if (optimalShipperId == null) {
+                conn.rollback();
+                return false;
+            }
+
+            // 7. Tạo chuyến đi mới
+            String newTripId = generateTripId(conn);
+            String insertTripSql = "INSERT INTO `delivery_trip` (Trip_ID, Shipper_ID, OSRM_Distance_Km, OSRM_Duration_Min, Calculated_Shipping_Fee) VALUES (?, ?, 0.0, 0, 0.0)";
+            try (PreparedStatement ps = conn.prepareStatement(insertTripSql)) {
+                ps.setString(1, newTripId);
+                ps.setString(2, optimalShipperId);
+                ps.executeUpdate();
+            }
+
+            // 8. Cập nhật mã chuyến đi cho đơn hàng
+            String updateOrderSql = "UPDATE `orders` SET Trip_ID = ? WHERE Order_No = ?";
+            try (PreparedStatement ps = conn.prepareStatement(updateOrderSql)) {
+                ps.setString(1, newTripId);
+                ps.setString(2, orderNo);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private String generateTripId(Connection conn) {
+        String sql = "SELECT MAX(CAST(SUBSTRING(Trip_ID, 6) AS UNSIGNED)) FROM `delivery_trip` WHERE Trip_ID LIKE 'TRIP_%'";
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                int maxId = rs.getInt(1);
+                if (maxId > 0) {
+                    return String.format("TRIP_%04d", maxId + 1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "TRIP_" + System.currentTimeMillis();
     }
 }
 

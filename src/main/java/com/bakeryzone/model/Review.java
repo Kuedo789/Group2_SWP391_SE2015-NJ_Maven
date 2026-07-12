@@ -15,6 +15,7 @@ public class Review {
     private String greetingText;
     private String templateName;
     private String variationName;
+    private String productImageUrl;
 
     public Review() {
     }
@@ -114,4 +115,14 @@ public class Review {
     public void setVariationName(String variationName) {
         this.variationName = variationName;
     }
+
+    public String getProductImageUrl() {
+        return productImageUrl;
+    }
+
+    public void setProductImageUrl(String productImageUrl) {
+        this.productImageUrl = productImageUrl;
+    }
+    
+    
 }

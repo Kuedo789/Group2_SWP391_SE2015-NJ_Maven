@@ -11,15 +11,24 @@ import java.util.List;
 public class ReviewDAO {
 
     private String getHashForTemplate(String templateId) {
-        if (templateId == null) return "";
+        if (templateId == null) {
+            return "";
+        }
         switch (templateId) {
-            case "TPL_0001": return "HASH_CC_0001";
-            case "TPL_0005": return "HASH_CC_0002";
-            case "TPL_0009": return "HASH_CC_0003";
-            case "TPL_0011": return "HASH_CC_0004";
-            case "TPL_0013": return "HASH_CC_0005";
-            case "TPL_0017": return "HASH_CC_0006";
-            default: return templateId;
+            case "TPL_0001":
+                return "HASH_CC_0001";
+            case "TPL_0005":
+                return "HASH_CC_0002";
+            case "TPL_0009":
+                return "HASH_CC_0003";
+            case "TPL_0011":
+                return "HASH_CC_0004";
+            case "TPL_0013":
+                return "HASH_CC_0005";
+            case "TPL_0017":
+                return "HASH_CC_0006";
+            default:
+                return templateId;
         }
     }
 
@@ -78,7 +87,7 @@ public class ReviewDAO {
                     double calculatedPrice = rs.getDouble("Calculated_Price");
                     r.setCalculatedPrice(calculatedPrice);
                     r.setGreetingText(rs.getString("Greeting_Text"));
-                    
+
                     String tName = rs.getString("Template_Name");
                     r.setTemplateName(tName != null ? tName : "Bánh tự thiết kế");
 
@@ -429,7 +438,8 @@ public class ReviewDAO {
                 r.Rating_Stars,
                 r.Comment,
                 c.Full_Name AS Customer_Name,
-                COALESCE(t.Template_Name, cc.Cake_Hash_Structure) AS Template_Name
+                COALESCE(t.Template_Name, cc.Cake_Hash_Structure) AS Template_Name,
+                COALESCE(pi.Image_URL, t.Image_URL, cc.Canvas_Image_URL) AS Image_URL 
             FROM product_review r
             JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
             LEFT JOIN cake_template t ON (
@@ -442,6 +452,8 @@ public class ReviewDAO {
                 (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')
             )
             LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
+            -- 🟢 JOIN THÊM BẢNG ẢNH: Khớp Template_ID với Product_ID trong bảng ảnh của bạn, chỉ lấy ảnh đại diện chính
+            LEFT JOIN product_image pi ON t.Template_ID = pi.Product_ID AND pi.Is_Cover = 1
             WHERE r.Moderation_Status = 'Featured'
             ORDER BY r.Review_ID DESC
             LIMIT 3
@@ -461,6 +473,10 @@ public class ReviewDAO {
                 } else {
                     r.setTemplateName(rawName);
                 }
+                String imgUrl = rs.getString("Image_URL");
+                System.out.println("DEBUG: Review ID " + r.getReviewId() + " có Image_URL là: " + imgUrl);
+                r.setProductImageUrl(rs.getString("Image_URL"));
+
                 list.add(r);
             }
         } catch (Exception e) {
