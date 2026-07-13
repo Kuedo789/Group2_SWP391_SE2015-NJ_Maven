@@ -86,6 +86,29 @@ public class CustomerCheckoutServlet extends HttpServlet {
             return;
         }
 
+        String action = request.getParameter("action");
+        boolean isAjax = "true".equals(request.getParameter("ajax"));
+
+        if ("applyVoucher".equals(action)) {
+            handleApplyVoucher(request, session);
+            if (isAjax) {
+                sendAjaxVoucherResponse(response, session);
+                return;
+            }
+            response.sendRedirect(request.getContextPath() + "/checkout");
+            return;
+        } else if ("removeVoucher".equals(action)) {
+            session.removeAttribute("appliedVoucherCode");
+            session.removeAttribute("appliedDiscount");
+            session.removeAttribute("appliedVoucherMinOrder");
+            if (isAjax) {
+                sendAjaxVoucherResponse(response, session);
+                return;
+            }
+            response.sendRedirect(request.getContextPath() + "/checkout");
+            return;
+        }
+
         try {
             // ── 1. Parse form parameters ───────────────────────────────────────────
             String addressIdRaw  = request.getParameter("addressId");
@@ -310,5 +333,61 @@ if (order.getItems().isEmpty()) {
     private String getStr(JsonObject obj, String key) {
         if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) return null;
         return obj.get(key).getAsString();
+    }
+
+    private void handleApplyVoucher(HttpServletRequest request, HttpSession session) {
+        String code = request.getParameter("voucherCode");
+        if (code == null || code.trim().isEmpty()) {
+            session.setAttribute("voucherError", "Vui lòng nhập mã voucher!");
+            return;
+        }
+        
+        com.bakeryzone.dao.VoucherDAO voucherDAO = new com.bakeryzone.dao.VoucherDAO();
+        com.bakeryzone.model.Voucher v = voucherDAO.getVoucherByCode(code.trim().toUpperCase());
+        if (v == null || !v.isActive()) {
+            session.setAttribute("voucherError", "Mã voucher không tồn tại hoặc đã bị khóa!");
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        if (v.getStartDate().getTime() > now || v.getEndDate().getTime() < now) {
+            session.setAttribute("voucherError", "Mã voucher chưa bắt đầu hoặc đã hết hạn!");
+            return;
+        }
+
+        if (v.getTotalQuantity() <= 0) {
+            session.setAttribute("voucherError", "Mã voucher này đã hết số lượng!");
+            return;
+        }
+
+        com.bakeryzone.model.User user = (com.bakeryzone.model.User) session.getAttribute("user");
+        int userUsage = voucherDAO.getUserUsageCount(user.getUserId(), v.getVoucherCode());
+        if (userUsage >= v.getUsagePerUser()) {
+            session.setAttribute("voucherError", "Bạn đã sử dụng hết lượt cho mã này!");
+            return;
+        }
+
+        session.setAttribute("appliedVoucherCode", v.getVoucherCode());
+        session.setAttribute("appliedDiscount", v.getDiscountAmount());
+        session.setAttribute("appliedVoucherMinOrder", v.getMinOrderValue());
+    }
+
+    private void sendAjaxVoucherResponse(HttpServletResponse response, HttpSession session) throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        JsonObject json = new JsonObject();
+        String error = (String) session.getAttribute("voucherError");
+        if (error != null) {
+            json.addProperty("error", error);
+            session.removeAttribute("voucherError");
+        } else {
+            String code = (String) session.getAttribute("appliedVoucherCode");
+            BigDecimal discount = (BigDecimal) session.getAttribute("appliedDiscount");
+            if (code != null) {
+                json.addProperty("code", code);
+                json.addProperty("discount", discount != null ? discount.doubleValue() : 0);
+            }
+        }
+        response.getWriter().write(json.toString());
     }
 }

@@ -243,15 +243,17 @@
                             </div>
                             <span id="shippingFeeSum">0đ</span>
                         </div>
-                        <c:if test="${requestScope.checkoutDiscount > 0}">
-                            <div class="summary-row" style="color: #d9534f;">
-                                <div class="summary-row-label">
-                                    <span>Giảm giá Voucher</span>
-                                    <span class="summary-sub-label">${requestScope.checkoutVoucherCode}</span>
+                        <div id="discountContainer">
+                            <c:if test="${requestScope.checkoutDiscount > 0}">
+                                <div class="summary-row" id="discountSummaryRow" style="color: #d9534f;">
+                                    <div class="summary-row-label">
+                                        <span>Giảm giá Voucher</span>
+                                        <span class="summary-sub-label">${requestScope.checkoutVoucherCode}</span>
+                                    </div>
+                                    <span>- <fmt:formatNumber value="${requestScope.checkoutDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
                                 </div>
-                                <span>- <fmt:formatNumber value="${requestScope.checkoutDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
-                            </div>
-                        </c:if>
+                            </c:if>
+                        </div>
 
                         <div class="summary-row total">
                             <span>Tổng cộng</span>
@@ -260,7 +262,26 @@
                             </div>
                         </div>
 
-
+                        <div class="voucher-group" id="voucherGroupContainer" style="margin-bottom: 24px;">
+                            <c:if test="${not empty sessionScope.voucherError}">
+                                <div style="color: red; font-size: 13px; margin-bottom: 8px;"><i class="fa fa-exclamation-circle"></i> ${sessionScope.voucherError}</div>
+                                <c:remove var="voucherError" scope="session" />
+                            </c:if>
+                            <c:choose>
+                                <c:when test="${not empty requestScope.checkoutVoucherCode}">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
+                                        <span style="font-weight: 600; color: var(--primary);">${requestScope.checkoutVoucherCode}</span>
+                                        <button type="button" onclick="submitVoucherAjax('removeVoucher')" style="background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; font-weight: 600;">✕ Bỏ</button>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="text" placeholder="Nhập mã giảm giá" class="voucher-input" name="voucherCode" style="flex: 1; height: 40px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 8px;">
+                                        <button type="button" onclick="submitVoucherAjax('applyVoucher')" class="voucher-btn" style="height: 40px; padding: 0 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Áp dụng</button>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
 
                         <div class="banner-kitchen-verify">
                             <i class="fa fa-utensils"></i>
@@ -303,26 +324,75 @@
     <jsp:include page="../common/scripts.jsp" />
 
     <script>
-        // Store coordinates (will shift dynamically based on customer's city)
-        let shopLat = 10.7769; // HCMC D1/Thao Dien default
+        let shopLat = 10.7769; 
         let shopLng = 106.7009;
-
-        // (no mock cart - always use real localStorage data)
-
         let currentCart = [];
         let selectedAddressId = null;
-        let selectedTimeSlot = ""; // no default selected
+        let selectedTimeSlot = "";
         let currentShippingFee = 0;
         let currentDiscount = parseFloat("${not empty requestScope.checkoutDiscount ? requestScope.checkoutDiscount : 0}") || 0;
+
+        function submitVoucherAjax(actionStr) {
+            const codeInput = document.querySelector('input[name="voucherCode"]');
+            const code = codeInput ? codeInput.value : '';
+            
+            const formData = new URLSearchParams();
+            formData.append("action", actionStr);
+            formData.append("ajax", "true");
+            if (code) formData.append("voucherCode", code);
+
+            fetch('${pageContext.request.contextPath}/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                const voucherGroup = document.getElementById('voucherGroupContainer');
+                let html = '';
+                if (data.error) {
+                    html += `<div style="color: red; font-size: 13px; margin-bottom: 8px;"><i class="fa fa-exclamation-circle"></i> \${data.error}</div>`;
+                }
+                
+                if (data.code) {
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
+                            <span style="font-weight: 600; color: var(--primary);">\${data.code}</span>
+                            <button type="button" onclick="submitVoucherAjax('removeVoucher')" style="background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; font-weight: 600;">✕ Bỏ</button>
+                        </div>
+                    `;
+                    currentDiscount = data.discount || 0;
+                    document.getElementById('discountContainer').innerHTML = `
+                        <div class="summary-row" id="discountSummaryRow" style="color: #d9534f;">
+                            <div class="summary-row-label">
+                                <span>Giảm giá Voucher</span>
+                                <span class="summary-sub-label">\${data.code}</span>
+                            </div>
+                            <span>- \${currentDiscount.toLocaleString("vi-VN")}₫</span>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" placeholder="Nhập mã giảm giá" class="voucher-input" name="voucherCode" style="flex: 1; height: 40px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 8px;">
+                            <button type="button" onclick="submitVoucherAjax('applyVoucher')" class="voucher-btn" style="height: 40px; padding: 0 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Áp dụng</button>
+                        </div>
+                    `;
+                    currentDiscount = 0;
+                    document.getElementById('discountContainer').innerHTML = '';
+                }
+                voucherGroup.innerHTML = html;
+                updateSummary();
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Có lỗi xảy ra khi xử lý mã giảm giá.");
+            });
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
-
-
-            // 1. Sync & Render Cart Items
             loadCartItems();
 
-
-
-            // 2. Select initial active address and calculate shipping fee
             const activeAddressCard = document.querySelector(".address-card-option.active");
             if (activeAddressCard) {
                 const id = activeAddressCard.getAttribute("data-address-id");
@@ -330,7 +400,6 @@
                 const lng = parseFloat(activeAddressCard.getAttribute("data-lng"));
                 selectAddress(id, lat, lng, activeAddressCard);
             } else {
-                // If no active address but list exists, select first
                 const firstAddressCard = document.querySelector(".address-card-option");
                 if (firstAddressCard) {
                     const id = firstAddressCard.getAttribute("data-address-id");
@@ -338,34 +407,28 @@
                     const lng = parseFloat(firstAddressCard.getAttribute("data-lng"));
                     selectAddress(id, lat, lng, firstAddressCard);
                 } else {
-                    // No addresses saved, use 0 fee
                     currentShippingFee = 0;
                     updateSummary();
                 }
             }
 
-            // Set initial time slot input
             document.getElementById("selectedTimeSlotInput").value = selectedTimeSlot;
 
-            // Set delivery date picker constraints and default value
             const today = new Date();
-            const yyyy = today.getFullYear();
-            let mm = today.getMonth() + 1;
-            let dd = today.getDate();
-            if (dd < 10) dd = '0' + dd;
-            if (mm < 10) mm = '0' + mm;
-            const minDateStr = yyyy + '-' + mm + '-' + dd;
-            
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const yyyy = tomorrow.getFullYear();
+            const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
+            const dd = String(tomorrow.getDate()).padStart(2, '0');
+            const minDateStr = `${yyyy}-${mm}-${dd}`;
+
             const deliveryDateInput = document.getElementById("deliveryDate");
             if (deliveryDateInput) {
                 deliveryDateInput.min = minDateStr;
-                // Không đặt ngày mặc định để bắt người dùng chọn
                 deliveryDateInput.value = "";
-                
                 deliveryDateInput.addEventListener("change", updateAvailableTimeSlots);
             }
 
-            // We render the address directly via JSP now, no need to sync display via JS
             document.getElementById("checkoutForm").addEventListener("submit", function(e) {
                 const jsErrorBox = document.getElementById("jsErrorBox");
                 
