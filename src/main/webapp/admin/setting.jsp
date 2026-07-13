@@ -7,6 +7,7 @@
     <jsp:include page="/common/admin-header.jsp">
         <jsp:param name="title" value="CakeZone Admin - Cài đặt hệ thống" />
     </jsp:include>
+
 </head>
 <body>
 
@@ -27,251 +28,264 @@
             </div>
 
             <form action="${pageContext.request.contextPath}/admin/settings" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="activeTab" id="activeTabInput" value="general" />
                 
-                <!-- Cài đặt chung -->
-                <div class="settings-card">
-                    <div class="settings-card-header">Cài đặt chung</div>
-                    <div class="settings-card-body">
-                        <div class="form-row">
-                            <div class="form-group full-width">
-                                <label>Tên tiệm bánh</label>
-                                <input type="text" name="bakeryName" value="${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}" class="settings-input" required maxlength="10" />
-                            </div>
-                        </div>
-                        <div class="form-row form-cols-2">
-                            <div class="form-group">
-                                <label>Hotline hỗ trợ</label>
-                                <input type="text" name="hotline" value="${not empty settings.hotline ? settings.hotline : '0901234567'}" class="settings-input" required pattern="^0[0-9]{9}$" title="Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số" />
-                            </div>
-                            <div class="form-group">
-                                <label>Email hỗ trợ</label>
-                                <input type="email" name="email" value="${not empty settings.email ? settings.email : 'support@bakeryzone.vn'}" class="settings-input" required />
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group full-width">
-                                <label>Địa chỉ tiệm bánh</label>
-                                <input type="text" name="address" value="${not empty settings.address ? settings.address : '123 Đường Sourdough, TP. Hồ Chí Minh'}" class="settings-input" required />
-                            </div>
-                        </div>
-                    </div>
+                <div class="settings-tabs">
+                    <button type="button" class="tab-btn active" onclick="switchTab('general')">Cài đặt chung</button>
+                    <button type="button" class="tab-btn" onclick="switchTab('order-delivery')">Đặt hàng & Giao hàng</button>
+                    <button type="button" class="tab-btn" onclick="switchTab('email-otp')">Email & OTP</button>
+                    <button type="button" class="tab-btn" onclick="switchTab('theme-interface')">Giao diện & Banner</button>
                 </div>
 
-                <!-- Quy tắc đặt hàng & Giao hàng -->
-                <div class="settings-card">
-                    <div class="settings-card-header">Quy tắc đặt hàng & Giao hàng</div>
-                    <div class="settings-card-body">
-                        <div class="form-row form-cols-3">
-                            <div class="form-group">
-                                <label>Tỷ lệ đặt cọc bánh thiết kế (%)</label>
-                                <input type="number" name="depositPercent" value="${not empty settings.depositPercent ? settings.depositPercent : '30'}" class="settings-input" required min="0" max="100" />
-                            </div>
-                            <div class="form-group">
-                                <label>Đơn giá ship/km</label>
-                                <input type="number" name="shippingRate" value="${not empty settings.shippingRate ? settings.shippingRate : '5000'}" class="settings-input" required min="0" step="any" />
-                            </div>
-                            <div class="form-group">
-                                <label>Số bánh tối đa/giờ</label>
-                                <input type="number" name="maxCakesPerHour" value="${not empty settings.maxCakesPerHour ? settings.maxCakesPerHour : '15000'}" class="settings-input" required min="1" />
-                            </div>
-                        </div>
-                        <div class="form-row form-cols-2">
-                            <div class="form-group">
-                                <label>Giờ mở cửa</label>
-                                <div class="input-icon-wrapper">
-                                    <input type="text" name="openingTime" value="${not empty settings.openingTime ? settings.openingTime : '07:00 AM'}" class="settings-input" required />
-                                    <i class="fa-regular fa-clock input-icon"></i>
+                <!-- Tab 1: Cài đặt chung -->
+                <div id="tab-general" class="tab-content active-tab-content">
+                    <div class="settings-card">
+                        <div class="settings-card-header">Cài đặt chung</div>
+                        <div class="settings-card-body">
+                            <div class="form-row">
+                                <div class="form-group full-width">
+                                    <label>Tên tiệm bánh</label>
+                                    <input type="text" name="bakeryName" value="${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}" class="settings-input" required maxlength="10" />
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label>Giờ đóng cửa</label>
-                                <div class="input-icon-wrapper">
-                                    <input type="text" name="closingTime" value="${not empty settings.closingTime ? settings.closingTime : '09:00 PM'}" class="settings-input" required />
-                                    <i class="fa-regular fa-clock input-icon"></i>
+                            <div class="form-row form-cols-2">
+                                <div class="form-group">
+                                    <label>Hotline hỗ trợ</label>
+                                    <input type="text" name="hotline" value="${not empty settings.hotline ? settings.hotline : '0901234567'}" class="settings-input" required pattern="^0[0-9]{9}$" title="Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số" />
+                                </div>
+                                <div class="form-group">
+                                    <label>Email hỗ trợ</label>
+                                    <input type="email" name="email" value="${not empty settings.email ? settings.email : 'support@bakeryzone.vn'}" class="settings-input" required />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group full-width">
+                                    <label>Địa chỉ tiệm bánh</label>
+                                    <input type="text" name="address" value="${not empty settings.address ? settings.address : '123 Đường Sourdough, TP. Hồ Chí Minh'}" class="settings-input" required />
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Cấu hình Hệ thống Email & OTP -->
-                <div class="settings-card">
-                    <div class="settings-card-header">Cấu hình Hệ thống Email & OTP</div>
-                    <div class="settings-card-body">
-                        <div class="form-row form-cols-2">
-                            <div class="form-group">
-                                <label>Email gửi hệ thống</label>
-                                <input type="email" name="systemEmail" value="${not empty settings.systemEmail ? settings.systemEmail : 'system@bakeryzone.vn'}" class="settings-input" required />
-                            </div>
-                            <div class="form-group">
-                                <label>Mật khẩu ứng dụng</label>
-                                <div class="password-wrapper">
-                                    <input type="password" id="appPassword" name="appPassword" value="${not empty settings.appPassword ? settings.appPassword : 'app_password_secret'}" class="settings-input" required />
-                                    <i class="fa-regular fa-eye password-toggle" onclick="togglePasswordVisibility()"></i>
+                <!-- Tab 2: Đặt hàng & Giao hàng -->
+                <div id="tab-order-delivery" class="tab-content">
+                    <div class="settings-card">
+                        <div class="settings-card-header">Quy tắc đặt hàng & Giao hàng</div>
+                        <div class="settings-card-body">
+                            <div class="form-row form-cols-3">
+                                <div class="form-group">
+                                    <label>Tỷ lệ đặt cọc bánh thiết kế (%)</label>
+                                    <input type="number" name="depositPercent" value="${not empty settings.depositPercent ? settings.depositPercent : '30'}" class="settings-input" required min="0" max="100" />
                                 </div>
+                                <div class="form-group">
+                                    <label>Đơn giá ship/km</label>
+                                    <input type="number" name="shippingRate" value="${not empty settings.shippingRate ? settings.shippingRate : '5000'}" class="settings-input" required min="0" step="any" />
+                                </div>
+
                             </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group half-width">
-                                <label>Thời gian hiệu lực OTP (phút)</label>
-                                <input type="number" name="otpExpiry" value="${not empty settings.otpExpiry ? settings.otpExpiry : '5'}" class="settings-input" required min="1" />
+                            <div class="form-row form-cols-2">
+                                <div class="form-group">
+                                    <label>Giờ mở cửa</label>
+                                    <div class="input-icon-wrapper">
+                                        <input type="text" name="openingTime" value="${not empty settings.openingTime ? settings.openingTime : '07:00 AM'}" class="settings-input" required />
+                                        <i class="fa-regular fa-clock input-icon"></i>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Giờ đóng cửa</label>
+                                    <div class="input-icon-wrapper">
+                                        <input type="text" name="closingTime" value="${not empty settings.closingTime ? settings.closingTime : '09:00 PM'}" class="settings-input" required />
+                                        <i class="fa-regular fa-clock input-icon"></i>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Cấu hình Giao diện -->
-                <div class="settings-card">
-                    <div class="settings-card-header">Cấu hình Giao diện</div>
-                    <div class="settings-card-body">
-                        <div class="form-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
-                            <div class="form-group">
-                                <label>Banner 1 (Tải tệp lên)</label>
-                                <div class="file-upload-wrapper">
-                                    <label class="btn-file-upload">
-                                        Choose File
-                                        <input type="file" name="banner1" onchange="updateFileName(this)" />
-                                    </label>
-                                    <span class="file-name-display">
-                                        <c:choose>
-                                            <c:when test="${not empty settings.banner1}">
-                                                ${settings.banner1.substring(settings.banner1.lastIndexOf('/') + 1)}
-                                            </c:when>
-                                            <c:otherwise>hero-1.jpg</c:otherwise>
-                                        </c:choose>
-                                    </span>
+                <!-- Tab 3: Email & OTP -->
+                <div id="tab-email-otp" class="tab-content">
+                    <div class="settings-card">
+                        <div class="settings-card-header">Cấu hình Hệ thống Email & OTP</div>
+                        <div class="settings-card-body">
+                            <div class="form-row form-cols-2">
+                                <div class="form-group">
+                                    <label>Email gửi hệ thống</label>
+                                    <input type="email" name="systemEmail" value="${not empty settings.systemEmail ? settings.systemEmail : 'system@bakeryzone.vn'}" class="settings-input" required />
                                 </div>
-                                <div class="banner-preview-wrap" style="margin-top: 8px;">
-                                    <img src="${pageContext.request.contextPath}/${not empty settings.banner1 ? settings.banner1 : 'assets/images/hero/hero-1.jpg'}" 
-                                         alt="Banner 1" 
-                                         style="width: 100%; aspect-ratio: 1180 / 560; object-fit: cover; border-radius: 6px; border: 1px solid var(--cz-border-color);
-                                                object-position: center ${not empty settings.banner1Align ? settings.banner1Align : '50'}%;" />
-                                </div>
-                                <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner1AlignVal" style="font-weight: 700;">${not empty settings.banner1Align ? settings.banner1Align : '50'}%</span></span>
+                                <div class="form-group">
+                                    <label>Mật khẩu ứng dụng</label>
+                                    <div class="password-wrapper">
+                                        <input type="password" id="appPassword" name="appPassword" value="${not empty settings.appPassword ? settings.appPassword : 'app_password_secret'}" class="settings-input" required />
+                                        <i class="fa-regular fa-eye password-toggle" onclick="togglePasswordVisibility()"></i>
                                     </div>
-                                    <input type="range" name="banner1Align" min="0" max="100" 
-                                           value="${not empty settings.banner1Align ? settings.banner1Align : '50'}" 
-                                           oninput="updateBannerPosition(this, 1)" 
-                                           style="width: 100%; accent-color: var(--cz-primary); height: 6px; border-radius: 4px; outline: none; background: #e5e7eb; cursor: pointer;" />
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label>Banner 2 (Tải tệp lên)</label>
-                                <div class="file-upload-wrapper">
-                                    <label class="btn-file-upload">
-                                        Choose File
-                                        <input type="file" name="banner2" onchange="updateFileName(this)" />
-                                    </label>
-                                    <span class="file-name-display">
-                                        <c:choose>
-                                            <c:when test="${not empty settings.banner2}">
-                                                ${settings.banner2.substring(settings.banner2.lastIndexOf('/') + 1)}
-                                            </c:when>
-                                            <c:otherwise>hero-2.jpg</c:otherwise>
-                                        </c:choose>
-                                    </span>
-                                </div>
-                                <div class="banner-preview-wrap" style="margin-top: 8px;">
-                                    <img src="${pageContext.request.contextPath}/${not empty settings.banner2 ? settings.banner2 : 'assets/images/hero/hero-2.jpg'}" 
-                                         alt="Banner 2" 
-                                         style="width: 100%; aspect-ratio: 1180 / 560; object-fit: cover; border-radius: 6px; border: 1px solid var(--cz-border-color);
-                                                object-position: center ${not empty settings.banner2Align ? settings.banner2Align : '50'}%;" />
-                                </div>
-                                <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner2AlignVal" style="font-weight: 700;">${not empty settings.banner2Align ? settings.banner2Align : '50'}%</span></span>
-                                    </div>
-                                    <input type="range" name="banner2Align" min="0" max="100" 
-                                           value="${not empty settings.banner2Align ? settings.banner2Align : '50'}" 
-                                           oninput="updateBannerPosition(this, 2)" 
-                                           style="width: 100%; accent-color: var(--cz-primary); height: 6px; border-radius: 4px; outline: none; background: #e5e7eb; cursor: pointer;" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Banner 3 (Tải tệp lên)</label>
-                                <div class="file-upload-wrapper">
-                                    <label class="btn-file-upload">
-                                        Choose File
-                                        <input type="file" name="banner3" onchange="updateFileName(this)" />
-                                    </label>
-                                    <span class="file-name-display">
-                                        <c:choose>
-                                            <c:when test="${not empty settings.banner3}">
-                                                ${settings.banner3.substring(settings.banner3.lastIndexOf('/') + 1)}
-                                            </c:when>
-                                            <c:otherwise>hero-3.jpg</c:otherwise>
-                                        </c:choose>
-                                    </span>
-                                </div>
-                                <div class="banner-preview-wrap" style="margin-top: 8px;">
-                                    <img src="${pageContext.request.contextPath}/${not empty settings.banner3 ? settings.banner3 : 'assets/images/hero/hero-3.jpg'}" 
-                                         alt="Banner 3" 
-                                         style="width: 100%; aspect-ratio: 1180 / 560; object-fit: cover; border-radius: 6px; border: 1px solid var(--cz-border-color);
-                                                object-position: center ${not empty settings.banner3Align ? settings.banner3Align : '50'}%;" />
-                                </div>
-                                <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner3AlignVal" style="font-weight: 700;">${not empty settings.banner3Align ? settings.banner3Align : '50'}%</span></span>
-                                    </div>
-                                    <input type="range" name="banner3Align" min="0" max="100" 
-                                           value="${not empty settings.banner3Align ? settings.banner3Align : '50'}" 
-                                           oninput="updateBannerPosition(this, 3)" 
-                                           style="width: 100%; accent-color: var(--cz-primary); height: 6px; border-radius: 4px; outline: none; background: #e5e7eb; cursor: pointer;" />
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Banner 4 (Tải tệp lên)</label>
-                                <div class="file-upload-wrapper">
-                                    <label class="btn-file-upload">
-                                        Choose File
-                                        <input type="file" name="banner4" onchange="updateFileName(this)" />
-                                    </label>
-                                    <span class="file-name-display">
-                                        <c:choose>
-                                            <c:when test="${not empty settings.banner4}">
-                                                ${settings.banner4.substring(settings.banner4.lastIndexOf('/') + 1)}
-                                            </c:when>
-                                            <c:otherwise>hero-4.jpg</c:otherwise>
-                                        </c:choose>
-                                    </span>
-                                </div>
-                                <div class="banner-preview-wrap" style="margin-top: 8px;">
-                                    <img src="${pageContext.request.contextPath}/${not empty settings.banner4 ? settings.banner4 : 'assets/images/hero/hero-4.jpg'}" 
-                                         alt="Banner 4" 
-                                         style="width: 100%; aspect-ratio: 1180 / 560; object-fit: cover; border-radius: 6px; border: 1px solid var(--cz-border-color);
-                                                object-position: center ${not empty settings.banner4Align ? settings.banner4Align : '50'}%;" />
-                                </div>
-                                <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner4AlignVal" style="font-weight: 700;">${not empty settings.banner4Align ? settings.banner4Align : '50'}%</span></span>
-                                    </div>
-                                    <input type="range" name="banner4Align" min="0" max="100" 
-                                           value="${not empty settings.banner4Align ? settings.banner4Align : '50'}" 
-                                           oninput="updateBannerPosition(this, 4)" 
-                                           style="width: 100%; accent-color: var(--cz-primary); height: 6px; border-radius: 4px; outline: none; background: #e5e7eb; cursor: pointer;" />
+                            <div class="form-row">
+                                <div class="form-group half-width">
+                                    <label>Thời gian hiệu lực OTP (phút)</label>
+                                    <input type="number" name="otpExpiry" value="${not empty settings.otpExpiry ? settings.otpExpiry : '5'}" class="settings-input" required min="1" />
                                 </div>
                             </div>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group full-width">
-                                <label>Tiêu đề ảnh Banner trang chủ</label>
-                                <input type="text" name="heroTitle" value="${not empty settings.heroTitle ? settings.heroTitle : ''}" class="settings-input" placeholder="Bánh tươi mỗi ngày, ngọt lành từng khoảnh khắc" />
+                    </div>
+                </div>
+
+                <!-- Tab 4: Giao diện & Banner -->
+                <div id="tab-theme-interface" class="tab-content">
+                    <div class="settings-card">
+                        <div class="settings-card-header">Cấu hình Giao diện</div>
+                        <div class="settings-card-body">
+                            <div class="form-row" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                                <div class="form-group">
+                                    <label>Banner 1 (Tải tệp lên)</label>
+                                    <div class="file-upload-wrapper">
+                                        <label class="btn-file-upload">
+                                            Choose File
+                                            <input type="file" name="banner1" onchange="updateFileName(this)" />
+                                        </label>
+                                        <span class="file-name-display">
+                                            <c:choose>
+                                                <c:when test="${not empty settings.banner1}">
+                                                    ${settings.banner1.substring(settings.banner1.lastIndexOf('/') + 1)}
+                                                </c:when>
+                                                <c:otherwise>hero-1.jpg</c:otherwise>
+                                            </c:choose>
+                                        </span>
+                                    </div>
+                                    <div class="banner-preview-wrap" style="margin-top: 8px;">
+                                        <img src="${pageContext.request.contextPath}/${not empty settings.banner1 ? settings.banner1 : 'assets/images/hero/hero-1.jpg'}" 
+                                             alt="Banner 1" 
+                                             style="width: 100%; aspect-ratio: 1180 / 560; object-fit: cover; border-radius: 6px; border: 1px solid var(--cz-border-color);
+                                                    object-position: center ${not empty settings.banner1Align ? settings.banner1Align : '50'}%;" />
+                                    </div>
+                                    <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner1AlignVal" style="font-weight: 700;">${not empty settings.banner1Align ? settings.banner1Align : '50'}%</span></span>
+                                        </div>
+                                        <input type="range" name="banner1Align" min="0" max="100" 
+                                               value="${not empty settings.banner1Align ? settings.banner1Align : '50'}" 
+                                               oninput="updateBannerPosition(this, 1)" 
+                                               style="width: 100%; accent-color: var(--cz-primary); height: 6px; border-radius: 4px; outline: none; background: #e5e7eb; cursor: pointer;" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Banner 2 (Tải tệp lên)</label>
+                                    <div class="file-upload-wrapper">
+                                        <label class="btn-file-upload">
+                                            Choose File
+                                            <input type="file" name="banner2" onchange="updateFileName(this)" />
+                                        </label>
+                                        <span class="file-name-display">
+                                            <c:choose>
+                                                <c:when test="${not empty settings.banner2}">
+                                                    ${settings.banner2.substring(settings.banner2.lastIndexOf('/') + 1)}
+                                                </c:when>
+                                                <c:otherwise>hero-2.jpg</c:otherwise>
+                                            </c:choose>
+                                        </span>
+                                    </div>
+                                    <div class="banner-preview-wrap" style="margin-top: 8px;">
+                                        <img src="${pageContext.request.contextPath}/${not empty settings.banner2 ? settings.banner2 : 'assets/images/hero/hero-2.jpg'}" 
+                                             alt="Banner 2" 
+                                             style="width: 100%; aspect-ratio: 1180 / 560; object-fit: cover; border-radius: 6px; border: 1px solid var(--cz-border-color);
+                                                    object-position: center ${not empty settings.banner2Align ? settings.banner2Align : '50'}%;" />
+                                    </div>
+                                    <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner2AlignVal" style="font-weight: 700;">${not empty settings.banner2Align ? settings.banner2Align : '50'}%</span></span>
+                                        </div>
+                                        <input type="range" name="banner2Align" min="0" max="100" 
+                                               value="${not empty settings.banner2Align ? settings.banner2Align : '50'}" 
+                                               oninput="updateBannerPosition(this, 2)" 
+                                               style="width: 100%; accent-color: var(--cz-primary); height: 6px; border-radius: 4px; outline: none; background: #e5e7eb; cursor: pointer;" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Banner 3 (Tải tệp lên)</label>
+                                    <div class="file-upload-wrapper">
+                                        <label class="btn-file-upload">
+                                            Choose File
+                                            <input type="file" name="banner3" onchange="updateFileName(this)" />
+                                        </label>
+                                        <span class="file-name-display">
+                                            <c:choose>
+                                                <c:when test="${not empty settings.banner3}">
+                                                    ${settings.banner3.substring(settings.banner3.lastIndexOf('/') + 1)}
+                                                </c:when>
+                                                <c:otherwise>hero-3.jpg</c:otherwise>
+                                            </c:choose>
+                                        </span>
+                                    </div>
+                                    <div class="banner-preview-wrap" style="margin-top: 8px;">
+                                        <img src="${pageContext.request.contextPath}/${not empty settings.banner3 ? settings.banner3 : 'assets/images/hero/hero-3.jpg'}" 
+                                             alt="Banner 3" 
+                                             style="width: 100%; aspect-ratio: 1180 / 560; object-fit: cover; border-radius: 6px; border: 1px solid var(--cz-border-color);
+                                                    object-position: center ${not empty settings.banner3Align ? settings.banner3Align : '50'}%;" />
+                                    </div>
+                                    <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner3AlignVal" style="font-weight: 700;">${not empty settings.banner3Align ? settings.banner3Align : '50'}%</span></span>
+                                        </div>
+                                        <input type="range" name="banner3Align" min="0" max="100" 
+                                               value="${not empty settings.banner3Align ? settings.banner3Align : '50'}" 
+                                               oninput="updateBannerPosition(this, 3)" 
+                                               style="width: 100%; accent-color: var(--cz-primary); height: 6px; border-radius: 4px; outline: none; background: #e5e7eb; cursor: pointer;" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Banner 4 (Tải tệp lên)</label>
+                                    <div class="file-upload-wrapper">
+                                        <label class="btn-file-upload">
+                                            Choose File
+                                            <input type="file" name="banner4" onchange="updateFileName(this)" />
+                                        </label>
+                                        <span class="file-name-display">
+                                            <c:choose>
+                                                <c:when test="${not empty settings.banner4}">
+                                                    ${settings.banner4.substring(settings.banner4.lastIndexOf('/') + 1)}
+                                                </c:when>
+                                                <c:otherwise>hero-4.jpg</c:otherwise>
+                                            </c:choose>
+                                        </span>
+                                    </div>
+                                    <div class="banner-preview-wrap" style="margin-top: 8px;">
+                                        <img src="${pageContext.request.contextPath}/${not empty settings.banner4 ? settings.banner4 : 'assets/images/hero/hero-4.jpg'}" 
+                                             alt="Banner 4" 
+                                             style="width: 100%; aspect-ratio: 1180 / 560; object-fit: cover; border-radius: 6px; border: 1px solid var(--cz-border-color);
+                                                    object-position: center ${not empty settings.banner4Align ? settings.banner4Align : '50'}%;" />
+                                    </div>
+                                    <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 4px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 11px; font-weight: 500; color: var(--text-muted);">Căn dọc: <span id="banner4AlignVal" style="font-weight: 700;">${not empty settings.banner4Align ? settings.banner4Align : '50'}%</span></span>
+                                        </div>
+                                        <input type="range" name="banner4Align" min="0" max="100" 
+                                               value="${not empty settings.banner4Align ? settings.banner4Align : '50'}" 
+                                               oninput="updateBannerPosition(this, 4)" 
+                                               style="width: 100%; accent-color: var(--cz-primary); height: 6px; border-radius: 4px; outline: none; background: #e5e7eb; cursor: pointer;" />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group full-width">
-                                <label>Mô tả phụ ảnh Banner trang chủ</label>
-                                <textarea name="heroSubtitle" class="settings-textarea" placeholder="Khám phá những chiếc bánh ngọt, bánh sinh nhật và quà tặng được làm thủ công từ nguyên liệu tự nhiên...">${not empty settings.heroSubtitle ? settings.heroSubtitle : ''}</textarea>
+                            <div class="form-row">
+                                <div class="form-group full-width">
+                                    <label>Tiêu đề ảnh Banner trang chủ</label>
+                                    <input type="text" name="heroTitle" value="${not empty settings.heroTitle ? settings.heroTitle : ''}" class="settings-input" placeholder="Bánh tươi mỗi ngày, ngọt lành từng khoảnh khắc" />
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-row" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 14px; font-weight: 500; color: var(--text-dark);">Giao diện sáng/ tối</span>
-                            <label class="switch-toggle">
-                                <input type="checkbox" name="darkMode" ${settings.darkMode ? 'checked' : ''} />
-                                <span class="switch-slider"></span>
-                            </label>
+                            <div class="form-row">
+                                <div class="form-group full-width">
+                                    <label>Mô tả phụ ảnh Banner trang chủ</label>
+                                    <textarea name="heroSubtitle" class="settings-textarea" placeholder="Khám phá những chiếc bánh ngọt, bánh sinh nhật và quà tặng được làm thủ công từ nguyên liệu tự nhiên...">${not empty settings.heroSubtitle ? settings.heroSubtitle : ''}</textarea>
+                                </div>
+                            </div>
+                            <div class="form-row" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 14px; font-weight: 500; color: var(--text-dark);">Giao diện sáng/ tối</span>
+                                <label class="switch-toggle">
+                                    <input type="checkbox" name="darkMode" ${settings.darkMode ? 'checked' : ''} />
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -432,7 +446,7 @@
         document.querySelector('input[name="systemEmail"]').addEventListener('blur', () => validateEmail('systemEmail', 'Email gửi hệ thống'));
         document.querySelector('input[name="depositPercent"]').addEventListener('blur', () => validateNumber('depositPercent', 'Phần trăm đặt cọc', 0, 100, false));
         document.querySelector('input[name="shippingRate"]').addEventListener('blur', () => validateNumber('shippingRate', 'Đơn giá ship', 0, null, true));
-        document.querySelector('input[name="maxCakesPerHour"]').addEventListener('blur', () => validateNumber('maxCakesPerHour', 'Số bánh tối đa/giờ', 1, null, false));
+
         document.querySelector('input[name="otpExpiry"]').addEventListener('blur', () => validateNumber('otpExpiry', 'Thời gian OTP', 1, null, false));
         document.getElementById('appPassword').addEventListener('blur', validatePassword);
 
@@ -464,17 +478,62 @@
                 validateEmail('systemEmail', 'Email gửi hệ thống') &
                 validateNumber('depositPercent', 'Phần trăm đặt cọc', 0, 100, false) &
                 validateNumber('shippingRate', 'Đơn giá ship', 0, null, true) &
-                validateNumber('maxCakesPerHour', 'Số bánh tối đa/giờ', 1, null, false) &
+
                 validateNumber('otpExpiry', 'Thời gian OTP', 1, null, false) &
                 validatePassword();
 
             if (!isValid) {
                 e.preventDefault();
                 const firstError = document.querySelector('.field-error-msg');
-                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (firstError) {
+                    const tabContent = firstError.closest('.tab-content');
+                    if (tabContent) {
+                        const tabId = tabContent.id.replace('tab-', '');
+                        switchTab(tabId);
+                    }
+                    setTimeout(() => {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                }
                 showFloatingAlert("⚠️ Vui lòng kiểm tra lại thông tin nhập. Có trường chưa hợp lệ!", 'error');
             }
         });
+
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.style.display = 'none';
+                el.classList.remove('active-tab-content');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const activeContent = document.getElementById('tab-' + tabId);
+            if (activeContent) {
+                activeContent.style.display = 'block';
+                activeContent.classList.add('active-tab-content');
+            }
+
+            const activeBtn = document.querySelector(`[onclick="switchTab('${tabId}')"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+
+            const activeTabInput = document.getElementById('activeTabInput');
+            if (activeTabInput) {
+                activeTabInput.value = tabId;
+            }
+        }
+
+        // Initialize default tab
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTabParam = urlParams.get('activeTab') || '${param.activeTab}';
+        if (activeTabParam && ['general', 'order-delivery', 'email-otp', 'theme-interface'].includes(activeTabParam)) {
+            switchTab(activeTabParam);
+        } else {
+            switchTab('general');
+        }
     </script>
 </body>
 </html>

@@ -194,6 +194,77 @@ td { font-size: 13px; vertical-align: middle; }
     box-shadow: 0 0 0 3px rgba(49, 80, 56, 0.15);
 }
 
+/* Tab navigation */
+.settings-tabs {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 0px;
+    position: relative;
+}
+.tab-btn {
+    padding: 14px 28px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 15px;
+    font-weight: 700;
+    color: #756d64;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    outline: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.tab-btn:hover {
+    color: var(--cz-primary, #3f5f36);
+    background: rgba(63, 95, 54, 0.05);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    transform: translateY(-2px);
+}
+.tab-btn.active {
+    color: var(--cz-primary, #3f5f36);
+    font-weight: 800;
+    background: rgba(63, 95, 54, 0.08);
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+.tab-btn::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3f5f36, #c8a46d);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(-50%);
+}
+.tab-btn.active::after {
+    width: 100%;
+}
+.tab-content {
+    display: none;
+}
+.tab-content.active-tab-content {
+    display: block;
+    animation: tabSlideIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes tabSlideIn {
+    0% {
+        opacity: 0;
+        transform: translateY(15px) scale(0.985);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 /* File upload */
 .file-upload-wrapper {
     display: flex;
@@ -1055,6 +1126,8 @@ body {
     padding: 35px !important;
     flex: 1 !important;
 }
+
+
 
 
 

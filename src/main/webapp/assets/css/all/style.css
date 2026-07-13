@@ -169,6 +169,7 @@ button {
     font-weight: 700;
     border: 1px solid transparent;
     transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    white-space: nowrap; /* FIXED: Prevent login or button text from breaking into multiple lines */
 }
 
 .btn:hover {
@@ -183,6 +184,17 @@ button {
 
 .btn-primary:hover {
     background: var(--primary-dark);
+}
+
+/* FIXED: Đăng nhập (or btn-primary) active state turns green instead of default Bootstrap blue */
+.btn-primary:active,
+.btn-primary:focus,
+.btn-primary.active,
+.btn-primary:focus-visible {
+    background-color: var(--primary-dark) !important;
+    border-color: var(--primary-dark) !important;
+    color: #fff !important;
+    box-shadow: 0 12px 24px rgba(63, 95, 54, 0.22) !important;
 }
 
 .btn-outline {
@@ -567,6 +579,25 @@ button {
 
 .user-dropdown-item:hover {
     background: rgba(61, 91, 49, 0.08);
+}
+
+/* FIXED: Static display for user profile role item without hover effect */
+.user-dropdown-item-static {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 10px;
+    border-radius: 10px;
+    color: var(--text, #241d18); /* FIXED: Make text bold and clear instead of muted/blurry */
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: default;
+}
+
+.user-dropdown-item-static .material-symbols-outlined {
+    font-size: 21px;
+    color: var(--primary);
 }
 
 .user-dropdown-divider {
