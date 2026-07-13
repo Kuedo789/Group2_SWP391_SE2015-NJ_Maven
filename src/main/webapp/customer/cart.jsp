@@ -264,7 +264,7 @@
                                     </span>
                                 </div>
 
-                                <div class="voucher-group">
+                                <div class="voucher-group" id="cartVoucherGroup">
                                     <c:choose>
                                         <c:when test="${not empty sessionScope.appliedVoucherCode}">
                                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
@@ -273,8 +273,17 @@
                                             </div>
                                         </c:when>
                                         <c:otherwise>
-                                            <input type="text" placeholder="Nhập mã giảm giá" class="voucher-input" name="voucherCode">
-                                            <button type="submit" name="action" value="applyVoucher" class="voucher-btn">Áp dụng</button>
+                                            <%-- Frontend validation error message area --%>
+                                            <div id="cartVoucherClientError" style="display:none; color:#d9534f; font-size:13px; margin-bottom:6px; display:flex; align-items:center; gap:5px;"></div>
+                                            <div style="display:flex; gap:8px;">
+                                                <input type="text" id="cartVoucherInput" placeholder="Nhập mã giảm giá" class="voucher-input" name="voucherCode"
+                                                       maxlength="50" autocomplete="off" style="text-transform:uppercase;"
+                                                       oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');">
+                                                <button type="button" id="cartVoucherBtn" class="voucher-btn" onclick="submitCartVoucher()">Áp dụng</button>
+                                            </div>
+                                            <input type="hidden" id="cartVoucherCodeHidden" name="voucherCodeHidden">
+                                            <%-- Hidden submit button triggered programmatically after validation --%>
+                                            <button type="submit" id="cartVoucherSubmitHidden" name="action" value="applyVoucher" style="display:none;"></button>
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
@@ -298,6 +307,69 @@
             function formatCurrency(amount) {
                 return amount.toLocaleString('vi-VN') + "₫";
             }
+
+            // ── Cart-page voucher frontend validation ─────────────────────────────
+            function submitCartVoucher() {
+                const input   = document.getElementById('cartVoucherInput');
+                const btn     = document.getElementById('cartVoucherBtn');
+                const errBox  = document.getElementById('cartVoucherClientError');
+
+                function showError(msg) {
+                    errBox.innerHTML = '<span style="font-size:14px;">&#9888;</span> ' + msg;
+                    errBox.style.display = 'flex';
+                    input.style.borderColor = '#d9534f';
+                    input.focus();
+                }
+
+                function clearError() {
+                    errBox.style.display = 'none';
+                    input.style.borderColor = '';
+                }
+
+                clearError();
+
+                const code = input.value.trim().toUpperCase();
+
+                // 1. Empty check
+                if (!code) {
+                    showError('Vui lòng nhập mã voucher!');
+                    return;
+                }
+
+                // 2. Format check – only uppercase letters A-Z and digits 0-9
+                if (!/^[A-Z0-9]+$/.test(code)) {
+                    showError('Mã voucher chỉ được chứa chữ cái và số (không dấu, không khoảng trắng).');
+                    return;
+                }
+
+                // 3. Length check
+                if (code.length > 50) {
+                    showError('Mã voucher không được vượt quá 50 ký tự.');
+                    return;
+                }
+
+                // All client-side checks passed — write canonical code & submit
+                input.value = code;
+                btn.disabled  = true;
+                btn.innerHTML = '&#8987; Đang kiểm tra...';
+
+                // Trigger the hidden submit button (carries name="action" value="applyVoucher")
+                document.getElementById('cartVoucherSubmitHidden').click();
+            }
+
+            // Allow pressing Enter key inside the voucher input
+            document.addEventListener('DOMContentLoaded', function () {
+                const voucherInput = document.getElementById('cartVoucherInput');
+                if (voucherInput) {
+                    voucherInput.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            submitCartVoucher();
+                        }
+                    });
+                }
+            });
+            // ─────────────────────────────────────────────────────────────────────
 
             // 2. Dynamic JS Calculation
             function updateSummaryTotals() {

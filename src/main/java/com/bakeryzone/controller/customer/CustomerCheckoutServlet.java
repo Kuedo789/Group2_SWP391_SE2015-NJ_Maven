@@ -2,6 +2,7 @@ package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.DeliveryAddressDAO;
 import com.bakeryzone.dao.OrderDAO;
+import com.bakeryzone.dao.VoucherDAO;
 import com.bakeryzone.model.DeliveryAddress;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.model.OrderItem;
@@ -29,6 +30,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
 
     private final DeliveryAddressDAO addressDAO = new DeliveryAddressDAO();
     private final OrderDAO orderDAO = new OrderDAO();
+    private final VoucherDAO voucherDAO = new VoucherDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -231,7 +233,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
                 }
             }
 
-if (order.getItems().isEmpty()) {
+            if (order.getItems().isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/checkout?error=empty_cart");
                 return;
             }
@@ -247,11 +249,36 @@ if (order.getItems().isEmpty()) {
                 }
             }
 
-            // 2. Extract and Apply Voucher Discount
-            BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
+            // 2. Extract Voucher from Session
             String appliedVoucherCode = (String) session.getAttribute("appliedVoucherCode");
-            if (appliedDiscount == null) {
-                appliedDiscount = BigDecimal.ZERO;
+            BigDecimal appliedDiscount = BigDecimal.ZERO;
+
+            if (appliedVoucherCode != null) {
+                // ── SECURITY: Re-validate the voucher against the real productTotal ──
+                // This prevents session manipulation attacks where a user might tamper
+                // with the session to apply an invalid or insufficient voucher.
+                String revalidationError = voucherDAO.validateVoucher(
+                        appliedVoucherCode, currentUser.getUserId(), productTotal);
+
+                if (revalidationError != null) {
+                    // Voucher is no longer valid — clear it from session and warn user
+                    System.out.println("[WARN] Voucher '" + appliedVoucherCode
+                            + "' failed re-validation at checkout for user "
+                            + currentUser.getUserId() + ": " + revalidationError);
+                    session.removeAttribute("appliedVoucherCode");
+                    session.removeAttribute("appliedDiscount");
+                    session.removeAttribute("appliedVoucherMinOrder");
+                    session.setAttribute("voucherError", "Mã giảm giá không còn hợp lệ: " + revalidationError
+                            + " Vui lòng kiểm tra lại.");
+                    response.sendRedirect(request.getContextPath() + "/checkout?error=voucher_invalid");
+                    return;
+                }
+
+                // Re-validation passed — fetch fresh discount amount from DB (trust DB, not session)
+                com.bakeryzone.model.Voucher freshVoucher = voucherDAO.getVoucherByCode(appliedVoucherCode);
+                if (freshVoucher != null) {
+                    appliedDiscount = freshVoucher.getDiscountAmount();
+                }
             }
             
             // 3. Compute Final Total Cost
@@ -306,7 +333,6 @@ if (order.getItems().isEmpty()) {
 
             if (success) {
                 if (appliedVoucherCode != null) {
-                    com.bakeryzone.dao.VoucherDAO voucherDAO = new com.bakeryzone.dao.VoucherDAO();
                     voucherDAO.decrementQuantity(appliedVoucherCode);
                     session.removeAttribute("appliedVoucherCode");
                     session.removeAttribute("appliedDiscount");
@@ -335,41 +361,35 @@ if (order.getItems().isEmpty()) {
         return obj.get(key).getAsString();
     }
 
+    /**
+     * Handles voucher application from the checkout page.
+     * Uses the centralized validateVoucher() — subtotal is not known yet at this stage,
+     * so we pass null and let the final checkout re-validation enforce it.
+     */
     private void handleApplyVoucher(HttpServletRequest request, HttpSession session) {
         String code = request.getParameter("voucherCode");
         if (code == null || code.trim().isEmpty()) {
             session.setAttribute("voucherError", "Vui lòng nhập mã voucher!");
             return;
         }
-        
-        com.bakeryzone.dao.VoucherDAO voucherDAO = new com.bakeryzone.dao.VoucherDAO();
+
+        User user = (User) session.getAttribute("user");
+
+        // Note: at the checkout apply-voucher stage the exact cart subtotal is not
+        // available server-side (it lives in localStorage). We pass null for cartSubtotal
+        // so all checks except Min_Order_Value are enforced here; the final re-validation
+        // at order submission will enforce Min_Order_Value against the real productTotal.
+        String error = voucherDAO.validateVoucher(code, user.getUserId(), null);
+        if (error != null) {
+            session.setAttribute("voucherError", error);
+            return;
+        }
+
         com.bakeryzone.model.Voucher v = voucherDAO.getVoucherByCode(code.trim().toUpperCase());
-        if (v == null || !v.isActive()) {
-            session.setAttribute("voucherError", "Mã voucher không tồn tại hoặc đã bị khóa!");
-            return;
-        }
-
-        long now = System.currentTimeMillis();
-        if (v.getStartDate().getTime() > now || v.getEndDate().getTime() < now) {
-            session.setAttribute("voucherError", "Mã voucher chưa bắt đầu hoặc đã hết hạn!");
-            return;
-        }
-
-        if (v.getTotalQuantity() <= 0) {
-            session.setAttribute("voucherError", "Mã voucher này đã hết số lượng!");
-            return;
-        }
-
-        com.bakeryzone.model.User user = (com.bakeryzone.model.User) session.getAttribute("user");
-        int userUsage = voucherDAO.getUserUsageCount(user.getUserId(), v.getVoucherCode());
-        if (userUsage >= v.getUsagePerUser()) {
-            session.setAttribute("voucherError", "Bạn đã sử dụng hết lượt cho mã này!");
-            return;
-        }
-
         session.setAttribute("appliedVoucherCode", v.getVoucherCode());
         session.setAttribute("appliedDiscount", v.getDiscountAmount());
         session.setAttribute("appliedVoucherMinOrder", v.getMinOrderValue());
+        session.removeAttribute("voucherError");
     }
 
     private void sendAjaxVoucherResponse(HttpServletResponse response, HttpSession session) throws IOException {
