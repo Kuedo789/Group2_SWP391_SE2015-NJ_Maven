@@ -127,7 +127,7 @@
             if (!idInput.hasAttribute('readonly')) {
                 const idVal = idInput.value.trim();
                 if (idVal.length === 0) {
-                    errorId.textContent = 'Mã đơn vị tính không được để trống.';
+                    errorId.textContent = 'Mã đơn vị tính không được để trống hoặc chỉ chứa khoảng trắng.';
                     errorId.style.display = 'block';
                     idInput.classList.add('is-invalid');
                     hasError = true;
@@ -142,12 +142,12 @@
             // Validate name
             const nameVal = nameInput.value.trim();
             if (nameVal.length === 0) {
-                errorName.textContent = 'Tên đơn vị tính không được để trống.';
+                errorName.textContent = 'Tên đơn vị tính không được để trống hoặc chỉ chứa khoảng trắng.';
                 errorName.style.display = 'block';
                 nameInput.classList.add('is-invalid');
                 hasError = true;
             } else if (nameVal.length < 2) {
-                errorName.textContent = 'Tên đơn vị tính tối thiểu 2 ký tự.';
+                errorName.textContent = 'Tên đơn vị tính tối thiểu 2 ký tự (không tính khoảng trắng).';
                 errorName.style.display = 'block';
                 nameInput.classList.add('is-invalid');
                 hasError = true;

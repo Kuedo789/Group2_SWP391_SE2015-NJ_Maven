@@ -4,16 +4,16 @@ import com.bakeryzone.dao.CartDAO;
 import com.bakeryzone.dao.VoucherDAO;
 import com.bakeryzone.model.CartItemDTO;
 import java.io.IOException;
-import java.math.BigDecimal; // Required for total calculations
+import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List; // Required for the cart list
+import java.util.List;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession; // Required for session auth
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Cart Controller handling routing and PRG patterns.
@@ -70,6 +70,7 @@ public class CartServlet extends HttpServlet {
                 case "removeVoucher":
                     session.removeAttribute("appliedVoucherCode");
                     session.removeAttribute("appliedDiscount");
+                    session.removeAttribute("appliedVoucherMinOrder");
                     response.sendRedirect(request.getContextPath() + "/cart?voucherRemoved=true");
                     return;
                 case "checkout":
@@ -144,37 +145,31 @@ public class CartServlet extends HttpServlet {
             session.setAttribute("voucherError", "Vui lòng nhập mã voucher!");
             return;
         }
-        
-        com.bakeryzone.model.Voucher v = voucherDAO.getVoucherByCode(code.trim().toUpperCase());
-        if (v == null || !v.isActive()) {
-            session.setAttribute("voucherError", "Mã voucher không tồn tại hoặc đã bị khóa!");
-            return;
-        }
-
-        long now = System.currentTimeMillis();
-        if (v.getStartDate().getTime() > now || v.getEndDate().getTime() < now) {
-            session.setAttribute("voucherError", "Mã voucher chưa bắt đầu hoặc đã hết hạn!");
-            return;
-        }
-
-        if (v.getTotalQuantity() <= 0) {
-            session.setAttribute("voucherError", "Mã voucher này đã hết số lượng!");
-            return;
-        }
 
         com.bakeryzone.model.User user = (com.bakeryzone.model.User) session.getAttribute("user");
-        int userUsage = voucherDAO.getUserUsageCount(user.getUserId(), v.getVoucherCode());
-        if (userUsage >= v.getUsagePerUser()) {
-            session.setAttribute("voucherError", "Bạn đã sử dụng hết lượt cho mã này!");
+        String userId = user.getUserId();
+
+        // Calculate actual cart subtotal so Min_Order_Value can be validated immediately
+        List<CartItemDTO> items = cartDAO.getCartItemsForUser(userId);
+        BigDecimal cartSubtotal = BigDecimal.ZERO;
+        if (items != null) {
+            for (CartItemDTO item : items) {
+                if (item.isActive() && item.getUnitPrice() != null) {
+                    cartSubtotal = cartSubtotal.add(
+                            item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                }
+            }
+        }
+
+        // Single centralized validation — covers active, date, quantity, usage, tier, min order value
+        String error = voucherDAO.validateVoucher(code, userId, cartSubtotal);
+        if (error != null) {
+            session.setAttribute("voucherError", error);
             return;
         }
 
-        // Tier check could go here if Membership was fully loaded in session. 
-        // For now, we will assume pass or check if user.getTierId() exists.
-
-        // Also we need cart subtotal. Since we do this on POST before GET, we could calculate here,
-        // but easier to just save code to session and let GET (renderCartPage) validate minOrderValue.
-        // Actually, we can just save it, and let Checkout validate.
+        // Fetch voucher to store discount details in session
+        com.bakeryzone.model.Voucher v = voucherDAO.getVoucherByCode(code.trim().toUpperCase());
         session.setAttribute("appliedVoucherCode", v.getVoucherCode());
         session.setAttribute("appliedDiscount", v.getDiscountAmount());
         session.setAttribute("appliedVoucherMinOrder", v.getMinOrderValue());
