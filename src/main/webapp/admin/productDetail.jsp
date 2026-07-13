@@ -687,11 +687,11 @@
                                     <table class="table align-middle" id="bomTable" style="border-color: #f3f4f6;">
                                         <thead>
                                             <tr style="border-bottom: 2px solid #e5e7eb;">
-                                                <th style="font-size: 13px; font-weight: 700; color: #374151; padding-bottom: 12px; min-width: 280px;">Nguyên Liệu</th>
-                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 180px; padding-bottom: 12px;">Số Lượng</th>
-                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 120px; padding-bottom: 12px;">Đơn Giá</th>
-                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 120px; padding-bottom: 12px;">Thành Tiền</th>
-                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 60px; padding-bottom: 12px; text-align: center;">Xóa</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; padding-bottom: 12px; min-width: 220px;">Nguyên Liệu</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 140px; padding-bottom: 12px;">Số Lượng</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 130px; padding-bottom: 12px; white-space: nowrap;">Đơn Giá</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 130px; padding-bottom: 12px; white-space: nowrap;">Thành Tiền</th>
+                                                <th style="font-size: 13px; font-weight: 700; color: #374151; width: 50px; padding-bottom: 12px; text-align: center;">Xóa</th>
                                             </tr>
                                         </thead>
                                         <tbody id="bomTableBody">
@@ -712,10 +712,10 @@
                                                             <span class="bom-unit-label text-muted small" style="min-width: 45px; text-align: left; font-weight: 500;">${item.unitMeasure}</span>
                                                         </div>
                                                     </td>
-                                                    <td class="bom-unit-price" style="font-size: 13px; color: #4b5563;">
+                                                    <td class="bom-unit-price" style="font-size: 13px; color: #4b5563; white-space: nowrap;">
                                                         <fmt:formatNumber value="${item.pricePerUnit}" type="number" pattern="#,##0"/> đ/${item.unitMeasure}
                                                     </td>
-                                                    <td class="bom-row-total" style="font-weight: 600; font-size: 13.5px; color: #1f2937;">
+                                                    <td class="bom-row-total" style="font-weight: 600; font-size: 13.5px; color: #1f2937; white-space: nowrap;">
                                                         <fmt:formatNumber value="${item.standardGram * item.pricePerUnit}" type="number" pattern="#,##0"/> đ
                                                     </td>
                                                     <td style="text-align: center;">
@@ -1002,7 +1002,21 @@
                 const nameVal = nameInput.value.trim();
                 if (nameVal.length === 0) {
                     if (errorName) {
-                        errorName.textContent = 'Tên bánh kem không được để trống.';
+                        errorName.textContent = 'Tên bánh kem không được để trống hoặc chỉ chứa khoảng trắng.';
+                        errorName.style.display = 'block';
+                    }
+                    nameInput.classList.add('is-invalid');
+                    hasError = true;
+                } else if (nameVal.length < 3) {
+                    if (errorName) {
+                        errorName.textContent = 'Tên bánh kem phải có tối thiểu 3 ký tự (không tính khoảng trắng).';
+                        errorName.style.display = 'block';
+                    }
+                    nameInput.classList.add('is-invalid');
+                    hasError = true;
+                } else if (nameVal.length > 100) {
+                    if (errorName) {
+                        errorName.textContent = 'Tên bánh kem không được vượt quá 100 ký tự.';
                         errorName.style.display = 'block';
                     }
                     nameInput.classList.add('is-invalid');
@@ -1046,6 +1060,16 @@
             if (hasError) {
                 e.preventDefault();
                 return false;
+            }
+
+            // 4. Warning confirmation if no ingredients (BOM) are configured
+            const bomRowsCount = document.querySelectorAll('#bomTableBody tr').length;
+            if (bomRowsCount === 0) {
+                const confirmSave = confirm('Sản phẩm này chưa được thiết lập định lượng nguyên liệu. Bạn có muốn tiếp tục lưu không?');
+                if (!confirmSave) {
+                    e.preventDefault();
+                    return false;
+                }
             }
 
             // Sync editors
@@ -1164,7 +1188,7 @@
             recalculateBom();
         }
 
-        function addBomRow() {
+        function addBomRow(targetId = "", defaultQty = 100) {
             try {
                 const tbody = document.getElementById('bomTableBody');
                 const templateEl = document.getElementById('bom-options-template');
@@ -1178,18 +1202,25 @@
                 tempDiv.innerHTML = templateEl.innerHTML;
                 const options = tempDiv.querySelectorAll('option');
                 
-                // Find first option that is not selected
-                let targetValue = "";
-                for (let opt of options) {
-                    if (!selectedIds.includes(opt.value)) {
-                        targetValue = opt.value;
-                        break;
+                // Find first option that is not selected if no targetId is specified
+                let targetValue = targetId;
+                if (targetValue === "") {
+                    for (let opt of options) {
+                        if (!selectedIds.includes(opt.value)) {
+                            targetValue = opt.value;
+                            break;
+                        }
                     }
                 }
                 
                 // If all are selected, just default to first
                 if (targetValue === "" && options.length > 0) {
                     targetValue = options[0].value;
+                }
+                
+                // Prevent duplicate addition
+                if (selectedIds.includes(targetValue) && targetId !== "") {
+                    return;
                 }
                 
                 const tr = document.createElement('tr');
@@ -1201,12 +1232,12 @@
                     </td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="100" oninput="recalculateBom()" style="padding: 5px 10px; height: 38px; width: 90px; min-width: 90px;" required>
+                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${defaultQty}" oninput="recalculateBom()" style="padding: 5px 10px; height: 38px; width: 90px; min-width: 90px;" required>
                             <span class="bom-unit-label text-muted small" style="min-width: 45px; text-align: left; font-weight: 500;"></span>
                         </div>
                     </td>
-                    <td class="bom-unit-price">0 đ</td>
-                    <td class="bom-row-total" style="font-weight: 600;">0 đ</td>
+                    <td class="bom-unit-price" style="font-size: 13px; color: #4b5563; white-space: nowrap;">0 đ</td>
+                    <td class="bom-row-total" style="font-weight: 600; font-size: 13.5px; color: #1f2937; white-space: nowrap;">0 đ</td>
                     <td style="text-align: center;">
                         <button type="button" class="btn-delete-bom-row" onclick="removeBomRow(this)" title="Xóa nguyên liệu này">
                             <i class="fa-regular fa-trash-can"></i>
@@ -1264,6 +1295,35 @@
                         }
                     });
                 }
+
+                // Prepopulate common ingredients for new products
+                const isNew = document.querySelector('input[name="id"]')?.value === 'new';
+                const bomRowsCount = document.querySelectorAll('#bomTableBody tr').length;
+                if (isNew && bomRowsCount === 0) {
+                    const templateEl = document.getElementById('bom-options-template');
+                    if (templateEl) {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = templateEl.innerHTML;
+                        const options = tempDiv.querySelectorAll('option');
+                        const commonKeywords = ['bột', 'đường', 'bơ', 'sữa', 'trứng'];
+                        
+                        options.forEach(opt => {
+                            const nameLower = opt.textContent.toLowerCase();
+                            const isCommon = commonKeywords.some(keyword => nameLower.includes(keyword));
+                            if (isCommon) {
+                                addBomRow(opt.value, 100);
+                            }
+                        });
+                    }
+                }
+
+                // Format existing ingredient quantities to remove trailing .0
+                document.querySelectorAll('.bom-grams').forEach(input => {
+                    const val = parseFloat(input.value);
+                    if (!isNaN(val)) {
+                        input.value = parseFloat(val.toFixed(2));
+                    }
+                });
 
                 recalculateBom();
                 

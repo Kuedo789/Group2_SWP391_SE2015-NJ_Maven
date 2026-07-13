@@ -404,8 +404,13 @@
             let hasError = false;
 
             const nameVal = nameInput.value.trim();
-            if (nameVal.length < 2) {
-                errorName.textContent = 'Tên nguyên liệu phải có tối thiểu 2 ký tự.';
+            if (nameVal.length === 0) {
+                errorName.textContent = 'Tên nguyên liệu không được để trống hoặc chỉ chứa khoảng trắng.';
+                errorName.style.display = 'block';
+                nameInput.classList.add('is-invalid');
+                hasError = true;
+            } else if (nameVal.length < 2) {
+                errorName.textContent = 'Tên nguyên liệu phải có tối thiểu 2 ký tự (không tính khoảng trắng).';
                 errorName.style.display = 'block';
                 nameInput.classList.add('is-invalid');
                 hasError = true;
