@@ -358,6 +358,18 @@
                     </div>
 
                     <!-- Payment Summary -->
+                    <%
+                        int calcDepPercent = 30;
+                        com.bakeryzone.model.Order orderObj = (com.bakeryzone.model.Order) request.getAttribute("order");
+                        if (orderObj != null) {
+                            double totalCostVal = orderObj.getTotalCost() != null ? orderObj.getTotalCost().doubleValue() : 0;
+                            double depositAmtVal = orderObj.getDepositAmount() != null ? orderObj.getDepositAmount().doubleValue() : 0;
+                            if (totalCostVal > 0) {
+                                calcDepPercent = (int) Math.round((depositAmtVal * 100) / totalCostVal);
+                            }
+                        }
+                        pageContext.setAttribute("calcDepPercent", calcDepPercent);
+                    %>
                     <div class="cz-card">
                         <div class="cz-card-title">
                             <i class="fa-solid fa-receipt" style="color: var(--cz-primary);"></i> Tóm tắt thanh toán
@@ -398,7 +410,7 @@
                                         Tiền đặt cọc (0%):
                                     </c:when>
                                     <c:otherwise>
-                                        Tiền đặt cọc (${not empty settings.depositPercent ? settings.depositPercent : '30'}%):
+                                        Tiền đặt cọc (${calcDepPercent}%):
                                     </c:otherwise>
                                 </c:choose>
                             </span>
@@ -418,6 +430,17 @@
                             <span class="font-mono">
                                 <fmt:formatNumber value="${order.remainingCodBalance}" type="number" pattern="#,##0"/>đ
                             </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
                         </div>
                     </div>
                 </div>

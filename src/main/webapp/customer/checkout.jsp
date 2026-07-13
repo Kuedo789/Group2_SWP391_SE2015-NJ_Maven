@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
@@ -560,15 +560,45 @@
             const banner = document.getElementById("slotConfirmationBanner");
             const inputField = document.getElementById("selectedTimeSlotInput");
             const grid = document.getElementById("timeSlotsGrid");
+            // Generate dynamic time slots based on opening and closing hours in settings
+            const openingTimeStr = "${not empty settings.openingTime ? settings.openingTime : '08:00 AM'}";
+            const closingTimeStr = "${not empty settings.closingTime ? settings.closingTime : '10:00 PM'}";
 
-            const standardSlots = [
-                "08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00",
-                "12:00 - 13:00", "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00",
-                "16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00",
-                "20:00 - 21:00", "21:00 - 22:00"
-            ];
+            function parseHour(timeStr) {
+                if (!timeStr) return 8; // default
+                timeStr = timeStr.trim().toUpperCase();
+                
+                // Check if it has AM/PM
+                const hasAmPm = timeStr.indexOf("AM") !== -1 || timeStr.indexOf("PM") !== -1;
+                
+                // Remove AM/PM for numerical parsing
+                let cleanTime = timeStr.replace("AM", "").replace("PM", "").trim();
+                const parts = cleanTime.split(":");
+                let hour = parseInt(parts[0], 10);
+                
+                if (hasAmPm) {
+                    if (timeStr.indexOf("PM") !== -1 && hour < 12) {
+                        hour += 12;
+                    }
+                    if (timeStr.indexOf("AM") !== -1 && hour === 12) {
+                        hour = 0;
+                    }
+                }
+                return hour;
+            }
 
+            const startHour = parseHour(openingTimeStr);
+            const endHour = parseHour(closingTimeStr);
+            
+            const standardSlots = [];
+            for (let h = startHour; h < endHour; h++) {
+                const startStr = String(h).padStart(2, '0') + ":00";
+                const endStr = String(h + 1).padStart(2, '0') + ":00";
+                standardSlots.push(startStr + " - " + endStr);
+            }
+            
             grid.innerHTML = ""; // Clear existing
+
 
             if (!dateVal) {
                 standardSlots.forEach(slot => {
@@ -650,6 +680,7 @@
             } catch(e) {
                 currentCart = [];
             }
+
             localStorage.setItem("cart", JSON.stringify(currentCart));
             document.getElementById("cartDataInput").value = JSON.stringify(currentCart);
             renderCartList();

@@ -68,4 +68,4 @@
 </style>
 
 <!-- Global Admin CSS -->
-<link href="${pageContext.request.contextPath}/assets/css/all/admin-global.css?v=1.5" rel="stylesheet">
+<link href="${pageContext.request.contextPath}/assets/css/all/admin-global.css?v=1.6" rel="stylesheet">

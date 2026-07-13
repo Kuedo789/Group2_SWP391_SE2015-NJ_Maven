@@ -642,7 +642,16 @@
             alert("Đã thêm các sản phẩm từ đơn hàng này vào giỏ hàng thành công!");
         }
 
-        function reorderOrder(items) {
+        function reorderOrder(itemsInput) {
+            let items = itemsInput;
+            if (typeof items === 'string') {
+                try {
+                    items = JSON.parse(items);
+                } catch(e) {
+                    console.error("Failed to parse reorder items:", e);
+                    return;
+                }
+            }
             if (!Array.isArray(items) || items.length === 0) return;
             
             const cartItems = items.map(item => {

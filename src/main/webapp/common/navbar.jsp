@@ -101,7 +101,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="user-dropdown-item">
+                        <div class="user-dropdown-item-static">
                             <span class="material-symbols-outlined">leaderboard</span>
                             <%= currentUser.getRoleName() != null ? currentUser.getRoleName() : currentUser.getRoleId() %>
                         </div>
@@ -140,22 +140,4 @@
         </div>
     </div>
 </nav>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Handle search form validation
-        const navSearchForm = document.getElementById("navSearchForm");
-        if (navSearchForm) {
-            navSearchForm.addEventListener("submit", function (event) {
-                const input = navSearchForm.querySelector("input[name='search']");
-                const keyword = input ? input.value.trim() : "";
-                if (keyword.length === 0) {
-                    event.preventDefault();
-                    if (input) {
-                        input.focus();
-                    }
-                }
-            });
-        }
-    });
-</script>
+
