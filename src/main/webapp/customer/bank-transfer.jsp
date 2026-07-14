@@ -11,17 +11,17 @@
     long total = (totalAmount != null) ? totalAmount : 0L;
 
     // Bank info (customize as needed)
-    String bankId     = "970407";   // Techcombank BIN
-    String bankShort  = "TCB";
-    String accountNo  = "19038939577015";
+    String bankId     = "970423";   // TPBank BIN
+    String bankShort  = "TPB";
+    String accountNo  = "25102005858";
     String accountName = "NGUYEN VAN HUNG";
     String transferContent = orderNo;
 
-    // VietQR URL
-    String qrUrl = "https://img.vietqr.io/image/" + bankId + "-" + accountNo
-                 + "-compact2.png?amount=" + total
-                 + "&addInfo=" + java.net.URLEncoder.encode(transferContent, "UTF-8")
-                 + "&accountName=" + java.net.URLEncoder.encode(accountName, "UTF-8");
+    // VietQR URL via SePay
+    // TODO: Update bankId and accountNo to your real SePay registered account
+    String qrUrl = "https://qr.sepay.vn/img?bank=" + bankShort + "&acc=" + accountNo
+                 + "&amount=" + total
+                 + "&des=" + java.net.URLEncoder.encode(transferContent, "UTF-8");
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -542,7 +542,7 @@
                     <div class="qr-wrapper">
                         <img src="<%= qrUrl %>"
                              alt="QR Code chuyển khoản <%= orderNo %>"
-                             onerror="this.src='https://img.vietqr.io/image/<%= bankId %>-<%= accountNo %>-compact2.png?amount=<%= total %>&addInfo=<%= java.net.URLEncoder.encode(transferContent, "UTF-8") %>'">
+                             onerror="this.src='https://qr.sepay.vn/img?bank=<%= bankShort %>&acc=<%= accountNo %>&amount=<%= total %>&des=<%= java.net.URLEncoder.encode(transferContent, "UTF-8") %>'">
                     </div>
 
                     <div class="qr-note">
@@ -735,6 +735,31 @@
             setTimeout(() => toast.classList.remove("show"), 2500);
         }
 
+        // ── Auto-polling for payment confirmation via SePay Webhook ──
+        let pollingInterval = setInterval(checkOrderStatus, 3000); // Check every 3 seconds
+
+        function checkOrderStatus() {
+            const orderNo = '<%= orderNo %>';
+            if (!orderNo) return;
+            
+            fetch(`${pageContext.request.contextPath}/api/order/status?orderNo=${orderNo}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && (data.status === 'PAID' || data.status === 'Confirmed' || data.status === 'Processing')) {
+                        clearInterval(pollingInterval);
+                        // Show success feedback
+                        document.querySelector('.bt-badge').innerHTML = '<i class="fa fa-check-circle"></i> Đã nhận được thanh toán';
+                        document.querySelector('.bt-badge').style.background = '#4caf50';
+                        document.querySelector('.bt-badge').style.color = 'white';
+                        
+                        // Redirect to success page after a short delay
+                        setTimeout(() => {
+                            window.location.href = '${pageContext.request.contextPath}/order-success?orderNo=' + orderNo;
+                        }, 1500);
+                    }
+                })
+                .catch(err => console.error("Error polling order status:", err));
+        }
 
     </script>
 </body>

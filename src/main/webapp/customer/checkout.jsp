@@ -1,4 +1,4 @@
-﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
@@ -417,24 +417,24 @@
                 let html = '';
 
                 if (data.error) {
-                    html += `<div id="checkoutVoucherClientError" style="color: #d9534f; font-size: 13px; margin-bottom: 8px;"><span>&#9888;</span> ${data.error}</div>`;
+                    html += `<div id="checkoutVoucherClientError" style="color: #d9534f; font-size: 13px; margin-bottom: 8px;"><span>&#9888;</span> \${data.error}</div>`;
                 }
 
                 if (data.code) {
                     html += `
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
-                            <span style="font-weight: 600; color: var(--primary);">${data.code}</span>
-                            <button type="button" onclick="submitVoucherAjax('removeVoucher')" style="background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; font-weight: 600;">&#10005; Bo</button>
+                            <span style="font-weight: 600; color: var(--primary);">\${data.code}</span>
+                            <button type="button" onclick="submitVoucherAjax('removeVoucher')" style="background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; font-weight: 600;">&#10005; Bỏ</button>
                         </div>
                     `;
                     currentDiscount = data.discount || 0;
                     document.getElementById('discountContainer').innerHTML = `
                         <div class="summary-row" id="discountSummaryRow" style="color: #d9534f;">
                             <div class="summary-row-label">
-                                <span>Giam gia Voucher</span>
-                                <span class="summary-sub-label">${data.code}</span>
+                                <span>Giảm giá Voucher</span>
+                                <span class="summary-sub-label">\${data.code}</span>
                             </div>
-                            <span>- ${currentDiscount.toLocaleString("vi-VN")}&#8363;</span>
+                            <span>- \${currentDiscount.toLocaleString("vi-VN")}&#8363;</span>
                         </div>
                     `;
                 } else {
@@ -504,12 +504,10 @@
             document.getElementById("selectedTimeSlotInput").value = selectedTimeSlot;
 
             const today = new Date();
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const yyyy = tomorrow.getFullYear();
-            const mm = String(tomorrow.getMonth() + 1).padStart(2, '0');
-            const dd = String(tomorrow.getDate()).padStart(2, '0');
-            const minDateStr = `${yyyy}-${mm}-${dd}`;
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const minDateStr = `\${yyyy}-\${mm}-\${dd}`;
 
             const deliveryDateInput = document.getElementById("deliveryDate");
             if (deliveryDateInput) {
@@ -571,8 +569,9 @@
             grid.innerHTML = ""; // Clear existing
 
             if (!dateVal) {
+                // Chưa chọn ngày: hiển thị tất cả pills ở trạng thái disabled với hướng dẫn
                 standardSlots.forEach(slot => {
-                    grid.innerHTML += `<div class="time-slot-pill disabled"><span class="slot-time">${slot}</span><span class="slot-status">Vui long chon ngay</span></div>`;
+                    grid.innerHTML += `<div class="time-slot-pill disabled"><span class="slot-time">\${slot}</span><span class="slot-status">Vui lòng chọn ngày</span></div>`;
                 });
 
                 if (btn) btn.disabled = true;
@@ -602,8 +601,8 @@
                 const isDisabled = isPastDate || (isToday && slotHour <= currentHour);
 
                 const pillClass = isDisabled ? "time-slot-pill disabled" : "time-slot-pill";
-                const statusTxt = isDisabled ? "Het cho/Qua han" : "Con cho";
-                const clickAttr = isDisabled ? "" : `onclick="selectTimeSlot('${slot}', this)"`;
+                const statusTxt = isDisabled ? "Hết chỗ/Quá hạn" : "Còn chỗ";
+                const clickAttr = isDisabled ? "" : `onclick="selectTimeSlot('\${slot}', this)"`;
 
                 if (!isDisabled) {
                     hasAvailableSlot = true;
@@ -611,7 +610,7 @@
                 }
 
                 const isActive = slot === selectedTimeSlot && !isDisabled ? " active" : "";
-                grid.innerHTML += `<div class="${pillClass}${isActive}" ${clickAttr}><span class="slot-time">${slot}</span><span class="slot-status">${statusTxt}</span></div>`;
+                grid.innerHTML += `<div class="\${pillClass}\${isActive}" \${clickAttr}><span class="slot-time">\${slot}</span><span class="slot-status">\${statusTxt}</span></div>`;
             });
 
             if (!previouslySelectedValid) {
@@ -623,22 +622,20 @@
                 if (btn) btn.disabled = true;
                 if (banner) {
                     banner.style.display = "flex";
-                    banner.innerHTML = `<i class="fa fa-exclamation-circle" style="color:#d62828;"></i> <span style="color:#d62828;">Khong con khung gio giao hang trong trong ngay nay. Vui long chon ngay khac.</span>`;
+                    banner.innerHTML = `<i class="fa fa-exclamation-circle" style="color:#d62828;"></i> <span style="color:#d62828;">Không còn khung giờ giao hàng trong ngày này. Vui lòng chọn ngày khác.</span>`;
                 }
                 if (inputField) inputField.value = "";
                 selectedTimeSlot = "";
             } else {
                 if (btn) btn.disabled = false;
                 if (banner) {
-                    if (!hasAvailableSlot) {
-                        banner.style.display = "flex";
-                        banner.innerHTML = `<i class="fa fa-exclamation-circle" style="color:#d62828;"></i> <span style="color:#d62828;">Khong con khung gio giao hang trong trong ngay nay. Vui long chon ngay khac.</span>`;
-                    } else {
-                        banner.style.display = "none";
-                    }
+                    banner.style.display = "none";
                 }
-                if (inputField) inputField.value = "";
-                selectedTimeSlot = "";
+                // KHÔNG reset selectedTimeSlot và inputField ở đây nếu đã chọn hợp lệ
+                if (!previouslySelectedValid) {
+                    if (inputField) inputField.value = "";
+                    selectedTimeSlot = "";
+                }
             }
         }
 
@@ -663,8 +660,8 @@
                 listContainer.innerHTML = `
                     <div class="empty-cart-state">
                         <i class="fa fa-shopping-basket"></i>
-                        <p>Gio hang cua ban dang trong.</p>
-                        <a href="${pageContext.request.contextPath}/products" class="btn btn-primary" style="margin-top:10px; display:inline-block; padding:8px 16px; background:var(--primary-dark); color:white; border-radius:8px; text-decoration:none;">Xem thuc don</a>
+                        <p>Giỏ hàng của bạn đang trống.</p>
+                        <a href="${pageContext.request.contextPath}/products" class="btn btn-primary" style="margin-top:10px; display:inline-block; padding:8px 16px; background:var(--primary-dark); color:white; border-radius:8px; text-decoration:none;">Xem thực đơn</a>
                     </div>
                 `;
                 if (btnPlaceOrder) btnPlaceOrder.disabled = true;
@@ -678,46 +675,46 @@
             currentCart.forEach(item => {
                 if (!item) return;
                 const imgUrl = (item.image && typeof item.image === "string" && item.image.startsWith("http")) ? item.image : "${pageContext.request.contextPath}/" + (item.image || "assets/images/products/basic.png");
-                const priceFormatted = (parseFloat(item.price) || 0).toLocaleString("vi-VN") + "d";
+                const priceFormatted = (parseFloat(item.price) || 0).toLocaleString("vi-VN") + "đ";
 
                 let cleanName = item.name || '';
-                let cleanDesc = item.desc || 'Banh ngot thu cong cao cap';
+                let cleanDesc = item.desc || 'Bánh ngọt thủ công cao cấp';
 
                 if (cleanName.startsWith("SIZE_")) {
                     const parts = cleanName.split("_");
                     const size = parts[1] || "16";
                     const layers = parts[3] || "1";
-                    cleanName = `Banh Kem Tuy Chinh (${size}cm)`;
+                    cleanName = `Bánh Kem Tùy Chỉnh (\${size}cm)`;
 
                     let flavorStr = [];
                     for(let i = 4; i < parts.length; i++) {
                         let f = parts[i];
                         if(f === 'VANILLA') f = 'Vani';
                         else if (f === 'CHOCO') f = 'Chocolate';
-                        else if (f === 'STRAW') f = 'Dau';
-                        else if (f === 'MATCHA') f = 'Tra xanh';
+                        else if (f === 'STRAW') f = 'Dâu';
+                        else if (f === 'MATCHA') f = 'Trà xanh';
                         flavorStr.push(f);
                     }
-                    cleanDesc = `${layers} Tang: ${flavorStr.join(', ')}`;
+                    cleanDesc = `\${layers} Tầng: \${flavorStr.join(', ')}`;
                 }
 
                 const itemHtml = `
-                    <div class="product-item-row" id="cart-item-${item.id}">
+                    <div class="product-item-row" id="cart-item-\${item.id}">
                         <div class="product-item-left" style="min-width: 0; flex: 1; margin-right: 15px;">
-                            <img src="${imgUrl}" class="product-img" alt="${cleanName}" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=120'">
+                            <img src="\${imgUrl}" class="product-img" alt="\${cleanName}" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=120'">
                             <div class="product-details-text" style="min-width: 0; overflow: hidden; display: flex; flex-direction: column;">
-                                <span class="product-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">${cleanName}</span>
-                                <span class="product-desc" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">${cleanDesc}</span>
+                                <span class="product-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">\${cleanName}</span>
+                                <span class="product-desc" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">\${cleanDesc}</span>
                             </div>
                         </div>
                         <div class="product-item-right-actions">
-                            <span class="product-price">${priceFormatted}</span>
+                            <span class="product-price">\${priceFormatted}</span>
                             <div class="qty-adjust-box">
-                                <button type="button" class="btn-qty" onclick="adjustItemQty('${item.id}', -1)">&#8722;</button>
-                                <span class="qty-display">${parseInt(item.qty) || 1}</span>
-                                <button type="button" class="btn-qty" onclick="adjustItemQty('${item.id}', 1)">+</button>
+                                <button type="button" class="btn-qty" onclick="adjustItemQty('\${item.id}', -1)">&#8722;</button>
+                                <span class="qty-display">\${parseInt(item.qty) || 1}</span>
+                                <button type="button" class="btn-qty" onclick="adjustItemQty('\${item.id}', 1)">+</button>
                             </div>
-                            <button type="button" class="btn-delete-item" onclick="deleteItem('${item.id}')" title="Xoa san pham">
+                            <button type="button" class="btn-delete-item" onclick="deleteItem('\${item.id}')" title="Xóa sản phẩm">
                                 <i class="fa fa-trash"></i>
                             </button>
                         </div>
@@ -809,13 +806,13 @@
                 const banner = document.getElementById("slotConfirmationBanner");
                 if (banner) {
                     banner.style.display = "flex";
-                    banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Da xac nhan nang luc san xuat & giao hang cho khung gio ${slot}</span>`;
+                    banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất &amp; giao hàng cho khung giờ \${slot}</span>`;
                 }
 
                 const btn = document.getElementById("btnPlaceOrder");
                 if (btn) btn.disabled = false;
             } catch (e) {
-                alert("Da xay ra loi JS khi chon gio: " + e.message);
+                alert("Đã xảy ra lỗi JS khi chọn giờ: " + e.message);
                 console.error(e);
             }
         }
