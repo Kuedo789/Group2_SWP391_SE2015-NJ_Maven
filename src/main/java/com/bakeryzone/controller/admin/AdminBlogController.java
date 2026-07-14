@@ -226,19 +226,7 @@ public class AdminBlogController extends HttpServlet {
         // Xử lý upload ảnh đại diện
         String imageUrl = "";
         if (filePart != null && filePart.getSize() > 0) {
-            String uploadPath = request.getServletContext().getRealPath("/assets/images/blog");
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-            }
-            String fileExtension = ".jpg";
-            String submittedFileName = filePart.getSubmittedFileName();
-            if (submittedFileName != null && submittedFileName.contains(".")) {
-                fileExtension = submittedFileName.substring(submittedFileName.lastIndexOf("."));
-            }
-            String fileName = "blog_" + System.currentTimeMillis() + fileExtension;
-            filePart.write(uploadPath + File.separator + fileName);
-            imageUrl = "assets/images/blog/" + fileName;
+            imageUrl = saveBlogImage(filePart, request);
         }
 
         String postId = "BLOG_" + System.currentTimeMillis();
@@ -336,27 +324,8 @@ public class AdminBlogController extends HttpServlet {
         // Xử lý upload ảnh mới nếu có
         String imageUrl = currentImageUrl;
         if (filePart != null && filePart.getSize() > 0) {
-            String uploadPath = request.getServletContext().getRealPath("/assets/images/blog");
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-            }
-            String fileExtension = ".jpg";
-            String submittedFileName = filePart.getSubmittedFileName();
-            if (submittedFileName != null && submittedFileName.contains(".")) {
-                fileExtension = submittedFileName.substring(submittedFileName.lastIndexOf("."));
-            }
-            String fileName = "blog_" + System.currentTimeMillis() + fileExtension;
-            filePart.write(uploadPath + File.separator + fileName);
-            
-            // Xóa ảnh vật lý cũ nếu có
-            if (currentImageUrl != null && !currentImageUrl.trim().isEmpty()) {
-                File oldFile = new File(request.getServletContext().getRealPath("/") + currentImageUrl);
-                if (oldFile.exists()) {
-                    oldFile.delete();
-                }
-            }
-            imageUrl = "assets/images/blog/" + fileName;
+            deletePhysicalImage(currentImageUrl, request);
+            imageUrl = saveBlogImage(filePart, request);
         }
 
         post.setTitle(title.trim());
@@ -382,6 +351,7 @@ public class AdminBlogController extends HttpServlet {
         BlogPost post = blogPostDAO.getBlogPostById(id);
 
         if (post != null) {
+            deletePhysicalImage(post.getImageUrl(), request);
             boolean success = blogPostDAO.deleteBlogPost(id);
             if (success) {
                 // Do not set duplicate successMessage in session since we use msg=delete_success parameter
@@ -392,5 +362,57 @@ public class AdminBlogController extends HttpServlet {
             session.setAttribute("errorMessage", "Bài viết không tồn tại hoặc đã bị ẩn trước đó!");
         }
         response.sendRedirect(request.getContextPath() + "/admin/blog?action=list&msg=delete_success");
+    }
+
+    private String saveBlogImage(Part filePart, HttpServletRequest request) throws IOException {
+        String uploadPathTarget = request.getServletContext().getRealPath("/assets/images/blog");
+        File uploadDirTarget = new File(uploadPathTarget);
+        if (!uploadDirTarget.exists()) {
+            uploadDirTarget.mkdirs();
+        }
+
+        String fileExtension = ".jpg";
+        String submittedFileName = filePart.getSubmittedFileName();
+        if (submittedFileName != null && submittedFileName.contains(".")) {
+            fileExtension = submittedFileName.substring(submittedFileName.lastIndexOf("."));
+        }
+        String fileName = "blog_" + System.currentTimeMillis() + fileExtension;
+        String targetFilePath = uploadPathTarget + File.separator + fileName;
+        filePart.write(targetFilePath);
+
+        // Copy to source folder so Clean and Build won't delete the image
+        try {
+            String uploadPathSource = uploadPathTarget.replace("target" + File.separator + "Bakery_SWP-1.0-SNAPSHOT", "src" + File.separator + "main" + File.separator + "webapp");
+            File uploadDirSource = new File(uploadPathSource);
+            if (!uploadDirSource.exists()) {
+                uploadDirSource.mkdirs();
+            }
+            String sourceFilePath = uploadPathSource + File.separator + fileName;
+            java.nio.file.Files.copy(new File(targetFilePath).toPath(), new File(sourceFilePath).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            System.out.println("--> Synced uploaded image to source directory: " + sourceFilePath);
+        } catch (Exception e) {
+            System.err.println("--> [WARNING] Failed to sync uploaded image to source directory: " + e.getMessage());
+        }
+
+        return "assets/images/blog/" + fileName;
+    }
+
+    private void deletePhysicalImage(String imageUrl, HttpServletRequest request) {
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            String targetPath = request.getServletContext().getRealPath("/") + imageUrl;
+            File targetFile = new File(targetPath);
+            if (targetFile.exists()) {
+                targetFile.delete();
+            }
+            try {
+                String srcPath = targetPath.replace("target" + File.separator + "Bakery_SWP-1.0-SNAPSHOT", "src" + File.separator + "main" + File.separator + "webapp");
+                File srcFile = new File(srcPath);
+                if (srcFile.exists()) {
+                    srcFile.delete();
+                }
+            } catch (Exception e) {
+                System.err.println("--> Failed to delete physical image from src: " + e.getMessage());
+            }
+        }
     }
 }

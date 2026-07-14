@@ -9,6 +9,8 @@
         <jsp:include page="/common/admin-header.jsp">
             <jsp:param name="title" value="CakeZone - Chi tiết kiểm duyệt đánh giá" />
         </jsp:include>
+        <!-- Custom styling -->
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductDetail.css?v=1.5">
 
         <style>
             :root {
@@ -217,69 +219,33 @@
                 margin-right: 3px;
             }
 
-            .btn-approve {
-                background-color: #28a745;
+            /* Custom Featured Button Style */
+            .btn-cz-featured {
+                background: linear-gradient(135deg, #4481eb, #04befe);
                 color: #fff;
                 font-weight: 600;
-                padding: 12px 25px;
-                border-radius: 8px;
+                font-size: 13.5px;
+                padding: 10px 22px;
+                border-radius: 10px;
                 border: none;
-                transition: all 0.2s;
-            }
-            .btn-approve:hover {
-                background-color: #218838;
-                transform: translateY(-1px);
-                box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
-            }
-
-            .btn-feature {
-                background-color: #1a73e8;
-                color: #fff;
-                font-weight: 600;
-                padding: 12px 25px;
-                border-radius: 8px;
-                border: none;
-                transition: all 0.2s;
-            }
-            .btn-feature:hover {
-                background-color: #1557b0;
-                transform: translateY(-1px);
-                box-shadow: 0 4px 10px rgba(26, 115, 232, 0.2);
-            }
-
-            .btn-reject {
-                background-color: #dc3545;
-                color: #fff;
-                font-weight: 600;
-                padding: 12px 25px;
-                border-radius: 8px;
-                border: none;
-                transition: all 0.2s;
-            }
-            .btn-reject:hover {
-                background-color: #c82333;
-                transform: translateY(-1px);
-                box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2);
-            }
-
-            .btn-cz-secondary {
-                background-color: #f5f5f5;
-                color: #555;
-                font-weight: 600;
-                font-size: 14.5px;
-                padding: 12px 25px;
-                border-radius: 8px;
-                border: 1px solid var(--cz-border-color);
-                transition: all 0.2s;
-                text-decoration: none;
+                transition: all 0.25s ease;
+                cursor: pointer;
+                box-shadow: 0 2px 8px rgba(4, 190, 254, 0.25);
                 display: inline-flex;
                 align-items: center;
                 gap: 8px;
             }
+            .btn-cz-featured:hover {
+                background: linear-gradient(135deg, #04befe, #4481eb);
+                color: #fff;
+                transform: translateY(-1px);
+                box-shadow: 0 6px 18px rgba(4, 190, 254, 0.35);
+            }
 
-            .btn-cz-secondary:hover {
-                background-color: #e5e5e5;
-                color: #333;
+            /* Override to prevent underlines on admin buttons */
+            .action-button-group a, .action-button-group button,
+            .btn-cz-outline, .btn-cz-primary, .btn-cz-featured, .btn-cz-danger {
+                text-decoration: none !important;
             }
 
             .badge-large {
@@ -305,27 +271,31 @@
             </jsp:include>
 
             <div class="content-container">
+                <!-- Page Title Area (Synchronized with Product/Blog Detail) -->
+                <div class="page-title-area">
+                    <div>
+                        <h1 class="page-title text-uppercase">Chi Tiết Kiểm Duyệt Đánh Giá</h1>
+                        <p class="page-subtitle">Xem thông tin phản hồi của khách hàng và thực hiện phê duyệt hiển thị.</p>
+                    </div>
+                </div>
+
                 <div class="form-card">
-                    <div class="d-flex justify-content-between align-items-start flex-wrap mb-2">
-                        <div>
-                            <h1 class="page-title text-uppercase">Chi tiết kiểm duyệt đánh giá</h1>
-                            <p class="page-subtitle">Xem thông tin phản hồi của khách hàng và đưa ra quyết định kiểm duyệt nội dung ngoài hệ thống website CakeZone</p>
-                        </div>
-                        <div>
-                            <span class="badge-large 
-                                ${review.moderationStatus eq 'Pending' ? 'bg-warning text-dark' : 
-                                  (review.moderationStatus eq 'Approved' ? 'bg-success text-white' : 
-                                  (review.moderationStatus eq 'Featured' ? 'bg-primary text-white' : 'bg-danger text-white'))}">
-                                Trạng thái hiện tại: 
-                                <c:choose>
-                                    <c:when test="${review.moderationStatus eq 'Pending'}">Chờ kiểm duyệt</c:when>
-                                    <c:when test="${review.moderationStatus eq 'Approved'}">Đã hiển thị</c:when>
-                                    <c:when test="${review.moderationStatus eq 'Featured'}">⭐ Nổi bật trang chủ</c:when>
-                                    <c:when test="${review.moderationStatus eq 'Rejected'}">Đã ẩn</c:when>
-                                    <c:otherwise>${review.moderationStatus}</c:otherwise>
-                                </c:choose>
-                            </span>
-                        </div>
+                    <!-- Status Header inside the card -->
+                    <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                        <h5 class="fw-bold text-dark m-0"><i class="fa-regular fa-comment-dots text-success me-2"></i>Nội dung phản hồi</h5>
+                        <span class="badge-large 
+                            ${review.moderationStatus eq 'Pending' ? 'bg-warning text-dark' : 
+                              (review.moderationStatus eq 'Approved' ? 'bg-success text-white' : 
+                              (review.moderationStatus eq 'Featured' ? 'bg-primary text-white' : 'bg-danger text-white'))}">
+                            Trạng thái hiện tại: 
+                            <c:choose>
+                                <c:when test="${review.moderationStatus eq 'Pending'}">Chờ kiểm duyệt</c:when>
+                                <c:when test="${review.moderationStatus eq 'Approved'}">Đã hiển thị</c:when>
+                                <c:when test="${review.moderationStatus eq 'Featured'}">⭐ Nổi bật trang chủ</c:when>
+                                <c:when test="${review.moderationStatus eq 'Rejected'}">Đã ẩn</c:when>
+                                <c:otherwise>${review.moderationStatus}</c:otherwise>
+                            </c:choose>
+                        </span>
                     </div>
 
                     <div class="row g-4">
@@ -394,17 +364,17 @@
                             <div class="info-block font-monospace text-secondary">${review.customCakeId}</div>
                         </div>
 
-                        <div class="col-12 d-flex flex-wrap justify-content-end gap-3 mt-5 pt-3 border-top">
-                            <a href="${pageContext.request.contextPath}/admin/reviews?action=list" class="btn-cz-secondary">
-                                <i class="fa-solid fa-arrow-left"></i> Trở về danh sách
+                        <div class="col-12 d-flex flex-wrap justify-content-end gap-3 mt-5 pt-3 border-top action-button-group">
+                            <a href="${pageContext.request.contextPath}/admin/reviews?action=list" class="btn-cz-outline d-inline-flex align-items-center gap-2">
+                                <i class="fa-solid fa-arrow-left"></i> Quay lại
                             </a>
 
                             <form action="${pageContext.request.contextPath}/admin/reviews" method="POST" class="d-inline">
                                 <input type="hidden" name="action" value="updateStatus">
                                 <input type="hidden" name="reviewId" value="${review.reviewId}">
                                 <input type="hidden" name="status" value="Approved">
-                                <button type="submit" class="btn-approve" ${review.moderationStatus eq 'Approved' ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                                    <i class="fa-solid fa-check me-1"></i> Phê duyệt hiển thị
+                                <button type="submit" class="btn-cz-primary d-inline-flex align-items-center gap-2" ${review.moderationStatus eq 'Approved' ? 'disabled style="opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none;"' : ''}>
+                                    <i class="fa-solid fa-check"></i> Duyệt hiển thị
                                 </button>
                             </form>
 
@@ -412,8 +382,8 @@
                                 <input type="hidden" name="action" value="updateStatus">
                                 <input type="hidden" name="reviewId" value="${review.reviewId}">
                                 <input type="hidden" name="status" value="Featured">
-                                <button type="submit" class="btn-feature" ${review.moderationStatus eq 'Featured' ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                                    <i class="fa-solid fa-star me-1"></i> Đưa lên nổi bật (Trang chủ)
+                                <button type="submit" class="btn-cz-featured" ${review.moderationStatus eq 'Featured' ? 'disabled style="opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none;"' : ''}>
+                                    <i class="fa-solid fa-star"></i> Ghim nổi bật
                                 </button>
                             </form>
 
@@ -421,8 +391,8 @@
                                 <input type="hidden" name="action" value="updateStatus">
                                 <input type="hidden" name="reviewId" value="${review.reviewId}">
                                 <input type="hidden" name="status" value="Rejected">
-                                <button type="submit" class="btn-reject" ${review.moderationStatus eq 'Rejected' ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                                    <i class="fa-solid fa-eye-slash me-1"></i> Ẩn / Từ chối đánh giá
+                                <button type="submit" class="btn-cz-danger d-inline-flex align-items-center gap-2" ${review.moderationStatus eq 'Rejected' ? 'disabled style="opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none;"' : ''}>
+                                    <i class="fa-solid fa-eye-slash"></i> Ẩn đánh giá
                                 </button>
                             </form>
                         </div>

@@ -404,7 +404,7 @@
                 border-radius: 30px;
             }
 
-            .btn-action-view {
+            .btn-action-view, .btn-action-delete {
                 width: 32px;
                 height: 32px;
                 border-radius: 8px;
@@ -413,15 +413,25 @@
                 justify-content: center;
                 border: 1px solid var(--cz-border-color);
                 background-color: #fff;
-                color: var(--cz-primary);
                 cursor: pointer;
                 transition: all 0.2s;
                 text-decoration: none;
             }
 
+            .btn-action-view {
+                color: var(--cz-primary);
+            }
             .btn-action-view:hover {
                 background-color: #f6faf5;
                 border-color: var(--cz-primary);
+            }
+
+            .btn-action-delete {
+                color: #dc3545;
+            }
+            .btn-action-delete:hover {
+                background-color: #fdf3f3;
+                border-color: #dc3545;
             }
 
             .pagination-area {
@@ -563,9 +573,14 @@
                                                 </span>
                                             </td>
                                             <td style="text-align: center;">
-                                                <a href="${pageContext.request.contextPath}/admin/reviews?action=detail&id=${r.reviewId}" class="btn-action-view" title="Xem chi tiết & Phê duyệt">
-                                                    <i class="fa-regular fa-eye"></i>
-                                                </a>
+                                                <div class="d-flex justify-content-center gap-2">
+                                                    <a href="${pageContext.request.contextPath}/admin/reviews?action=detail&id=${r.reviewId}" class="btn-action-view" title="Xem chi tiết & Phê duyệt">
+                                                        <i class="fa-regular fa-eye"></i>
+                                                    </a>
+                                                    <button type="button" class="btn-action-delete" onclick="confirmDeleteReview('${r.reviewId}')" title="Xóa đánh giá này">
+                                                        <i class="fa-regular fa-trash-can"></i>
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     </c:forEach>
@@ -609,10 +624,22 @@
             </div>
         </div>
 
+        <!-- Hidden delete form -->
+        <form id="deleteReviewForm" action="${pageContext.request.contextPath}/admin/reviews?action=delete" method="POST" style="display:none;">
+            <input type="hidden" name="reviewId" id="deleteReviewId">
+        </form>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
         <script>
+                            function confirmDeleteReview(reviewId) {
+                                if (confirm("Bạn có chắc chắn muốn ẩn (xóa mềm) đánh giá này không? Đánh giá sẽ không còn hiển thị với khách hàng.")) {
+                                    document.getElementById('deleteReviewId').value = reviewId;
+                                    document.getElementById('deleteReviewForm').submit();
+                                }
+                            }
+
                             const urlParams = new URLSearchParams(window.location.search);
                             const msg = urlParams.get('msg');
 
@@ -627,9 +654,31 @@
                                         background: "linear-gradient(to right, #00b09b, #96c93d)"
                                     }
                                 }).showToast();
+                            } else if (msg === 'success_delete') {
+                                Toastify({
+                                    text: "Xóa đánh giá thành công!",
+                                    duration: 4000,
+                                    close: true,
+                                    gravity: "top",
+                                    position: "right",
+                                    style: {
+                                        background: "linear-gradient(to right, #00b09b, #96c93d)"
+                                    }
+                                }).showToast();
                             } else if (msg === 'fail' || msg === 'error') {
                                 Toastify({
                                     text: "Thao tác thất bại hoặc có lỗi xảy ra!",
+                                    duration: 4000,
+                                    close: true,
+                                    gravity: "top",
+                                    position: "right",
+                                    style: {
+                                        background: "linear-gradient(to right, #ff5f6d, #ffc371)"
+                                    }
+                                }).showToast();
+                            } else if (msg === 'fail_delete') {
+                                Toastify({
+                                    text: "Xóa đánh giá thất bại!",
                                     duration: 4000,
                                     close: true,
                                     gravity: "top",

@@ -180,7 +180,7 @@ public class ReviewDAO {
     }
 
     public boolean addReview(String reviewId, String customCakeId, String customerId, int ratingStars, String comment) {
-        String sql = "INSERT INTO product_review (Review_ID, Custom_Cake_ID, Customer_ID, Rating_Stars, Comment, Moderation_Status) VALUES (?, ?, ?, ?, ?, 'Approved')";
+        String sql = "INSERT INTO product_review (Review_ID, Custom_Cake_ID, Customer_ID, Rating_Stars, Comment, Moderation_Status) VALUES (?, ?, ?, ?, ?, 'Pending')";
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, reviewId);
             ps.setString(2, customCakeId);
@@ -213,6 +213,17 @@ public class ReviewDAO {
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, reviewId);
             ps.setString(2, customerId);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean deleteReviewAdmin(String reviewId) {
+        String sql = "UPDATE product_review SET Moderation_Status = 'Deleted' WHERE Review_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, reviewId);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -256,6 +267,8 @@ public class ReviewDAO {
         }
         if (status != null) {
             query += "AND r.Moderation_Status = ? ";
+        } else {
+            query += "AND r.Moderation_Status <> 'Deleted' ";
         }
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(query)) {
@@ -312,6 +325,8 @@ public class ReviewDAO {
         }
         if (status != null) {
             query += "AND r.Moderation_Status = ? ";
+        } else {
+            query += "AND r.Moderation_Status <> 'Deleted' ";
         }
 
         query += "ORDER BY r.Review_ID DESC LIMIT ? OFFSET ?";

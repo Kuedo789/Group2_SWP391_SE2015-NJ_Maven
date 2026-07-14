@@ -6,6 +6,8 @@
     <jsp:include page="/common/admin-header.jsp">
         <jsp:param name="title" value="CakeZone Admin - Chi tiết bài viết" />
     </jsp:include>
+    <!-- Quill Rich Text Editor CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" crossorigin="anonymous">
     <!-- Custom styling -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductDetail.css?v=1.5">
     <style>
@@ -27,6 +29,25 @@
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
+        }
+        /* Quill custom styling */
+        .ql-toolbar.ql-snow {
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+        }
+        .ql-container.ql-snow {
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            border: 1px solid #d1d5db;
+            background-color: #fff;
+            font-family: 'Be Vietnam Pro', sans-serif;
+            font-size: 14px;
+        }
+        .ql-container.is-invalid {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
         }
     </style>
 </head>
@@ -123,7 +144,10 @@
 
                                 <div class="col-md-12">
                                     <label class="form-label-cz">Nội Dung Chi Tiết Bài Viết <span>*</span></label>
-                                    <textarea class="form-control-cz" id="content" name="content" rows="12" style="height: auto; border-radius: 8px;" required placeholder="Nhập toàn bộ nội dung bài viết chi tiết tại đây..."><c:out value="${post.content}" /></textarea>
+                                    <!-- Visible Quill Editor -->
+                                    <div id="editor-container" style="height: 350px;"></div>
+                                    <!-- Hidden textarea to store raw HTML for submission -->
+                                    <textarea id="content" name="content" style="display: none;"><c:out value="${post.content}" /></textarea>
                                     <div id="error-content" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                 </div>
                             </div>
@@ -167,7 +191,34 @@
 
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Quill Library -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js" crossorigin="anonymous"></script>
     <script>
+        let quill;
+
+        window.addEventListener('load', function() {
+            const editorEl = document.getElementById('editor-container');
+            const contentInput = document.getElementById('content');
+            if (editorEl && contentInput) {
+                quill = new Quill(editorEl, {
+                    theme: 'snow',
+                    placeholder: 'Nhập nội dung chi tiết bài viết tại đây...',
+                    modules: {
+                        toolbar: [
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'align': [] }],
+                            ['link', 'image'],
+                            ['clean']
+                        ]
+                    }
+                });
+                
+                // Load existing content into Quill editor
+                quill.root.innerHTML = contentInput.value;
+            }
+        });
+
         function checkCategoryOption(select) {
             const customGroup = document.getElementById('customCategoryGroup');
             const customInput = document.getElementById('customCategoryInput');
@@ -263,6 +314,23 @@
             contentInput.classList.remove('is-invalid');
             imageInput.classList.remove('is-invalid');
 
+            const qlContainer = document.querySelector('.ql-container');
+            if (qlContainer) {
+                qlContainer.classList.remove('is-invalid');
+            }
+
+            // Sync Quill editor content to hidden textarea
+            if (quill) {
+                const text = quill.getText().trim();
+                const html = quill.root.innerHTML.trim();
+                // Check if Quill editor is actually empty
+                if (text.length === 0 && !html.includes('<img')) {
+                    contentInput.value = "";
+                } else {
+                    contentInput.value = html;
+                }
+            }
+
             // 1. Title validation
             const titleVal = titleInput.value.trim();
             if (titleVal.length === 0) {
@@ -323,12 +391,20 @@
             if (contentVal.length === 0) {
                 errorContent.textContent = 'Nội dung chi tiết bài viết không được để trống.';
                 errorContent.style.display = 'block';
-                contentInput.classList.add('is-invalid');
+                if (qlContainer) {
+                    qlContainer.classList.add('is-invalid');
+                } else {
+                    contentInput.classList.add('is-invalid');
+                }
                 hasError = true;
             } else if (contentVal.length < 10) {
                 errorContent.textContent = 'Nội dung bài viết quá ngắn (tối thiểu 10 ký tự).';
                 errorContent.style.display = 'block';
-                contentInput.classList.add('is-invalid');
+                if (qlContainer) {
+                    qlContainer.classList.add('is-invalid');
+                } else {
+                    contentInput.classList.add('is-invalid');
+                }
                 hasError = true;
             }
 
