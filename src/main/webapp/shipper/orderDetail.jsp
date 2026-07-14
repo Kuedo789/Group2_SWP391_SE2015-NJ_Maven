@@ -319,7 +319,7 @@
                                     </c:choose>
                                 </div>
                                 <input type="file" id="pickup-file-input" accept="image/*" capture="camera" style="display: none;" onchange="uploadEvidence(this, 'pickup')">
-                                <button type="button" class="btn" style="background-color: var(--cz-primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="document.getElementById('pickup-file-input').click()">
+                                <button type="button" class="btn" style="background-color: var(--cz-primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="openWebRTCCamera('pickup')">
                                     <i class="fa-solid fa-camera"></i> Chụp ảnh lấy bánh
                                 </button>
                             </div>
@@ -342,7 +342,7 @@
                                     </c:choose>
                                 </div>
                                 <input type="file" id="delivery-file-input" accept="image/*" capture="camera" style="display: none;" onchange="uploadEvidence(this, 'delivery')" ${empty pickupPhoto ? 'disabled' : ''}>
-                                <button type="button" class="btn" id="btn-delivery-upload" style="background-color: ${empty pickupPhoto ? '#aaa' : 'var(--cz-primary)'}; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="${empty pickupPhoto ? "alert('Bạn cần chụp ảnh lấy bánh tại tiệm trước!')" : "document.getElementById('delivery-file-input').click()"}" ${empty pickupPhoto ? 'disabled' : ''}>
+                                <button type="button" class="btn" id="btn-delivery-upload" style="background-color: ${empty pickupPhoto ? '#aaa' : 'var(--cz-primary)'}; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="${empty pickupPhoto ? "alert('Bạn cần chụp ảnh lấy bánh tại tiệm trước!')" : "openWebRTCCamera('delivery')"}" ${empty pickupPhoto ? 'disabled' : ''}>
                                     <i class="fa-solid fa-camera"></i> Chụp ảnh giao bánh
                                 </button>
                             </div>
@@ -555,6 +555,191 @@
                 }
             }
         });
+
+        // WebRTC Live Camera controller
+        let cameraStream = null;
+        let currentPhotoType = null;
+
+        function openWebRTCCamera(type) {
+            currentPhotoType = type;
+            
+            // Check WebRTC compatibility
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.warn("WebRTC is not supported. Falling back to device input file.");
+                document.getElementById(type + '-file-input').click();
+                return;
+            }
+            
+            const cameraModalEl = document.getElementById('cameraModal');
+            const cameraModal = new bootstrap.Modal(cameraModalEl);
+            cameraModal.show();
+            
+            startCamera();
+        }
+
+        function startCamera() {
+            // Reset modal ui state
+            document.getElementById('camera-video').style.display = 'block';
+            document.getElementById('captured-preview').style.display = 'none';
+            
+            document.getElementById('btn-cancel-capture').style.display = 'inline-block';
+            document.getElementById('btn-capture').style.display = 'inline-flex';
+            document.getElementById('btn-retake').style.display = 'none';
+            document.getElementById('btn-confirm-upload').style.display = 'none';
+
+            if (cameraStream) {
+                stopCamera();
+            }
+
+            const constraints = {
+                video: {
+                    facingMode: 'environment', // standard back camera for phones
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints)
+                .then(function(stream) {
+                    cameraStream = stream;
+                    const video = document.getElementById('camera-video');
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(function(err) {
+                    console.error("Camera access failed:", err);
+                    alert("⚠️ Lỗi khởi động camera hoặc chưa cấp quyền truy cập. Hệ thống sẽ mở bộ chọn tệp.");
+                    
+                    // Close Modal
+                    const modalEl = document.getElementById('cameraModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+                    
+                    // Fallback
+                    document.getElementById(currentPhotoType + '-file-input').click();
+                });
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('camera-video');
+            const canvas = document.getElementById('camera-canvas');
+            const preview = document.getElementById('captured-preview');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            preview.src = dataUrl;
+            
+            video.style.display = 'none';
+            preview.style.display = 'block';
+            
+            document.getElementById('btn-cancel-capture').style.display = 'none';
+            document.getElementById('btn-capture').style.display = 'none';
+            document.getElementById('btn-retake').style.display = 'inline-block';
+            document.getElementById('btn-confirm-upload').style.display = 'inline-block';
+            
+            video.pause();
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+        }
+
+        function confirmAndUpload() {
+            const canvas = document.getElementById('camera-canvas');
+            canvas.toBlob(function(blob) {
+                if (!blob) {
+                    alert("Lỗi tạo ảnh từ Camera, vui lòng chụp lại!");
+                    return;
+                }
+                
+                stopCamera();
+                
+                const modalEl = document.getElementById('cameraModal');
+                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if (modalInstance) modalInstance.hide();
+                
+                uploadBlobEvidence(blob, currentPhotoType);
+            }, 'image/jpeg', 0.85);
+        }
+
+        function uploadBlobEvidence(blob, type) {
+            const previewContainer = document.getElementById(type + '-preview-container');
+            const originalHTML = previewContainer.innerHTML;
+            previewContainer.innerHTML = `
+                <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem; margin-bottom: 8px;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <span style="font-size: 12px; color: #555; display: block;">Đang tải lên ảnh...</span>
+            `;
+
+            const file = new File([blob], type + "_evidence_" + Date.now() + ".jpg", { type: "image/jpeg" });
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("tripId", "${order.tripId}");
+            formData.append("orderNo", "${order.orderNo}");
+            formData.append("type", type);
+
+            fetch("${pageContext.request.contextPath}/shipper/orders", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("🎉 " + data.message);
+                    window.location.reload();
+                } else {
+                    alert("❌ Lỗi: " + data.message);
+                    previewContainer.innerHTML = originalHTML;
+                }
+            })
+            .catch(error => {
+                console.error("Lỗi upload minh chứng:", error);
+                alert("❌ Đã xảy ra lỗi kết nối khi tải ảnh lên!");
+                previewContainer.innerHTML = originalHTML;
+            });
+        }
     </script>
+
+    <!-- Camera WebRTC Modal -->
+    <div class="modal fade" id="cameraModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 12px; overflow: hidden; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.25);">
+                <div class="modal-header" style="background-color: var(--cz-dark-bg); color: white; border: none; padding: 16px 20px;">
+                    <h5 class="modal-title" id="cameraModalLabel" style="font-weight: 700; font-size: 16px; margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-camera"></i> Máy ảnh giao nhận
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="stopCamera()"></button>
+                </div>
+                <div class="modal-body text-center" style="background-color: #f8f6f4; padding: 20px;">
+                    <!-- Video Stream Container -->
+                    <div id="video-container" style="position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <video id="camera-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        <!-- Captured Image Preview -->
+                        <img id="captured-preview" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
+                    </div>
+                    <canvas id="camera-canvas" style="display: none;"></canvas>
+                </div>
+                <div class="modal-footer" style="border: none; background-color: #f8f6f4; padding: 15px 20px; display: flex; justify-content: center; gap: 10px;">
+                    <button type="button" class="btn btn-cz-outline" id="btn-cancel-capture" data-bs-dismiss="modal" onclick="stopCamera()" style="border-radius: 8px; font-weight: bold; border: 1px solid #ddd; background: white; padding: 10px 20px; font-size: 14px;">Hủy</button>
+                    <button type="button" class="btn" id="btn-capture" onclick="capturePhoto()" style="background-color: var(--cz-primary); color: white; border: none; border-radius: 8px; font-weight: bold; padding: 10px 25px; font-size: 14px; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-circle-dot"></i> Chụp ảnh
+                    </button>
+
+                    <button type="button" class="btn btn-cz-outline" id="btn-retake" onclick="startCamera()" style="display: none; border-radius: 8px; font-weight: bold; border: 1px solid #ddd; background: white; padding: 10px 20px; font-size: 14px;">Chụp lại</button>
+                    <button type="button" class="btn btn-success" id="btn-confirm-upload" onclick="confirmAndUpload()" style="display: none; border-radius: 8px; font-weight: bold; padding: 10px 25px; font-size: 14px;">Xác nhận & Tải lên</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
