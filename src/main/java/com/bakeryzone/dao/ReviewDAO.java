@@ -114,7 +114,8 @@ public class ReviewDAO {
             FROM order_item oi
             JOIN orders o ON oi.Order_No = o.Order_No
             JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-            WHERE o.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) AND o.OrderStatus = 'Completed'
+            WHERE o.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) 
+              AND (o.OrderStatus = 'Completed' OR o.OrderStatus = 'Hoàn thành' OR o.OrderStatus = 'Đã giao')
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customerId);
@@ -137,7 +138,8 @@ public class ReviewDAO {
             FROM order_item oi
             JOIN orders o ON oi.Order_No = o.Order_No
             JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-            WHERE o.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) AND o.OrderStatus = 'Completed'
+            WHERE o.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) 
+              AND (o.OrderStatus = 'Completed' OR o.OrderStatus = 'Hoàn thành' OR o.OrderStatus = 'Đã giao')
             ORDER BY o.Order_Time DESC LIMIT 1
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {

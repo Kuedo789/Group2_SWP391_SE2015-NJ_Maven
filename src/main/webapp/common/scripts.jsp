@@ -8,21 +8,45 @@
 <script src="${pageContext.request.contextPath}/assets/js/home.js"></script>
 
 <script>
-    const userDropdownBtn = document.getElementById("userDropdownBtn");
-    const userDropdownMenu = document.getElementById("userDropdownMenu");
+    document.addEventListener("DOMContentLoaded", function () {
+        // Toggle user profile dropdown menu
+        const userBtn = document.getElementById("userDropdownBtn");
+        const userMenu = document.getElementById("userDropdownMenu");
 
-    if (userDropdownBtn && userDropdownMenu) {
-        userDropdownBtn.addEventListener("click", function (event) {
-            event.stopPropagation();
-            userDropdownMenu.classList.toggle("show");
-        });
+        if (userBtn && userMenu) {
+            userBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                const isShown = userMenu.classList.contains("show");
+                if (isShown) {
+                    userMenu.classList.remove("show");
+                } else {
+                    userMenu.classList.add("show");
+                }
+            });
 
-        document.addEventListener("click", function () {
-            userDropdownMenu.classList.remove("show");
-        });
+            document.addEventListener("click", function() {
+                userMenu.classList.remove("show");
+            });
 
-        userDropdownMenu.addEventListener("click", function (event) {
-            event.stopPropagation();
-        });
-    }
+            userMenu.addEventListener("click", function(e) {
+                e.stopPropagation();
+            });
+        }
+
+        // Handle search form validation
+        const navSearchForm = document.getElementById("navSearchForm");
+        if (navSearchForm) {
+            navSearchForm.addEventListener("submit", function (event) {
+                const input = navSearchForm.querySelector("input[name='search']");
+                const keyword = input ? input.value.trim() : "";
+                if (keyword.length === 0) {
+                    event.preventDefault();
+                    if (input) {
+                        input.focus();
+                    }
+                }
+            });
+        }
+    });
 </script>
+

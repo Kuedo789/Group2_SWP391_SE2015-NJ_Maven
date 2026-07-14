@@ -208,7 +208,13 @@ public class AdminSettingsServlet extends HttpServlet {
 
         // Thông báo nhanh (Flash message)
         session.setAttribute("successMessage", "Cập nhật cấu hình hệ thống thành công!");
-        response.sendRedirect(request.getContextPath() + "/admin/settings");
+        
+        String activeTab = request.getParameter("activeTab");
+        if (activeTab != null && !activeTab.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/settings?activeTab=" + activeTab.trim());
+        } else {
+            response.sendRedirect(request.getContextPath() + "/admin/settings");
+        }
     }
 
     private Map<String, Object> initDefaultSettings() {
