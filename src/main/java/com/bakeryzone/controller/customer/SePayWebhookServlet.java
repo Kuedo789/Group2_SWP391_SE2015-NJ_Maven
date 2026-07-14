@@ -86,6 +86,13 @@ public class SePayWebhookServlet extends HttpServlet {
                     if (success) {
                         System.out.println("[SePay] Order " + orderNo + " successfully marked as PAID via webhook.");
                         
+                        // Tự động phân công shipper và gom chuyến
+                        try {
+                            orderDAO.autoAssignShipperAndTrip(orderNo);
+                        } catch (Exception e) {
+                            System.err.println("[SePay] Lỗi tự động gán shipper: " + e.getMessage());
+                        }
+                        
                         response.setContentType("application/json");
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().write("{\"success\":true,\"message\":\"Order status updated\"}");
@@ -110,11 +117,16 @@ public class SePayWebhookServlet extends HttpServlet {
     
     private String extractOrderNo(String content) {
         if (content == null || content.isEmpty()) return null;
-        // Looking for pattern like ORD-XXXXXXXX
-        Pattern pattern = Pattern.compile("(ORD-[A-Z0-9]+)", Pattern.CASE_INSENSITIVE);
+        // Hỗ trợ cả trường hợp có hoặc không có dấu gạch ngang (ví dụ: ORD-BA82EE91 hoặc ORDBA82EE91)
+        Pattern pattern = Pattern.compile("(ORD-?[A-Z0-9]+)", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(content);
         if (matcher.find()) {
-            return matcher.group(1).toUpperCase();
+            String rawOrderNo = matcher.group(1).toUpperCase();
+            // Nếu không có dấu gạch ngang, tự động thêm dấu gạch ngang sau 'ORD'
+            if (rawOrderNo.startsWith("ORD") && !rawOrderNo.startsWith("ORD-") && rawOrderNo.length() > 3) {
+                return "ORD-" + rawOrderNo.substring(3);
+            }
+            return rawOrderNo;
         }
         return null;
     }

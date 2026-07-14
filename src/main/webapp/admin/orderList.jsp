@@ -44,6 +44,7 @@
                         <option value="all" ${empty status || status eq 'all' ? 'selected' : ''}>Tất cả trạng thái</option>
                         <option value="Pending" ${status eq 'Pending' ? 'selected' : ''}>Chờ xác nhận</option>
                         <option value="Confirmed" ${status eq 'Confirmed' ? 'selected' : ''}>Đã xác nhận</option>
+                        <option value="PAID" ${status eq 'PAID' ? 'selected' : ''}>Đã chuyển khoản</option>
                         <option value="Processing" ${status eq 'Processing' ? 'selected' : ''}>Đang xử lý</option>
                         <option value="Delivering" ${status eq 'Delivering' ? 'selected' : ''}>Đang giao</option>
                         <option value="Completed" ${status eq 'Completed' ? 'selected' : ''}>Hoàn thành</option>
@@ -120,6 +121,9 @@
                                                 </c:when>
                                                 <c:when test="${o.orderStatus eq 'Confirmed' || o.orderStatus eq 'Đã xác nhận'}">
                                                     <span class="status-badge status-confirmed">Đã xác nhận</span>
+                                                </c:when>
+                                                <c:when test="${o.orderStatus eq 'PAID' || o.orderStatus eq 'Đã chuyển khoản'}">
+                                                    <span class="status-badge status-confirmed" style="background-color: #d1fae5; color: #065f46;">Đã chuyển khoản</span>
                                                 </c:when>
                                                 <c:when test="${o.orderStatus eq 'Processing' || o.orderStatus eq 'Đang xử lý'}">
                                                     <span class="status-badge status-processing">Đang xử lý</span>

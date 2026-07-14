@@ -23,7 +23,7 @@ public class AdminOrderController extends HttpServlet {
 
     // Whitelist trạng thái hợp lệ – ngăn giá trị rác ghi vào DB
     private static final java.util.Set<String> ALLOWED_STATUSES = java.util.Set.of(
-        "Pending", "Confirmed", "Processing", "Delivering", "Completed", "Cancelled"
+        "Pending", "Confirmed", "Processing", "Delivering", "Completed", "Cancelled", "PAID"
     );
 
     @Override
@@ -217,8 +217,8 @@ public class AdminOrderController extends HttpServlet {
 
         boolean success = orderDAO.updateOrderStatus(orderNo, status);
         if (success) {
-            // Tự động phân công Shipper & Gom đơn khi Admin xác nhận hoặc bắt đầu xử lý đơn hàng
-            if ("Confirmed".equalsIgnoreCase(status) || "Processing".equalsIgnoreCase(status)) {
+            // Tự động phân công Shipper & Gom đơn khi Admin xác nhận, bắt đầu xử lý đơn hàng hoặc khi đã chuyển khoản
+            if ("Confirmed".equalsIgnoreCase(status) || "Processing".equalsIgnoreCase(status) || "PAID".equalsIgnoreCase(status)) {
                 orderDAO.autoAssignShipperAndTrip(orderNo);
             }
             session.setAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + orderNo + " thành công!");

@@ -48,6 +48,10 @@
             background-color: #fee2e2;
             color: #991b1b;
         }
+        .page-title-area .status-badge.status-paid {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
     </style>
 </head>
 <body>
@@ -80,6 +84,9 @@
                         </c:when>
                         <c:when test="${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận'}">
                             <span class="status-badge status-confirmed">Đã xác nhận</span>
+                        </c:when>
+                        <c:when test="${order.orderStatus eq 'PAID' || order.orderStatus eq 'Đã chuyển khoản'}">
+                            <span class="status-badge status-paid">Đã chuyển khoản</span>
                         </c:when>
                         <c:when test="${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý'}">
                             <span class="status-badge status-processing">Đang xử lý</span>
@@ -345,6 +352,7 @@
                             <select name="status" class="status-select">
                                 <option value="Pending" ${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận' ? 'selected' : ''}>Chờ xác nhận</option>
                                 <option value="Confirmed" ${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận' ? 'selected' : ''}>Đã xác nhận (Bắt đầu làm)</option>
+                                <option value="PAID" ${order.orderStatus eq 'PAID' || order.orderStatus eq 'Đã chuyển khoản' ? 'selected' : ''}>Đã chuyển khoản</option>
                                 <option value="Processing" ${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý' ? 'selected' : ''}>Đang xử lý (Làm bánh xong)</option>
                                 <option value="Delivering" ${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao' ? 'selected' : ''}>Đang giao hàng</option>
                                 <option value="Completed" ${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' ? 'selected' : ''}>Đã hoàn thành</option>
