@@ -544,12 +544,62 @@
                     return;
                 }
 
+                // Lưu lại trạng thái của form để khôi phục khi quay lại
+                const checkoutState = {
+                    deliveryDate: document.getElementById("deliveryDate").value,
+                    timeSlot: document.getElementById("selectedTimeSlotInput").value,
+                    note: document.getElementById("note").value,
+                    paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value
+                };
+                localStorage.setItem("checkout_state", JSON.stringify(checkoutState));
+
                 jsErrorBox.style.display = "none";
-                localStorage.removeItem("cart");
+                // Không xoá giỏ hàng ở đây nữa để có thể quay lại sửa đổi
             });
 
             // Initialize available time slots on load
             updateAvailableTimeSlots();
+
+            // Khôi phục trạng thái form nếu có
+            try {
+                const stateStr = localStorage.getItem("checkout_state");
+                if (stateStr) {
+                    const state = JSON.parse(stateStr);
+                    if (state.deliveryDate) {
+                        if (deliveryDateInput) {
+                            deliveryDateInput.value = state.deliveryDate;
+                            updateAvailableTimeSlots();
+                        }
+                    }
+                    if (state.timeSlot) {
+                        selectedTimeSlot = state.timeSlot;
+                        document.getElementById("selectedTimeSlotInput").value = state.timeSlot;
+                        setTimeout(() => {
+                            const pills = document.querySelectorAll("#timeSlotsGrid .time-slot-pill");
+                            pills.forEach(pill => {
+                                const slotTime = pill.querySelector(".slot-time")?.textContent?.trim();
+                                if (slotTime === state.timeSlot && !pill.classList.contains("disabled")) {
+                                    pill.classList.add("active");
+                                }
+                            });
+                        }, 150);
+                    }
+                    if (state.note) {
+                        const noteInput = document.getElementById("note");
+                        if (noteInput) noteInput.value = state.note;
+                    }
+                    if (state.paymentMethod) {
+                        const radio = document.querySelector(`input[name="paymentMethod"][value="${state.paymentMethod}"]`);
+                        if (radio) {
+                            radio.checked = true;
+                            document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('active'));
+                            radio.closest('.pm-card')?.classList.add('active');
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to restore checkout state:", e);
+            }
         });
 
         function updateAvailableTimeSlots() {

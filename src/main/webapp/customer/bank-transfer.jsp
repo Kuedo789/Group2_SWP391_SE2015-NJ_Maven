@@ -659,8 +659,11 @@
 
             <!-- Action buttons -->
             <div class="bt-actions">
-                <a href="${pageContext.request.contextPath}/order-success?orderNo=<%= orderNo %>" class="btn-primary-green" style="padding: 15px 40px; font-size: 16px; border-radius: 50px;">
-                    <i class="fa fa-check-circle"></i> Tôi đã chuyển khoản xong
+                <a href="${pageContext.request.contextPath}/checkout" class="btn-outline-neutral">
+                    <i class="fa fa-arrow-left"></i> Quay lại đơn hàng
+                </a>
+                <a href="${pageContext.request.contextPath}/home" class="btn-primary-green" onclick="localStorage.removeItem('cart'); localStorage.removeItem('checkout_state');">
+                    <i class="fa fa-home"></i> Về trang chủ
                 </a>
             </div>
 
@@ -677,8 +680,7 @@
     <jsp:include page="../common/scripts.jsp" />
 
     <script>
-        // Clear cart since order is placed
-        localStorage.removeItem("cart");
+        // Giữ lại giỏ hàng để có thể quay lại sửa đổi cho đến khi thanh toán xong hoặc quay về trang chủ.
 
         // ── Countdown timer (15 min = 900 sec) ───────────────────────
         let remainingSeconds = 900;

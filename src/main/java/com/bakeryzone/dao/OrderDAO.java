@@ -58,28 +58,30 @@ public class OrderDAO {
      * Đếm số đơn hàng của một khách hàng theo bộ lọc (date, status, search).
      * Dùng cho customer-side pagination – thực hiện filter hoàn toàn ở DB.
      *
-     * @param uiStatus "processing" | "shipping" | "completed" | "cancelled" | "all" | null
+     * @param uiStatus "processing" | "shipping" | "completed" | "cancelled" | "all"
+     *                 | null
      */
     public int getOrdersCountByCustomer(String customerId, String keyword, String uiStatus,
             String startDateStr, String endDateStr) {
         StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(DISTINCT o.Order_No) FROM `orders` o"
-            + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
-            + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
-            + " LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
-            + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
-            + " WHERE o.Customer_ID = ?");
+                "SELECT COUNT(DISTINCT o.Order_No) FROM `orders` o"
+                        + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
+                        + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
+                        + " LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
+                        + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
+                        + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
         params.add(customerId);
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
+            sql.append(
+                    " AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
             String kw = "%" + keyword.trim() + "%";
             params.add(kw);
             params.add(kw);
@@ -96,9 +98,11 @@ public class OrderDAO {
 
         try (Connection conn = DBContext.getJDBCConnection();
                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            for (int i = 0; i < params.size(); i++)
+                ps.setObject(i + 1, params.get(i));
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt(1);
+                if (rs.next())
+                    return rs.getInt(1);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -115,23 +119,24 @@ public class OrderDAO {
             String startDateStr, String endDateStr, String sort, int page, int pageSize) {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-            "SELECT DISTINCT o.* FROM `orders` o"
-            + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
-            + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
-            + " LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
-            + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
-            + " WHERE o.Customer_ID = ?");
+                "SELECT DISTINCT o.* FROM `orders` o"
+                        + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
+                        + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
+                        + " LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
+                        + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
+                        + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
         params.add(customerId);
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
+            sql.append(
+                    " AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
             String kw = "%" + keyword.trim() + "%";
             params.add(kw);
             params.add(kw);
@@ -150,10 +155,18 @@ public class OrderDAO {
         String orderByClause = " ORDER BY o.Order_Time DESC";
         if (sort != null) {
             switch (sort.trim().toLowerCase()) {
-                case "date_asc":   orderByClause = " ORDER BY o.Order_Time ASC"; break;
-                case "price_desc": orderByClause = " ORDER BY o.Total_Cost DESC"; break;
-                case "price_asc":  orderByClause = " ORDER BY o.Total_Cost ASC"; break;
-                default:           orderByClause = " ORDER BY o.Order_Time DESC"; break;
+                case "date_asc":
+                    orderByClause = " ORDER BY o.Order_Time ASC";
+                    break;
+                case "price_desc":
+                    orderByClause = " ORDER BY o.Total_Cost DESC";
+                    break;
+                case "price_asc":
+                    orderByClause = " ORDER BY o.Total_Cost ASC";
+                    break;
+                default:
+                    orderByClause = " ORDER BY o.Order_Time DESC";
+                    break;
             }
         }
         sql.append(orderByClause).append(" LIMIT ? OFFSET ?");
@@ -162,7 +175,8 @@ public class OrderDAO {
 
         try (Connection conn = DBContext.getJDBCConnection();
                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            for (int i = 0; i < params.size(); i++)
+                ps.setObject(i + 1, params.get(i));
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     orders.add(mapRowToOrder(rs));
@@ -189,23 +203,24 @@ public class OrderDAO {
         counts.put("cancelled", 0);
 
         StringBuilder sql = new StringBuilder(
-            "SELECT o.OrderStatus, COUNT(DISTINCT o.Order_No) AS cnt FROM `orders` o"
-            + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
-            + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
-            + " LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
-            + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
-            + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
-            + " WHERE o.Customer_ID = ?");
+                "SELECT o.OrderStatus, COUNT(DISTINCT o.Order_No) AS cnt FROM `orders` o"
+                        + " LEFT JOIN order_item oi ON o.Order_No = oi.Order_No"
+                        + " LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID"
+                        + " LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
+                        + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
+                        + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
+                        + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
         params.add(customerId);
 
         if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
+            sql.append(
+                    " AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
             String kw = "%" + keyword.trim() + "%";
             params.add(kw);
             params.add(kw);
@@ -222,14 +237,16 @@ public class OrderDAO {
 
         try (Connection conn = DBContext.getJDBCConnection();
                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
-            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));
+            for (int i = 0; i < params.size(); i++)
+                ps.setObject(i + 1, params.get(i));
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String dbStatus = rs.getString("OrderStatus");
                     int cnt = rs.getInt("cnt");
                     counts.put("all", counts.get("all") + cnt);
                     if (dbStatus != null) {
-                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing") || dbStatus.equalsIgnoreCase("PAID")) {
+                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed")
+                                || dbStatus.equalsIgnoreCase("Processing") || dbStatus.equalsIgnoreCase("PAID")) {
                             counts.put("processing", counts.get("processing") + cnt);
                         } else if (dbStatus.equalsIgnoreCase("Delivering")) {
                             counts.put("shipping", counts.get("shipping") + cnt);
@@ -249,7 +266,8 @@ public class OrderDAO {
 
     /** Helper: Thêm điều kiện WHERE cho uiStatus vào câu SQL đang build. */
     private void appendCustomerStatusFilter(StringBuilder sql, List<Object> params, String uiStatus) {
-        if (uiStatus == null || uiStatus.equalsIgnoreCase("all")) return;
+        if (uiStatus == null || uiStatus.equalsIgnoreCase("all"))
+            return;
         switch (uiStatus.toLowerCase()) {
             case "processing":
                 sql.append(" AND o.OrderStatus IN ('Pending', 'Confirmed', 'Processing', 'PAID')");
@@ -265,7 +283,6 @@ public class OrderDAO {
                 break;
         }
     }
-
 
     public Order getOrderByNo(String orderNo) {
         String sql = "SELECT * FROM `orders` WHERE Order_No = ?";
@@ -326,7 +343,7 @@ public class OrderDAO {
         if (orders == null || orders.isEmpty()) {
             return;
         }
-        
+
         Map<String, Order> orderMap = new HashMap<>();
         StringBuilder inClause = new StringBuilder();
         for (int i = 0; i < orders.size(); i++) {
@@ -367,7 +384,8 @@ public class OrderDAO {
                 LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID
                 LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID
                 WHERE oi.Order_No IN (
-                """ + inClause + ")";
+                """
+                + inClause + ")";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             for (int i = 0; i < orders.size(); i++) {
@@ -556,23 +574,29 @@ public class OrderDAO {
         }
         try {
             order.setShippingFee(rs.getBigDecimal("Shipping_Fee"));
-        } catch (SQLException ignored) {}
+        } catch (SQLException ignored) {
+        }
 
         try {
             order.setPaymentMethod(rs.getString("Payment_Method"));
-        } catch (SQLException ignored) {}
+        } catch (SQLException ignored) {
+        }
         try {
             order.setReceiverName(rs.getString("Receiver_Name"));
-        } catch (SQLException ignored) {}
+        } catch (SQLException ignored) {
+        }
         try {
             order.setReceiverPhone(rs.getString("Receiver_Phone"));
-        } catch (SQLException ignored) {}
+        } catch (SQLException ignored) {
+        }
         try {
             order.setCustomerNote(rs.getString("Customer_Note"));
-        } catch (SQLException ignored) {}
+        } catch (SQLException ignored) {
+        }
         try {
             order.setShipperNote(rs.getString("Shipper_Note"));
-        } catch (SQLException ignored) {}
+        } catch (SQLException ignored) {
+        }
         return order;
     }
 
@@ -667,7 +691,9 @@ public class OrderDAO {
                             item.getItemImage() != null ? item.getItemImage() : "assets/images/default-cake.png");
                     psCake.setString(3,
                             item.getGreetingText() != null ? item.getGreetingText() : "Chúc mừng sinh nhật!");
-                    String hash = (item.getTemplateId() != null && !item.getTemplateId().trim().isEmpty()) ? item.getTemplateId().trim() : "STANDARD_CAKE_HASH";
+                    String hash = (item.getTemplateId() != null && !item.getTemplateId().trim().isEmpty())
+                            ? item.getTemplateId().trim()
+                            : "STANDARD_CAKE_HASH";
                     psCake.setString(4, hash);
                     psCake.setBigDecimal(5, item.getPriceAtPurchase());
                     psCake.executeUpdate();
@@ -833,13 +859,14 @@ public class OrderDAO {
         return orders;
     }
 
-    public int getTotalOrdersCountByShipper(String shipperId, String keyword, String status, String startDateStr, String endDateStr) {
+    public int getTotalOrdersCountByShipper(String shipperId, String keyword, String status, String startDateStr,
+            String endDateStr) {
         int count = 0;
         StringBuilder sql = new StringBuilder(
                 "SELECT COUNT(*) FROM `orders` o " +
-                "JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
-                "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
-                "WHERE t.Shipper_ID = ?");
+                        "JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                        "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
+                        "WHERE t.Shipper_ID = ?");
         List<Object> params = new ArrayList<>();
         params.add(shipperId);
 
@@ -881,15 +908,16 @@ public class OrderDAO {
         return count;
     }
 
-    public List<Order> getOrdersByShipperPaged(String shipperId, String keyword, String status, String startDateStr, String endDateStr,
+    public List<Order> getOrdersByShipperPaged(String shipperId, String keyword, String status, String startDateStr,
+            String endDateStr,
             String sort, int pageIndex, int pageSize) {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT o.*, c.Full_Name AS Customer_Name, s.Managed_Zone FROM `orders` o " +
-                "JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
-                "JOIN `staff` s ON t.Shipper_ID = s.Staff_ID " +
-                "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
-                "WHERE t.Shipper_ID = ?");
+                        "JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                        "JOIN `staff` s ON t.Shipper_ID = s.Staff_ID " +
+                        "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
+                        "WHERE t.Shipper_ID = ?");
         List<Object> params = new ArrayList<>();
         params.add(shipperId);
 
@@ -954,7 +982,8 @@ public class OrderDAO {
     }
 
     public double getTotalRevenue(String startDate, String endDate) {
-        StringBuilder sql = new StringBuilder("SELECT SUM(Total_Cost) FROM `orders` WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
+        StringBuilder sql = new StringBuilder(
+                "SELECT SUM(Total_Cost) FROM `orders` WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
         List<String> params = new ArrayList<>();
         if (startDate != null && !startDate.trim().isEmpty()) {
             sql.append(" AND Order_Time >= ?");
@@ -965,7 +994,7 @@ public class OrderDAO {
             params.add(endDate.trim() + " 23:59:59");
         }
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 ps.setString(i + 1, params.get(i));
             }
@@ -984,8 +1013,8 @@ public class OrderDAO {
         if (startDate == null || startDate.trim().isEmpty() || endDate == null || endDate.trim().isEmpty()) {
             String sql = "SELECT COUNT(*) FROM `customer`";
             try (Connection conn = DBContext.getJDBCConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql);
-                 ResultSet rs = ps.executeQuery()) {
+                    PreparedStatement ps = conn.prepareStatement(sql);
+                    ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1);
                 }
@@ -996,7 +1025,7 @@ public class OrderDAO {
         } else {
             String sql = "SELECT COUNT(DISTINCT Customer_ID) FROM `orders` WHERE Order_Time >= ? AND Order_Time <= ?";
             try (Connection conn = DBContext.getJDBCConnection();
-                 PreparedStatement ps = conn.prepareStatement(sql)) {
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
                 ps.setString(1, startDate.trim() + " 00:00:00");
                 ps.setString(2, endDate.trim() + " 23:59:59");
                 try (ResultSet rs = ps.executeQuery()) {
@@ -1014,8 +1043,8 @@ public class OrderDAO {
     public int getTotalProducts() {
         String sql = "SELECT COUNT(*) FROM `cake_template`";
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt(1);
             }
@@ -1047,7 +1076,7 @@ public class OrderDAO {
         sql.append(" GROUP BY OrderStatus");
 
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 ps.setString(i + 1, params.get(i));
             }
@@ -1062,11 +1091,14 @@ public class OrderDAO {
                             counts.put("Đã xác nhận", counts.getOrDefault("Đã xác nhận", 0) + count);
                         } else if (status.equalsIgnoreCase("Processing") || status.equals("Đang xử lý")) {
                             counts.put("Đang xử lý", counts.getOrDefault("Đang xử lý", 0) + count);
-                        } else if (status.equalsIgnoreCase("Delivering") || status.equals("Đang giao hàng") || status.equals("Đang giao")) {
+                        } else if (status.equalsIgnoreCase("Delivering") || status.equals("Đang giao hàng")
+                                || status.equals("Đang giao")) {
                             counts.put("Đang giao", counts.getOrDefault("Đang giao", 0) + count);
-                        } else if (status.equalsIgnoreCase("Completed") || status.equals("Hoàn thành") || status.equals("Đã giao")) {
+                        } else if (status.equalsIgnoreCase("Completed") || status.equals("Hoàn thành")
+                                || status.equals("Đã giao")) {
                             counts.put("Hoàn thành", counts.getOrDefault("Hoàn thành", 0) + count);
-                        } else if (status.equalsIgnoreCase("Cancelled") || status.equalsIgnoreCase("Canceled") || status.equals("Đã hủy")) {
+                        } else if (status.equalsIgnoreCase("Cancelled") || status.equalsIgnoreCase("Canceled")
+                                || status.equals("Đã hủy")) {
                             counts.put("Đã hủy", counts.getOrDefault("Đã hủy", 0) + count);
                         } else {
                             counts.put(status, count);
@@ -1083,12 +1115,12 @@ public class OrderDAO {
     public Map<String, Double> getMonthlyRevenueTrend(int monthsLimit) {
         Map<String, Double> trend = new LinkedHashMap<>();
         String sql = "SELECT DATE_FORMAT(Order_Time, '%m/%Y') AS month_year, SUM(Total_Cost) AS monthly_revenue " +
-                     "FROM `orders` " +
-                     "WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
-                     "GROUP BY DATE_FORMAT(Order_Time, '%m/%Y') " +
-                     "ORDER BY MIN(Order_Time) ASC LIMIT ?";
+                "FROM `orders` " +
+                "WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                "GROUP BY DATE_FORMAT(Order_Time, '%m/%Y') " +
+                "ORDER BY MIN(Order_Time) ASC LIMIT ?";
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, monthsLimit);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -1105,14 +1137,15 @@ public class OrderDAO {
         Map<String, Double> trend = new LinkedHashMap<>();
         String dateFormat = "month".equalsIgnoreCase(period) ? "%m/%Y" : "%d/%m";
         String sql = "SELECT time_label, revenue FROM (" +
-                     "  SELECT DATE_FORMAT(Order_Time, '" + dateFormat + "') AS time_label, SUM(Total_Cost) AS revenue, MIN(Order_Time) as min_ot " +
-                     "  FROM `orders` " +
-                     "  WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
-                     "  GROUP BY DATE_FORMAT(Order_Time, '" + dateFormat + "') " +
-                     "  ORDER BY min_ot DESC LIMIT ?" +
-                     ") AS temp ORDER BY min_ot ASC";
+                "  SELECT DATE_FORMAT(Order_Time, '" + dateFormat
+                + "') AS time_label, SUM(Total_Cost) AS revenue, MIN(Order_Time) as min_ot " +
+                "  FROM `orders` " +
+                "  WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                "  GROUP BY DATE_FORMAT(Order_Time, '" + dateFormat + "') " +
+                "  ORDER BY min_ot DESC LIMIT ?" +
+                ") AS temp ORDER BY min_ot ASC";
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, limit);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -1129,13 +1162,14 @@ public class OrderDAO {
         Map<String, Integer> trend = new LinkedHashMap<>();
         String dateFormat = "month".equalsIgnoreCase(period) ? "%m/%Y" : "%d/%m";
         String sql = "SELECT time_label, order_count FROM (" +
-                     "  SELECT DATE_FORMAT(Order_Time, '" + dateFormat + "') AS time_label, COUNT(*) AS order_count, MIN(Order_Time) as min_ot " +
-                     "  FROM `orders` " +
-                     "  GROUP BY DATE_FORMAT(Order_Time, '" + dateFormat + "') " +
-                     "  ORDER BY min_ot DESC LIMIT ?" +
-                     ") AS temp ORDER BY min_ot ASC";
+                "  SELECT DATE_FORMAT(Order_Time, '" + dateFormat
+                + "') AS time_label, COUNT(*) AS order_count, MIN(Order_Time) as min_ot " +
+                "  FROM `orders` " +
+                "  GROUP BY DATE_FORMAT(Order_Time, '" + dateFormat + "') " +
+                "  ORDER BY min_ot DESC LIMIT ?" +
+                ") AS temp ORDER BY min_ot ASC";
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, limit);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -1152,34 +1186,34 @@ public class OrderDAO {
         Map<String, Double> trend = new LinkedHashMap<>();
         String dateFormat = "month".equalsIgnoreCase(period) ? "%m/%Y" : "%d/%m";
         String sql = "SELECT time_label, profit FROM (" +
-                     "  SELECT DATE_FORMAT(o.Order_Time, '" + dateFormat + "') AS time_label, " +
-                     "         SUM(o.Total_Cost) - SUM(COALESCE(" +
-                     "             (SELECT SUM(oi.Quantity * (" +
-                     "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
-                     "                 FROM template_ingredient_detail d" +
-                     "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
-                     "                 WHERE d.Template_ID = (CASE" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0001' THEN 'TPL_0001'" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0002' THEN 'TPL_0005'" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0003' THEN 'TPL_0009'" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0004' THEN 'TPL_0011'" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0005' THEN 'TPL_0013'" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0006' THEN 'TPL_0017'" +
-                     "                     ELSE cc.Cake_Hash_Structure END)" +
-                     "             ))" +
-                     "              FROM order_item oi" +
-                     "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
-                     "              WHERE oi.Order_No = o.Order_No)," +
-                     "             0" +
-                     "         )) AS profit, " +
-                     "         MIN(o.Order_Time) as min_ot " +
-                     "  FROM `orders` o " +
-                     "  WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
-                     "  GROUP BY DATE_FORMAT(o.Order_Time, '" + dateFormat + "') " +
-                     "  ORDER BY min_ot DESC LIMIT ?" +
-                     ") AS temp ORDER BY min_ot ASC";
+                "  SELECT DATE_FORMAT(o.Order_Time, '" + dateFormat + "') AS time_label, " +
+                "         SUM(o.Total_Cost) - SUM(COALESCE(" +
+                "             (SELECT SUM(oi.Quantity * (" +
+                "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
+                "                 FROM template_ingredient_detail d" +
+                "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
+                "                 WHERE d.Template_ID = (CASE" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0001' THEN 'TPL_0001'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0002' THEN 'TPL_0005'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0003' THEN 'TPL_0009'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0004' THEN 'TPL_0011'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0005' THEN 'TPL_0013'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0006' THEN 'TPL_0017'" +
+                "                     ELSE cc.Cake_Hash_Structure END)" +
+                "             ))" +
+                "              FROM order_item oi" +
+                "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
+                "              WHERE oi.Order_No = o.Order_No)," +
+                "             0" +
+                "         )) AS profit, " +
+                "         MIN(o.Order_Time) as min_ot " +
+                "  FROM `orders` o " +
+                "  WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                "  GROUP BY DATE_FORMAT(o.Order_Time, '" + dateFormat + "') " +
+                "  ORDER BY min_ot DESC LIMIT ?" +
+                ") AS temp ORDER BY min_ot ASC";
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, limit);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -1195,15 +1229,16 @@ public class OrderDAO {
     public Map<String, Double> getRevenueTrendCustom(String startDate, String endDate) {
         Map<String, Double> trend = new LinkedHashMap<>();
         String sql = "SELECT time_label, revenue FROM (" +
-                     "  SELECT DATE_FORMAT(Order_Time, '%d/%m') AS time_label, SUM(Total_Cost) AS revenue, MIN(Order_Time) as min_ot " +
-                     "  FROM `orders` " +
-                     "  WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
-                     "    AND Order_Time >= ? AND Order_Time <= ? " +
-                     "  GROUP BY DATE_FORMAT(Order_Time, '%d/%m') " +
-                     "  ORDER BY min_ot DESC LIMIT 31" +
-                     ") AS temp ORDER BY min_ot ASC";
+                "  SELECT DATE_FORMAT(Order_Time, '%d/%m') AS time_label, SUM(Total_Cost) AS revenue, MIN(Order_Time) as min_ot "
+                +
+                "  FROM `orders` " +
+                "  WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                "    AND Order_Time >= ? AND Order_Time <= ? " +
+                "  GROUP BY DATE_FORMAT(Order_Time, '%d/%m') " +
+                "  ORDER BY min_ot DESC LIMIT 31" +
+                ") AS temp ORDER BY min_ot ASC";
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, startDate + " 00:00:00");
             ps.setString(2, endDate + " 23:59:59");
             try (ResultSet rs = ps.executeQuery()) {
@@ -1220,14 +1255,15 @@ public class OrderDAO {
     public Map<String, Integer> getOrdersTrendCustom(String startDate, String endDate) {
         Map<String, Integer> trend = new LinkedHashMap<>();
         String sql = "SELECT time_label, order_count FROM (" +
-                     "  SELECT DATE_FORMAT(Order_Time, '%d/%m') AS time_label, COUNT(*) AS order_count, MIN(Order_Time) as min_ot " +
-                     "  FROM `orders` " +
-                     "  WHERE Order_Time >= ? AND Order_Time <= ? " +
-                     "  GROUP BY DATE_FORMAT(Order_Time, '%d/%m') " +
-                     "  ORDER BY min_ot DESC LIMIT 31" +
-                     ") AS temp ORDER BY min_ot ASC";
+                "  SELECT DATE_FORMAT(Order_Time, '%d/%m') AS time_label, COUNT(*) AS order_count, MIN(Order_Time) as min_ot "
+                +
+                "  FROM `orders` " +
+                "  WHERE Order_Time >= ? AND Order_Time <= ? " +
+                "  GROUP BY DATE_FORMAT(Order_Time, '%d/%m') " +
+                "  ORDER BY min_ot DESC LIMIT 31" +
+                ") AS temp ORDER BY min_ot ASC";
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, startDate + " 00:00:00");
             ps.setString(2, endDate + " 23:59:59");
             try (ResultSet rs = ps.executeQuery()) {
@@ -1244,35 +1280,35 @@ public class OrderDAO {
     public Map<String, Double> getProfitTrendCustom(String startDate, String endDate) {
         Map<String, Double> trend = new LinkedHashMap<>();
         String sql = "SELECT time_label, profit FROM (" +
-                     "  SELECT DATE_FORMAT(o.Order_Time, '%d/%m') AS time_label, " +
-                     "         SUM(o.Total_Cost) - SUM(COALESCE(" +
-                     "             (SELECT SUM(oi.Quantity * (" +
-                     "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
-                     "                 FROM template_ingredient_detail d" +
-                     "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
-                     "                 WHERE d.Template_ID = (CASE" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0001' THEN 'TPL_0001'" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0002' THEN 'TPL_0005'" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0003' THEN 'TPL_0009'" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0004' THEN 'TPL_0011'" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0005' THEN 'TPL_0013'" +
-                     "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0006' THEN 'TPL_0017'" +
-                     "                     ELSE cc.Cake_Hash_Structure END)" +
-                     "             ))" +
-                     "              FROM order_item oi" +
-                     "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
-                     "              WHERE oi.Order_No = o.Order_No)," +
-                     "             0" +
-                     "         )) AS profit, " +
-                     "         MIN(o.Order_Time) as min_ot " +
-                     "  FROM `orders` o " +
-                     "  WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
-                     "    AND o.Order_Time >= ? AND o.Order_Time <= ? " +
-                     "  GROUP BY DATE_FORMAT(o.Order_Time, '%d/%m') " +
-                     "  ORDER BY min_ot DESC LIMIT 31" +
-                     ") AS temp ORDER BY min_ot ASC";
+                "  SELECT DATE_FORMAT(o.Order_Time, '%d/%m') AS time_label, " +
+                "         SUM(o.Total_Cost) - SUM(COALESCE(" +
+                "             (SELECT SUM(oi.Quantity * (" +
+                "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
+                "                 FROM template_ingredient_detail d" +
+                "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
+                "                 WHERE d.Template_ID = (CASE" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0001' THEN 'TPL_0001'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0002' THEN 'TPL_0005'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0003' THEN 'TPL_0009'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0004' THEN 'TPL_0011'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0005' THEN 'TPL_0013'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0006' THEN 'TPL_0017'" +
+                "                     ELSE cc.Cake_Hash_Structure END)" +
+                "             ))" +
+                "              FROM order_item oi" +
+                "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
+                "              WHERE oi.Order_No = o.Order_No)," +
+                "             0" +
+                "         )) AS profit, " +
+                "         MIN(o.Order_Time) as min_ot " +
+                "  FROM `orders` o " +
+                "  WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                "    AND o.Order_Time >= ? AND o.Order_Time <= ? " +
+                "  GROUP BY DATE_FORMAT(o.Order_Time, '%d/%m') " +
+                "  ORDER BY min_ot DESC LIMIT 31" +
+                ") AS temp ORDER BY min_ot ASC";
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, startDate + " 00:00:00");
             ps.setString(2, endDate + " 23:59:59");
             try (ResultSet rs = ps.executeQuery()) {
@@ -1288,20 +1324,21 @@ public class OrderDAO {
 
     public List<Map<String, Object>> getBestSellingProducts(String startDate, String endDate, int limit) {
         List<Map<String, Object>> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT t.Template_ID, t.Template_Name, t.Image_URL, cat.Category_Name, " +
-                     "       SUM(oi.Quantity) AS quantity_sold, SUM(oi.Quantity * oi.Price_At_Purchase) AS total_revenue " +
-                     "FROM order_item oi " +
-                     "JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID " +
-                     "JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR " +
-                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR " +
-                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR " +
-                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR " +
-                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR " +
-                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR " +
-                     "  (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')) " +
-                     "LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID " +
-                     "JOIN orders o ON oi.Order_No = o.Order_No " +
-                     "WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
+        StringBuilder sql = new StringBuilder("SELECT t.Template_ID, t.Template_Name, t.Image_URL, cat.Category_Name, "
+                +
+                "       SUM(oi.Quantity) AS quantity_sold, SUM(oi.Quantity * oi.Price_At_Purchase) AS total_revenue " +
+                "FROM order_item oi " +
+                "JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID " +
+                "JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR " +
+                "  (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR " +
+                "  (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR " +
+                "  (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR " +
+                "  (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR " +
+                "  (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR " +
+                "  (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')) " +
+                "LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID " +
+                "JOIN orders o ON oi.Order_No = o.Order_No " +
+                "WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
         List<Object> params = new ArrayList<>();
         if (startDate != null && !startDate.trim().isEmpty()) {
             sql.append(" AND o.Order_Time >= ?");
@@ -1312,11 +1349,11 @@ public class OrderDAO {
             params.add(endDate.trim() + " 23:59:59");
         }
         sql.append(" GROUP BY t.Template_ID, t.Template_Name, t.Image_URL, cat.Category_Name " +
-                     "ORDER BY quantity_sold DESC LIMIT ?");
+                "ORDER BY quantity_sold DESC LIMIT ?");
         params.add(limit);
 
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
             }
@@ -1340,10 +1377,12 @@ public class OrderDAO {
 
     public List<Map<String, Object>> getTopCustomers(String startDate, String endDate, int limit) {
         List<Map<String, Object>> list = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT c.Customer_ID, c.Full_Name, COUNT(o.Order_No) AS order_count, SUM(o.Total_Cost) AS total_spent " +
-                     "FROM customer c " +
-                     "JOIN orders o ON c.Customer_ID = o.Customer_ID " +
-                     "WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
+        StringBuilder sql = new StringBuilder(
+                "SELECT c.Customer_ID, c.Full_Name, COUNT(o.Order_No) AS order_count, SUM(o.Total_Cost) AS total_spent "
+                        +
+                        "FROM customer c " +
+                        "JOIN orders o ON c.Customer_ID = o.Customer_ID " +
+                        "WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
         List<Object> params = new ArrayList<>();
         if (startDate != null && !startDate.trim().isEmpty()) {
             sql.append(" AND o.Order_Time >= ?");
@@ -1354,11 +1393,11 @@ public class OrderDAO {
             params.add(endDate.trim() + " 23:59:59");
         }
         sql.append(" GROUP BY c.Customer_ID, c.Full_Name " +
-                     "ORDER BY total_spent DESC LIMIT ?");
+                "ORDER BY total_spent DESC LIMIT ?");
         params.add(limit);
 
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
             for (int i = 0; i < params.size(); i++) {
                 ps.setObject(i + 1, params.get(i));
             }
@@ -1385,21 +1424,22 @@ public class OrderDAO {
             ps.setString(1, tripId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return new String[]{rs.getString("Pickup_Photo_URL"), rs.getString("Delivery_Photo_URL")};
+                    return new String[] { rs.getString("Pickup_Photo_URL"), rs.getString("Delivery_Photo_URL") };
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new String[]{"", ""};
+        return new String[] { "", "" };
     }
 
     public boolean saveDeliveryEvidence(String tripId, String photoUrl, String type) {
         String checkSql = "SELECT Evidence_ID FROM `delivery_evidence` WHERE Trip_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             conn.setAutoCommit(false);
-            
+
             boolean exists = false;
             try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
                 ps.setString(1, tripId);
@@ -1409,7 +1449,7 @@ public class OrderDAO {
                     }
                 }
             }
-            
+
             boolean success = false;
             if (exists) {
                 String updateSql;
@@ -1438,7 +1478,7 @@ public class OrderDAO {
                     success = ps.executeUpdate() > 0;
                 }
             }
-            
+
             if (success) {
                 conn.commit();
                 return true;
@@ -1454,7 +1494,7 @@ public class OrderDAO {
     private String generateEvidenceId(Connection conn) {
         String sql = "SELECT MAX(CAST(SUBSTRING(Evidence_ID, 5) AS UNSIGNED)) FROM `delivery_evidence` WHERE Evidence_ID LIKE 'EVI_%'";
         try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 int maxId = rs.getInt(1);
                 if (maxId > 0) {
@@ -1469,9 +1509,10 @@ public class OrderDAO {
 
     public boolean autoAssignShipperAndTrip(String orderNo) {
         String selectOrderSql = "SELECT Delivery_Address, Delivery_Window_Start, Delivery_Window_End FROM `orders` WHERE Order_No = ?";
-        
+
         try (Connection conn = DBContext.getJDBCConnection()) {
-            if (conn == null) return false;
+            if (conn == null)
+                return false;
             conn.setAutoCommit(false);
 
             String deliveryAddress = null;
@@ -1498,10 +1539,10 @@ public class OrderDAO {
             // 2. Lấy toàn bộ shipper đang hoạt động và danh sách Managed_Zone của họ
             List<Map<String, Object>> shippers = new java.util.ArrayList<>();
             String shipperQuery = "SELECT s.Staff_ID, s.Full_Name, s.Managed_Zone FROM `staff` s "
-                                + "JOIN `user` u ON s.User_ID = u.User_ID "
-                                + "WHERE u.Role_ID = 'SHIPPER' AND s.Is_Active_Staff = 1";
+                    + "JOIN `user` u ON s.User_ID = u.User_ID "
+                    + "WHERE u.Role_ID = 'SHIPPER' AND s.Is_Active_Staff = 1";
             try (PreparedStatement ps = conn.prepareStatement(shipperQuery);
-                 ResultSet rs = ps.executeQuery()) {
+                    ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> sh = new java.util.HashMap<>();
                     sh.put("id", rs.getString("Staff_ID"));
@@ -1511,7 +1552,8 @@ public class OrderDAO {
                 }
             }
 
-            // 3. Lọc ra các Shipper ứng viên có Managed_Zone khớp với địa chỉ đơn hàng (hỗ trợ phân tách dấu phẩy)
+            // 3. Lọc ra các Shipper ứng viên có Managed_Zone khớp với địa chỉ đơn hàng (hỗ
+            // trợ phân tách dấu phẩy)
             List<String> candidates = new java.util.ArrayList<>();
             for (Map<String, Object> sh : shippers) {
                 String zoneStr = (String) sh.get("zone");
@@ -1532,13 +1574,13 @@ public class OrderDAO {
             String pooledTripId = null;
 
             if (!candidates.isEmpty()) {
-                // 4. KIỂM TRA ROUTE POOLING (Gom đơn): Tìm chuyến đi đang hoạt động cùng khung giờ của các shipper ứng viên này
+                // 4. KIỂM TRA ROUTE POOLING (Gom đơn): Tìm chuyến đi đang hoạt động cùng khung
+                // giờ của các shipper ứng viên này
                 StringBuilder poolingQuery = new StringBuilder(
-                    "SELECT o.Trip_ID, dt.Shipper_ID FROM `orders` o " +
-                    "JOIN `delivery_trip` dt ON o.Trip_ID = dt.Trip_ID " +
-                    "WHERE o.Delivery_Window_Start = ? AND o.Delivery_Window_End = ? " +
-                    "AND dt.Shipper_ID IN ("
-                );
+                        "SELECT o.Trip_ID, dt.Shipper_ID FROM `orders` o " +
+                                "JOIN `delivery_trip` dt ON o.Trip_ID = dt.Trip_ID " +
+                                "WHERE o.Delivery_Window_Start = ? AND o.Delivery_Window_End = ? " +
+                                "AND dt.Shipper_ID IN (");
                 for (int i = 0; i < candidates.size(); i++) {
                     poolingQuery.append(i == 0 ? "?" : ", ?");
                 }
@@ -1569,13 +1611,14 @@ public class OrderDAO {
                     return true;
                 }
 
-                // 5. PHÂN TẢI CÂN BẰNG (Load Balancing): Tìm shipper ứng viên có lượng đơn đang giao ít nhất
+                // 5. PHÂN TẢI CÂN BẰNG (Load Balancing): Tìm shipper ứng viên có lượng đơn đang
+                // giao ít nhất
                 StringBuilder loadQuery = new StringBuilder(
-                    "SELECT s.Staff_ID, COUNT(o.Order_No) AS active_orders FROM `staff` s " +
-                    "LEFT JOIN `delivery_trip` dt ON s.Staff_ID = dt.Shipper_ID " +
-                    "LEFT JOIN `orders` o ON dt.Trip_ID = o.Trip_ID AND o.OrderStatus IN ('Processing', 'Delivering') " +
-                    "WHERE s.Staff_ID IN ("
-                );
+                        "SELECT s.Staff_ID, COUNT(o.Order_No) AS active_orders FROM `staff` s " +
+                                "LEFT JOIN `delivery_trip` dt ON s.Staff_ID = dt.Shipper_ID " +
+                                "LEFT JOIN `orders` o ON dt.Trip_ID = o.Trip_ID AND o.OrderStatus IN ('Processing', 'Delivering') "
+                                +
+                                "WHERE s.Staff_ID IN (");
                 for (int i = 0; i < candidates.size(); i++) {
                     loadQuery.append(i == 0 ? "?" : ", ?");
                 }
@@ -1593,17 +1636,18 @@ public class OrderDAO {
                 }
             }
 
-            // 6. CƠ CHẾ DỰ PHÒNG (Fallback): Chọn shipper rảnh nhất toàn hệ thống nếu địa chỉ không khớp bất kì ai
+            // 6. CƠ CHẾ DỰ PHÒNG (Fallback): Chọn shipper rảnh nhất toàn hệ thống nếu địa
+            // chỉ không khớp bất kì ai
             if (optimalShipperId == null) {
-                String fallbackQuery = 
-                    "SELECT s.Staff_ID, COUNT(o.Order_No) AS active_orders FROM `staff` s " +
-                    "JOIN `user` u ON s.User_ID = u.User_ID " +
-                    "LEFT JOIN `delivery_trip` dt ON s.Staff_ID = dt.Shipper_ID " +
-                    "LEFT JOIN `orders` o ON dt.Trip_ID = o.Trip_ID AND o.OrderStatus IN ('Processing', 'Delivering') " +
-                    "WHERE u.Role_ID = 'SHIPPER' AND s.Is_Active_Staff = 1 " +
-                    "GROUP BY s.Staff_ID ORDER BY active_orders ASC LIMIT 1";
+                String fallbackQuery = "SELECT s.Staff_ID, COUNT(o.Order_No) AS active_orders FROM `staff` s " +
+                        "JOIN `user` u ON s.User_ID = u.User_ID " +
+                        "LEFT JOIN `delivery_trip` dt ON s.Staff_ID = dt.Shipper_ID " +
+                        "LEFT JOIN `orders` o ON dt.Trip_ID = o.Trip_ID AND o.OrderStatus IN ('Processing', 'Delivering') "
+                        +
+                        "WHERE u.Role_ID = 'SHIPPER' AND s.Is_Active_Staff = 1 " +
+                        "GROUP BY s.Staff_ID ORDER BY active_orders ASC LIMIT 1";
                 try (PreparedStatement ps = conn.prepareStatement(fallbackQuery);
-                     ResultSet rs = ps.executeQuery()) {
+                        ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         optimalShipperId = rs.getString("Staff_ID");
                     }
@@ -1643,7 +1687,7 @@ public class OrderDAO {
     private String generateTripId(Connection conn) {
         String sql = "SELECT MAX(CAST(SUBSTRING(Trip_ID, 6) AS UNSIGNED)) FROM `delivery_trip` WHERE Trip_ID LIKE 'TRIP_%'";
         try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                ResultSet rs = ps.executeQuery()) {
             if (rs.next()) {
                 int maxId = rs.getInt(1);
                 if (maxId > 0) {
@@ -1656,4 +1700,3 @@ public class OrderDAO {
         return "TRIP_" + System.currentTimeMillis();
     }
 }
-

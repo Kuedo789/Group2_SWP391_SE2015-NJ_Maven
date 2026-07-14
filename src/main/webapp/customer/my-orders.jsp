@@ -194,6 +194,10 @@
                             dataStatus = "processing";
                             badgeClass = "status-processing";
                             displayStatus = "Đã xác nhận";
+                        } else if (dbStatus.equalsIgnoreCase("PAID") || dbStatus.equals("Đã chuyển khoản")) {
+                            dataStatus = "processing";
+                            badgeClass = "status-completed"; // Dùng màu xanh giống đã hoàn thành hoặc tuỳ chọn khác
+                            displayStatus = "Đã chuyển khoản";
                         } else if (dbStatus.equalsIgnoreCase("Processing") || dbStatus.equals("Đang xử lý")) {
                             dataStatus = "processing";
                             badgeClass = "status-processing";

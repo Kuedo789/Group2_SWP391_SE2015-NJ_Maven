@@ -65,6 +65,10 @@
             dataStatus = "processing";
             badgeClass = "status-processing";
             displayStatus = "Đã xác nhận";
+        } else if (dbStatus.equalsIgnoreCase("PAID")) {
+            dataStatus = "processing";
+            badgeClass = "status-completed";
+            displayStatus = "Đã chuyển khoản";
         } else if (dbStatus.equalsIgnoreCase("Processing")) {
             dataStatus = "processing";
             badgeClass = "status-processing";
