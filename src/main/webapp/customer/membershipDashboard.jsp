@@ -147,24 +147,6 @@
                             </div>
                         </div>
 
-                        <div class="ms-stat-pill">
-                            <span class="stat-icon">🎟</span>
-                            <div>
-                                <div class="stat-value">
-                                    ${membership.currentTier.monthlyVouchers}
-                                </div>
-                                <div class="stat-label">Voucher / tháng</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <%-- --- "Đổi thưởng ngay" CTA ----------------------------- --%>
-                    <div class="ms-redeem-cta">
-                        <a href="${pageContext.request.contextPath}/rewards"
-                           class="ms-redeem-btn"
-                           title="Đổi điểm thưởng lấy voucher">
-                            Đổi thưởng ngay
-                        </a>
                     </div>
 
                     <%-- --- Progress bar toward next tier --------------------- --%>
@@ -246,7 +228,6 @@
                                         <th>Hạng</th>
                                         <th>Chi tiêu tối thiểu</th>
                                         <th>Hệ số điểm</th>
-                                        <th>Voucher / tháng</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -266,14 +247,13 @@
                                                                   type="number" maxFractionDigits="0" />&nbsp;₫
                                             </td>
                                             <td>x${tier.pointMultiplier}</td>
-                                            <td>${tier.monthlyVouchers}</td>
                                         </tr>
                                     </c:forEach>
 
                                     <%-- Empty state if allTiers is unexpectedly empty --%>
                                     <c:if test="${empty allTiers}">
                                         <tr>
-                                            <td colspan="4" class="ms-empty-state">
+                                            <td colspan="3" class="ms-empty-state">
                                                 Không có dữ liệu hạng thành viên.
                                             </td>
                                         </tr>

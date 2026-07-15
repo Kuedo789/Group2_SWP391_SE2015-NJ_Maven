@@ -310,7 +310,7 @@
             if (mapContainer) {
                 map = L.map("map").setView([shopLat, shopLng], 13);
 
-                L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
                     maxZoom: 19,
                     attribution: "&copy; OpenStreetMap"
                 }).addTo(map);
@@ -322,6 +322,12 @@
             }
 
             window.addEventListener("load", function () {
+                if (map) {
+                    setTimeout(function() {
+                        map.invalidateSize();
+                    }, 300);
+                }
+                
                 if (isEditMode && editLat && editLng && map) {
                     updateMarker(editLat, editLng);
                     calculateRoute(editLat, editLng);

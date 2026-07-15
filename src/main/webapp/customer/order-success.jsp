@@ -338,8 +338,9 @@
     <jsp:include page="../common/scripts.jsp" />
     
     <script>
-        // Clear cart after successful checkout
+        // Clear cart and checkout state after successful checkout
         localStorage.removeItem("cart");
+        localStorage.removeItem("checkout_state");
         
         function copyOrderNo() {
             var textToCopy = "<%= order.getOrderNo() %>";

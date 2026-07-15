@@ -67,6 +67,17 @@ public class ReviewManagementServlet extends HttpServlet {
             }
             redirectToDefault(request, response, "fail");
             return;
+        } else if ("delete".equals(action)) {
+            String reviewId = request.getParameter("reviewId");
+            if (reviewId != null) {
+                boolean success = reviewDAO.deleteReviewAdmin(reviewId.trim());
+                if (success) {
+                    redirectToDefault(request, response, "success_delete");
+                    return;
+                }
+            }
+            redirectToDefault(request, response, "fail_delete");
+            return;
         }
         
         redirectToDefault(request, response);

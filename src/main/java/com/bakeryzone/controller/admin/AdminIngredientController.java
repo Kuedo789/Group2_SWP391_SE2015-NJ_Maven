@@ -212,6 +212,9 @@ public class AdminIngredientController extends HttpServlet {
             throws ServletException, IOException {
         String id = request.getParameter("ingredientId");
         String name = request.getParameter("ingredientName");
+        if (name != null) {
+            name = name.trim();
+        }
         String priceParam = request.getParameter("pricePerUnit");
         String unitId = request.getParameter("unitMeasure");
         String imageUrl = request.getParameter("imageUrl");

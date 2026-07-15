@@ -215,25 +215,20 @@
                                 <div class="summary-title">Tóm tắt đơn hàng</div>
 
                                 <!-- Flash messages for voucher -->
-                                <c:if test="${param.voucherApplied == 'true'}">
+                                <c:if test="${param.voucherRemoved == 'true'}">
                                     <div style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px;">
-                                        <i class="fa fa-check-circle"></i> Voucher <strong>${appliedVoucherCode}</strong> đã được áp dụng thành công!
+                                        <i class="fa fa-check-circle"></i> Đã gỡ bỏ mã giảm giá.
                                     </div>
                                 </c:if>
-                                <c:if test="${not empty param.voucherError}">
+                                <c:if test="${not empty sessionScope.voucherError}">
                                     <div style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px;">
-                                        <i class="fa fa-exclamation-circle"></i> 
-                                        <c:choose>
-                                            <c:when test="${param.voucherError == 'notFound'}">Mã voucher không hợp lệ hoặc bạn không sở hữu mã này.</c:when>
-                                            <c:when test="${param.voucherError == 'minOrder'}">Đơn hàng chưa đạt giá trị tối thiểu để sử dụng voucher.</c:when>
-                                            <c:when test="${param.voucherError == 'empty'}">Vui lòng nhập mã voucher.</c:when>
-                                            <c:otherwise>${param.voucherError}</c:otherwise>
-                                        </c:choose>
+                                        <i class="fa fa-exclamation-circle"></i> ${sessionScope.voucherError}
                                     </div>
+                                    <c:remove var="voucherError" scope="session" />
                                 </c:if>
-                                <c:if test="${not empty requestScope.voucherError}">
-                                    <div style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px;">
-                                        <i class="fa fa-exclamation-circle"></i> ${requestScope.voucherError}
+                                <c:if test="${not empty sessionScope.appliedVoucherCode}">
+                                    <div style="background-color: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px;">
+                                        <i class="fa fa-check-circle"></i> Đã áp dụng mã <strong>${sessionScope.appliedVoucherCode}</strong> thành công!
                                     </div>
                                 </c:if>
 
@@ -249,8 +244,8 @@
                                     <span>Giảm giá</span>
                                     <span id="cartDiscountDisplay">
                                         <c:choose>
-                                            <c:when test="${not empty appliedDiscount}">
-                                                -<fmt:formatNumber value="${appliedDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
+                                            <c:when test="${not empty sessionScope.appliedDiscount}">
+                                                -<fmt:formatNumber value="${sessionScope.appliedDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                             </c:when>
                                             <c:otherwise>-0₫</c:otherwise>
                                         </c:choose>
@@ -261,29 +256,37 @@
                                     <span>Tổng cộng</span>
                                     <span class="price" id="cartTotalDisplay">
                                         <c:set var="totalValue" value="${cartSubtotal + 30000}" />
-                                        <c:if test="${not empty appliedDiscount}">
-                                            <c:set var="totalValue" value="${totalValue - appliedDiscount}" />
+                                        <c:if test="${not empty sessionScope.appliedDiscount}">
+                                            <c:set var="totalValue" value="${totalValue - sessionScope.appliedDiscount}" />
                                         </c:if>
                                         <c:if test="${totalValue < 0}"><c:set var="totalValue" value="0" /></c:if>
                                         <fmt:formatNumber value="${totalValue}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                     </span>
                                 </div>
 
-                                <div class="voucher-group">
+                                <div class="voucher-group" id="cartVoucherGroup">
                                     <c:choose>
-                                        <c:when test="${not empty appliedVoucherCode}">
+                                        <c:when test="${not empty sessionScope.appliedVoucherCode}">
                                             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
-                                                <span style="font-weight: 600; color: var(--primary);">${appliedVoucherCode}</span>
+                                                <span style="font-weight: 600; color: var(--primary);">${sessionScope.appliedVoucherCode}</span>
                                                 <button type="submit" name="action" value="removeVoucher" style="background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; font-weight: 600;">✕ Bỏ</button>
                                             </div>
                                         </c:when>
                                         <c:otherwise>
-                                            <input type="text" placeholder="Nhập mã voucher" class="voucher-input" name="voucherCode">
-                                            <button type="submit" name="action" value="applyVoucher" class="voucher-btn">Áp dụng</button>
+                                            <%-- Frontend validation error message area --%>
+                                            <div id="cartVoucherClientError" style="display:none; color:#d9534f; font-size:13px; margin-bottom:6px; display:flex; align-items:center; gap:5px;"></div>
+                                            <div style="display:flex; gap:8px;">
+                                                <input type="text" id="cartVoucherInput" placeholder="Nhập mã giảm giá" class="voucher-input" name="voucherCode"
+                                                       maxlength="50" autocomplete="off" style="text-transform:uppercase;"
+                                                       oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');">
+                                                <button type="button" id="cartVoucherBtn" class="voucher-btn" onclick="submitCartVoucher()">Áp dụng</button>
+                                            </div>
+                                            <input type="hidden" id="cartVoucherCodeHidden" name="voucherCodeHidden">
+                                            <%-- Hidden submit button triggered programmatically after validation --%>
+                                            <button type="submit" id="cartVoucherSubmitHidden" name="action" value="applyVoucher" style="display:none;"></button>
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
-
                                 <button type="submit" name="action" value="checkout" class="checkout-btn" ${empty cartItems ? 'disabled' : ''}>Thanh toán ngay</button>
 
                                 <div style="text-align: center; margin-top: 16px; font-size: 11px; color: var(--text-muted);">
@@ -298,17 +301,75 @@
         </div>
 
         <script>
-            // 1. Inject Voucher Rules for client-side math
-            const voucherType = "${not empty appliedVoucher ? appliedVoucher.discountType : ''}";
-            const voucherValue = parseFloat("${not empty appliedVoucher ? appliedVoucher.discountValue : 0}") || 0;
-            const voucherMax = parseFloat("${not empty appliedVoucher && not empty appliedVoucher.maxDiscountAmount ? appliedVoucher.maxDiscountAmount : 0}") || 0;
-            const voucherMin = parseFloat("${not empty appliedVoucher && not empty appliedVoucher.minOrderValue ? appliedVoucher.minOrderValue : 0}") || 0;
 
             const shippingFee = 30000;
 
             function formatCurrency(amount) {
                 return amount.toLocaleString('vi-VN') + "₫";
             }
+
+            // ── Cart-page voucher frontend validation ─────────────────────────────
+            function submitCartVoucher() {
+                const input   = document.getElementById('cartVoucherInput');
+                const btn     = document.getElementById('cartVoucherBtn');
+                const errBox  = document.getElementById('cartVoucherClientError');
+
+                function showError(msg) {
+                    errBox.innerHTML = '<span style="font-size:14px;">&#9888;</span> ' + msg;
+                    errBox.style.display = 'flex';
+                    input.style.borderColor = '#d9534f';
+                    input.focus();
+                }
+
+                function clearError() {
+                    errBox.style.display = 'none';
+                    input.style.borderColor = '';
+                }
+
+                clearError();
+
+                const code = input.value.trim().toUpperCase();
+
+                // 1. Empty check
+                if (!code) {
+                    showError('Vui lòng nhập mã voucher!');
+                    return;
+                }
+
+                // 2. Format check – only uppercase letters A-Z and digits 0-9
+                if (!/^[A-Z0-9]+$/.test(code)) {
+                    showError('Mã voucher chỉ được chứa chữ cái và số (không dấu, không khoảng trắng).');
+                    return;
+                }
+
+                // 3. Length check
+                if (code.length > 50) {
+                    showError('Mã voucher không được vượt quá 50 ký tự.');
+                    return;
+                }
+
+                // All client-side checks passed — write canonical code & submit
+                input.value = code;
+                btn.disabled  = true;
+                btn.innerHTML = '&#8987; Đang kiểm tra...';
+
+                // Trigger the hidden submit button (carries name="action" value="applyVoucher")
+                document.getElementById('cartVoucherSubmitHidden').click();
+            }
+
+            // Allow pressing Enter key inside the voucher input
+            document.addEventListener('DOMContentLoaded', function () {
+                const voucherInput = document.getElementById('cartVoucherInput');
+                if (voucherInput) {
+                    voucherInput.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            submitCartVoucher();
+                        }
+                    });
+                }
+            });
+            // ─────────────────────────────────────────────────────────────────────
 
             // 2. Dynamic JS Calculation
             function updateSummaryTotals() {
@@ -329,19 +390,7 @@
                 // Persist selection across page reloads (e.g. when applying voucher or updating quantity)
                 sessionStorage.setItem("selectedCartItems", JSON.stringify(checkedIds));
 
-                let discount = 0;
-                // Calculate discount if subtotal meets minimum order requirement
-                if (voucherType !== '' && subtotal >= voucherMin) {
-                    const isPercentage = voucherType.toUpperCase() === 'PERCENT' || voucherType.toUpperCase() === 'PERCENTAGE';
-                    if (isPercentage) {
-                        discount = Math.round(subtotal * (voucherValue / 100));
-                        if (voucherMax > 0 && discount > voucherMax) {
-                            discount = voucherMax;
-                        }
-                    } else {
-                        discount = voucherValue;
-                    }
-                }
+                let discount = parseFloat("${not empty sessionScope.appliedDiscount ? sessionScope.appliedDiscount : 0}") || 0;
                 
                 // Discount can't exceed subtotal
                 if (discount > subtotal) {
@@ -350,7 +399,7 @@
 
                 let finalTotal = 0;
                 if (subtotal > 0) {
-                    finalTotal = subtotal - discount + shippingFee;
+                    finalTotal = subtotal + shippingFee - discount;
                     if (finalTotal < 0) finalTotal = 0;
                 }
 

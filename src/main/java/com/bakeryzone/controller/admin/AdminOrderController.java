@@ -23,7 +23,7 @@ public class AdminOrderController extends HttpServlet {
 
     // Whitelist trạng thái hợp lệ – ngăn giá trị rác ghi vào DB
     private static final java.util.Set<String> ALLOWED_STATUSES = java.util.Set.of(
-        "Pending", "Confirmed", "Processing", "Delivering", "Completed", "Cancelled"
+        "Pending", "Confirmed", "Processing", "Delivering", "Completed", "Cancelled", "PAID"
     );
 
     @Override
@@ -75,22 +75,18 @@ public class AdminOrderController extends HttpServlet {
         if (keyword != null && keyword.trim().isEmpty()) {
             keyword = null;
         }
-        // Normalize status for DAO: null means no filter
+        // Chuẩn hóa trạng thái cho DAO: null nghĩa là không lọc
         String statusForDao = null;
-        String statusForView = "all"; // Always send 'all' or a specific status to the view
+        String statusForView = "all"; // Luôn gửi 'all' hoặc trạng thái cụ thể tới trang hiển thị (view)
         if (statusParam != null && !statusParam.trim().isEmpty() && !statusParam.equalsIgnoreCase("all")) {
             statusForDao = statusParam.trim();
             statusForView = statusForDao;
         }
-        // Validate Dates
-        if (!ValidationUtils.isValidDateFormat(startDate) || !ValidationUtils.isValidDateFormat(endDate)) {
-            request.setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
-            request.getSession().setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
-            startDate = null;
-            endDate = null;
-        } else if (!ValidationUtils.isValidDateRange(startDate, endDate)) {
-            request.setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
-            request.getSession().setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
+        // Xác thực ngày tháng
+        String dateError = ValidationUtils.validateDateFilter(startDate, endDate);
+        if (dateError != null) {
+            request.setAttribute("errorMessage", dateError);
+            request.getSession().setAttribute("errorMessage", dateError);
             startDate = null;
             endDate = null;
         }
@@ -106,7 +102,7 @@ public class AdminOrderController extends HttpServlet {
             sort = "date_desc";
         }
 
-        // Reset to page 1 when filters change (no page param means fresh filter)
+        // Reset về trang 1 khi thay đổi bộ lọc (không có tham số page nghĩa là bộ lọc mới)
         int page = 1;
         String pageStr = request.getParameter("page");
         if (pageStr != null && !pageStr.trim().isEmpty()) {
@@ -156,10 +152,28 @@ public class AdminOrderController extends HttpServlet {
 
         Customer customer = customerDAO.getCustomerById(order.getCustomerId());
 
+        String realPath = request.getServletContext().getRealPath("/");
+        String pickupPhoto = findEvidenceFile(realPath, orderNo, "pickup");
+        String deliveryPhoto = findEvidenceFile(realPath, orderNo, "delivery");
+
         request.setAttribute("order", order);
         request.setAttribute("customer", customer);
+        request.setAttribute("pickupPhoto", pickupPhoto);
+        request.setAttribute("deliveryPhoto", deliveryPhoto);
 
         request.getRequestDispatcher("/admin/orderDetail.jsp").forward(request, response);
+    }
+
+    private String findEvidenceFile(String realPath, String orderNo, String type) {
+        java.io.File dir = new java.io.File(realPath + "assets/images/evidence");
+        if (dir.exists() && dir.isDirectory()) {
+            String prefix = "evidence_" + orderNo + "_" + type;
+            java.io.File[] files = dir.listFiles((d, name) -> name.startsWith(prefix));
+            if (files != null && files.length > 0) {
+                return "assets/images/evidence/" + files[0].getName();
+            }
+        }
+        return "";
     }
 
     private void handleUpdateStatus(HttpServletRequest request, HttpServletResponse response)
@@ -203,6 +217,10 @@ public class AdminOrderController extends HttpServlet {
 
         boolean success = orderDAO.updateOrderStatus(orderNo, status);
         if (success) {
+            // Tự động phân công Shipper & Gom đơn khi Admin xác nhận, bắt đầu xử lý đơn hàng hoặc khi đã chuyển khoản
+            if ("Confirmed".equalsIgnoreCase(status) || "Processing".equalsIgnoreCase(status) || "PAID".equalsIgnoreCase(status)) {
+                orderDAO.autoAssignShipperAndTrip(orderNo);
+            }
             session.setAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + orderNo + " thành công!");
         } else {
             session.setAttribute("errorMessage", "Không thể cập nhật trạng thái đơn hàng.");

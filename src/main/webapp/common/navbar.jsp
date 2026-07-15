@@ -34,14 +34,15 @@
 
         <!-- Logo -->
         <a href="<%= contextPath %>/home" class="logo">
-            BakeryZone
+            ${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}
         </a>
 
         <!-- Menu chính -->
-        <div class="nav-menu">
+        <div class="nav-menu" style="gap: 35px; margin: 0 auto;">
             <a href="<%= request.getContextPath() %>/home">Trang Chủ</a>
             <a href="<%= request.getContextPath() %>/products">Menu bánh</a>
             <a href="<%= request.getContextPath() %>/custom-cake">Thiết kế bánh</a>
+            <a href="<%= request.getContextPath() %>/blog">Tin tức</a>
             <% if (currentUser != null) { %>
             <a href="<%= contextPath %>/membership"
                class="nav-menu-membership-link">Thành viên</a>
@@ -50,7 +51,7 @@
         </div>
 
         <!-- Main Right-Side Wrapper: Enforces horizontal alignment and prevents item collapse -->
-        <div class="navbar-right-container">
+        <div class="navbar-right-container" style="display: flex; align-items: center; gap: 24px;">
 
             <!-- 1. Search Box Container -->
             <div class="search-box-wrapper">
@@ -78,13 +79,11 @@
 
                 <!-- Avatar on the left, username on the right, dropdown menu below -->
                 <div class="user-dropdown">
-                    <button type="button" class="user-dropdown-btn" id="userDropdownBtn" title="Tài khoản">
-                        <div class="avatar-container">
-                            <span class="material-symbols-outlined">account_circle</span>
+                    <button type="button" class="user-dropdown-btn" id="userDropdownBtn" title="Tài khoản"
+                            style="display: flex; align-items: center; border: none; background: transparent; cursor: pointer; padding: 0;">
+                        <div class="avatar-container" style="display: flex; align-items: center; line-height: 1;">
+                            <span class="material-symbols-outlined" style="font-size: 28px; color: var(--text-dark, #333);">account_circle</span>
                         </div>
-                        <span class="navbar-username">
-                            <%= currentUser.getFullName() %>
-                        </span>
                     </button>
 
                     <div class="user-dropdown-menu" id="userDropdownMenu">
@@ -102,7 +101,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="user-dropdown-item">
+                        <div class="user-dropdown-item-static">
                             <span class="material-symbols-outlined">leaderboard</span>
                             <%= currentUser.getRoleName() != null ? currentUser.getRoleName() : currentUser.getRoleId() %>
                         </div>
@@ -115,9 +114,14 @@
                             <span class="material-symbols-outlined">receipt_long</span>
                             <span>Xem đơn hàng</span>
                         </a>
+
                         <a href="<%= contextPath %>/membership" class="user-dropdown-item">
                             <span class="material-symbols-outlined">workspace_premium</span>
                             <span>Xem hạng của bạn</span>
+                        </a>
+                        <a href="<%= contextPath %>/membership" class="user-dropdown-item">
+                            <span class="material-symbols-outlined">local_activity</span>
+                            <span>Ví Voucher</span>
                         </a>
                         <a href="<%= contextPath %>/my-designs" class="user-dropdown-item">
                             <span class="material-symbols-outlined">cake</span>
@@ -136,22 +140,4 @@
         </div>
     </div>
 </nav>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Handle search form validation
-        const navSearchForm = document.getElementById("navSearchForm");
-        if (navSearchForm) {
-            navSearchForm.addEventListener("submit", function (event) {
-                const input = navSearchForm.querySelector("input[name='search']");
-                const keyword = input ? input.value.trim() : "";
-                if (keyword.length === 0) {
-                    event.preventDefault();
-                    if (input) {
-                        input.focus();
-                    }
-                }
-            });
-        }
-    });
-</script>
+

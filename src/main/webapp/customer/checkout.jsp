@@ -86,6 +86,16 @@
                 Đã có lỗi xảy ra trong quá trình đặt hàng. Vui lòng thử lại sau.
             </div>
         </c:if>
+        <c:if test="${param.error == 'voucher_invalid'}">
+            <div class="alert alert-danger" style="color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;">
+                <strong>&#9888; Mã giảm giá không còn hợp lệ</strong> và đã được gỡ bỏ tự động.
+                <c:if test="${not empty sessionScope.voucherError}">
+                    Lý do: ${sessionScope.voucherError}
+                    <c:remove var="voucherError" scope="session" />
+                </c:if>
+                Vui lòng kiểm tra lại đơn hàng trước khi đặt.
+            </div>
+        </c:if>
 
         <form id="checkoutForm" action="${pageContext.request.contextPath}/checkout" method="POST">
             <input type="hidden" name="cartData" id="cartDataInput">
@@ -243,22 +253,48 @@
                             </div>
                             <span id="shippingFeeSum">0đ</span>
                         </div>
-
-                        <c:if test="${requestScope.checkoutDiscount > 0}">
-                            <div class="summary-row" style="color: #d9534f;">
-                                <div class="summary-row-label">
-                                    <span>Giảm giá Voucher</span>
-                                    <span class="summary-sub-label">${requestScope.checkoutVoucherCode}</span>
+                        <div id="discountContainer">
+                            <c:if test="${requestScope.checkoutDiscount > 0}">
+                                <div class="summary-row" id="discountSummaryRow" style="color: #d9534f;">
+                                    <div class="summary-row-label">
+                                        <span>Giảm giá Voucher</span>
+                                        <span class="summary-sub-label">${requestScope.checkoutVoucherCode}</span>
+                                    </div>
+                                    <span>- <fmt:formatNumber value="${requestScope.checkoutDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
                                 </div>
-                                <span>- <fmt:formatNumber value="${requestScope.checkoutDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
-                            </div>
-                        </c:if>
+                            </c:if>
+                        </div>
 
                         <div class="summary-row total">
                             <span>Tổng cộng</span>
                             <div class="total-price-wrap">
                                 <span class="total-price" id="finalTotalSum">0đ</span>
                             </div>
+                        </div>
+
+                        <div class="voucher-group" id="voucherGroupContainer" style="margin-bottom: 24px;">
+                            <c:if test="${not empty sessionScope.voucherError}">
+                                <div id="checkoutVoucherErrorBanner" style="color: #d9534f; font-size: 13px; margin-bottom: 8px;"><i class="fa fa-exclamation-circle"></i> ${sessionScope.voucherError}</div>
+                                <c:remove var="voucherError" scope="session" />
+                            </c:if>
+                            <%-- Client-side error area (used by JS validation) --%>
+                            <div id="checkoutVoucherClientError" style="display:none; color:#d9534f; font-size:13px; margin-bottom:8px;"></div>
+                            <c:choose>
+                                <c:when test="${not empty requestScope.checkoutVoucherCode}">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
+                                        <span style="font-weight: 600; color: var(--primary);">${requestScope.checkoutVoucherCode}</span>
+                                        <button type="button" onclick="submitVoucherAjax('removeVoucher')" style="background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; font-weight: 600;">✕ Bỏ</button>
+                                    </div>
+                                </c:when>
+                                <c:otherwise>
+                                    <div style="display: flex; gap: 8px;">
+                                        <input type="text" id="checkoutVoucherInput" placeholder="Nhập mã giảm giá" class="voucher-input" name="voucherCode"
+                                               maxlength="50" autocomplete="off" style="flex: 1; height: 40px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 8px; text-transform:uppercase;"
+                                               oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');">
+                                        <button type="button" id="checkoutVoucherBtn" onclick="validateAndApplyVoucher()" class="voucher-btn" style="height: 40px; padding: 0 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Áp dụng</button>
+                                    </div>
+                                </c:otherwise>
+                            </c:choose>
                         </div>
 
                         <div class="banner-kitchen-verify">
@@ -302,25 +338,150 @@
     <jsp:include page="../common/scripts.jsp" />
 
     <script>
-        // Store coordinates (will shift dynamically based on customer's city)
-        let shopLat = 10.7769; // HCMC D1/Thao Dien default
+        let shopLat = 10.7769;
         let shopLng = 106.7009;
-
-        // (no mock cart - always use real localStorage data)
-
         let currentCart = [];
         let selectedAddressId = null;
-        let selectedTimeSlot = ""; // no default selected
+        let selectedTimeSlot = "";
         let currentShippingFee = 0;
-        const checkoutDiscount = parseFloat("${requestScope.checkoutDiscount}") || 0;
+        let currentDiscount = parseFloat("${not empty requestScope.checkoutDiscount ? requestScope.checkoutDiscount : 0}") || 0;
+
+        // ── Checkout-page voucher frontend validation ────────────────────────────
+        function validateAndApplyVoucher() {
+            const input  = document.getElementById('checkoutVoucherInput');
+            const btn    = document.getElementById('checkoutVoucherBtn');
+            const errBox = document.getElementById('checkoutVoucherClientError');
+
+            function showClientError(msg) {
+                if (!errBox) return;
+                errBox.innerHTML = '<span>&#9888;</span> ' + msg;
+                errBox.style.display = 'block';
+                if (input) { input.style.borderColor = '#d9534f'; input.focus(); }
+            }
+
+            function clearClientError() {
+                if (errBox) errBox.style.display = 'none';
+                if (input) input.style.borderColor = '';
+            }
+
+            clearClientError();
+
+            if (!input) { submitVoucherAjax('applyVoucher'); return; }
+
+            const code = input.value.trim().toUpperCase();
+
+            // 1. Empty check
+            if (!code) {
+                showClientError('Vui long nhap ma voucher!');
+                return;
+            }
+
+            // 2. Format check - only uppercase letters A-Z and digits 0-9
+            if (!/^[A-Z0-9]+$/.test(code)) {
+                showClientError('Ma voucher chi duoc chua chu cai va so (khong dau, khong khoang trang).');
+                return;
+            }
+
+            // 3. Length check
+            if (code.length > 50) {
+                showClientError('Ma voucher khong duoc vuot qua 50 ky tu.');
+                return;
+            }
+
+            // Write canonical code back and set loading state
+            input.value   = code;
+            btn.disabled  = true;
+            btn.innerHTML = '&#8987; Dang kiem tra...';
+
+            submitVoucherAjax('applyVoucher');
+        }
+
+        function submitVoucherAjax(actionStr) {
+            const codeInput = document.getElementById('checkoutVoucherInput')
+                           || document.querySelector('input[name="voucherCode"]');
+            const code = codeInput ? codeInput.value : '';
+
+            const formData = new URLSearchParams();
+            formData.append("action", actionStr);
+            formData.append("ajax", "true");
+            if (code) formData.append("voucherCode", code);
+
+            fetch('${pageContext.request.contextPath}/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                const voucherGroup = document.getElementById('voucherGroupContainer');
+                let html = '';
+
+                if (data.error) {
+                    html += `<div id="checkoutVoucherClientError" style="color: #d9534f; font-size: 13px; margin-bottom: 8px;"><span>&#9888;</span> \${data.error}</div>`;
+                }
+
+                if (data.code) {
+                    html += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
+                            <span style="font-weight: 600; color: var(--primary);">\${data.code}</span>
+                            <button type="button" onclick="submitVoucherAjax('removeVoucher')" style="background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; font-weight: 600;">&#10005; Bỏ</button>
+                        </div>
+                    `;
+                    currentDiscount = data.discount || 0;
+                    document.getElementById('discountContainer').innerHTML = `
+                        <div class="summary-row" id="discountSummaryRow" style="color: #d9534f;">
+                            <div class="summary-row-label">
+                                <span>Giảm giá Voucher</span>
+                                <span class="summary-sub-label">\${data.code}</span>
+                            </div>
+                            <span>- \${currentDiscount.toLocaleString("vi-VN")}&#8363;</span>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div id="checkoutVoucherClientError" style="display:none; color:#d9534f; font-size:13px; margin-bottom:8px;"></div>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="checkoutVoucherInput" placeholder="Nhap ma giam gia" class="voucher-input" name="voucherCode"
+                                   maxlength="50" autocomplete="off"
+                                   style="flex: 1; height: 40px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 8px; text-transform:uppercase;"
+                                   oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');">
+                            <button type="button" id="checkoutVoucherBtn" onclick="validateAndApplyVoucher()" class="voucher-btn"
+                                    style="height: 40px; padding: 0 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Ap dung</button>
+                        </div>
+                    `;
+                    currentDiscount = 0;
+                    document.getElementById('discountContainer').innerHTML = '';
+                }
+                voucherGroup.innerHTML = html;
+
+                // Re-bind Enter key after DOM update
+                const newInput = document.getElementById('checkoutVoucherInput');
+                if (newInput) {
+                    newInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') { e.preventDefault(); validateAndApplyVoucher(); }
+                    });
+                }
+
+                updateSummary();
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Co loi xay ra khi xu ly ma giam gia.");
+            });
+        }
+        // ────────────────────────────────────────────────────────────────────────
 
         document.addEventListener("DOMContentLoaded", function () {
-
-
-            // 1. Sync & Render Cart Items
             loadCartItems();
 
-            // 2. Select initial active address and calculate shipping fee
+            // Bind Enter key on checkout voucher input (initial page load)
+            const initialVoucherInput = document.getElementById('checkoutVoucherInput');
+            if (initialVoucherInput) {
+                initialVoucherInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') { e.preventDefault(); validateAndApplyVoucher(); }
+                });
+            }
+
             const activeAddressCard = document.querySelector(".address-card-option.active");
             if (activeAddressCard) {
                 const id = activeAddressCard.getAttribute("data-address-id");
@@ -328,7 +489,6 @@
                 const lng = parseFloat(activeAddressCard.getAttribute("data-lng"));
                 selectAddress(id, lat, lng, activeAddressCard);
             } else {
-                // If no active address but list exists, select first
                 const firstAddressCard = document.querySelector(".address-card-option");
                 if (firstAddressCard) {
                     const id = firstAddressCard.getAttribute("data-address-id");
@@ -336,40 +496,32 @@
                     const lng = parseFloat(firstAddressCard.getAttribute("data-lng"));
                     selectAddress(id, lat, lng, firstAddressCard);
                 } else {
-                    // No addresses saved, use 0 fee
                     currentShippingFee = 0;
                     updateSummary();
                 }
             }
 
-            // Set initial time slot input
             document.getElementById("selectedTimeSlotInput").value = selectedTimeSlot;
 
-            // Set delivery date picker constraints and default value
             const today = new Date();
             const yyyy = today.getFullYear();
-            let mm = today.getMonth() + 1;
-            let dd = today.getDate();
-            if (dd < 10) dd = '0' + dd;
-            if (mm < 10) mm = '0' + mm;
-            const minDateStr = yyyy + '-' + mm + '-' + dd;
-            
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            const minDateStr = `\${yyyy}-\${mm}-\${dd}`;
+
             const deliveryDateInput = document.getElementById("deliveryDate");
             if (deliveryDateInput) {
                 deliveryDateInput.min = minDateStr;
-                // Không đặt ngày mặc định để bắt người dùng chọn
                 deliveryDateInput.value = "";
-                
                 deliveryDateInput.addEventListener("change", updateAvailableTimeSlots);
             }
 
-            // We render the address directly via JSP now, no need to sync display via JS
             document.getElementById("checkoutForm").addEventListener("submit", function(e) {
                 const jsErrorBox = document.getElementById("jsErrorBox");
-                
+
                 if (!Array.isArray(currentCart) || currentCart.length === 0) {
                     e.preventDefault();
-                    jsErrorBox.innerText = "Không có sản phẩm trong giỏ hàng. Không thể đặt bánh!";
+                    jsErrorBox.innerText = "Khong co san pham trong gio hang. Khong the dat banh!";
                     jsErrorBox.style.display = "block";
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     return;
@@ -378,7 +530,7 @@
                 const selectedAddressId = document.getElementById("selectedAddressIdInput").value;
                 if (!selectedAddressId || selectedAddressId.trim() === "") {
                     e.preventDefault();
-                    jsErrorBox.innerText = "Vui lòng thêm địa chỉ giao hàng trước khi đặt hàng.";
+                    jsErrorBox.innerText = "Vui long them dia chi giao hang truoc khi dat hang.";
                     jsErrorBox.style.display = "block";
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     return;
@@ -386,18 +538,68 @@
                 const timeSlot = document.getElementById("selectedTimeSlotInput").value;
                 if (!timeSlot || timeSlot.trim() === "") {
                     e.preventDefault();
-                    jsErrorBox.innerText = "Vui lòng chọn khung giờ giao hàng hợp lệ.";
+                    jsErrorBox.innerText = "Vui long chon khung gio giao hang hop le.";
                     jsErrorBox.style.display = "block";
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     return;
                 }
-                
+
+                // Lưu lại trạng thái của form để khôi phục khi quay lại
+                const checkoutState = {
+                    deliveryDate: document.getElementById("deliveryDate").value,
+                    timeSlot: document.getElementById("selectedTimeSlotInput").value,
+                    note: document.getElementById("note").value,
+                    paymentMethod: document.querySelector('input[name="paymentMethod"]:checked').value
+                };
+                localStorage.setItem("checkout_state", JSON.stringify(checkoutState));
+
                 jsErrorBox.style.display = "none";
-                localStorage.removeItem("cart");
+                // Không xoá giỏ hàng ở đây nữa để có thể quay lại sửa đổi
             });
 
             // Initialize available time slots on load
             updateAvailableTimeSlots();
+
+            // Khôi phục trạng thái form nếu có
+            try {
+                const stateStr = localStorage.getItem("checkout_state");
+                if (stateStr) {
+                    const state = JSON.parse(stateStr);
+                    if (state.deliveryDate) {
+                        if (deliveryDateInput) {
+                            deliveryDateInput.value = state.deliveryDate;
+                            updateAvailableTimeSlots();
+                        }
+                    }
+                    if (state.timeSlot) {
+                        selectedTimeSlot = state.timeSlot;
+                        document.getElementById("selectedTimeSlotInput").value = state.timeSlot;
+                        setTimeout(() => {
+                            const pills = document.querySelectorAll("#timeSlotsGrid .time-slot-pill");
+                            pills.forEach(pill => {
+                                const slotTime = pill.querySelector(".slot-time")?.textContent?.trim();
+                                if (slotTime === state.timeSlot && !pill.classList.contains("disabled")) {
+                                    pill.classList.add("active");
+                                }
+                            });
+                        }, 150);
+                    }
+                    if (state.note) {
+                        const noteInput = document.getElementById("note");
+                        if (noteInput) noteInput.value = state.note;
+                    }
+                    if (state.paymentMethod) {
+                        const radio = document.querySelector(`input[name="paymentMethod"][value="${state.paymentMethod}"]`);
+                        if (radio) {
+                            radio.checked = true;
+                            document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('active'));
+                            radio.closest('.pm-card')?.classList.add('active');
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to restore checkout state:", e);
+            }
         });
 
         function updateAvailableTimeSlots() {
@@ -406,84 +608,116 @@
             const banner = document.getElementById("slotConfirmationBanner");
             const inputField = document.getElementById("selectedTimeSlotInput");
             const grid = document.getElementById("timeSlotsGrid");
+            // Generate dynamic time slots based on opening and closing hours in settings
+            const openingTimeStr = "${not empty settings.openingTime ? settings.openingTime : '08:00 AM'}";
+            const closingTimeStr = "${not empty settings.closingTime ? settings.closingTime : '10:00 PM'}";
 
-            const standardSlots = [
-                "08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00", "11:00 - 12:00",
-                "12:00 - 13:00", "13:00 - 14:00", "14:00 - 15:00", "15:00 - 16:00",
-                "16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00", "19:00 - 20:00",
-                "20:00 - 21:00", "21:00 - 22:00"
-            ];
+            function parseHour(timeStr) {
+                if (!timeStr) return 8; // default
+                timeStr = timeStr.trim().toUpperCase();
+                
+                // Check if it has AM/PM
+                const hasAmPm = timeStr.indexOf("AM") !== -1 || timeStr.indexOf("PM") !== -1;
+                
+                // Remove AM/PM for numerical parsing
+                let cleanTime = timeStr.replace("AM", "").replace("PM", "").trim();
+                const parts = cleanTime.split(":");
+                let hour = parseInt(parts[0], 10);
+                
+                if (hasAmPm) {
+                    if (timeStr.indexOf("PM") !== -1 && hour < 12) {
+                        hour += 12;
+                    }
+                    if (timeStr.indexOf("AM") !== -1 && hour === 12) {
+                        hour = 0;
+                    }
+                }
+                return hour;
+            }
+
+            const startHour = parseHour(openingTimeStr);
+            const endHour = parseHour(closingTimeStr);
+            
+            const standardSlots = [];
+            for (let h = startHour; h < endHour; h++) {
+                const startStr = String(h).padStart(2, '0') + ":00";
+                const endStr = String(h + 1).padStart(2, '0') + ":00";
+                standardSlots.push(startStr + " - " + endStr);
+            }
             
             grid.innerHTML = ""; // Clear existing
 
+
             if (!dateVal) {
+                // Chưa chọn ngày: hiển thị tất cả pills ở trạng thái disabled với hướng dẫn
                 standardSlots.forEach(slot => {
                     grid.innerHTML += `<div class="time-slot-pill disabled"><span class="slot-time">\${slot}</span><span class="slot-status">Vui lòng chọn ngày</span></div>`;
                 });
-                
+
                 if (btn) btn.disabled = true;
                 if (banner) banner.style.display = "none";
                 if (inputField) inputField.value = "";
                 selectedTimeSlot = "";
                 return;
             }
-            
+
             const dateParts = dateVal.split('-');
             const selectedDate = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
             const today = new Date();
-            
-            const isToday = selectedDate.getDate() === today.getDate() && 
-                            selectedDate.getMonth() === today.getMonth() && 
+
+            const isToday = selectedDate.getDate() === today.getDate() &&
+                            selectedDate.getMonth() === today.getMonth() &&
                             selectedDate.getFullYear() === today.getFullYear();
-            
-            // Check past date by stripping time
+
             const pastDateLimit = new Date(today.getFullYear(), today.getMonth(), today.getDate());
             const isPastDate = selectedDate < pastDateLimit;
             const currentHour = today.getHours();
-            
+
             let hasAvailableSlot = false;
             let previouslySelectedValid = false;
-            
+
             standardSlots.forEach(slot => {
                 const slotHour = parseInt(slot.substring(0, 2), 10);
-                const isDisabled = isPastDate || (isToday && slotHour <= currentHour); // Can't select slots in the past
-                
+                const isDisabled = isPastDate || (isToday && slotHour <= currentHour);
+
                 const pillClass = isDisabled ? "time-slot-pill disabled" : "time-slot-pill";
                 const statusTxt = isDisabled ? "Hết chỗ/Quá hạn" : "Còn chỗ";
                 const clickAttr = isDisabled ? "" : `onclick="selectTimeSlot('\${slot}', this)"`;
-                
-                // Keep selected slot if still valid
-                const isActive = (!isDisabled && selectedTimeSlot === slot) ? "active" : "";
-                if (isActive) previouslySelectedValid = true;
-                if (!isDisabled) hasAvailableSlot = true;
 
-                grid.innerHTML += `<div class="\${pillClass} \${isActive}" data-slot="\${slot}" \${clickAttr}>
-                    <span class="slot-time">\${slot}</span><span class="slot-status">\${statusTxt}</span></div>`;
+                if (!isDisabled) {
+                    hasAvailableSlot = true;
+                    if (slot === selectedTimeSlot) previouslySelectedValid = true;
+                }
+
+                const isActive = slot === selectedTimeSlot && !isDisabled ? " active" : "";
+                grid.innerHTML += `<div class="\${pillClass}\${isActive}" \${clickAttr}><span class="slot-time">\${slot}</span><span class="slot-status">\${statusTxt}</span></div>`;
             });
-            
+
             if (!previouslySelectedValid) {
+                selectedTimeSlot = "";
+                if (inputField) inputField.value = "";
+            }
+
+            if (!hasAvailableSlot) {
                 if (btn) btn.disabled = true;
                 if (banner) {
-                    if (!hasAvailableSlot) {
-                        banner.style.display = "flex";
-                        banner.innerHTML = `<i class="fa fa-exclamation-circle" style="color:#d62828;"></i> <span style="color:#d62828;">Không còn khung giờ giao hàng trống trong ngày này. Vui lòng chọn ngày khác.</span>`;
-                    } else {
-                        banner.style.display = "none";
-                    }
+                    banner.style.display = "flex";
+                    banner.innerHTML = `<i class="fa fa-exclamation-circle" style="color:#d62828;"></i> <span style="color:#d62828;">Không còn khung giờ giao hàng trong ngày này. Vui lòng chọn ngày khác.</span>`;
                 }
                 if (inputField) inputField.value = "";
                 selectedTimeSlot = "";
             } else {
-                // Có giờ đang được chọn và nó hợp lệ
                 if (btn) btn.disabled = false;
                 if (banner) {
-                    banner.style.display = "flex";
-                    banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ \${selectedTimeSlot}</span>`;
+                    banner.style.display = "none";
+                }
+                // KHÔNG reset selectedTimeSlot và inputField ở đây nếu đã chọn hợp lệ
+                if (!previouslySelectedValid) {
+                    if (inputField) inputField.value = "";
+                    selectedTimeSlot = "";
                 }
             }
         }
-
-        // toggleAddressList function removed as there is no list to toggle
 
         function loadCartItems() {
             try {
@@ -493,6 +727,7 @@
             } catch(e) {
                 currentCart = [];
             }
+
             localStorage.setItem("cart", JSON.stringify(currentCart));
             document.getElementById("cartDataInput").value = JSON.stringify(currentCart);
             renderCartList();
@@ -522,16 +757,16 @@
                 if (!item) return;
                 const imgUrl = (item.image && typeof item.image === "string" && item.image.startsWith("http")) ? item.image : "${pageContext.request.contextPath}/" + (item.image || "assets/images/products/basic.png");
                 const priceFormatted = (parseFloat(item.price) || 0).toLocaleString("vi-VN") + "đ";
-                
+
                 let cleanName = item.name || '';
                 let cleanDesc = item.desc || 'Bánh ngọt thủ công cao cấp';
-                
+
                 if (cleanName.startsWith("SIZE_")) {
                     const parts = cleanName.split("_");
                     const size = parts[1] || "16";
                     const layers = parts[3] || "1";
-                    cleanName = `Bánh Kem Tùy Chỉnh (${size}cm)`;
-                    
+                    cleanName = `Bánh Kem Tùy Chỉnh (\${size}cm)`;
+
                     let flavorStr = [];
                     for(let i = 4; i < parts.length; i++) {
                         let f = parts[i];
@@ -556,7 +791,7 @@
                         <div class="product-item-right-actions">
                             <span class="product-price">\${priceFormatted}</span>
                             <div class="qty-adjust-box">
-                                <button type="button" class="btn-qty" onclick="adjustItemQty('\${item.id}', -1)">−</button>
+                                <button type="button" class="btn-qty" onclick="adjustItemQty('\${item.id}', -1)">&#8722;</button>
                                 <span class="qty-display">\${parseInt(item.qty) || 1}</span>
                                 <button type="button" class="btn-qty" onclick="adjustItemQty('\${item.id}', 1)">+</button>
                             </div>
@@ -584,7 +819,7 @@
 
             localStorage.setItem("cart", JSON.stringify(currentCart));
             document.getElementById("cartDataInput").value = JSON.stringify(currentCart);
-            
+
             window.dispatchEvent(new Event("storage"));
 
             renderCartList();
@@ -615,12 +850,11 @@
             const radio = element.querySelector(".address-radio");
             if (radio) radio.checked = true;
 
-            // Shift shop location to match customer city (Hanoi vs HCMC)
             if (lat > 16.0) {
-                shopLat = 21.0278; // Hanoi
+                shopLat = 21.0278;
                 shopLng = 105.8342;
             } else {
-                shopLat = 10.7769; // HCMC Thao Dien
+                shopLat = 10.7769;
                 shopLng = 106.7009;
             }
 
@@ -628,15 +862,14 @@
             const distance = getHaversineDistance(shopLat, shopLng, lat, lng) * 1.25;
             const finalDistance = Math.max(1.0, distance);
 
-            // currentShippingFee = Math.max(shippingRate, Math.ceil(finalDistance) * shippingRate);
-            currentShippingFee = 0;
+            currentShippingFee = Math.max(shippingRate, Math.ceil(finalDistance) * shippingRate);
             updateSummary();
         }
 
         function selectTimeSlot(slot, element) {
             try {
                 if (element.classList.contains("disabled")) {
-                    alert("Khung giờ này đã quá hạn hoặc hết chỗ, vui lòng chọn giờ khác.");
+                    alert("Khung gio nay da qua han hoac het cho, vui long chon gio khac.");
                     return;
                 }
 
@@ -654,9 +887,9 @@
                 const banner = document.getElementById("slotConfirmationBanner");
                 if (banner) {
                     banner.style.display = "flex";
-                    banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất & giao hàng cho khung giờ ${slot}</span>`;
+                    banner.innerHTML = `<i class="fa fa-check-circle"></i> <span>Đã xác nhận năng lực sản xuất &amp; giao hàng cho khung giờ \${slot}</span>`;
                 }
-                
+
                 const btn = document.getElementById("btnPlaceOrder");
                 if (btn) btn.disabled = false;
             } catch (e) {
@@ -666,7 +899,7 @@
         }
 
         function getHaversineDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Earth radius in km
+            const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -677,24 +910,23 @@
         }
 
         function updateSummary() {
-            let productTotal = Array.isArray(currentCart) 
-                ? currentCart.reduce((sum, item) => sum + (parseFloat(item?.price || 0) * parseInt(item?.qty || 1)), 0) 
+            let productTotal = Array.isArray(currentCart)
+                ? currentCart.reduce((sum, item) => sum + (parseFloat(item?.price || 0) * parseInt(item?.qty || 1)), 0)
                 : 0;
 
-            let finalTotal = productTotal > 0 ? (productTotal + currentShippingFee) : 0;
-            if (finalTotal > 0) {
-                finalTotal = finalTotal - checkoutDiscount;
+            let finalTotal = 0;
+            if (productTotal > 0) {
+                finalTotal = productTotal + currentShippingFee - currentDiscount;
                 if (finalTotal < 0) finalTotal = 0;
             }
-
             const subtotalEl = document.getElementById("productTotalSum");
             const shippingEl = document.getElementById("shippingFeeSum");
             const totalEl = document.getElementById("finalTotalSum");
-            
-            if (subtotalEl) subtotalEl.innerText = productTotal.toLocaleString("vi-VN") + "đ";
-            if (shippingEl) shippingEl.innerText = currentShippingFee.toLocaleString("vi-VN") + "đ";
-            if (totalEl) totalEl.innerText = finalTotal.toLocaleString("vi-VN") + "đ";
-            
+
+            if (subtotalEl) subtotalEl.innerText = productTotal.toLocaleString("vi-VN") + "d";
+            if (shippingEl) shippingEl.innerText = currentShippingFee.toLocaleString("vi-VN") + "d";
+            if (totalEl) totalEl.innerText = finalTotal.toLocaleString("vi-VN") + "d";
+
             const shippingFeeInput = document.getElementById("shippingFeeInput");
             if (shippingFeeInput) shippingFeeInput.value = currentShippingFee;
         }

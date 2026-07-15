@@ -355,6 +355,9 @@ public class AdminProductController extends HttpServlet {
         
         String id = request.getParameter("id");
         String name = request.getParameter("name");
+        if (name != null) {
+            name = name.trim();
+        }
         String categoryId = request.getParameter("categoryId");
         
         boolean isNewProductForced = false;

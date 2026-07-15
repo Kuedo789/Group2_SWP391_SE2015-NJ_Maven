@@ -4,31 +4,6 @@
 <%@ page import="java.text.DecimalFormat" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<%
-    if (application.getAttribute("settings") == null) {
-        com.bakeryzone.dao.SettingDAO settingDAO = new com.bakeryzone.dao.SettingDAO();
-        java.util.Map<String, Object> dbSettings = settingDAO.getSettings();
-        if (dbSettings == null || dbSettings.isEmpty()) {
-            dbSettings = new java.util.HashMap<>();
-            dbSettings.put("bakeryName", "BakeryZone");
-            dbSettings.put("hotline", "0901234567");
-            dbSettings.put("email", "support@bakeryzone.vn");
-            dbSettings.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
-            dbSettings.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
-            dbSettings.put("banner1", "assets/images/banner1.jpg");
-            dbSettings.put("banner2", "assets/images/banner2.jpg");
-            dbSettings.put("banner3", "assets/images/banner3.jpg");
-            dbSettings.put("banner4", "assets/images/hero/hero-4.jpg");
-            dbSettings.put("darkMode", false);
-        } else {
-            String currentHotline = (String) dbSettings.get("hotline");
-            if (currentHotline != null) {
-                dbSettings.put("hotline", currentHotline.replaceAll("\\s+", ""));
-            }
-        }
-        application.setAttribute("settings", dbSettings);
-    }
-%>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -38,6 +13,46 @@
     </jsp:include>
     <!-- Order Specific Style Link -->
     <link href="${pageContext.request.contextPath}/assets/css/all/order.css" rel="stylesheet">
+    <style>
+        .page-title-area .status-badge {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 30px;
+            display: inline-block;
+            text-align: center;
+            white-space: nowrap;
+            text-transform: uppercase;
+        }
+        .page-title-area .status-badge.status-pending {
+            background-color: #fef9c3;
+            color: #a16207;
+        }
+        .page-title-area .status-badge.status-confirmed {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .page-title-area .status-badge.status-processing {
+            background-color: #f3e8ff;
+            color: #6b21a8;
+        }
+        .page-title-area .status-badge.status-delivering {
+            background-color: #ffedd5;
+            color: #9a3412;
+        }
+        .page-title-area .status-badge.status-completed {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .page-title-area .status-badge.status-cancelled {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .page-title-area .status-badge.status-paid {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+    </style>
 </head>
 <body>
 
@@ -69,6 +84,9 @@
                         </c:when>
                         <c:when test="${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận'}">
                             <span class="status-badge status-confirmed">Đã xác nhận</span>
+                        </c:when>
+                        <c:when test="${order.orderStatus eq 'PAID' || order.orderStatus eq 'Đã chuyển khoản'}">
+                            <span class="status-badge status-paid">Đã chuyển khoản</span>
                         </c:when>
                         <c:when test="${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý'}">
                             <span class="status-badge status-processing">Đang xử lý</span>
@@ -249,18 +267,72 @@
                                 <c:out value="${not empty order.customerNote ? order.customerNote : 'Không có ghi chú'}" />
                             </div>
                         </div>
-                        
+                        <c:if test="${not empty order.tripId && order.orderStatus ne 'Pending' && order.orderStatus ne 'Chờ xác nhận'}">
+                            <div class="info-row" style="background-color: #f0fdf4; border-radius: 6px; padding: 10px; margin-top: 15px; border-left: 4px solid #16a34a; display: flex; flex-direction: column; gap: 4px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 13.5px;">
+                                    <span style="color: #15803d; font-weight: 700;"><i class="fa-solid fa-route"></i> Chuyến giao hàng:</span>
+                                    <span style="font-family: monospace; font-weight: 700; color: #166534;"><c:out value="${order.tripId}" /></span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 13.5px; margin-top: 2px;">
+                                    <span style="color: #15803d; font-weight: 700;"><i class="fa-solid fa-user-ninja"></i> Shipper phụ trách:</span>
+                                    <span style="font-weight: 700; color: #166534;"><c:out value="${not empty order.shipperName ? order.shipperName : 'Chưa gán'}" /></span>
+                                </div>
+                            </div>
+                        </c:if>
+                        <c:if test="${not empty order.shipperNote}">
+                            <div style="background-color: #fff5f5; border: 1px solid #feb2b2; border-radius: 8px; padding: 15px; margin-top: 15px; display: flex; flex-direction: column; gap: 6px;">
+                                <div style="color: #c53030; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fa-solid fa-circle-exclamation"></i> LÝ DO GIAO HÀNG THẤT BẠI (Từ Shipper):
+                                </div>
+                                <div style="color: #9b2c2c; font-size: 14px; font-weight: 600; line-height: 1.5; word-break: break-word;">
+                                    <c:out value="${order.shipperNote}" />
+                                </div>
+                            </div>
+                        </c:if>
                     </div>
 
                     <!-- Bằng chứng giao hàng (Shipper tải lên, Admin chỉ xem) -->
                     <div class="cz-card">
-                        <div class="cz-card-title">
-                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Bằng chứng giao hàng
+                        <div class="cz-card-title" style="margin-bottom: 15px;">
+                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Minh chứng hình ảnh (Từ Shipper)
                         </div>
-                        <div class="shipper-proof-box">
-                            <div id="admin-proof-display-container" style="text-align: center; width: 100%;">
-                                <i class="fa-regular fa-image proof-icon" style="font-size: 32px; margin-bottom: 8px; display: block;"></i>
-                                <span class="proof-empty-text">Shipper chưa tải lên ảnh bằng chứng giao hàng cho đơn này.</span>
+                        <div class="row">
+                            <!-- 1. Minh chứng lấy bánh tại tiệm -->
+                            <div class="col-md-6 text-center" style="border-right: 1px dashed #ddd; padding: 15px;">
+                                <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">1. Ảnh lấy bánh tại tiệm (Pickup)</h6>
+                                <div style="margin-bottom: 10px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                    <c:choose>
+                                        <c:when test="${not empty pickupPhoto}">
+                                            <img src="${pageContext.request.contextPath}/${pickupPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
+                                            <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
+                                                <i class="fa-solid fa-circle-check"></i> Đã chụp lúc lấy hàng
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
+                                            <span style="font-size: 12px; color: #888;">Shipper chưa chụp ảnh lấy bánh.</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
+                            </div>
+                            
+                            <!-- 2. Minh chứng giao bánh cho khách -->
+                            <div class="col-md-6 text-center" style="padding: 15px;">
+                                <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">2. Ảnh bàn giao cho khách (Delivery)</h6>
+                                <div style="margin-bottom: 10px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                    <c:choose>
+                                        <c:when test="${not empty deliveryPhoto}">
+                                            <img src="${pageContext.request.contextPath}/${deliveryPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
+                                            <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
+                                                <i class="fa-solid fa-circle-check"></i> Đã chụp lúc giao xong
+                                            </div>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
+                                            <span style="font-size: 12px; color: #888;">Shipper chưa chụp ảnh giao bánh.</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -280,6 +352,7 @@
                             <select name="status" class="status-select">
                                 <option value="Pending" ${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận' ? 'selected' : ''}>Chờ xác nhận</option>
                                 <option value="Confirmed" ${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận' ? 'selected' : ''}>Đã xác nhận (Bắt đầu làm)</option>
+                                <option value="PAID" ${order.orderStatus eq 'PAID' || order.orderStatus eq 'Đã chuyển khoản' ? 'selected' : ''}>Đã chuyển khoản</option>
                                 <option value="Processing" ${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý' ? 'selected' : ''}>Đang xử lý (Làm bánh xong)</option>
                                 <option value="Delivering" ${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao' ? 'selected' : ''}>Đang giao hàng</option>
                                 <option value="Completed" ${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' ? 'selected' : ''}>Đã hoàn thành</option>
@@ -293,6 +366,18 @@
                     </div>
 
                     <!-- Payment Summary -->
+                    <%
+                        int calcDepPercent = 30;
+                        com.bakeryzone.model.Order orderObj = (com.bakeryzone.model.Order) request.getAttribute("order");
+                        if (orderObj != null) {
+                            double totalCostVal = orderObj.getTotalCost() != null ? orderObj.getTotalCost().doubleValue() : 0;
+                            double depositAmtVal = orderObj.getDepositAmount() != null ? orderObj.getDepositAmount().doubleValue() : 0;
+                            if (totalCostVal > 0) {
+                                calcDepPercent = (int) Math.round((depositAmtVal * 100) / totalCostVal);
+                            }
+                        }
+                        pageContext.setAttribute("calcDepPercent", calcDepPercent);
+                    %>
                     <div class="cz-card">
                         <div class="cz-card-title">
                             <i class="fa-solid fa-receipt" style="color: var(--cz-primary);"></i> Tóm tắt thanh toán
@@ -310,17 +395,44 @@
                         <div class="cost-row">
                             <span>Phí vận chuyển:</span>
                             <span class="font-mono">
-                                <fmt:formatNumber value="${order.shippingFee}" type="number" pattern="#,##0"/>đ
+                                <fmt:formatNumber value="${not empty order.shippingFee ? order.shippingFee : 0}" type="number" pattern="#,##0"/>đ
                             </span>
                         </div>
-                        <c:if test="${order.discountAmount > 0}">
-                            <div class="cost-row">
-                                <span>Giảm giá:</span>
-                                <span class="font-mono text-success">
-                                    -<fmt:formatNumber value="${order.discountAmount}" type="number" pattern="#,##0"/>đ
-                                </span>
-                            </div>
-                        </c:if>
+                        <div class="cost-row">
+                            <span>Phương thức thanh toán:</span>
+                            <span style="font-weight: 500;">
+                                <c:choose>
+                                    <c:when test="${order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
+                                        Chuyển khoản
+                                    </c:when>
+                                    <c:otherwise>
+                                        COD (Nhận hàng)
+                                    </c:otherwise>
+                                </c:choose>
+                            </span>
+                        </div>
+                        <div class="cost-row">
+                            <span>
+                                <c:choose>
+                                    <c:when test="${order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
+                                        Tiền đặt cọc (0%):
+                                    </c:when>
+                                    <c:otherwise>
+                                        Tiền đặt cọc (${calcDepPercent}%):
+                                    </c:otherwise>
+                                </c:choose>
+                            </span>
+                            <span class="font-mono">
+                                <c:choose>
+                                    <c:when test="${order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
+                                        0đ
+                                    </c:when>
+                                    <c:otherwise>
+                                        <fmt:formatNumber value="${not empty order.depositAmount ? order.depositAmount : 0}" type="number" pattern="#,##0"/>đ
+                                    </c:otherwise>
+                                </c:choose>
+                            </span>
+                        </div>
                         <div class="cost-row total">
                             <span>SỐ TIỀN CẦN THU:</span>
                             <span class="font-mono">
@@ -334,82 +446,17 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.js"></script>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Hiển thị thông báo Toastify đẹp mắt từ session (có fallback nếu offline/lỗi CDN)
-            <c:if test="${not empty sessionScope.successMessage}">
-                if (typeof Toastify === 'function') {
-                    Toastify({
-                        text: "${sessionScope.successMessage}",
-                        duration: 4000,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-                        style: {
-                            background: "linear-gradient(to right, #00b09b, #96c93d)"
-                        },
-                        stopOnFocus: true
-                    }).showToast();
-                } else {
-                    // Fallback alert float box if Toastify fails to load
-                    let alertDiv = document.createElement('div');
-                    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; padding: 15px 25px; border-radius: 8px; background: linear-gradient(to right, #00b09b, #96c93d); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: 500; font-family: "Outfit", sans-serif; display: flex; align-items: center; gap: 10px; transition: opacity 0.5s ease;';
-                    alertDiv.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>${sessionScope.successMessage}</span>';
-                    document.body.appendChild(alertDiv);
-                    setTimeout(() => { alertDiv.style.opacity = '0'; setTimeout(() => alertDiv.remove(), 500); }, 3500);
-                }
-                <c:remove var="successMessage" scope="session" />
-            </c:if>
-
-            <c:if test="${not empty sessionScope.errorMessage}">
-                if (typeof Toastify === 'function') {
-                    Toastify({
-                        text: "${sessionScope.errorMessage}",
-                        duration: 4000,
-                        close: true,
-                        gravity: "top",
-                        position: "right",
-                        backgroundColor: "linear-gradient(to right, #ff5f6d, #ffc371)",
-                        style: {
-                            background: "linear-gradient(to right, #ff5f6d, #ffc371)"
-                        },
-                        stopOnFocus: true
-                    }).showToast();
-                } else {
-                    // Fallback alert float box if Toastify fails to load
-                    let alertDiv = document.createElement('div');
-                    alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; padding: 15px 25px; border-radius: 8px; background: linear-gradient(to right, #ff5f6d, #ffc371); color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-weight: 500; font-family: "Outfit", sans-serif; display: flex; align-items: center; gap: 10px; transition: opacity 0.5s ease;';
-                    alertDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <span>${sessionScope.errorMessage}</span>';
-                    document.body.appendChild(alertDiv);
-                    setTimeout(() => { alertDiv.style.opacity = '0'; setTimeout(() => alertDiv.remove(), 500); }, 3500);
-                }
-                <c:remove var="errorMessage" scope="session" />
-            </c:if>
-
-            const orderStatus = '${order.orderStatus}';
-            const savedProof = localStorage.getItem('proof_of_delivery_' + '${order.orderNo}');
-            const displayContainer = document.getElementById('admin-proof-display-container');
-
-            // Load saved proof to admin display container
-            if (displayContainer) {
-                if (savedProof) {
-                    displayContainer.innerHTML = `
-                        <img src="${savedProof}" style="max-width: 100%; max-height: 250px; border-radius: 8px; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" />
-                        <div style="margin-top: 8px; font-size: 12px; color: #2e7d32; font-weight: 600;">
-                            <i class="fa-solid fa-circle-check"></i> Ảnh bằng chứng thực tế từ Shipper
+</body>
+</html>
                         </div>
-                    `;
-                } else {
-                    displayContainer.innerHTML = `
-                        <i class="fa-regular fa-image proof-icon" style="font-size: 32px; color: #bbb; margin-bottom: 8px; display: block;"></i>
-                        <span class="proof-empty-text">Shipper chưa tải lên ảnh bằng chứng giao hàng cho đơn này.</span>
-                    `;
-                }
-            }
-        });
-    </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

@@ -190,4 +190,14 @@ public class ValidationUtils {
         
         return null;
     }
+
+    public static String validateDateFilter(String startDate, String endDate) {
+        if (!isValidDateFormat(startDate) || !isValidDateFormat(endDate)) {
+            return "Định dạng ngày không hợp lệ.";
+        }
+        if (!isValidDateRange(startDate, endDate)) {
+            return "Ngày bắt đầu không được lớn hơn Ngày kết thúc.";
+        }
+        return null;
+    }
 }

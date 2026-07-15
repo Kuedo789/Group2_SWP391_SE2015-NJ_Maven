@@ -25,11 +25,29 @@ public class Order {
     private String receiverName;
     private String receiverPhone;
     private String customerNote;
-    private BigDecimal discountAmount;
+    private String shipperNote;
     private String paymentMethod = "COD";
+    private String appliedVoucherCode;
+    private BigDecimal discountAmount;
     private final List<OrderItem> items = new ArrayList<>();
 
     public Order() {
+    }
+
+    public String getAppliedVoucherCode() {
+        return appliedVoucherCode;
+    }
+
+    public void setAppliedVoucherCode(String appliedVoucherCode) {
+        this.appliedVoucherCode = appliedVoucherCode;
+    }
+
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
     }
 
     public BigDecimal getRemainingCodBalance() {
@@ -183,13 +201,14 @@ public class Order {
         this.customerNote = customerNote;
     }
 
-    public BigDecimal getDiscountAmount() {
-        return discountAmount;
+    public String getShipperNote() {
+        return shipperNote;
     }
 
-    public void setDiscountAmount(BigDecimal discountAmount) {
-        this.discountAmount = discountAmount;
+    public void setShipperNote(String shipperNote) {
+        this.shipperNote = shipperNote;
     }
+
 
     public String getPaymentMethod() {
         return paymentMethod;

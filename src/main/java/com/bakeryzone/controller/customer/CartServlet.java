@@ -1,20 +1,19 @@
 package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.CartDAO;
-import com.bakeryzone.model.CartItemDTO; // Required for your list
-import com.bakeryzone.model.Voucher;
 import com.bakeryzone.dao.VoucherDAO;
+import com.bakeryzone.model.CartItemDTO;
 import java.io.IOException;
-import java.math.BigDecimal; // Required for total calculations
+import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List; // Required for the cart list
+import java.util.List;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession; // Required for session auth
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Cart Controller handling routing and PRG patterns.
@@ -66,11 +65,14 @@ public class CartServlet extends HttpServlet {
                     // Handled by admin product states.
                     break;
                 case "applyVoucher":
-                    handleApplyVoucher(request, response, userId);
-                    return; // Method redirects, so we return here
+                    handleApplyVoucher(request, session);
+                    break;
                 case "removeVoucher":
-                    handleRemoveVoucher(request, response);
-                    return; // Method redirects, so we return here
+                    session.removeAttribute("appliedVoucherCode");
+                    session.removeAttribute("appliedDiscount");
+                    session.removeAttribute("appliedVoucherMinOrder");
+                    response.sendRedirect(request.getContextPath() + "/cart?voucherRemoved=true");
+                    return;
                 case "checkout":
                     response.sendRedirect(request.getContextPath() + "/checkout");
                     return;
@@ -115,65 +117,6 @@ public class CartServlet extends HttpServlet {
             }
         }
 
-        // Voucher recalculation to ensure the discount remains valid if cart items change
-        BigDecimal appliedDiscount = BigDecimal.ZERO;
-        String appliedVoucherCode = (String) session.getAttribute("appliedVoucherCode");
-        Integer appliedVoucherId = (Integer) session.getAttribute("appliedVoucherId");
-
-        if (appliedVoucherCode != null && appliedVoucherId != null) {
-            Voucher voucher = voucherDAO.getVoucherByCodeAndUser(appliedVoucherCode, userId);
-
-            // Null-safe minimum order check: treat null minOrderValue as 0 (no minimum)
-            BigDecimal minOrder = (voucher != null && voucher.getMinOrderValue() != null)
-                    ? voucher.getMinOrderValue() : BigDecimal.ZERO;
-
-            if (voucher != null && subtotal.compareTo(minOrder) >= 0) {
-                String discountType = voucher.getDiscountType();
-
-                // Accept both "PERCENT" and "PERCENTAGE" as stored in the DB
-                boolean isPercentage = "PERCENT".equalsIgnoreCase(discountType)
-                        || "PERCENTAGE".equalsIgnoreCase(discountType);
-
-                if (isPercentage) {
-                    // Use HALF_UP rounding to avoid ArithmeticException on
-                    // non-terminating decimals (e.g. 450,001 × 25 / 100)
-                    BigDecimal calculatedDiscount = subtotal
-                            .multiply(voucher.getDiscountValue())
-                            .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP);
-
-                    // Apply cap if a maximum discount amount is defined
-                    if (voucher.getMaxDiscountAmount() != null
-                            && voucher.getMaxDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
-                        appliedDiscount = calculatedDiscount.min(voucher.getMaxDiscountAmount());
-                    } else {
-                        appliedDiscount = calculatedDiscount;
-                    }
-                } else {
-                    // FIXED / FLAT discount: deduct the exact value from the voucher row
-                    appliedDiscount = voucher.getDiscountValue();
-                }
-
-                // Safety guard: discount can never exceed the cart subtotal
-                appliedDiscount = appliedDiscount.min(subtotal);
-
-                System.out.println("[VOUCHER] code=" + appliedVoucherCode
-                        + " type=" + discountType
-                        + " value=" + voucher.getDiscountValue()
-                        + " subtotal=" + subtotal
-                        + " -> discount=" + appliedDiscount);
-
-                request.setAttribute("appliedDiscount", appliedDiscount);
-                request.setAttribute("appliedVoucherCode", appliedVoucherCode);
-                request.setAttribute("appliedVoucher", voucher);
-                session.setAttribute("appliedDiscount", appliedDiscount); // Keep synced for checkout
-            } else {
-                // Voucher no longer valid (e.g. subtotal dropped below minimum)
-                session.removeAttribute("appliedVoucherCode");
-                session.removeAttribute("appliedVoucherId");
-                session.removeAttribute("appliedDiscount");
-                request.setAttribute("voucherError", "Giỏ hàng không còn đủ điều kiện áp dụng voucher này.");
-            }
-        }
 
         // 5. Update the navbar total item quantity badge state
         int totalCount = cartDAO.getCartCountForUser(userId);
@@ -196,54 +139,40 @@ public class CartServlet extends HttpServlet {
         }
     }
 
-    private void handleApplyVoucher(HttpServletRequest request, HttpServletResponse response, String userId) throws IOException {
-        String voucherCode = request.getParameter("voucherCode");
-        if (voucherCode == null || voucherCode.trim().isEmpty()) {
-            response.sendRedirect(request.getContextPath() + "/cart?voucherError=empty");
+    private void handleApplyVoucher(HttpServletRequest request, HttpSession session) throws IOException {
+        String code = request.getParameter("voucherCode");
+        if (code == null || code.trim().isEmpty()) {
+            session.setAttribute("voucherError", "Vui lòng nhập mã voucher!");
             return;
         }
 
-        voucherCode = voucherCode.trim();
-        Voucher voucher = voucherDAO.getVoucherByCodeAndUser(voucherCode, userId);
+        com.bakeryzone.model.User user = (com.bakeryzone.model.User) session.getAttribute("user");
+        String userId = user.getUserId();
 
-        if (voucher == null) {
-            response.sendRedirect(request.getContextPath() + "/cart?voucherError=notFound");
-            return;
-        }
-
-        // Calculate subtotal to check minimum order condition
-        List<CartItemDTO> cartItems = cartDAO.getCartItemsForUser(userId);
-        BigDecimal subtotal = BigDecimal.ZERO;
-        if (cartItems != null) {
-            for (CartItemDTO item : cartItems) {
+        // Calculate actual cart subtotal so Min_Order_Value can be validated immediately
+        List<CartItemDTO> items = cartDAO.getCartItemsForUser(userId);
+        BigDecimal cartSubtotal = BigDecimal.ZERO;
+        if (items != null) {
+            for (CartItemDTO item : items) {
                 if (item.isActive() && item.getUnitPrice() != null) {
-                    BigDecimal itemTotal = item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-                    subtotal = subtotal.add(itemTotal);
+                    cartSubtotal = cartSubtotal.add(
+                            item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
                 }
             }
         }
 
-        // Null-safe minimum order check (vouchers with no minimum always pass)
-        BigDecimal minOrder = voucher.getMinOrderValue() != null
-                ? voucher.getMinOrderValue() : BigDecimal.ZERO;
-        if (subtotal.compareTo(minOrder) < 0) {
-            response.sendRedirect(request.getContextPath() + "/cart?voucherError=minOrder");
+        // Single centralized validation — covers active, date, quantity, usage, tier, min order value
+        String error = voucherDAO.validateVoucher(code, userId, cartSubtotal);
+        if (error != null) {
+            session.setAttribute("voucherError", error);
             return;
         }
 
-        HttpSession session = request.getSession();
-        session.setAttribute("appliedVoucherId", voucher.getVoucherId());
-        session.setAttribute("appliedVoucherCode", voucher.getVoucherCode());
-        // The actual discount amount is calculated dynamically in renderCartPage
-
-        response.sendRedirect(request.getContextPath() + "/cart?voucherApplied=true");
-    }
-
-    private void handleRemoveVoucher(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession();
-        session.removeAttribute("appliedVoucherId");
-        session.removeAttribute("appliedVoucherCode");
-        session.removeAttribute("appliedDiscount");
-        response.sendRedirect(request.getContextPath() + "/cart");
+        // Fetch voucher to store discount details in session
+        com.bakeryzone.model.Voucher v = voucherDAO.getVoucherByCode(code.trim().toUpperCase());
+        session.setAttribute("appliedVoucherCode", v.getVoucherCode());
+        session.setAttribute("appliedDiscount", v.getDiscountAmount());
+        session.setAttribute("appliedVoucherMinOrder", v.getMinOrderValue());
+        session.removeAttribute("voucherError");
     }
 }

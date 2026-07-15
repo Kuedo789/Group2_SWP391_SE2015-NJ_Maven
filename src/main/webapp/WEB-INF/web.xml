@@ -64,10 +64,7 @@
         <servlet-name>MembershipController</servlet-name>
         <servlet-class>com.bakeryzone.controller.customer.MembershipController</servlet-class>
     </servlet>
-    <servlet>
-        <servlet-name>RewardsController</servlet-name>
-        <servlet-class>com.bakeryzone.controller.customer.RewardsController</servlet-class>
-    </servlet>
+
     <servlet>
         <servlet-name>BankTransferServlet</servlet-name>
         <servlet-class>com.bakeryzone.controller.customer.BankTransferServlet</servlet-class>
@@ -136,27 +133,27 @@
         <servlet-name>MembershipController</servlet-name>
         <url-pattern>/membership</url-pattern>
     </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>RewardsController</servlet-name>
-        <url-pattern>/rewards</url-pattern>
-    </servlet-mapping>
+
     <servlet-mapping>
         <servlet-name>BankTransferServlet</servlet-name>
         <url-pattern>/bank-transfer</url-pattern>
     </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>CustomCakeServlet</servlet-name>
-        <url-pattern>/custom-cake</url-pattern>
-    </servlet-mapping>
-    <servlet>
-        <servlet-name>VoucherManagementServlet</servlet-name>
-        <servlet-class>com.bakeryzone.controller.admin.VoucherManagementServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>VoucherManagementServlet</servlet-name>
-        <url-pattern>/admin/vouchers</url-pattern>
-    </servlet-mapping>
-    <session-config>
-        <session-timeout>30</session-timeout>
-    </session-config>
+<servlet-mapping>
+    <servlet-name>CustomCakeServlet</servlet-name>
+    <url-pattern>/custom-cake</url-pattern>
+</servlet-mapping>
+
+<servlet>
+    <servlet-name>VoucherManagementServlet</servlet-name>
+    <servlet-class>com.bakeryzone.controller.admin.VoucherManagementServlet</servlet-class>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>VoucherManagementServlet</servlet-name>
+    <url-pattern>/admin/vouchers</url-pattern>
+</servlet-mapping>
+
+<session-config>
+    <session-timeout>30</session-timeout>
+</session-config>
 </web-app>

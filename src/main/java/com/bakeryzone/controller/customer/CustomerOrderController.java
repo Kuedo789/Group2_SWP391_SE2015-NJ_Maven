@@ -56,28 +56,24 @@ public class CustomerOrderController extends HttpServlet {
         String sort         = request.getParameter("sort");
         String status       = request.getParameter("status");
 
-        // Normalize
+        // Chuẩn hóa dữ liệu đầu vào
         if (search != null && search.trim().isEmpty()) search = null;
         if (sort == null || sort.trim().isEmpty())     sort = "date_desc";
         if (status == null || status.trim().isEmpty()) status = "all";
         else status = status.trim().toLowerCase();
 
-        // Validate dates
-        if (!ValidationUtils.isValidDateFormat(startDateStr) || !ValidationUtils.isValidDateFormat(endDateStr)) {
-            request.setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
-            request.getSession().setAttribute("errorMessage", "Định dạng ngày không hợp lệ.");
-            startDateStr = null;
-            endDateStr = null;
-        } else if (!ValidationUtils.isValidDateRange(startDateStr, endDateStr)) {
-            request.setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
-            request.getSession().setAttribute("errorMessage", "Ngày bắt đầu không được lớn hơn Ngày kết thúc.");
+        // Xác thực khoảng ngày
+        String dateError = ValidationUtils.validateDateFilter(startDateStr, endDateStr);
+        if (dateError != null) {
+            request.setAttribute("errorMessage", dateError);
+            request.getSession().setAttribute("errorMessage", dateError);
             startDateStr = null;
             endDateStr = null;
         }
         if (startDateStr != null && startDateStr.trim().isEmpty()) startDateStr = null;
         if (endDateStr   != null && endDateStr.trim().isEmpty())   endDateStr   = null;
 
-        // Pagination
+        // Phân trang đơn hàng
         int pageSize = 6;
         int totalOrders = orderDAO.getOrdersCountByCustomer(customerId, search, status, startDateStr, endDateStr);
         int totalPages  = (int) Math.ceil((double) totalOrders / pageSize);
@@ -91,11 +87,11 @@ public class CustomerOrderController extends HttpServlet {
         if (currentPage < 1)          currentPage = 1;
         if (currentPage > totalPages) currentPage = totalPages;
 
-        // Fetch only the current page from DB (N+1 only for pageSize, not all orders)
+        // Chỉ lấy dữ liệu trang hiện tại từ DB (Tránh tải thừa toàn bộ đơn hàng của khách)
         java.util.List<Order> paginatedOrders = orderDAO.getOrdersByCustomerPaged(
             customerId, search, status, startDateStr, endDateStr, sort, currentPage, pageSize);
 
-        // Status tab counts (1 query thay vì loop Java)
+        // Thống kê số lượng đơn theo từng tab trạng thái bằng 1 truy vấn SQL duy nhất thay vì lặp trong Java
         java.util.Map<String, Integer> statusCounts = orderDAO.getOrderStatusCountsByCustomer(
             customerId, search, startDateStr, endDateStr);
 
@@ -193,7 +189,12 @@ public class CustomerOrderController extends HttpServlet {
 
                 if (order != null && order.getCustomerId().equals(actualCustomerId)) {
                     String dbStatus = order.getOrderStatus();
-                    if (dbStatus != null && (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed"))) {
+                    if (dbStatus != null && 
+                        !dbStatus.equalsIgnoreCase("Delivering") && 
+                        !dbStatus.equalsIgnoreCase("Completed") && 
+                        !dbStatus.equalsIgnoreCase("Cancelled") && 
+                        !dbStatus.equalsIgnoreCase("Canceled")) {
+                        
                         boolean success = orderDAO.updateOrderStatus(orderNo, "Cancelled");
                         if (success) {
                             session.setAttribute("successMessage", "Huỷ đơn hàng #" + orderNo + " thành công!");
@@ -201,7 +202,11 @@ public class CustomerOrderController extends HttpServlet {
                             session.setAttribute("errorMessage", "Không thể huỷ đơn hàng.");
                         }
                     } else {
-                        session.setAttribute("errorMessage", "Đơn hàng đã bắt đầu làm bánh hoặc đã được giao, không thể huỷ!");
+                        if (dbStatus != null && (dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled"))) {
+                            session.setAttribute("errorMessage", "Đơn hàng này đã được huỷ từ trước.");
+                        } else {
+                            session.setAttribute("errorMessage", "Đơn hàng đang giao hoặc đã hoàn thành, không thể huỷ!");
+                        }
                     }
                 }
                 response.sendRedirect(request.getContextPath() + "/OrderDetail?orderNo=" + orderNo);
