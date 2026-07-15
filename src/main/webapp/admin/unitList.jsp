@@ -7,7 +7,7 @@
         <jsp:param name="title" value="CakeZone Admin - Quản lý đơn vị tính" />
     </jsp:include>
     <!-- Custom styling -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductList.css?v=1.3">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductList.css?v=1.6">
 </head>
 <body>
 
