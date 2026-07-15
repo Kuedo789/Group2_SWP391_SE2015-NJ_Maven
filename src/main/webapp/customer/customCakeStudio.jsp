@@ -340,7 +340,6 @@
             .then(data => {
                 if (data.success) {
                     alert('✅ ' + data.message);
-                    window.location.href = '<%= request.getContextPath() %>/cart';
                 } else {
                     alert('❌ ' + data.message);
                 }

@@ -55,7 +55,7 @@ public class CustomCakeDAO {
             insertLayerIngredients(conn, layers);
 
             // 3. Insert into cart_item (1 unit of this custom cake for the user)
-            insertCartItem(conn, cake.getCustomCakeId(), userId);
+            insertCartItem(conn, cake.getCustomCakeId(), userId, null, 1);
 
             conn.commit();
             return true;
@@ -117,17 +117,36 @@ public class CustomCakeDAO {
         }
     }
 
-    private void insertCartItem(Connection conn, String customCakeId, String userId) throws SQLException {
+    private void insertCartItem(Connection conn, String customCakeId, String userId, String productId, int quantity) throws SQLException {
         // ID must match CartItemDTO.VALID_ID_PATTERN: ^CRT-[A-Z0-9\-]+$
         String cartItemId = "CRT-" + java.util.UUID.randomUUID().toString().toUpperCase();
 
-        String sql = "INSERT INTO cart_item (Cart_Item_ID, User_ID, Custom_Cake_ID, Accessory_ID, Quantity, Added_At) "
-                   + "VALUES (?, ?, ?, NULL, 1, NOW())";
+        String sql = "INSERT INTO cart_item (Cart_Item_ID, User_ID, Custom_Cake_ID, Product_ID, Quantity, Added_At) "
+                   + "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, cartItemId);
             ps.setString(2, userId);
-            ps.setString(3, customCakeId);
+            
+            // Custom_Cake_ID can be null for standard products
+            if (customCakeId != null) {
+                ps.setString(3, customCakeId);
+            } else {
+                ps.setNull(3, java.sql.Types.VARCHAR);
+            }
+            
+            // Product_ID can be null for custom cakes
+            if (productId != null) {
+                ps.setString(4, productId);
+            } else {
+                ps.setNull(4, java.sql.Types.VARCHAR);
+            }
+            
+            ps.setInt(5, quantity);
+            
+            // Handle Added_At (or let DB handle default via CURRENT_TIMESTAMP if preferred)
+            ps.setTimestamp(6, new java.sql.Timestamp(System.currentTimeMillis()));
+            
             ps.executeUpdate();
         }
     }

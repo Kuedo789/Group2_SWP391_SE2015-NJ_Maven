@@ -72,6 +72,10 @@
         <servlet-name>BankTransferServlet</servlet-name>
         <servlet-class>com.bakeryzone.controller.customer.BankTransferServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>CustomCakeServlet</servlet-name>
+        <servlet-class>com.bakeryzone.controller.customer.CustomCakeServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>RegisterServlet</servlet-name>
         <url-pattern>/register</url-pattern>
@@ -139,6 +143,10 @@
     <servlet-mapping>
         <servlet-name>BankTransferServlet</servlet-name>
         <url-pattern>/bank-transfer</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>CustomCakeServlet</servlet-name>
+        <url-pattern>/custom-cake</url-pattern>
     </servlet-mapping>
     <servlet>
         <servlet-name>VoucherManagementServlet</servlet-name>
