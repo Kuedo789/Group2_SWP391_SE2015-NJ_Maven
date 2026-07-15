@@ -60,12 +60,14 @@ public class MembershipDAO {
             + "  ct.TierName      AS ct_TierName, "
             + "  ct.MinSpending   AS ct_MinSpending, "
             + "  ct.PointMultiplier AS ct_PointMultiplier, "
+            + "  ct.MonthlyVouchers AS ct_MonthlyVouchers, "
             + "  ct.Description   AS ct_Description, "
             // --- Next tier columns (NULL if user is at top tier) ---
             + "  nt.TierID        AS nt_TierID, "
             + "  nt.TierName      AS nt_TierName, "
             + "  nt.MinSpending   AS nt_MinSpending, "
             + "  nt.PointMultiplier AS nt_PointMultiplier, "
+            + "  nt.MonthlyVouchers AS nt_MonthlyVouchers, "
             + "  nt.Description   AS nt_Description "
             + "FROM UserMembership um "
             + "JOIN MembershipTier ct ON um.CurrentTierID = ct.TierID "
@@ -117,7 +119,7 @@ public class MembershipDAO {
         List<MembershipTier> list = new ArrayList<>();
 
         String sql =
-            "SELECT TierID, TierName, MinSpending, PointMultiplier, Description "
+            "SELECT TierID, TierName, MinSpending, PointMultiplier, MonthlyVouchers, Description "
             + "FROM MembershipTier "
             + "ORDER BY MinSpending ASC";
 
@@ -247,6 +249,66 @@ public class MembershipDAO {
         return false;
     }
 
+    /**
+     * Retrieves all active, un-used vouchers that the user has claimed via the
+     * rewards exchange.  Only returns vouchers that are still valid today.
+     *
+     * SQL mirrors the specification:
+     * <pre>
+     *   SELECT v.* FROM UserVoucher uv
+     *   JOIN Voucher v ON uv.VoucherID = v.VoucherID
+     *   WHERE uv.UserID = ?
+     *     AND uv.IsUsed  = 0
+     *     AND v.IsActive = 1
+     *     AND CURDATE() &lt;= v.EndDate
+     *   ORDER BY uv.AssignedAt DESC
+     * </pre>
+     *
+     * @param userId the user whose wallet is being queried
+     * @return list of owned, still-valid, un-used Voucher objects (never null)
+     */
+    public List<com.bakeryzone.model.Voucher> getUserOwnedVouchers(String userId) {
+
+        List<com.bakeryzone.model.Voucher> list = new ArrayList<>();
+
+        String sql =
+            "SELECT v.VoucherID, v.VoucherCode, v.Title, v.DiscountType, v.DiscountValue, "
+            + "       v.MaxDiscountAmount, v.MinOrderValue, v.StartDate, v.EndDate, "
+            + "       v.IsActive, v.UsageLimit, v.RequiredTierID "
+            + "FROM UserVoucher uv "
+            + "JOIN Voucher v ON uv.VoucherID = v.VoucherID "
+            + "WHERE uv.UserID = ? "
+            + "  AND uv.IsUsed  = 0 "
+            + "  AND v.IsActive = 1 "
+            + "  AND CURDATE() <= v.EndDate "
+            + "ORDER BY uv.AssignedAt DESC";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) {
+                return list;
+            }
+
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, userId);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapOwnedVoucher(rs));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+
+        return list;
+    }
 
     // -----------------------------------------------------------------------
     // Private mapping helpers
@@ -295,6 +357,7 @@ public class MembershipDAO {
         tier.setTierName(rs.getString(prefix + "TierName"));
         tier.setMinSpending(rs.getBigDecimal(prefix + "MinSpending"));
         tier.setPointMultiplier(rs.getDouble(prefix + "PointMultiplier"));
+        tier.setMonthlyVouchers(rs.getInt(prefix + "MonthlyVouchers"));
         tier.setDescription(rs.getString(prefix + "Description"));
         return tier;
     }
@@ -310,6 +373,28 @@ public class MembershipDAO {
         return ph;
     }
 
+    /**
+     * Maps a Voucher from a plain (non-aliased) result set row produced by
+     * the getUserOwnedVouchers JOIN query.
+     */
+    private com.bakeryzone.model.Voucher mapOwnedVoucher(ResultSet rs) throws Exception {
+        com.bakeryzone.model.Voucher v = new com.bakeryzone.model.Voucher();
+        v.setVoucherId(rs.getInt("VoucherID"));
+        v.setVoucherCode(rs.getString("VoucherCode"));
+        v.setTitle(rs.getString("Title"));
+        v.setDiscountType(rs.getString("DiscountType"));
+        v.setDiscountValue(rs.getBigDecimal("DiscountValue"));
+        v.setMaxDiscountAmount(rs.getBigDecimal("MaxDiscountAmount"));
+        v.setMinOrderValue(rs.getBigDecimal("MinOrderValue"));
+        v.setStartDate(rs.getDate("StartDate"));
+        v.setEndDate(rs.getDate("EndDate"));
+        v.setActive(rs.getBoolean("IsActive"));
+        v.setUsageLimit(rs.getInt("UsageLimit"));
+        int reqTier = rs.getInt("RequiredTierID");
+        v.setRequiredTierId(rs.wasNull() ? null : reqTier);
+        // pointCost is not needed for the wallet display; leave at default 0
+        return v;
+    }
 
     // -----------------------------------------------------------------------
     // Resource cleanup
