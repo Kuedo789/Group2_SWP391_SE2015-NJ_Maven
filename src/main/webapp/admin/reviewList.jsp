@@ -634,7 +634,7 @@
 
         <script>
                             function confirmDeleteReview(reviewId) {
-                                if (confirm("Bạn có chắc chắn muốn ẩn (xóa mềm) đánh giá này không? Đánh giá sẽ không còn hiển thị với khách hàng.")) {
+                                if (confirm("Bạn có chắc chắn muốn xóa đánh giá này không?")) {
                                     document.getElementById('deleteReviewId').value = reviewId;
                                     document.getElementById('deleteReviewForm').submit();
                                 }
