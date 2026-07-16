@@ -46,8 +46,6 @@ public class CustomerCheckoutServlet extends HttpServlet {
             return;
         }
 
-
-
         // Retrieve customer's saved delivery addresses
         List<DeliveryAddress> addressList = addressDAO.getAddressesByUserId(currentUser.getUserId());
         request.setAttribute("addressList", addressList);
@@ -92,35 +90,10 @@ public class CustomerCheckoutServlet extends HttpServlet {
 
         // Đảm bảo chỉ khách hàng mới được checkout đặt hàng
         if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRoleId())) {
-            String action = request.getParameter("action");
-            if (!"applyVoucher".equals(action) && !"removeVoucher".equals(action)) {
-                response.sendRedirect(request.getContextPath() + "/checkout?error=admin_cannot_order");
-                return;
-            }
-        }
-
-        String action = request.getParameter("action");
-        boolean isAjax = "true".equals(request.getParameter("ajax"));
-
-        if ("applyVoucher".equals(action)) {
-            handleApplyVoucher(request, session);
-            if (isAjax) {
-                sendAjaxVoucherResponse(response, session);
-                return;
-            }
-            response.sendRedirect(request.getContextPath() + "/checkout");
-            return;
-        } else if ("removeVoucher".equals(action)) {
-            session.removeAttribute("appliedVoucherCode");
-            session.removeAttribute("appliedDiscount");
-            session.removeAttribute("appliedVoucherMinOrder");
-            if (isAjax) {
-                sendAjaxVoucherResponse(response, session);
-                return;
-            }
-            response.sendRedirect(request.getContextPath() + "/checkout");
+            response.sendRedirect(request.getContextPath() + "/checkout?error=admin_cannot_order");
             return;
         }
+
         try {
             // ── 1. Parse form parameters ───────────────────────────────────────────
             String addressIdRaw  = request.getParameter("addressId");
@@ -333,55 +306,5 @@ if (order.getItems().isEmpty()) {
     private String getStr(JsonObject obj, String key) {
         if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) return null;
         return obj.get(key).getAsString();
-    }
-
-    /**
-     * Handles voucher application from the checkout page.
-     * Uses the centralized validateVoucher() — subtotal is not known yet at this stage,
-     * so we pass null and let the final checkout re-validation enforce it.
-     */
-    private void handleApplyVoucher(HttpServletRequest request, HttpSession session) {
-        String code = request.getParameter("voucherCode");
-        if (code == null || code.trim().isEmpty()) {
-            session.setAttribute("voucherError", "Vui lòng nhập mã voucher!");
-            return;
-        }
-
-        User user = (User) session.getAttribute("user");
-
-        // Note: at the checkout apply-voucher stage the exact cart subtotal is not
-        // available server-side (it lives in localStorage). We pass null for cartSubtotal
-        // so all checks except Min_Order_Value are enforced here; the final re-validation
-        // at order submission will enforce Min_Order_Value against the real productTotal.
-        String error = voucherDAO.validateVoucher(code, user.getUserId(), null);
-        if (error != null) {
-            session.setAttribute("voucherError", error);
-            return;
-        }
-
-        com.bakeryzone.model.Voucher v = voucherDAO.getVoucherByCode(code.trim().toUpperCase());
-        session.setAttribute("appliedVoucherCode", v.getVoucherCode());
-        session.setAttribute("appliedDiscount", v.getDiscountAmount());
-        session.setAttribute("appliedVoucherMinOrder", v.getMinOrderValue());
-        session.removeAttribute("voucherError");
-    }
-
-    private void sendAjaxVoucherResponse(HttpServletResponse response, HttpSession session) throws IOException {
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        JsonObject json = new JsonObject();
-        String error = (String) session.getAttribute("voucherError");
-        if (error != null) {
-            json.addProperty("error", error);
-            session.removeAttribute("voucherError");
-        } else {
-            String code = (String) session.getAttribute("appliedVoucherCode");
-            BigDecimal discount = (BigDecimal) session.getAttribute("appliedDiscount");
-            if (code != null) {
-                json.addProperty("code", code);
-                json.addProperty("discount", discount != null ? discount.doubleValue() : 0);
-            }
-        }
-        response.getWriter().write(json.toString());
     }
 }
