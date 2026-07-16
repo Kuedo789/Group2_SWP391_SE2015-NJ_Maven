@@ -59,12 +59,20 @@ public class AuthorizationFilter implements Filter {
             return;
         }
 
+        // 1. Phân quyền khu vực Shipper (/shipper/*): Chỉ ADMIN và SHIPPER được phép truy cập
+        if (servletPath.startsWith("/shipper/")) {
+            if ("SHIPPER".equals(roleId)) {
+                chain.doFilter(servletRequest, servletResponse);
+            } else {
+                sendForbidden(request, response, roleId, servletPath);
+            }
+            return;
+        }
 
+        // 2. Các khu vực khác (/admin/*, /staff/*): Kiểm tra theo bảng phân quyền động (screen_permission)
         String normalizedPath = servletPath;
         if (servletPath.startsWith("/staff/")) {
             normalizedPath = "/admin/" + servletPath.substring(7);
-        } else if (servletPath.startsWith("/shipper/")) {
-            normalizedPath = "/admin/" + servletPath.substring(9);
         }
 
         String action = request.getParameter("action");
@@ -84,18 +92,22 @@ public class AuthorizationFilter implements Filter {
         if (hasPermission) {
             chain.doFilter(servletRequest, servletResponse);
         } else {
-            System.out.println("--> [AUTH FILTER BLOCKED] Role: " + roleId + " was BLOCKED for URL: " + targetUrl);
-            String isAjax = request.getHeader("X-Requested-With");
-            if ("XMLHttpRequest".equals(isAjax)) {
-                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                response.setContentType("text/plain;charset=UTF-8");
-                response.getWriter().write("Tài khoản của bạn không được cấp quyền cho thao tác này!");
-                return;
-            }
-
-            request.setAttribute("error", "Tài khoản của bạn chưa được kích hoạt hệ thống tính năng này.");
-            request.getRequestDispatcher("/common/403.jsp").forward(request, response);
+            sendForbidden(request, response, roleId, targetUrl);
         }
+    }
+
+    private void sendForbidden(HttpServletRequest request, HttpServletResponse response, String roleId, String targetUrl) throws IOException, ServletException {
+        System.out.println("--> [AUTH FILTER BLOCKED] Role: " + roleId + " was BLOCKED for URL: " + targetUrl);
+        String isAjax = request.getHeader("X-Requested-With");
+        if ("XMLHttpRequest".equals(isAjax)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("text/plain;charset=UTF-8");
+            response.getWriter().write("Tài khoản của bạn không được cấp quyền cho thao tác này!");
+            return;
+        }
+
+        request.setAttribute("error", "Tài khoản của bạn chưa được kích hoạt hệ thống tính năng này.");
+        request.getRequestDispatcher("/common/403.jsp").forward(request, response);
     }
 
     @Override

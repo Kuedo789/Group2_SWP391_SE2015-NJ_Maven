@@ -71,6 +71,8 @@
 
         <div id="jsErrorBox" class="alert alert-danger" style="display: none; color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;"></div>
 
+
+
         <c:if test="${param.error == 'empty_cart'}">
             <div class="alert alert-danger" style="color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;">
                 Không có sản phẩm trong giỏ hàng. Không thể đặt bánh!
@@ -755,7 +757,7 @@
 
             currentCart.forEach(item => {
                 if (!item) return;
-                const imgUrl = (item.image && typeof item.image === "string" && item.image.startsWith("http")) ? item.image : "${pageContext.request.contextPath}/" + (item.image || "assets/images/products/basic.png");
+                const imgUrl = (item.image && typeof item.image === "string" && (item.image.startsWith("http") || item.image.startsWith("data:"))) ? item.image : "${pageContext.request.contextPath}/" + (item.image || "assets/images/products/basic.png");
                 const priceFormatted = (parseFloat(item.price) || 0).toLocaleString("vi-VN") + "đ";
 
                 let cleanName = item.name || '';
@@ -782,7 +784,7 @@
                 const itemHtml = `
                     <div class="product-item-row" id="cart-item-\${item.id}">
                         <div class="product-item-left" style="min-width: 0; flex: 1; margin-right: 15px;">
-                            <img src="\${imgUrl}" class="product-img" alt="\${cleanName}" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=120'">
+                            <img src="\${imgUrl}" class="product-img" alt="\${cleanName}" onerror="this.src='${pageContext.request.contextPath}/assets/images/default-cake.png'">
                             <div class="product-details-text" style="min-width: 0; overflow: hidden; display: flex; flex-direction: column;">
                                 <span class="product-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">\${cleanName}</span>
                                 <span class="product-desc" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">\${cleanDesc}</span>
@@ -930,6 +932,13 @@
             const shippingFeeInput = document.getElementById("shippingFeeInput");
             if (shippingFeeInput) shippingFeeInput.value = currentShippingFee;
         }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('error') === 'admin_cannot_order') {
+                showFloatingAlert("Lưu ý: Tài khoản quản trị (Admin/Staff/Shipper) không thể đặt hàng trực tiếp. Vui lòng đăng nhập tài khoản Khách hàng.", "error");
+            }
+        });
     </script>
 </body>
 </html>

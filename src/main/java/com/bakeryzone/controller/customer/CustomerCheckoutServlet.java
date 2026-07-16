@@ -46,6 +46,8 @@ public class CustomerCheckoutServlet extends HttpServlet {
             return;
         }
 
+
+
         // Retrieve customer's saved delivery addresses
         List<DeliveryAddress> addressList = addressDAO.getAddressesByUserId(currentUser.getUserId());
         request.setAttribute("addressList", addressList);
@@ -86,6 +88,15 @@ public class CustomerCheckoutServlet extends HttpServlet {
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
+        }
+
+        // Đảm bảo chỉ khách hàng mới được checkout đặt hàng
+        if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRoleId())) {
+            String action = request.getParameter("action");
+            if (!"applyVoucher".equals(action) && !"removeVoucher".equals(action)) {
+                response.sendRedirect(request.getContextPath() + "/checkout?error=admin_cannot_order");
+                return;
+            }
         }
 
         String action = request.getParameter("action");

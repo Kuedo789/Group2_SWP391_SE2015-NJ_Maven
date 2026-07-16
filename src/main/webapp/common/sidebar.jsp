@@ -36,6 +36,10 @@
 
                                             <div class="nav-section-title">Hệ thống chính</div>
                                             <ul class="sidebar-menu">
+                                                <li class="menu-item">
+                                                    <a href="${pageContext.request.contextPath}/home" target="_blank"><i
+                                                            class="fa-solid fa-house"></i> Xem trang chủ</a>
+                                                </li>
                                                 <c:if
                                                     test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/dashboard')}">
                                                     <li

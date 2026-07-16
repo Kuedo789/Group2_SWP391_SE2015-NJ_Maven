@@ -64,15 +64,15 @@
         } else if (dbStatus.equalsIgnoreCase("Confirmed")) {
             dataStatus = "processing";
             badgeClass = "status-processing";
-            displayStatus = "Đã xác nhận";
+            displayStatus = "Đang chuẩn bị bánh";
         } else if (dbStatus.equalsIgnoreCase("PAID")) {
             dataStatus = "processing";
-            badgeClass = "status-completed";
-            displayStatus = "Đã chuyển khoản";
+            badgeClass = "status-processing";
+            displayStatus = "Đã thanh toán";
         } else if (dbStatus.equalsIgnoreCase("Processing")) {
             dataStatus = "processing";
             badgeClass = "status-processing";
-            displayStatus = "Đang nướng bánh";
+            displayStatus = "Đang chuẩn bị bánh";
         } else if (dbStatus.equalsIgnoreCase("Delivering")) {
             dataStatus = "shipping";
             badgeClass = "status-shipping";
@@ -89,13 +89,13 @@
     }
 
     // Timeline steps activation logic
-    boolean step1Active = true; // Đã xác nhận
-    boolean step2Active = false; // Đang nướng
+    boolean step1Active = true; // Đã nhận đơn
+    boolean step2Active = false; // Đang làm bánh
     boolean step3Active = false; // Đang giao
     boolean step4Active = false; // Hoàn thành
 
     if (dbStatus != null) {
-        if (dbStatus.equalsIgnoreCase("Processing")) {
+        if (dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing")) {
             step2Active = true;
         } else if (dbStatus.equalsIgnoreCase("Delivering")) {
             step2Active = true;
@@ -213,7 +213,11 @@
                     Cần hỗ trợ?
                 </button>
                 
-                <% if (dbStatus != null && (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing"))) { %>
+                <% if (dbStatus != null && 
+                       !dbStatus.equalsIgnoreCase("Delivering") && 
+                       !dbStatus.equalsIgnoreCase("Completed") && 
+                       !dbStatus.equalsIgnoreCase("Cancelled") && 
+                       !dbStatus.equalsIgnoreCase("Canceled")) { %>
                     <button class="btn btn-cancel" onclick="confirmCancelOrder()">
                         Hủy đơn hàng
                     </button>
@@ -253,16 +257,16 @@
                     
                     <div class="timeline-step <%= step1Active ? "active" : "" %>">
                         <div class="step-circle">
-                            <span class="material-symbols-outlined">check_circle</span>
+                            <span class="material-symbols-outlined">shopping_bag</span>
                         </div>
-                        <span class="step-text">Đã xác nhận</span>
+                        <span class="step-text">Đã nhận đơn</span>
                     </div>
                     
                     <div class="timeline-step <%= step2Active ? "active" : "" %>">
                         <div class="step-circle">
-                            <span class="material-symbols-outlined">cookie</span>
+                            <span class="material-symbols-outlined">skillet</span>
                         </div>
-                        <span class="step-text">Đang nướng</span>
+                        <span class="step-text">Đang làm bánh</span>
                     </div>
                     
                     <div class="timeline-step <%= step3Active ? "active" : "" %>">
@@ -274,7 +278,7 @@
                     
                     <div class="timeline-step <%= step4Active ? "active" : "" %>">
                         <div class="step-circle">
-                            <span class="material-symbols-outlined">star</span>
+                            <span class="material-symbols-outlined">task_alt</span>
                         </div>
                         <span class="step-text">Hoàn thành</span>
                     </div>
@@ -503,7 +507,40 @@
                                 double price = item.getPriceAtPurchase() != null ? item.getPriceAtPurchase().doubleValue() : 0.0;
                                 int qty = item.getQuantity();
                                 String name = item.getItemName() != null ? item.getItemName().replace("\"", "\\\"") : "";
-                                String image = item.getItemImage() != null ? item.getItemImage() : "";
+                                String image = "";
+                                String mainImg = item.getItemImage() != null ? item.getItemImage().trim() : "";
+                                String tplImg = item.getTemplateImage() != null ? item.getTemplateImage().trim() : "";
+
+                                if (!mainImg.isEmpty()) {
+                                    if (mainImg.startsWith("data:") || mainImg.startsWith("http:") || mainImg.startsWith("https:")) {
+                                        image = mainImg;
+                                    } else {
+                                        String cleanMain = mainImg.replace("\\", "/");
+                                        if (cleanMain.startsWith("/")) cleanMain = cleanMain.substring(1);
+                                        String realPath = application.getRealPath("/" + cleanMain);
+                                        if (realPath != null && new java.io.File(realPath).exists()) {
+                                            image = cleanMain;
+                                        }
+                                    }
+                                }
+                                if (image.isEmpty() && !tplImg.isEmpty()) {
+                                    if (tplImg.startsWith("data:") || tplImg.startsWith("http:") || tplImg.startsWith("https:")) {
+                                        image = tplImg;
+                                    } else {
+                                        String cleanTpl = tplImg.replace("\\", "/");
+                                        if (cleanTpl.startsWith("/")) cleanTpl = cleanTpl.substring(1);
+                                        String realPath = application.getRealPath("/" + cleanTpl);
+                                        if (realPath != null && new java.io.File(realPath).exists()) {
+                                            image = cleanTpl;
+                                        } else {
+                                            image = cleanTpl;
+                                        }
+                                    }
+                                }
+                                if (image.isEmpty()) {
+                                    image = "assets/images/default-cake.png";
+                                }
+                                image = image.replace("\\", "/");
                                 
                                 jsonBuilder.append("\"templateId\":\"").append(tplId).append("\",");
                                 jsonBuilder.append("\"accessoryId\":\"").append(accId).append("\",");
@@ -517,7 +554,7 @@
                             }
                         }
                         jsonBuilder.append("]");
-                        String escapedJson = jsonBuilder.toString().replace("'", "\\'");
+                        String escapedJson = jsonBuilder.toString().replace("'", "\\'").replace("\"", "&quot;");
                     %>
                     <% if (dbStatus != null && (dbStatus.equalsIgnoreCase("Completed") || dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled"))) { %>
                         <div class="reorder-actions-row" style="display: flex; gap: 10px; width: 100%;">

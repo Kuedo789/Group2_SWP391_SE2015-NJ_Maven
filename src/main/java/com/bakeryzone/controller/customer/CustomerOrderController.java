@@ -35,6 +35,12 @@ public class CustomerOrderController extends HttpServlet {
             return;
         }
 
+        // Đảm bảo chỉ khách hàng mới truy cập được các trang này
+        if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRoleId())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập trang này.");
+            return;
+        }
+
         String path = request.getServletPath();
 
         if ("/OrderDetail".equals(path)) {
@@ -174,6 +180,12 @@ public class CustomerOrderController extends HttpServlet {
 
         if (currentUser == null) {
             response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        // Đảm bảo chỉ khách hàng mới truy cập được các trang này
+        if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRoleId())) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Bạn không có quyền truy cập trang này.");
             return;
         }
 

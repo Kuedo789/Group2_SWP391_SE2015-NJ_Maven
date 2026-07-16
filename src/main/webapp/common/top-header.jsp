@@ -38,10 +38,7 @@
                     <i class="fa-regular fa-user" style="font-size: 16px; color: #345f3d; width: 18px; text-align: center;"></i>
                     <span>Hồ sơ cá nhân</span>
                 </a>
-                <a href="${pageContext.request.contextPath}/home" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-size: 14px; color: #333; text-decoration: none; font-weight: 600; transition: background 0.2s;" class="admin-dropdown-item">
-                    <i class="fa-solid fa-house" style="font-size: 16px; color: #345f3d; width: 18px; text-align: center;"></i>
-                    <span>Trang chủ</span>
-                </a>
+
                 <a href="${pageContext.request.contextPath}/logout" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-size: 14px; color: #dc3545; text-decoration: none; font-weight: 600; transition: background 0.2s;" class="admin-dropdown-item">
                     <i class="fa-solid fa-arrow-right-from-bracket" style="font-size: 16px; color: #dc3545; width: 18px; text-align: center;"></i>
                     <span>Đăng xuất</span>

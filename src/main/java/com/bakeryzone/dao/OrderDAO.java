@@ -18,6 +18,15 @@ import java.util.HashMap;
 
 public class OrderDAO {
 
+    private String escapeWildcards(String keyword) {
+        if (keyword == null) {
+            return null;
+        }
+        return keyword.replace("\\", "\\\\")
+                      .replace("%", "\\%")
+                      .replace("_", "\\_");
+    }
+
     public String getCustomerIdByUserId(String userId) {
         String sql = "SELECT Customer_ID FROM customer WHERE User_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
@@ -82,7 +91,7 @@ public class OrderDAO {
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(
                     " AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
-            String kw = "%" + keyword.trim() + "%";
+            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
             params.add(kw);
             params.add(kw);
         }
@@ -137,7 +146,7 @@ public class OrderDAO {
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(
                     " AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
-            String kw = "%" + keyword.trim() + "%";
+            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
             params.add(kw);
             params.add(kw);
         }
@@ -221,7 +230,7 @@ public class OrderDAO {
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(
                     " AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
-            String kw = "%" + keyword.trim() + "%";
+            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
             params.add(kw);
             params.add(kw);
         }
@@ -755,7 +764,7 @@ public class OrderDAO {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
-            String kw = "%" + keyword.trim() + "%";
+            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
             params.add(kw);
             params.add(kw);
             params.add(kw);
@@ -800,7 +809,7 @@ public class OrderDAO {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
-            String kw = "%" + keyword.trim() + "%";
+            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
             params.add(kw);
             params.add(kw);
             params.add(kw);
@@ -872,7 +881,7 @@ public class OrderDAO {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
-            String kw = "%" + keyword.trim() + "%";
+            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
             params.add(kw);
             params.add(kw);
             params.add(kw);
@@ -923,7 +932,7 @@ public class OrderDAO {
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
-            String kw = "%" + keyword.trim() + "%";
+            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
             params.add(kw);
             params.add(kw);
             params.add(kw);
