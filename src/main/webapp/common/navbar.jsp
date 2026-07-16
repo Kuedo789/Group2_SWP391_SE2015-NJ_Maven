@@ -43,7 +43,7 @@
             <a href="<%= request.getContextPath() %>/products">Menu bánh</a>
             <a href="<%= request.getContextPath() %>/custom-cake">Thiết kế bánh</a>
             <a href="<%= request.getContextPath() %>/blog">Tin tức</a>
-            <% if (currentUser != null) { %>
+            <% if (currentUser != null && "CUSTOMER".equalsIgnoreCase(currentUser.getRoleId())) { %>
             <a href="<%= contextPath %>/membership"
                class="nav-menu-membership-link">Thành viên</a>
             <% } %>
@@ -63,12 +63,14 @@
                 </form>
             </div>
 
+            <% if (currentUser == null || "CUSTOMER".equalsIgnoreCase(currentUser.getRoleId())) { %>
             <!-- 2. Cart Icon Container (clean, no badge, no clipping) -->
             <div class="cart-icon-wrapper">
                 <a href="<%= contextPath %>/cart" class="cart-link">
                     <span class="material-symbols-outlined">shopping_cart</span>
                 </a>
             </div>
+            <% } %>
 
             <!-- 3. User Profile Section -->
             <% if (currentUser == null) { %>
@@ -110,6 +112,7 @@
                             <span class="material-symbols-outlined">person</span>
                             <span>Hồ sơ cá nhân</span>
                         </a>
+                        <% if ("CUSTOMER".equalsIgnoreCase(currentUser.getRoleId())) { %>
                         <a href="<%= contextPath %>/OrderList" class="user-dropdown-item">
                             <span class="material-symbols-outlined">receipt_long</span>
                             <span>Xem đơn hàng</span>
@@ -127,6 +130,14 @@
                             <span class="material-symbols-outlined">cake</span>
                             <span>Thiết kế của tôi</span>
                         </a>
+                        <% } else { %>
+                        <a href="<%= "ADMIN".equalsIgnoreCase(currentUser.getRoleId()) ? (contextPath + "/admin/dashboard") : 
+                                    ("SHIPPER".equalsIgnoreCase(currentUser.getRoleId()) ? (contextPath + "/shipper/orders?action=list") : 
+                                    (contextPath + "/admin/orders?action=list")) %>" class="user-dropdown-item" style="color: var(--primary);">
+                            <span class="material-symbols-outlined">dashboard</span>
+                            <span>Vào trang quản lý</span>
+                        </a>
+                        <% } %>
                         <div class="user-dropdown-divider"></div>
                         <a href="<%= contextPath %>/logout" class="user-dropdown-item logout-item">
                             <span class="material-symbols-outlined">logout</span>

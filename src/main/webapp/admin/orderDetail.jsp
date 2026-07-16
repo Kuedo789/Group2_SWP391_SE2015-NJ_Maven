@@ -349,19 +349,48 @@
                             <input type="hidden" name="action" value="update-status">
                             <input type="hidden" name="orderNo" value="${order.orderNo}">
                             
-                            <select name="status" class="status-select">
-                                <option value="Pending" ${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận' ? 'selected' : ''}>Chờ xác nhận</option>
-                                <option value="Confirmed" ${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận' ? 'selected' : ''}>Đã xác nhận (Bắt đầu làm)</option>
-                                <option value="PAID" ${order.orderStatus eq 'PAID' || order.orderStatus eq 'Đã chuyển khoản' ? 'selected' : ''}>Đã chuyển khoản</option>
-                                <option value="Processing" ${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý' ? 'selected' : ''}>Đang xử lý (Làm bánh xong)</option>
-                                <option value="Delivering" ${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao' ? 'selected' : ''}>Đang giao hàng</option>
-                                <option value="Completed" ${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' ? 'selected' : ''}>Đã hoàn thành</option>
-                                <option value="Cancelled" ${order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Đã hủy' ? 'selected' : ''}>Hủy đơn hàng</option>
+                            <select name="status" class="status-select" ${order.orderStatus eq 'Completed' || order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Canceled' ? 'disabled' : ''}>
+                                <c:choose>
+                                     <c:when test="${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận'}">
+                                         <!-- Đơn chưa thanh toán tiền cọc/toàn bộ (đang Chờ xác nhận): Chỉ có thể giữ Chờ xác nhận hoặc Hủy đơn -->
+                                         <option value="Pending" selected>Chờ xác nhận</option>
+                                         <option value="Cancelled">Hủy đơn hàng</option>
+                                     </c:when>
+                                    <c:when test="${order.orderStatus eq 'PAID' || order.orderStatus eq 'Đã chuyển khoản'}">
+                                        <option value="PAID" selected>Đã thanh toán (Duyệt gấp)</option>
+                                        <option value="Processing">Đang làm bánh</option>
+                                        <option value="Cancelled">Hủy đơn hàng</option>
+                                    </c:when>
+                                    <c:when test="${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận'}">
+                                        <option value="Confirmed" selected>Đã xác nhận</option>
+                                        <option value="Processing">Đang làm bánh</option>
+                                        <option value="Cancelled">Hủy đơn hàng</option>
+                                    </c:when>
+                                    <c:when test="${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý'}">
+                                        <option value="Processing" selected>Đang làm bánh</option>
+                                        <option value="Delivering">Đang giao hàng</option>
+                                    </c:when>
+                                    <c:when test="${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao'}">
+                                        <option value="Delivering" selected>Đang giao hàng</option>
+                                        <option value="Completed">Hoàn thành</option>
+                                    </c:when>
+                                    <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành'}">
+                                        <option value="Completed" selected>Hoàn thành</option>
+                                    </c:when>
+                                    <c:when test="${order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Đã hủy' || order.orderStatus eq 'Canceled'}">
+                                        <option value="Cancelled" selected>Đã hủy</option>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <option value="${order.orderStatus}" selected>${order.orderStatus}</option>
+                                    </c:otherwise>
+                                </c:choose>
                             </select>
 
-                            <button type="submit" class="btn-update-status" onclick="return confirm('Bạn có chắc chắn muốn chuyển trạng thái đơn hàng này không?')">
-                                Cập nhật trạng thái
-                            </button>
+                            <c:if test="${order.orderStatus ne 'Completed' && order.orderStatus ne 'Cancelled' && order.orderStatus ne 'Canceled'}">
+                                <button type="submit" class="btn-update-status" onclick="return confirm('Bạn có chắc chắn muốn chuyển trạng thái đơn hàng này không?')">
+                                    Cập nhật trạng thái
+                                </button>
+                            </c:if>
                         </form>
                     </div>
 

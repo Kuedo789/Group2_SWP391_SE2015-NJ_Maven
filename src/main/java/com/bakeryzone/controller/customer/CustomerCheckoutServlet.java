@@ -88,6 +88,12 @@ public class CustomerCheckoutServlet extends HttpServlet {
             return;
         }
 
+        // Đảm bảo chỉ khách hàng mới được checkout đặt hàng
+        if (!"CUSTOMER".equalsIgnoreCase(currentUser.getRoleId())) {
+            response.sendRedirect(request.getContextPath() + "/checkout?error=admin_cannot_order");
+            return;
+        }
+
         try {
             // ── 1. Parse form parameters ───────────────────────────────────────────
             String addressIdRaw  = request.getParameter("addressId");

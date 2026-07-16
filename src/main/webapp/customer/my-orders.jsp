@@ -193,15 +193,15 @@
                         } else if (dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equals("Đã xác nhận")) {
                             dataStatus = "processing";
                             badgeClass = "status-processing";
-                            displayStatus = "Đã xác nhận";
+                            displayStatus = "Đang chuẩn bị bánh";
                         } else if (dbStatus.equalsIgnoreCase("PAID") || dbStatus.equals("Đã chuyển khoản")) {
                             dataStatus = "processing";
-                            badgeClass = "status-completed"; // Dùng màu xanh giống đã hoàn thành hoặc tuỳ chọn khác
-                            displayStatus = "Đã chuyển khoản";
+                            badgeClass = "status-processing";
+                            displayStatus = "Đã thanh toán";
                         } else if (dbStatus.equalsIgnoreCase("Processing") || dbStatus.equals("Đang xử lý")) {
                             dataStatus = "processing";
                             badgeClass = "status-processing";
-                            displayStatus = "Đang xử lý";
+                            displayStatus = "Đang chuẩn bị bánh";
                         } else if (dbStatus.equalsIgnoreCase("Delivering")
                                 || dbStatus.equals("Đang giao hàng")
                                 || dbStatus.equals("Đang giao")) {
@@ -391,7 +391,40 @@
                                 double price = item.getPriceAtPurchase() != null ? item.getPriceAtPurchase().doubleValue() : 0.0;
                                 int qty = item.getQuantity();
                                 String name = item.getItemName() != null ? item.getItemName().replace("\"", "\\\"") : "";
-                                String image = item.getItemImage() != null ? item.getItemImage() : "";
+                                String image = "";
+                                String mainImg = item.getItemImage() != null ? item.getItemImage().trim() : "";
+                                String tplImg = item.getTemplateImage() != null ? item.getTemplateImage().trim() : "";
+
+                                if (!mainImg.isEmpty()) {
+                                    if (mainImg.startsWith("data:") || mainImg.startsWith("http:") || mainImg.startsWith("https:")) {
+                                        image = mainImg;
+                                    } else {
+                                        String cleanMain = mainImg.replace("\\", "/");
+                                        if (cleanMain.startsWith("/")) cleanMain = cleanMain.substring(1);
+                                        String realPath = application.getRealPath("/" + cleanMain);
+                                        if (realPath != null && new java.io.File(realPath).exists()) {
+                                            image = cleanMain;
+                                        }
+                                    }
+                                }
+                                if (image.isEmpty() && !tplImg.isEmpty()) {
+                                    if (tplImg.startsWith("data:") || tplImg.startsWith("http:") || tplImg.startsWith("https:")) {
+                                        image = tplImg;
+                                    } else {
+                                        String cleanTpl = tplImg.replace("\\", "/");
+                                        if (cleanTpl.startsWith("/")) cleanTpl = cleanTpl.substring(1);
+                                        String realPath = application.getRealPath("/" + cleanTpl);
+                                        if (realPath != null && new java.io.File(realPath).exists()) {
+                                            image = cleanTpl;
+                                        } else {
+                                            image = cleanTpl;
+                                        }
+                                    }
+                                }
+                                if (image.isEmpty()) {
+                                    image = "assets/images/default-cake.png";
+                                }
+                                image = image.replace("\\", "/");
                                 
                                 jsonBuilder.append("\"templateId\":\"").append(tplId).append("\",");
                                 jsonBuilder.append("\"accessoryId\":\"").append(accId).append("\",");
@@ -405,7 +438,7 @@
                             }
                         }
                         jsonBuilder.append("]");
-                        String escapedJson = jsonBuilder.toString().replace("'", "\\'");
+                        String escapedJson = jsonBuilder.toString().replace("'", "\\'").replace("\"", "&quot;");
                     %>
                     <div class="order-actions">
                         <button class="btn btn-outline" style="min-width: 44px; padding: 0 12px; display: inline-flex; align-items: center; justify-content: center;" onclick="addOrderToCart(<%= escapedJson %>)" title="Thêm vào giỏ hàng">
@@ -536,6 +569,24 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
+            // Date Filter Frontend Validation
+            const dateFilterForm = document.getElementById('dateFilterForm');
+            if (dateFilterForm) {
+                dateFilterForm.addEventListener('submit', function(e) {
+                    const startVal = document.getElementById('startDate').value;
+                    const endVal = document.getElementById('endDate').value;
+                    if (startVal && endVal) {
+                        const start = new Date(startVal);
+                        const end = new Date(endVal);
+                        if (start > end) {
+                            e.preventDefault();
+                            alert("Ngày bắt đầu không được lớn hơn Ngày kết thúc!");
+                            return false;
+                        }
+                    }
+                });
+            }
+
             const startVal = document.getElementById('startDate').value;
             const endVal = document.getElementById('endDate').value;
             if (startVal && endVal) {

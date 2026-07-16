@@ -32,44 +32,49 @@
             </div>
 
             <div class="filter-card">
-                <form class="filter-form" action="${pageContext.request.contextPath}/admin/orders" method="GET">
+                <form class="filter-form" action="${pageContext.request.contextPath}/admin/orders" method="GET" style="display: flex; flex-direction: column; gap: 15px; align-items: stretch;">
                     <input type="hidden" name="action" value="list">
                     
-                    <div class="search-wrapper">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" class="search-input" name="search" value="<c:out value="${search}"/>" placeholder="Tìm kiếm theo mã đơn, tên hoặc SĐT khách...">
+                    <!-- Row 1: Search & Status Filter & Sort -->
+                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; width: 100%;">
+                        <div class="search-wrapper" style="flex: 1; min-width: 280px;">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="search-input" name="search" value="<c:out value="${search}"/>" placeholder="Tìm kiếm theo mã đơn, tên hoặc SĐT khách...">
+                        </div>
+
+                        <select class="filter-select" name="status" onchange="this.form.submit()">
+                            <option value="all" ${empty status || status eq 'all' ? 'selected' : ''}>Tất cả trạng thái</option>
+                            <option value="Pending" ${status eq 'Pending' ? 'selected' : ''}>Chờ xác nhận</option>
+                            <option value="PAID" ${status eq 'PAID' ? 'selected' : ''}>Đã thanh toán (Duyệt gấp)</option>
+                            <option value="Processing" ${status eq 'Processing' ? 'selected' : ''}>Đang làm bánh</option>
+                            <option value="Delivering" ${status eq 'Delivering' ? 'selected' : ''}>Đang giao hàng</option>
+                            <option value="Completed" ${status eq 'Completed' ? 'selected' : ''}>Hoàn thành</option>
+                            <option value="Cancelled" ${status eq 'Cancelled' ? 'selected' : ''}>Đã hủy</option>
+                        </select>
+
+                        <select class="filter-select" name="sort" onchange="this.form.submit()">
+                            <option value="date_desc" ${empty sort || sort eq 'date_desc' ? 'selected' : ''}>Mới nhất xếp trước</option>
+                            <option value="date_asc" ${sort eq 'date_asc' ? 'selected' : ''}>Cũ nhất xếp trước</option>
+                            <option value="price_desc" ${sort eq 'price_desc' ? 'selected' : ''}>Tổng tiền giảm dần</option>
+                            <option value="price_asc" ${sort eq 'price_asc' ? 'selected' : ''}>Tổng tiền tăng dần</option>
+                        </select>
                     </div>
 
-                    <select class="filter-select" name="status" onchange="this.form.submit()">
-                        <option value="all" ${empty status || status eq 'all' ? 'selected' : ''}>Tất cả trạng thái</option>
-                        <option value="Pending" ${status eq 'Pending' ? 'selected' : ''}>Chờ xác nhận</option>
-                        <option value="Confirmed" ${status eq 'Confirmed' ? 'selected' : ''}>Đã xác nhận</option>
-                        <option value="PAID" ${status eq 'PAID' ? 'selected' : ''}>Đã chuyển khoản</option>
-                        <option value="Processing" ${status eq 'Processing' ? 'selected' : ''}>Đang xử lý</option>
-                        <option value="Delivering" ${status eq 'Delivering' ? 'selected' : ''}>Đang giao</option>
-                        <option value="Completed" ${status eq 'Completed' ? 'selected' : ''}>Hoàn thành</option>
-                        <option value="Cancelled" ${status eq 'Cancelled' ? 'selected' : ''}>Đã hủy</option>
-                    </select>
+                    <!-- Row 2: Date Filters & Action Buttons -->
+                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap; width: 100%;">
+                        <div class="date-container">
+                            <span class="date-label">Từ:</span>
+                            <input type="date" class="filter-date" name="startDate" value="${startDate}">
+                        </div>
 
-                    <select class="filter-select" name="sort" onchange="this.form.submit()">
-                        <option value="date_desc" ${empty sort || sort eq 'date_desc' ? 'selected' : ''}>Mới nhất xếp trước</option>
-                        <option value="date_asc" ${sort eq 'date_asc' ? 'selected' : ''}>Cũ nhất xếp trước</option>
-                        <option value="price_desc" ${sort eq 'price_desc' ? 'selected' : ''}>Tổng tiền giảm dần</option>
-                        <option value="price_asc" ${sort eq 'price_asc' ? 'selected' : ''}>Tổng tiền tăng dần</option>
-                    </select>
+                        <div class="date-container">
+                            <span class="date-label">Đến:</span>
+                            <input type="date" class="filter-date" name="endDate" value="${endDate}">
+                        </div>
 
-                    <div class="date-container">
-                        <span class="date-label">Từ:</span>
-                        <input type="date" class="filter-date" name="startDate" value="${startDate}">
+                        <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
+                        <a href="${pageContext.request.contextPath}/admin/orders?action=list" class="btn-clear-filter text-center">Làm mới</a>
                     </div>
-
-                    <div class="date-container">
-                        <span class="date-label">Đến:</span>
-                        <input type="date" class="filter-date" name="endDate" value="${endDate}">
-                    </div>
-
-                    <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
-                    <a href="${pageContext.request.contextPath}/admin/orders?action=list" class="btn-clear-filter text-center">Làm mới</a>
                 </form>
             </div>
 
@@ -120,16 +125,16 @@
                                                     <span class="status-badge status-pending">Chờ xác nhận</span>
                                                 </c:when>
                                                 <c:when test="${o.orderStatus eq 'Confirmed' || o.orderStatus eq 'Đã xác nhận'}">
-                                                    <span class="status-badge status-confirmed">Đã xác nhận</span>
+                                                    <span class="status-badge status-processing">Đang làm bánh</span>
                                                 </c:when>
                                                 <c:when test="${o.orderStatus eq 'PAID' || o.orderStatus eq 'Đã chuyển khoản'}">
-                                                    <span class="status-badge status-confirmed" style="background-color: #d1fae5; color: #065f46;">Đã chuyển khoản</span>
+                                                    <span class="status-badge status-confirmed" style="background-color: #d1fae5; color: #065f46;">Đã thanh toán (Duyệt gấp)</span>
                                                 </c:when>
                                                 <c:when test="${o.orderStatus eq 'Processing' || o.orderStatus eq 'Đang xử lý'}">
-                                                    <span class="status-badge status-processing">Đang xử lý</span>
+                                                    <span class="status-badge status-processing">Đang làm bánh</span>
                                                 </c:when>
                                                 <c:when test="${o.orderStatus eq 'Delivering' || o.orderStatus eq 'Đang giao hàng' || o.orderStatus eq 'Đang giao'}">
-                                                    <span class="status-badge status-delivering">Đang giao</span>
+                                                    <span class="status-badge status-delivering">Đang giao hàng</span>
                                                 </c:when>
                                                 <c:when test="${o.orderStatus eq 'Completed' || o.orderStatus eq 'Hoàn thành' || o.orderStatus eq 'Đã giao'}">
                                                     <span class="status-badge status-completed">Hoàn thành</span>
@@ -192,7 +197,28 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // JS helpers for orderList can be placed here if needed.
+        document.addEventListener("DOMContentLoaded", function() {
+            const filterForm = document.querySelector('.filter-form');
+            if (filterForm) {
+                filterForm.addEventListener('submit', function(e) {
+                    const startInput = filterForm.querySelector('input[name="startDate"]');
+                    const endInput = filterForm.querySelector('input[name="endDate"]');
+                    if (startInput && endInput) {
+                        const startVal = startInput.value;
+                        const endVal = endInput.value;
+                        if (startVal && endVal) {
+                            const start = new Date(startVal);
+                            const end = new Date(endVal);
+                            if (start > end) {
+                                e.preventDefault();
+                                alert("Ngày bắt đầu không được lớn hơn Ngày kết thúc!");
+                                return false;
+                            }
+                        }
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

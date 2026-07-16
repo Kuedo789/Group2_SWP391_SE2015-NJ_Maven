@@ -213,6 +213,15 @@ public class AdminOrderController extends HttpServlet {
             return;
         }
 
+        // Đơn hàng chưa thanh toán (đang Pending) chỉ được phép giữ nguyên hoặc chuyển sang Cancelled
+        if (currentStatus != null && (currentStatus.equalsIgnoreCase("Pending") || currentStatus.equals("Chờ xác nhận"))) {
+            if (!"Cancelled".equalsIgnoreCase(status) && !"Pending".equalsIgnoreCase(status)) {
+                session.setAttribute("errorMessage", "Đơn hàng chưa được thanh toán (chưa chuyển khoản) chỉ có thể chuyển sang trạng thái hủy!");
+                response.sendRedirect(request.getContextPath() + "/admin/orders?action=detail&orderNo=" + orderNo);
+                return;
+            }
+        }
+
         // Admin có quyền chuyển sang bất kỳ trạng thái nào trong whitelist
 
         boolean success = orderDAO.updateOrderStatus(orderNo, status);
