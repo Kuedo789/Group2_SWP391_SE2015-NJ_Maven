@@ -9,7 +9,7 @@
         <jsp:param name="title" value="CakeZone Admin - Ingredient Management" />
     </jsp:include>
     <!-- Custom styling -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductList.css?v=1.5">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductList.css?v=1.6">
 </head>
 <body>
 
@@ -133,8 +133,8 @@
                                               </c:if>
                                           </td>
                                           <td>
-                                              <span style="font-size: 14px; font-weight: 600; color: var(--cz-primary);">
-                                                  <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0"/> đ / ${i.unitName}
+                                              <span style="font-size: 14.5px; font-weight: 600; color: var(--cz-primary);">
+                                                  <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0"/>đ <span style="font-weight: 500; color: var(--cz-text-muted); font-size: 13px;">/ ${i.unitName}</span>
                                               </span>
                                           </td>
                                         <td>
