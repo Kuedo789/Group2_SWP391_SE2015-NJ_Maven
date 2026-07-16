@@ -558,6 +558,8 @@ body {
 .product-meta {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    height: 54px;
 }
 
 .product-name-link {

@@ -71,6 +71,14 @@
                         </div>
                     </div>
 
+                    <!-- Carousel Navigation Buttons -->
+                    <button class="hero-nav-btn prev" id="heroPrevBtn" type="button" aria-label="Slide trước">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    <button class="hero-nav-btn next" id="heroNextBtn" type="button" aria-label="Slide sau">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+
                     <div class="hero-dots"></div>
                 </div>
             </section>

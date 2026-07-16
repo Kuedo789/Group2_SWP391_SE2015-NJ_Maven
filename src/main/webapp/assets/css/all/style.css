@@ -664,7 +664,7 @@ button {
 .hero-card {
     position: relative;
     min-height: 560px;
-    overflow: hidden;
+    overflow: visible;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
     background: #eee;
@@ -677,6 +677,8 @@ button {
     background-size: cover;
     background-position: center;
     transition: opacity 0.8s ease;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
 }
 
 .hero-slide.active {
@@ -693,6 +695,8 @@ button {
         rgba(251, 247, 239, 0.18) 72%,
         rgba(35, 29, 24, 0.16) 100%
         );
+    border-radius: var(--radius-lg);
+    overflow: hidden;
 }
 
 .hero-content {
@@ -767,6 +771,60 @@ button {
     width: 24px;
     border-radius: 999px;
     background: var(--primary);
+}
+
+/* Hero Carousel Left/Right Buttons */
+.hero-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.45);
+    color: var(--primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+}
+
+.hero-card:hover .hero-nav-btn {
+    opacity: 1;
+    visibility: visible;
+}
+
+.hero-nav-btn:hover {
+    background: var(--primary);
+    color: #ffffff;
+    transform: translateY(-50%) scale(1.08);
+    box-shadow: 0 6px 16px rgba(63, 95, 54, 0.25);
+}
+
+.hero-nav-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.hero-nav-btn.prev {
+    left: -24px;
+}
+
+.hero-nav-btn.next {
+    right: -24px;
+}
+
+@media (max-width: 768px) {
+    .hero-nav-btn {
+        display: none !important;
+    }
 }
 
 /* =========================================================

@@ -8,6 +8,7 @@
     </jsp:include>
     <!-- Custom styling -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductList.css?v=1.6">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all/order.css">
 </head>
 <body>
 
@@ -73,11 +74,11 @@
                 <table class="cz-table">
                     <thead>
                         <tr>
-                            <th style="width: 70px;">STT</th>
-                            <th style="width: 160px;">Mã đơn vị (ID)</th>
+                            <th class="text-center" style="width: 60px; text-align: center;">STT</th>
+                            <th class="text-center" style="width: 150px; text-align: center;">Mã đơn vị (ID)</th>
                             <th style="width: 220px;">Tên đơn vị</th>
                             <th>Mô tả chi tiết</th>
-                            <th style="width: 150px;">Thao tác</th>
+                            <th class="text-center" style="white-space: nowrap; width: 120px; text-align: center;">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -85,16 +86,16 @@
                             <c:when test="${not empty unitList}">
                                 <c:forEach var="u" items="${unitList}" varStatus="status">
                                     <tr>
-                                        <td>${((currentPage - 1) * pageSize) + status.index + 1}</td>
-                                        <td>
+                                        <td class="text-center" style="text-align: center;">${((currentPage - 1) * pageSize) + status.index + 1}</td>
+                                        <td class="text-center" style="text-align: center;">
                                             <span class="badge" style="background-color: #f5f5f5; color: #666; border: 1px solid #ddd; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: 4px; display: inline-flex; align-items: center; letter-spacing: 0.5px;">
                                                 ${u.unitId}
                                             </span>
                                         </td>
                                         <td style="max-width: 220px; word-break: break-all; white-space: normal;"><strong>${u.unitName}</strong></td>
                                         <td class="text-muted" style="font-size: 13.5px; font-weight: 400; color: var(--cz-text-muted) !important; max-width: 300px; word-break: break-all; white-space: normal;">${not empty u.description ? u.description : '—'}</td>
-                                        <td>
-                                            <div class="actions-cell">
+                                        <td class="text-center" style="text-align: center;">
+                                            <div class="actions-cell" style="justify-content: center; display: inline-flex; gap: 8px;">
                                                 <a href="${pageContext.request.contextPath}/admin/unit?action=edit&id=${u.unitId}&search=${search}&page=${currentPage}" class="btn-action-edit" title="Chỉnh sửa">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </a>

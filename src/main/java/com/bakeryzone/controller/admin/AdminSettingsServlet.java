@@ -255,9 +255,9 @@ public class AdminSettingsServlet extends HttpServlet {
         if (fileName == null || fileName.isEmpty())
             return null;
 
-        // Tạo thư mục assets/images/banners bên trong ứng dụng
+        // Tạo thư mục assets/images/hero bên trong ứng dụng
         String uploadPath = request.getServletContext().getRealPath("") + java.io.File.separator + "assets"
-                + java.io.File.separator + "images" + java.io.File.separator + "banners";
+                + java.io.File.separator + "images" + java.io.File.separator + "hero";
         java.io.File uploadDir = new java.io.File(uploadPath);
         if (!uploadDir.exists())
             uploadDir.mkdirs();
@@ -265,7 +265,7 @@ public class AdminSettingsServlet extends HttpServlet {
         String filePath = uploadPath + java.io.File.separator + fileName;
         try {
             part.write(filePath);
-            return "assets/images/banners/" + fileName;
+            return "assets/images/hero/" + fileName;
         } catch (IOException e) {
             e.printStackTrace();
         }

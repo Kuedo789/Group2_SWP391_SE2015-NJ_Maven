@@ -9,6 +9,7 @@
     </jsp:include>
     <!-- Custom styling -->
     <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductList.css?v=1.6">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all/order.css">
 </head>
 <body>
 
@@ -112,23 +113,22 @@
                 <div class="table-responsive">
                     <table class="cz-table">
                         <thead>
-                            <tr>
-                                <th style="width: 60px;">STT</th>
-                                <th>Hình ảnh & Tên bánh</th>
-                                <th>Danh mục</th>
-                                <th style="min-width: 180px;">Giá & Giờ công</th>
-                                <th class="text-center" style="width: 160px;">Cho phép ghi chữ</th>
-                                <th style="min-width: 180px;">Công thức làm bánh</th>
-                                <th class="text-center" style="width: 150px;">Trạng thái</th>
-                                <th style="width: 180px; min-width: 160px;">Thao tác</th>
-                            </tr>
+                             <tr>
+                                 <th class="text-center" style="width: 50px; text-align: center;">STT</th>
+                                 <th style="min-width: 200px;">Hình ảnh & Tên bánh</th>
+                                 <th style="white-space: nowrap; width: 140px;">Danh mục</th>
+                                 <th style="white-space: nowrap; width: 150px;">Giá & Giờ công</th>
+                                 <th class="text-center" style="white-space: nowrap; width: 150px; text-align: center;">Cho phép ghi chữ</th>
+                                 <th class="text-center" style="white-space: nowrap; width: 120px; text-align: center;">Trạng thái</th>
+                                 <th class="text-center" style="white-space: nowrap; width: 130px; text-align: center;">Thao tác</th>
+                             </tr>
                         </thead>
                         <tbody>
                             <c:choose>
                                 <c:when test="${not empty productList}">
                                     <c:forEach var="p" items="${productList}" varStatus="status">
                                         <tr>
-                                            <td>${((currentPage - 1) * pageSize) + status.index + 1}</td>
+                                            <td class="text-center" style="text-align: center;">${((currentPage - 1) * pageSize) + status.index + 1}</td>
                                             <td>
                                                 <div class="product-cell">
                                                     <c:choose>
@@ -149,8 +149,8 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                             <td>${p.categoryName}</td>
-                                             <td>
+                                             <td style="white-space: nowrap;">${p.categoryName}</td>
+                                             <td style="white-space: nowrap;">
                                                  <span style="font-size: 14.5px; font-weight: 600; color: var(--cz-primary); display: block;">
                                                      <fmt:formatNumber value="${p.basePrice}" type="number" pattern="#,##0"/>đ
                                                  </span>
@@ -158,44 +158,32 @@
                                                      <i class="fa-regular fa-clock me-1" style="color: #aaa;"></i> Giờ công: ${p.estimatedLaborHours} giờ
                                                  </div>
                                              </td>
-                                             <td class="text-center">
+                                             <td class="text-center" style="text-align: center;">
                                                  <c:choose>
                                                      <c:when test="${p.allowsGreeting}">
-                                                         <span class="badge" style="background-color: #e3f2fd; color: #0d6efd; border: 1px solid #bbdefb; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
-                                                             <i class="fa-regular fa-pen-to-square"></i> Được ghi chữ
-                                                         </span>
+                                                          <span class="badge" style="background-color: #e3f2fd; color: #0d6efd; border: 1px solid #bbdefb; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                                                              <i class="fa-regular fa-pen-to-square"></i> Được ghi chữ
+                                                          </span>
                                                      </c:when>
                                                      <c:otherwise>
-                                                         <span class="badge" style="background-color: #f5f5f5; color: #888; border: 1px solid #ddd; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: 4px;">
-                                                             Không hỗ trợ
-                                                         </span>
+                                                          <span class="badge" style="background-color: #f5f5f5; color: #888; border: 1px solid #ddd; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: 4px;">
+                                                              Không hỗ trợ
+                                                          </span>
                                                      </c:otherwise>
                                                  </c:choose>
                                              </td>
-                                             <td>
+                                             <td class="text-center" style="text-align: center;">
                                                  <c:choose>
-                                                     <c:when test="${not empty p.instructionSteps}">
-                                                         <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}#recipe-editor-container" class="product-name-link" style="font-weight: 500; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;">
-                                                             <i class="fa-solid fa-receipt" style="color: var(--cz-secondary); font-size: 12px;"></i> Xem hướng dẫn
-                                                         </a>
+                                                     <c:when test="${p.status eq 'Active'}">
+                                                         <span class="status-badge-active" style="white-space: nowrap;">Hoạt động</span>
                                                      </c:when>
                                                      <c:otherwise>
-                                                         <span class="text-muted" style="font-size: 12px; font-style: italic;">Chưa thiết lập</span>
+                                                         <span class="status-badge-inactive" style="white-space: nowrap;">Ngưng bán</span>
                                                      </c:otherwise>
                                                  </c:choose>
                                              </td>
-                                            <td class="text-center">
-                                                <c:choose>
-                                                    <c:when test="${p.status eq 'Active'}">
-                                                        <span class="status-badge-active">Hoạt động</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <span class="status-badge-inactive">Ngưng bán</span>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </td>
-                                            <td>
-                                                <div class="actions-cell">
+                                            <td class="text-center" style="text-align: center;">
+                                                <div class="actions-cell" style="justify-content: center; display: inline-flex; gap: 8px;">
                                                     <a href="${pageContext.request.contextPath}/admin/product?action=detail&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="btn-action-view" title="Xem chi tiết">
                                                         <i class="fa-regular fa-eye"></i>
                                                     </a>
@@ -221,7 +209,7 @@
                                 </c:when>
                                 <c:otherwise>
                                     <tr>
-                                        <td colspan="8" class="text-center py-5 text-muted">
+                                        <td colspan="7" class="text-center py-5 text-muted">
                                             <i class="fa-solid fa-box-open d-block fs-2 mb-3" style="color: #ccc;"></i>
                                             Không tìm thấy bánh kem nào phù hợp với bộ lọc.
                                         </td>
