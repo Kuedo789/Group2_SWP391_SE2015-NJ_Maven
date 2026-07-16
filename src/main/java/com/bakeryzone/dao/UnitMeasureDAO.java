@@ -18,15 +18,14 @@ public class UnitMeasureDAO {
         List<UnitMeasure> list = new ArrayList<>();
         String sql = "SELECT Unit_ID, Unit_Name, Description, enable FROM unit_measure WHERE enable = 1 ORDER BY Unit_ID ASC";
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 UnitMeasure u = new UnitMeasure(
-                    rs.getString("Unit_ID"),
-                    rs.getString("Unit_Name"),
-                    rs.getString("Description"),
-                    rs.getBoolean("enable")
-                );
+                        rs.getString("Unit_ID"),
+                        rs.getString("Unit_Name"),
+                        rs.getString("Description"),
+                        rs.getBoolean("enable"));
                 list.add(u);
             }
         } catch (Exception e) {
@@ -36,19 +35,19 @@ public class UnitMeasureDAO {
     }
 
     public UnitMeasure getUnitMeasureById(String id) {
-        if (id == null || id.trim().isEmpty()) return null;
+        if (id == null || id.trim().isEmpty())
+            return null;
         String sql = "SELECT Unit_ID, Unit_Name, Description, enable FROM unit_measure WHERE Unit_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return new UnitMeasure(
-                        rs.getString("Unit_ID"),
-                        rs.getString("Unit_Name"),
-                        rs.getString("Description"),
-                        rs.getBoolean("enable")
-                    );
+                            rs.getString("Unit_ID"),
+                            rs.getString("Unit_Name"),
+                            rs.getString("Description"),
+                            rs.getBoolean("enable"));
                 }
             }
         } catch (Exception e) {
@@ -95,10 +94,11 @@ public class UnitMeasureDAO {
     }
 
     public boolean deleteUnitMeasure(String id) {
-        if (id == null || id.trim().isEmpty()) return false;
+        if (id == null || id.trim().isEmpty())
+            return false;
         String sql = "UPDATE unit_measure SET enable = 0 WHERE Unit_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, id);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {

@@ -13,6 +13,7 @@
         <jsp:include page="/common/admin-header.jsp">
             <jsp:param name="title" value="CakeZone Admin - Categories" />
         </jsp:include>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all/order.css">
     </head>
     <body>
 
@@ -27,71 +28,63 @@
                 <jsp:param name="activeMenu" value="Danh mục sản phẩm" />
             </jsp:include>
 
-            <div class="content">
-                <div class="page-header">
-                    <div class="page-title">
-                        <h2>Danh mục sản phẩm</h2>
-                        <p>Manage and organize your bakery's product offerings.</p>
+            <div class="content-container">
+                <!-- Page Title Area -->
+                <div class="page-title-area">
+                    <div>
+                        <h1 class="page-title">Danh mục sản phẩm</h1>
+                        <p class="page-subtitle">Quản lý và tổ chức các danh mục sản phẩm chính và nguyên liệu của tiệm bánh.</p>
                     </div>
-                    <a href="${pageContext.request.contextPath}/admin/categories?action=add" class="btn-primary" style="text-decoration: none;">
-                        <i class="fa-solid fa-plus"></i> Thêm danh mục
+                    <a href="${pageContext.request.contextPath}/admin/categories?action=add" class="btn btn-cz-primary" style="text-decoration: none;">
+                        <i class="fa-solid fa-circle-plus"></i> Thêm danh mục
                     </a>
                 </div>
 
                 <c:if test="${not empty message or not empty success}">
-                    <div style="background-color: #dcfce7; color: #166534; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bbf7d0;">
-                        <i class="fa-solid fa-circle-check"></i> Thao tác thành công!
+                    <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 20px;">
+                        <i class="fa-solid fa-circle-check me-2"></i> Thao tác thành công!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
                     </div>
                 </c:if>
 
                 <c:if test="${not empty error}">
-                    <div style="background-color: #fee2e2; color: #991b1b; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fecaca;">
-                        <i class="fa-solid fa-circle-exclamation"></i>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 20px;">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
                         <strong>Thất bại:</strong> 
                         <c:choose>
-                            <c:when test="${error == 'duplicate_id'}">
-                                Mã danh mục này đã tồn tại trong hệ thống! Vui lòng chọn mã khác.
-                            </c:when>
-                            <c:when test="${error == 'invalid_id_format'}">
-                                Mã danh mục không hợp lệ. Vui lòng chỉ sử dụng chữ in hoa, số và dấu gạch ngang (VD: CAT-ABC).
-                            </c:when>
-                            <c:when test="${error == 'desc_too_long'}">
-                                Mô tả quá dài! Vui lòng nhập dưới 255 ký tự.
-                            </c:when>
-                            <c:when test="${error == 'delete_failed'}">
-                                Không thể xóa danh mục này! Có thể danh mục đang chứa sản phẩm hoặc nguyên liệu bên trong.
-                            </c:when>
-                            <c:when test="${error == 'not_found'}">
-                                Không tìm thấy danh mục bạn yêu cầu.
-                            </c:when>
-                            <c:otherwise>
-                                Đã xảy ra lỗi cơ sở dữ liệu. Vui lòng thử lại sau.
-                            </c:otherwise>
+                            <c:when test="${error == 'duplicate_id'}">Mã danh mục này đã tồn tại trong hệ thống! Vui lòng chọn mã khác.</c:when>
+                            <c:when test="${error == 'invalid_id_format'}">Mã danh mục không hợp lệ. Vui lòng chỉ sử dụng chữ in hoa, số và dấu gạch ngang (VD: CAT-ABC).</c:when>
+                            <c:when test="${error == 'desc_too_long'}">Mô tả quá dài! Vui lòng nhập dưới 255 ký tự.</c:when>
+                            <c:when test="${error == 'delete_failed'}">Không thể xóa danh mục này! Có thể danh mục đang chứa sản phẩm hoặc nguyên liệu bên trong.</c:when>
+                            <c:when test="${error == 'not_found'}">Không tìm thấy danh mục bạn yêu cầu.</c:when>
+                            <c:otherwise>Đã xảy ra lỗi cơ sở dữ liệu. Vui lòng thử lại sau.</c:otherwise>
                         </c:choose>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
                     </div>
                 </c:if>
 
+                <!-- Filters -->
+                <div class="filter-card">
+                    <form class="filter-form" action="${pageContext.request.contextPath}/admin/categories" method="GET">
+                        <div class="search-wrapper">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" class="search-input" name="search" value="${searchQuery}" placeholder="Tìm kiếm theo mã, tên danh mục...">
+                        </div>
+
+                        <select class="filter-select" name="filterType" onchange="this.form.submit()">
+                            <option value="all" ${filterType == 'all' ? 'selected' : ''}>Tất cả phân loại</option>
+                            <option value="Sản phẩm chính" ${filterType == 'Sản phẩm chính' ? 'selected' : ''}>Sản phẩm chính</option>
+                            <option value="Nguyên liệu" ${filterType == 'Nguyên liệu' ? 'selected' : ''}>Nguyên liệu</option>
+                        </select>
+
+                        <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
+                        <a href="${pageContext.request.contextPath}/admin/categories" class="btn-clear-filter"><i class="fa-solid fa-arrow-rotate-left"></i> Làm mới</a>
+                    </form>
+                </div>
+
+                <!-- Table Card -->
                 <div class="table-card">
-
-                    <div class="table-controls">
-                        <form action="${pageContext.request.contextPath}/admin/categories" method="GET" style="display: flex; gap: 15px; width: 100%; align-items: center;">
-
-                            <div class="search-bar" style="flex-grow: 1; max-width: 400px;">
-                                <i class="fa-solid fa-magnifying-glass" style="color: #a0a0a0;"></i>
-                                <input type="text" name="search" value="${searchQuery}" placeholder="Tìm kiếm theo mã, tên danh mục...">
-                            </div>
-
-                            <select name="filterType" style="padding: 10px 15px; border-radius: 50px; border: 1px solid var(--border-soft); background: var(--bg-cream); outline: none; font-size: 14px; cursor: pointer;">
-                                <option value="all" ${filterType == 'all' ? 'selected' : ''}>Tất cả phân loại</option>
-                                <option value="Sản phẩm chính" ${filterType == 'Sản phẩm chính' ? 'selected' : ''}>Sản phẩm chính</option>
-                                <option value="Nguyên liệu" ${filterType == 'Nguyên liệu' ? 'selected' : ''}>Nguyên liệu</option>
-                            </select>
-
-                            <button type="submit" class="btn-primary" style="padding: 10px 20px;">Lọc</button>
-                        </form>
-                    </div>
-
-                    <table>
+                    <table class="cz-table">
                         <thead>
                             <tr>
                                 <th>Mã Danh Mục</th>

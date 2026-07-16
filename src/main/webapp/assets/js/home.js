@@ -29,6 +29,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const dots = dotsContainer.querySelectorAll("button");
 
+    // Left/Right navigation buttons click handlers
+    const prevBtn = document.getElementById("heroPrevBtn");
+    const nextBtn = document.getElementById("heroNextBtn");
+
+    if (prevBtn) {
+        prevBtn.addEventListener("click", function () {
+            const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
+            showSlide(prevIndex);
+            restartTimer();
+        });
+    }
+
+    if (nextBtn) {
+        nextBtn.addEventListener("click", function () {
+            const nextIndex = (currentIndex + 1) % slides.length;
+            showSlide(nextIndex);
+            restartTimer();
+        });
+    }
+
     function showSlide(index) {
         slides[currentIndex].classList.remove("active");
         dots[currentIndex].classList.remove("active");
