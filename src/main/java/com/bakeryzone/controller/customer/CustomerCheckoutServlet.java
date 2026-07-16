@@ -57,19 +57,19 @@ public class CustomerCheckoutServlet extends HttpServlet {
         if (addressList != null && !addressList.isEmpty()) {
             String selectedParam = request.getParameter("selectedAddressId");
             selectedAddress = addressList.stream()
-                    .filter(addr -> String.valueOf(addr.getAddressId()).equals(selectedParam))
+                .filter(addr -> String.valueOf(addr.getAddressId()).equals(selectedParam))
+                .findFirst()
+                .orElse(addressList.stream()
+                    .filter(DeliveryAddress::isDefault)
                     .findFirst()
-                    .orElse(addressList.stream()
-                            .filter(DeliveryAddress::isDefault)
-                            .findFirst()
-                            .orElse(addressList.get(0)));
+                    .orElse(addressList.get(0)));
         }
         request.setAttribute("selectedAddress", selectedAddress);
 
         // Fetch voucher discount from session
         BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
         String appliedVoucherCode = (String) session.getAttribute("appliedVoucherCode");
-
+        
         request.setAttribute("checkoutDiscount", appliedDiscount != null ? appliedDiscount : BigDecimal.ZERO);
         request.setAttribute("checkoutVoucherCode", appliedVoucherCode);
 
@@ -121,16 +121,14 @@ public class CustomerCheckoutServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/checkout");
             return;
         }
-
         try {
             // ── 1. Parse form parameters ───────────────────────────────────────────
-            String addressIdRaw = request.getParameter("addressId");
-            String timeSlot = request.getParameter("timeSlot"); // e.g. "08:00 - 09:00"
-            String deliveryDate = request.getParameter("deliveryDate"); // e.g. "2026-06-19"
-            String note = request.getParameter("note");
-            String cartDataJson = request.getParameter("cartData"); // JSON array from localStorage
-            String paymentMethod = request.getParameter("paymentMethod"); // e.g. "BANK_TRANSFER_FULL" or
-                                                                          // "DIRECT_DEPOSIT_20"
+            String addressIdRaw  = request.getParameter("addressId");
+            String timeSlot      = request.getParameter("timeSlot");   // e.g. "08:00 - 09:00"
+            String deliveryDate  = request.getParameter("deliveryDate"); // e.g. "2026-06-19"
+            String note          = request.getParameter("note");
+            String cartDataJson  = request.getParameter("cartData");    // JSON array from localStorage
+            String paymentMethod = request.getParameter("paymentMethod"); // e.g. "BANK_TRANSFER_FULL" or "DIRECT_DEPOSIT_20"
 
             // ── 2. Resolve delivery address string ─────────────────────────────────
             String deliveryAddressStr = null;
@@ -143,8 +141,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
                                 + " | " + addr.getReceiverPhone()
                                 + " | " + addr.getAddressDetail();
                     }
-                } catch (NumberFormatException ignored) {
-                }
+                } catch (NumberFormatException ignored) {}
             }
 
             if (deliveryAddressStr == null) {
@@ -155,26 +152,26 @@ public class CustomerCheckoutServlet extends HttpServlet {
             // ── 3. Build Delivery Window timestamps ────────────────────────────────
             // timeSlot format: "HH:mm - HH:mm"
             Timestamp deliveryWindowStart = null;
-            Timestamp deliveryWindowEnd = null;
-            Timestamp orderTime = new Timestamp(System.currentTimeMillis());
+            Timestamp deliveryWindowEnd   = null;
+            Timestamp orderTime           = new Timestamp(System.currentTimeMillis());
 
             if (deliveryDate != null && !deliveryDate.trim().isEmpty()
                     && timeSlot != null && !timeSlot.trim().isEmpty()) {
                 try {
                     String[] parts = timeSlot.split("-");
                     String startTime = parts[0].trim(); // e.g. "08:00"
-                    String endTime = parts[1].trim(); // e.g. "09:00"
+                    String endTime   = parts[1].trim(); // e.g. "09:00"
 
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
                     Date startDate = sdf.parse(deliveryDate + " " + startTime);
-                    Date endDate = sdf.parse(deliveryDate + " " + endTime);
+                    Date endDate   = sdf.parse(deliveryDate + " " + endTime);
                     deliveryWindowStart = new Timestamp(startDate.getTime());
-                    deliveryWindowEnd = new Timestamp(endDate.getTime());
+                    deliveryWindowEnd   = new Timestamp(endDate.getTime());
                 } catch (Exception e) {
                     System.err.println("[WARN] Failed to parse delivery date/time: " + e.getMessage());
                 }
             }
-
+            
             // Fallback for missing delivery date/time to avoid DB NOT NULL constraint error
             if (deliveryWindowStart == null || deliveryWindowEnd == null) {
                 long tomorrow = System.currentTimeMillis() + 24L * 3600 * 1000;
@@ -183,8 +180,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
             }
 
             // ── 4. Parse cart JSON to OrderItem list ───────────────────────────────
-            // Cart item shape (from localStorage): { id, name, price, qty, image, desc,
-            // templateId? }
+            // Cart item shape (from localStorage): { id, name, price, qty, image, desc, templateId? }
             Order order = new Order();
             String orderNo = "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             order.setOrderNo(orderNo);
@@ -202,16 +198,15 @@ public class CustomerCheckoutServlet extends HttpServlet {
                 JsonArray cartArray = JsonParser.parseString(cartDataJson).getAsJsonArray();
 
                 for (JsonElement el : cartArray) {
-                    if (el.isJsonNull())
-                        continue;
+                    if (el.isJsonNull()) continue;
                     JsonObject cartItem = el.getAsJsonObject();
 
-                    String itemId = getStr(cartItem, "id");
-                    String itemName = getStr(cartItem, "name");
-                    String itemImage = getStr(cartItem, "image");
+                    String itemId     = getStr(cartItem, "id");
+                    String itemName   = getStr(cartItem, "name");
+                    String itemImage  = getStr(cartItem, "image");
                     String templateId = getStr(cartItem, "templateId");
-                    double price = cartItem.has("price") ? cartItem.get("price").getAsDouble() : 0;
-                    int qty = cartItem.has("qty") ? cartItem.get("qty").getAsInt() : 1;
+                    double price      = cartItem.has("price") ? cartItem.get("price").getAsDouble() : 0;
+                    int qty           = cartItem.has("qty")   ? cartItem.get("qty").getAsInt()   : 1;
 
                     BigDecimal itemPrice = BigDecimal.valueOf(price);
                     productTotal = productTotal.add(itemPrice.multiply(BigDecimal.valueOf(qty)));
@@ -248,13 +243,12 @@ public class CustomerCheckoutServlet extends HttpServlet {
                 }
             }
 
-            if (order.getItems().isEmpty()) {
+if (order.getItems().isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/checkout?error=empty_cart");
                 return;
             }
 
-            // 1. Resolve Shipping Fee (Parse from request, fallback to 25k default if
-            // missing)
+            // 1. Resolve Shipping Fee (Parse from request, fallback to 25k default if missing)
             String shippingFeeStr = request.getParameter("shippingFee");
             BigDecimal shippingFee = BigDecimal.valueOf(25000); // Default fallback
             if (shippingFeeStr != null && !shippingFeeStr.trim().isEmpty()) {
@@ -265,45 +259,18 @@ public class CustomerCheckoutServlet extends HttpServlet {
                 }
             }
 
-            // 2. Extract Voucher from Session
-            String appliedVoucherCode = (String) session.getAttribute("appliedVoucherCode");
-            BigDecimal appliedDiscount = BigDecimal.ZERO;
-
-            if (appliedVoucherCode != null) {
-                // ── SECURITY: Re-validate the voucher against the real productTotal ──
-                // This prevents session manipulation attacks where a user might tamper
-                // with the session to apply an invalid or insufficient voucher.
-                String revalidationError = voucherDAO.validateVoucher(
-                        appliedVoucherCode, currentUser.getUserId(), productTotal);
-
-                if (revalidationError != null) {
-                    // Voucher is no longer valid — clear it from session and warn user
-                    System.out.println("[WARN] Voucher '" + appliedVoucherCode
-                            + "' failed re-validation at checkout for user "
-                            + currentUser.getUserId() + ": " + revalidationError);
-                    session.removeAttribute("appliedVoucherCode");
-                    session.removeAttribute("appliedDiscount");
-                    session.removeAttribute("appliedVoucherMinOrder");
-                    session.setAttribute("voucherError", "Mã giảm giá không còn hợp lệ: " + revalidationError
-                            + " Vui lòng kiểm tra lại.");
-                    response.sendRedirect(request.getContextPath() + "/checkout?error=voucher_invalid");
-                    return;
-                }
-
-                // Re-validation passed — fetch fresh discount amount from DB (trust DB, not
-                // session)
-                com.bakeryzone.model.Voucher freshVoucher = voucherDAO.getVoucherByCode(appliedVoucherCode);
-                if (freshVoucher != null) {
-                    appliedDiscount = freshVoucher.getDiscountAmount();
-                }
+            // 2. Extract and Apply Voucher Discount
+            BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
+            if (appliedDiscount == null) {
+                appliedDiscount = BigDecimal.ZERO;
             }
-
+            
             // 3. Compute Final Total Cost
             BigDecimal totalCost = productTotal.add(shippingFee).subtract(appliedDiscount);
             if (totalCost.compareTo(BigDecimal.ZERO) < 0) {
                 totalCost = BigDecimal.ZERO;
             }
-
+            
             // 4. Determine Deposit and COD Splits based on Payment Method
             BigDecimal deposit = BigDecimal.ZERO;
             BigDecimal remainingCod = totalCost;
@@ -312,21 +279,8 @@ public class CustomerCheckoutServlet extends HttpServlet {
                 deposit = totalCost; // Full upfront bank transfer
                 remainingCod = BigDecimal.ZERO;
             } else {
-                // Default COD: Calculate upfront commitment deposit dynamically from settings
-                double depositPercent = 30.0; // Default fallback
-                try {
-                    @SuppressWarnings("unchecked")
-                    java.util.Map<String, Object> sysSettings = (java.util.Map<String, Object>) getServletContext()
-                            .getAttribute("settings");
-                    if (sysSettings != null && sysSettings.get("depositPercent") != null) {
-                        depositPercent = Double.parseDouble(sysSettings.get("depositPercent").toString());
-                    }
-                } catch (Exception e) {
-                    System.err.println("[WARN] Failed to read depositPercent from settings: " + e.getMessage());
-                }
-                double depositRate = depositPercent / 100.0;
-                deposit = totalCost.multiply(BigDecimal.valueOf(depositRate)).setScale(0,
-                        java.math.RoundingMode.HALF_UP);
+                // Default COD: Calculate a standard 30% upfront commitment deposit
+                deposit = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
                 remainingCod = totalCost.subtract(deposit);
             }
 
@@ -336,32 +290,32 @@ public class CustomerCheckoutServlet extends HttpServlet {
             order.setShippingFee(shippingFee);
             order.setPaymentMethod(paymentMethod);
             order.setCustomerNote(note);
-            order.setAppliedVoucherCode(appliedVoucherCode);
-            order.setDiscountAmount(appliedDiscount);
 
             // ── 5. Persist order ───────────────────────────────────────────────────
-            System.out.println("[INFO] Attempting to place order: " + orderNo
-                    + " for customerId: " + order.getCustomerId()
+            System.out.println("[INFO] Attempting to place order: " + orderNo 
+                    + " for customerId: " + order.getCustomerId() 
                     + " | deliveryWindow: " + order.getDeliveryWindowStart()
                     + " | cart items size: " + order.getItems().size());
-
+            
             boolean success = orderDAO.insertOrder(order);
 
             System.out.println("[INFO] Order placed: " + orderNo + " by user " + currentUser.getUserId()
                     + " | success=" + success + " | total=" + totalCost);
 
             if (success) {
-                if (appliedVoucherCode != null) {
-                    voucherDAO.decrementQuantity(appliedVoucherCode);
+                // Mark voucher as used if applicable and clear session attributes
+                Integer appliedVoucherId = (Integer) session.getAttribute("appliedVoucherId");
+                if (appliedVoucherId != null) {
+                    voucherDAO.markVoucherUsed(appliedVoucherId, currentUser.getUserId());
+                    session.removeAttribute("appliedVoucherId");
                     session.removeAttribute("appliedVoucherCode");
                     session.removeAttribute("appliedDiscount");
-                    session.removeAttribute("appliedVoucherMinOrder");
                 }
+
                 // Redirect target evaluation based on payment configuration
                 if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
                     String totalEncoded = java.net.URLEncoder.encode(totalCost.toPlainString(), "UTF-8");
-                    response.sendRedirect(
-                            request.getContextPath() + "/bank-transfer?orderNo=" + orderNo + "&total=" + totalEncoded);
+                    response.sendRedirect(request.getContextPath() + "/bank-transfer?orderNo=" + orderNo + "&total=" + totalEncoded);
                 } else {
                     response.sendRedirect(request.getContextPath() + "/order-success?orderNo=" + orderNo);
                 }
@@ -377,15 +331,13 @@ public class CustomerCheckoutServlet extends HttpServlet {
 
     /** Safely get a String field from a JsonObject, returns null if missing/null */
     private String getStr(JsonObject obj, String key) {
-        if (obj == null || !obj.has(key) || obj.get(key).isJsonNull())
-            return null;
+        if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) return null;
         return obj.get(key).getAsString();
     }
 
     /**
      * Handles voucher application from the checkout page.
-     * Uses the centralized validateVoucher() — subtotal is not known yet at this
-     * stage,
+     * Uses the centralized validateVoucher() — subtotal is not known yet at this stage,
      * so we pass null and let the final checkout re-validation enforce it.
      */
     private void handleApplyVoucher(HttpServletRequest request, HttpSession session) {
@@ -398,12 +350,9 @@ public class CustomerCheckoutServlet extends HttpServlet {
         User user = (User) session.getAttribute("user");
 
         // Note: at the checkout apply-voucher stage the exact cart subtotal is not
-        // available server-side (it lives in localStorage). We pass null for
-        // cartSubtotal
-        // so all checks except Min_Order_Value are enforced here; the final
-        // re-validation
-        // at order submission will enforce Min_Order_Value against the real
-        // productTotal.
+        // available server-side (it lives in localStorage). We pass null for cartSubtotal
+        // so all checks except Min_Order_Value are enforced here; the final re-validation
+        // at order submission will enforce Min_Order_Value against the real productTotal.
         String error = voucherDAO.validateVoucher(code, user.getUserId(), null);
         if (error != null) {
             session.setAttribute("voucherError", error);

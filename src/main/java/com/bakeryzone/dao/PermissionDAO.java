@@ -26,13 +26,7 @@ public class PermissionDAO {
 
     public List<ScreenPermission> getScreensWithStatus(String roleId) {
         List<ScreenPermission> list = new ArrayList<>();
-        String sql = "SELECT s.Screen_ID, s.Screen_Name, s.Endpoint_URL, "
-                + "CASE WHEN rp.Role_ID IS NOT NULL THEN 1 ELSE 0 END as is_active "
-                + "FROM screen_permission s "
-                + "LEFT JOIN role_permission rp ON s.Screen_ID = rp.Screen_ID AND rp.Role_ID = ? "
-                + "WHERE s.Screen_Name NOT LIKE '[HIDDEN]%' "
-                + "ORDER BY FIELD(s.Screen_ID, "
-                + "'FEAT_DASHBOARD_VIEW', 'FEAT_ORDER_VIEW', 'FEAT_ORDER_DETAIL', 'FEAT_ORDER_UPDATE', "
+        String fieldsOrder = "'FEAT_DASHBOARD_VIEW', 'FEAT_ORDER_VIEW', 'FEAT_ORDER_DETAIL', 'FEAT_ORDER_UPDATE', "
                 + "'FEAT_PROD_VIEW', 'FEAT_PROD_DETAIL', 'FEAT_PROD_ADD', 'FEAT_PROD_EDIT', 'FEAT_PROD_UPDATE', 'FEAT_PROD_DEL', "
                 + "'FEAT_CAT_VIEW', 'FEAT_CAT_ADD', 'FEAT_CAT_EDIT', 'FEAT_CAT_DEL', 'FEAT_CAT_RESTORE', "
                 + "'FEAT_ING_VIEW', 'FEAT_ING_ADD', 'FEAT_ING_EDIT', 'FEAT_ING_UPDATE', 'FEAT_ING_DEL', "
@@ -40,9 +34,18 @@ public class PermissionDAO {
                 + "'FEAT_ATTR_VIEW', 'FEAT_ATTR_ADD', "
                 + "'FEAT_CUST_VIEW', 'FEAT_CUST_ADD', 'FEAT_CUST_EDIT', 'FEAT_CUST_DEL', "
                 + "'FEAT_REV_VIEW', 'FEAT_REV_DETAIL', 'FEAT_REV_UPDATE', "
-                + "'FEAT_BLOG_MANAGE', "
+                + "'FEAT_BLOG_VIEW', 'FEAT_BLOG_DETAIL', 'FEAT_BLOG_ADD', 'FEAT_BLOG_EDIT', 'FEAT_BLOG_UPDATE', 'FEAT_BLOG_DEL', "
                 + "'FEAT_STAFF_VIEW', 'FEAT_STAFF_ADD', 'FEAT_STAFF_EDIT', 'FEAT_STAFF_DEL', "
-                + "'FEAT_ROLE_VIEW', 'FEAT_SETTING_MNG', 'FEAT_VOUCHER_VIEW')";
+                + "'FEAT_ROLE_VIEW', 'FEAT_SETTING_MNG', 'FEAT_VOUCHER_VIEW', 'FEAT_VOUCHER_ADD', 'FEAT_VOUCHER_UPDATE', 'FEAT_VOUCHER_TOGGLE', 'FEAT_VOUCHER_DEL'";
+
+        String sql = "SELECT s.Screen_ID, s.Screen_Name, s.Endpoint_URL, "
+                + "CASE WHEN rp.Role_ID IS NOT NULL THEN 1 ELSE 0 END as is_active "
+                + "FROM screen_permission s "
+                + "LEFT JOIN role_permission rp ON s.Screen_ID = rp.Screen_ID AND rp.Role_ID = ? "
+                + "WHERE s.Screen_Name NOT LIKE '[HIDDEN]%' "
+                + "ORDER BY FIELD(s.Screen_ID, " + fieldsOrder + ") = 0, "
+                + "FIELD(s.Screen_ID, " + fieldsOrder + ") ASC, "
+                + "s.Screen_Name ASC";
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, roleId);

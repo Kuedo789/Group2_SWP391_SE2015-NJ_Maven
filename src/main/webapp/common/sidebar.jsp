@@ -18,7 +18,7 @@
                                         liveAllowedUrls.add(sp.getEndpointUrl());
                                         }
                                         }
-                                        }
+                                        }                                      
                                         }
                                         // Đẩy thẳng vào requestScope để JSTL bên dưới đọc ép cấu trúc real-time
                                         request.setAttribute("LIVE_PERMISSIONS", liveAllowedUrls);
@@ -168,7 +168,7 @@
                                             <div class="nav-section-title">Hệ thống</div>
                                             <ul class="sidebar-menu">
 
-                                                <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/vouchers')}">
+                                                <c:if test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/vouchers?action=list')}">
                                                     <li class="menu-item ${param.activeMenu == 'vouchers' ? 'active' : ''}">
                                                         <a href="${pageContext.request.contextPath}/admin/vouchers"><i class="fa-solid fa-ticket"></i> Mã giảm giá</a>
                                                     </li>

@@ -28,7 +28,7 @@
    BASE
    ============================================================ */
 body {
-    font-family: "Be Vietnam Pro", Arial, sans-serif;
+    font-family: 'Inter', sans-serif;
     background-color: var(--cz-light-bg);
     color: var(--cz-text-dark);
     overflow-x: hidden;
@@ -497,21 +497,21 @@ body {
 
 .cz-table th {
     background-color: var(--cz-secondary);
-    color: var(--cz-text-dark);
+    color: #5a6557;
     font-size: 11.5px;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.6px;
     padding: 16px 20px;
     border-bottom: 2px solid var(--cz-border-color);
-    font-family: "Be Vietnam Pro", sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 
 .cz-table td {
     padding: 16px 20px;
     vertical-align: middle;
     font-size: 14px;
-    font-family: "Be Vietnam Pro", sans-serif;
+    font-family: 'Inter', sans-serif;
     color: var(--cz-text-dark);
     border-bottom: 1px solid var(--cz-border-color);
     font-weight: 400;

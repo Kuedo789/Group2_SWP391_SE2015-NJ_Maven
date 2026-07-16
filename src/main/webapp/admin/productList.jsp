@@ -8,7 +8,7 @@
         <jsp:param name="title" value="CakeZone Admin - Product List" />
     </jsp:include>
     <!-- Custom styling -->
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductList.css?v=1.5">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/adminProductList.css?v=1.6">
 </head>
 <body>
 
@@ -151,8 +151,8 @@
                                             </td>
                                              <td>${p.categoryName}</td>
                                              <td>
-                                                 <span style="font-size: 14.5px; font-weight: 700; color: var(--cz-primary); display: block;">
-                                                     <fmt:formatNumber value="${p.basePrice}" type="number" pattern="#,##0"/> đ
+                                                 <span style="font-size: 14.5px; font-weight: 600; color: var(--cz-primary); display: block;">
+                                                     <fmt:formatNumber value="${p.basePrice}" type="number" pattern="#,##0"/>đ
                                                  </span>
                                                  <div class="text-muted mt-1" style="font-size: 12px; font-weight: 500;">
                                                      <i class="fa-regular fa-clock me-1" style="color: #aaa;"></i> Giờ công: ${p.estimatedLaborHours} giờ

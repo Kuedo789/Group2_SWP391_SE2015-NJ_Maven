@@ -5,6 +5,7 @@ import com.bakeryzone.model.MembershipTier;
 import com.bakeryzone.model.PointHistory;
 import com.bakeryzone.model.User;
 import com.bakeryzone.model.UserMembership;
+import com.bakeryzone.model.Voucher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -29,6 +30,7 @@ import java.util.List;
  *   <li>{@code membership}     – {@link UserMembership} with currentTier and nextTier populated</li>
  *   <li>{@code allTiers}       – {@code List<MembershipTier>} ordered MEMBER → DIAMOND</li>
  *   <li>{@code pointHistory}   – {@code List<PointHistory>} most-recent 20 transactions</li>
+ *   <li>{@code ownedVouchers}  – {@code List<Voucher>} un-used, in-date vouchers in the user wallet</li>
  * </ul>
  */
 @WebServlet(name = "MembershipController", urlPatterns = {"/membership"})
@@ -84,10 +86,14 @@ public class MembershipController extends HttpServlet {
         // Load recent point-history entries for the point-log sub-tab
         List<PointHistory> pointHistory = membershipDAO.getPointHistory(userId, POINT_HISTORY_LIMIT);
 
-        // Bind to request scope → JSP reads via EL: ${membership}, etc.
+        // Load the user's own un-used, still-valid vouchers for the wallet section
+        List<Voucher> ownedVouchers = membershipDAO.getUserOwnedVouchers(userId);
+
+        // Bind to request scope → JSP reads via EL: ${membership}, ${ownedVouchers}, etc.
         request.setAttribute("membership",    membership);
         request.setAttribute("allTiers",      allTiers);
         request.setAttribute("pointHistory",  pointHistory);
+        request.setAttribute("ownedVouchers", ownedVouchers);
 
         // Also consume the PRG flash message placed by RewardsController on success
         String rewardSuccess = (String) session.getAttribute("rewardSuccess");
