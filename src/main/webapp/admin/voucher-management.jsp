@@ -95,55 +95,54 @@
                 border-bottom: 1px solid var(--border-soft);
             }
 
-            /* ── Pagination widget ───────────────────────────────────────── */
-            .pagination-bar {
+            /* Pagination Design */
+            .pagination-area {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 18px 4px 4px;
-                flex-wrap: wrap;
-                gap: 12px;
+                padding: 20px 25px;
+                border-top: 1px solid var(--border-soft);
+                background-color: #fff;
             }
-            .pagination-bar .pag-info {
+            .pagination-text {
                 font-size: 13px;
                 color: var(--text-muted);
             }
-            .page-numbers {
+            .pagination-nav {
                 display: flex;
-                gap: 6px;
-                align-items: center;
+                gap: 5px;
+                margin: 0;
+                padding: 0;
+                list-style: none;
             }
-            .page-btn {
-                min-width: 36px;
-                height: 36px;
-                padding: 0 10px;
-                border-radius: 8px;
-                border: 1.5px solid var(--border-soft);
-                background: var(--surface-white);
-                color: var(--text-dark);
-                font-size: 13px;
-                font-weight: 600;
-                cursor: pointer;
-                display: inline-flex;
+
+            .page-num-item a {
+                display: flex;
                 align-items: center;
                 justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 6px;
+                border: 1px solid var(--border-soft);
+                font-size: 13px;
+                font-weight: 600;
+                color: #555;
                 text-decoration: none;
-                transition: all 0.18s;
+                transition: all 0.2s;
             }
-            .page-btn:hover:not(.active):not(.disabled) {
-                background: #f1f5f9;
-                border-color: #94a3b8;
+            .page-num-item a:hover {
+                background-color: #fafafa;
+                border-color: #ccc;
             }
-            .page-btn.active {
-                background: var(--primary-green, #22c55e);
+            .page-num-item.active a {
+                background-color: var(--primary-green, #22c55e);
                 border-color: var(--primary-green, #22c55e);
                 color: #fff;
-                cursor: default;
             }
-            .page-btn.disabled {
-                opacity: 0.38;
-                cursor: not-allowed;
+            .page-num-item.disabled a {
+                opacity: 0.5;
                 pointer-events: none;
+                background-color: #f8f6f4;
             }
         </style>
     </head>
@@ -181,7 +180,7 @@
                         <c:choose>
                             <c:when test="${success == 'created'}">Voucher mới đã được tạo thành công!</c:when>
                             <c:when test="${success == 'deleted'}">Voucher đã bị xóa thành công.</c:when>
-                            <c:when test="${success == 'deactivated'}">Voucher đã được vô hiệu hóa (có dữ liệu liên kết nên không thể xóa hoàn toàn).</c:when>
+                            <c:when test="${success == 'deactivated'}">Voucher đã được vô hiệu hóa</c:when>
                             <c:when test="${success == 'activated'}">Voucher đã được kích hoạt lại.</c:when>
                             <c:otherwise>Thao tác thành công!</c:otherwise>
                         </c:choose>
@@ -425,8 +424,7 @@
                                                     <c:when test="${v.active}">
                                                         <a href="${pageContext.request.contextPath}/admin/vouchers?action=toggle&id=${v.voucherId}&active=false"
                                                            class="btn-icon" title="Vô hiệu hóa"
-                                                           style="text-decoration:none;color:#f59e0b;"
-                                                           onclick="return confirm('Vô hiệu hóa voucher này?');">
+                                                           style="text-decoration:none;color:#f59e0b;">
                                                             <i class="fa-regular fa-eye-slash"></i>
                                                         </a>
                                                     </c:when>
@@ -442,8 +440,7 @@
                                                 <%-- Delete --%>
                                                 <a href="${pageContext.request.contextPath}/admin/vouchers?action=delete&id=${v.voucherId}"
                                                    class="btn-icon" title="Xóa voucher"
-                                                   style="text-decoration:none;color:#ef4444;"
-                                                   onclick="return confirm('Bạn có chắc chắn muốn xóa voucher [${v.voucherCode}]? Hành động này không thể hoàn tác.');">
+                                                   style="text-decoration:none;color:#ef4444;">
                                                     <i class="fa-regular fa-trash-can"></i>
                                                 </a>
                                             </td>
@@ -455,96 +452,32 @@
                     </table>
 
                     <!-- ── Pagination widget ──────────────────────────── -->
-                    <div class="pagination-bar">
-
-                        <%-- Build the shared query-string prefix used by every page link --%>
-                        <c:set var="pageQueryBase"
-               value="?status=${statusFilter}&search=${searchQuery}" />
-
-                        <span class="pag-info">
-                            Trang <strong>${currentPage}</strong> / <strong>${totalPages}</strong>
-                            &nbsp;·&nbsp;
-                            Tổng cộng <strong>${totalRecords}</strong> voucher
-                            <c:if test="${not empty searchQuery}">
-                                cho từ khóa "<strong>${searchQuery}</strong>"
-                            </c:if>
-                        </span>
-
-                        <div class="page-numbers">
-
-                            <%-- Previous button --%>
-                            <c:choose>
-                                <c:when test="${currentPage <= 1}">
-                                    <span class="page-btn disabled">
-                                        <i class="fa-solid fa-chevron-left" style="font-size:10px;"></i>
-                                    </span>
-                                </c:when>
-                                <c:otherwise>
-                                    <a class="page-btn"
-                                       href="${pageContext.request.contextPath}/admin/vouchers${pageQueryBase}&page=${currentPage - 1}"
-                                       style="text-decoration:none;">
-                                        <i class="fa-solid fa-chevron-left" style="font-size:10px;"></i>
+                    <div class="pagination-area">
+                        <span class="pagination-text">Trang số <b>${currentPage}</b> trên tổng số <b>${totalPages}</b> trang</span>
+                        <ul class="pagination-nav">
+                            <c:if test="${currentPage > 1}">
+                                <li class="page-num-item">
+                                    <a href="${pageContext.request.contextPath}/admin/vouchers?action=list&page=${currentPage - 1}&status=${param.status}&search=${param.search}">
+                                        <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                     </a>
-                                </c:otherwise>
-                            </c:choose>
-
-                            <%-- Sliding Window Calculations --%>
-                            <c:set var="startPage" value="${currentPage}" />
-                            <c:set var="endPage" value="${currentPage + 1}" />
-
-                            <%-- Safety check: Ensure the end range doesn't exceed total page bounds --%>
-                            <c:if test="${endPage > totalPages}">
-                                <c:set var="endPage" value="${totalPages}" />
-                                <%-- If we are on the very last page, adjust the start page back by 1 so 2 numbers still render if possible --%>
-                                <c:if test="${currentPage > 1}">
-                                    <c:set var="startPage" value="${currentPage - 1}" />
-                                </c:if>
+                                </li>
                             </c:if>
 
-                            <%-- Render the Sliding Active Window --%>
-                            <c:forEach begin="${startPage}" end="${endPage}" var="i">
-                                <c:choose>
-                                    <c:when test="${i == currentPage}">
-                                        <span class="page-btn active">${i}</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <a href="${pageContext.request.contextPath}/admin/vouchers${pageQueryBase}&page=${i}" 
-                                           class="page-btn" style="text-decoration:none;">
-                                           ${i}
-                                        </a>
-                                    </c:otherwise>
-                                </c:choose>
+                            <c:forEach begin="1" end="${totalPages}" var="i">
+                                <li class="page-num-item ${currentPage == i ? 'active' : ''}">
+                                    <a href="${pageContext.request.contextPath}/admin/vouchers?action=list&page=${i}&status=${param.status}&search=${param.search}">${i}</a>
+                                </li>
                             </c:forEach>
 
-                            <%-- Append Ellipsis and the Later Block bounds if more pages remain outside our active window --%>
-                            <c:if test="${endPage < totalPages}">
-                                <span class="pagination-ellipsis disabled" style="padding: 6px 8px; color: #718096; border:none; background:none; cursor:default;">...</span>
-                                
-                                <%-- Render the final remaining page grouping calculations if relevant --%>
-                                <c:if test="${endPage < totalPages - 1}">
-                                    <a href="${pageContext.request.contextPath}/admin/vouchers${pageQueryBase}&page=${totalPages - 1}" class="page-btn" style="text-decoration:none;">${totalPages - 1}</a>
-                                </c:if>
-                                <a href="${pageContext.request.contextPath}/admin/vouchers${pageQueryBase}&page=${totalPages}" class="page-btn" style="text-decoration:none;">${totalPages}</a>
-                            </c:if>
-
-                            <%-- Next button --%>
-                            <c:choose>
-                                <c:when test="${currentPage >= totalPages}">
-                                    <span class="page-btn disabled">
-                                        <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
-                                    </span>
-                                </c:when>
-                                <c:otherwise>
-                                    <a class="page-btn"
-                                       href="${pageContext.request.contextPath}/admin/vouchers${pageQueryBase}&page=${currentPage + 1}"
-                                       style="text-decoration:none;">
-                                        <i class="fa-solid fa-chevron-right" style="font-size:10px;"></i>
+                            <c:if test="${currentPage < totalPages}">
+                                <li class="page-num-item">
+                                    <a href="${pageContext.request.contextPath}/admin/vouchers?action=list&page=${currentPage + 1}&status=${param.status}&search=${param.search}">
+                                        <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                     </a>
-                                </c:otherwise>
-                            </c:choose>
-
-                        </div><%-- .page-numbers --%>
-                    </div><%-- .pagination-bar --%>
+                                </li>
+                            </c:if>
+                        </ul>
+                    </div>
 
                 </div><!-- end .table-card -->
 

@@ -13,7 +13,57 @@
         <jsp:include page="/common/admin-header.jsp">
             <jsp:param name="title" value="CakeZone Admin - Categories" />
         </jsp:include>
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all/order.css">
+        <style>
+            /* Pagination Design */
+            .pagination-area {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px 25px;
+                border-top: 1px solid #f1ede8;
+                background-color: #fff;
+            }
+            .pagination-text {
+                font-size: 13px;
+                color: #888888;
+            }
+            .pagination-nav {
+                display: flex;
+                gap: 5px;
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+
+            .page-num-item a {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 6px;
+                border: 1px solid #f1ede8;
+                font-size: 13px;
+                font-weight: 600;
+                color: #555;
+                text-decoration: none;
+                transition: all 0.2s;
+            }
+            .page-num-item a:hover {
+                background-color: #fafafa;
+                border-color: #ccc;
+            }
+            .page-num-item.active a {
+                background-color: #3f5f36;
+                border-color: #3f5f36;
+                color: #fff;
+            }
+            .page-num-item.disabled a {
+                opacity: 0.5;
+                pointer-events: none;
+                background-color: #f8f6f4;
+            }
+        </style>
     </head>
     <body>
 
@@ -28,63 +78,71 @@
                 <jsp:param name="activeMenu" value="Danh mục sản phẩm" />
             </jsp:include>
 
-            <div class="content-container">
-                <!-- Page Title Area -->
-                <div class="page-title-area">
-                    <div>
-                        <h1 class="page-title">Danh mục sản phẩm</h1>
-                        <p class="page-subtitle">Quản lý và tổ chức các danh mục sản phẩm chính và nguyên liệu của tiệm bánh.</p>
+            <div class="content">
+                <div class="page-header">
+                    <div class="page-title">
+                        <h2>Danh mục sản phẩm</h2>
+                        <p>Manage and organize your bakery's product offerings.</p>
                     </div>
-                    <a href="${pageContext.request.contextPath}/admin/categories?action=add" class="btn btn-cz-primary" style="text-decoration: none;">
-                        <i class="fa-solid fa-circle-plus"></i> Thêm danh mục
+                    <a href="${pageContext.request.contextPath}/admin/categories?action=add" class="btn-primary" style="text-decoration: none;">
+                        <i class="fa-solid fa-plus"></i> Thêm danh mục
                     </a>
                 </div>
 
                 <c:if test="${not empty message or not empty success}">
-                    <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 20px;">
-                        <i class="fa-solid fa-circle-check me-2"></i> Thao tác thành công!
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+                    <div style="background-color: #dcfce7; color: #166534; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #bbf7d0;">
+                        <i class="fa-solid fa-circle-check"></i> Thao tác thành công!
                     </div>
                 </c:if>
 
                 <c:if test="${not empty error}">
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 20px;">
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                    <div style="background-color: #fee2e2; color: #991b1b; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fecaca;">
+                        <i class="fa-solid fa-circle-exclamation"></i>
                         <strong>Thất bại:</strong> 
                         <c:choose>
-                            <c:when test="${error == 'duplicate_id'}">Mã danh mục này đã tồn tại trong hệ thống! Vui lòng chọn mã khác.</c:when>
-                            <c:when test="${error == 'invalid_id_format'}">Mã danh mục không hợp lệ. Vui lòng chỉ sử dụng chữ in hoa, số và dấu gạch ngang (VD: CAT-ABC).</c:when>
-                            <c:when test="${error == 'desc_too_long'}">Mô tả quá dài! Vui lòng nhập dưới 255 ký tự.</c:when>
-                            <c:when test="${error == 'delete_failed'}">Không thể xóa danh mục này! Có thể danh mục đang chứa sản phẩm hoặc nguyên liệu bên trong.</c:when>
-                            <c:when test="${error == 'not_found'}">Không tìm thấy danh mục bạn yêu cầu.</c:when>
-                            <c:otherwise>Đã xảy ra lỗi cơ sở dữ liệu. Vui lòng thử lại sau.</c:otherwise>
+                            <c:when test="${error == 'duplicate_id'}">
+                                Mã danh mục này đã tồn tại trong hệ thống! Vui lòng chọn mã khác.
+                            </c:when>
+                            <c:when test="${error == 'invalid_id_format'}">
+                                Mã danh mục không hợp lệ. Vui lòng chỉ sử dụng chữ in hoa, số và dấu gạch ngang (VD: CAT-ABC).
+                            </c:when>
+                            <c:when test="${error == 'desc_too_long'}">
+                                Mô tả quá dài! Vui lòng nhập dưới 255 ký tự.
+                            </c:when>
+                            <c:when test="${error == 'delete_failed'}">
+                                Không thể xóa danh mục này! Có thể danh mục đang chứa sản phẩm hoặc nguyên liệu bên trong.
+                            </c:when>
+                            <c:when test="${error == 'not_found'}">
+                                Không tìm thấy danh mục bạn yêu cầu.
+                            </c:when>
+                            <c:otherwise>
+                                Đã xảy ra lỗi cơ sở dữ liệu. Vui lòng thử lại sau.
+                            </c:otherwise>
                         </c:choose>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
                     </div>
                 </c:if>
 
-                <!-- Filters -->
-                <div class="filter-card">
-                    <form class="filter-form" action="${pageContext.request.contextPath}/admin/categories" method="GET">
-                        <div class="search-wrapper">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <input type="text" class="search-input" name="search" value="${searchQuery}" placeholder="Tìm kiếm theo mã, tên danh mục...">
-                        </div>
-
-                        <select class="filter-select" name="filterType" onchange="this.form.submit()">
-                            <option value="all" ${filterType == 'all' ? 'selected' : ''}>Tất cả phân loại</option>
-                            <option value="Sản phẩm chính" ${filterType == 'Sản phẩm chính' ? 'selected' : ''}>Sản phẩm chính</option>
-                            <option value="Nguyên liệu" ${filterType == 'Nguyên liệu' ? 'selected' : ''}>Nguyên liệu</option>
-                        </select>
-
-                        <button type="submit" class="btn-filter-action"><i class="fa-solid fa-sliders"></i> Lọc</button>
-                        <a href="${pageContext.request.contextPath}/admin/categories" class="btn-clear-filter"><i class="fa-solid fa-arrow-rotate-left"></i> Làm mới</a>
-                    </form>
-                </div>
-
-                <!-- Table Card -->
                 <div class="table-card">
-                    <table class="cz-table">
+
+                    <div class="table-controls">
+                        <form action="${pageContext.request.contextPath}/admin/categories" method="GET" style="display: flex; gap: 15px; width: 100%; align-items: center;">
+
+                            <div class="search-bar" style="flex-grow: 1; max-width: 400px;">
+                                <i class="fa-solid fa-magnifying-glass" style="color: #a0a0a0;"></i>
+                                <input type="text" name="search" value="${searchQuery}" placeholder="Tìm kiếm theo mã, tên danh mục...">
+                            </div>
+
+                            <select name="filterType" style="padding: 10px 15px; border-radius: 50px; border: 1px solid var(--border-soft); background: var(--bg-cream); outline: none; font-size: 14px; cursor: pointer;">
+                                <option value="all" ${filterType == 'all' ? 'selected' : ''}>Tất cả phân loại</option>
+                                <option value="Sản phẩm chính" ${filterType == 'Sản phẩm chính' ? 'selected' : ''}>Sản phẩm chính</option>
+                                <option value="Nguyên liệu" ${filterType == 'Nguyên liệu' ? 'selected' : ''}>Nguyên liệu</option>
+                            </select>
+
+                            <button type="submit" class="btn-primary" style="padding: 10px 20px;">Lọc</button>
+                        </form>
+                    </div>
+
+                    <table>
                         <thead>
                             <tr>
                                 <th>Mã Danh Mục</th>
@@ -145,42 +203,31 @@
                         </tbody>
                     </table>
 
-                    <div class="pagination">
-                        <span>
-                            Tổng cộng <strong>${totalRecords != null ? totalRecords : 0}</strong> danh mục 
-                            <span style="color: #64748b; font-size: 13px; font-weight: normal; margin-left: 5px;">
-                                (${totalActive != null ? totalActive : 0} đang hoạt động / <span style="color: #ef4444;">${totalDisabled != null ? totalDisabled : 0} đã vô hiệu hóa</span>)
-                            </span>
-                        </span>
-
-                        <c:set var="queryStr" value="&search=${searchQuery}&filterType=${filterType}" />
-
-                        <div class="page-numbers">
+                    <div class="pagination-area">
+                        <span class="pagination-text">Trang số <b>${currentPage}</b> trên tổng số <b>${totalPages != null && totalPages > 0 ? totalPages : 1}</b> trang</span>
+                        <ul class="pagination-nav">
                             <c:if test="${currentPage > 1}">
-                                <a href="${pageContext.request.contextPath}/admin/categories?page=${currentPage - 1}${queryStr}" class="page-btn" style="text-decoration: none;">
-                                    <i class="fa-solid fa-chevron-left" style="font-size: 10px;"></i>
-                                </a>
+                                <li class="page-num-item">
+                                    <a href="${pageContext.request.contextPath}/admin/categories?action=list&page=${currentPage - 1}&search=${param.search}">
+                                        <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
+                                    </a>
+                                </li>
                             </c:if>
 
                             <c:forEach begin="1" end="${totalPages != null && totalPages > 0 ? totalPages : 1}" var="i">
-                                <c:choose>
-                                    <c:when test="${currentPage == i}">
-                                        <span class="page-btn active">${i}</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <a href="${pageContext.request.contextPath}/admin/categories?page=${i}${queryStr}" class="page-btn" style="text-decoration: none; color: inherit;">
-                                            ${i}
-                                        </a>
-                                    </c:otherwise>
-                                </c:choose>
+                                <li class="page-num-item ${currentPage == i ? 'active' : ''}">
+                                    <a href="${pageContext.request.contextPath}/admin/categories?action=list&page=${i}&search=${param.search}">${i}</a>
+                                </li>
                             </c:forEach>
 
                             <c:if test="${currentPage < totalPages}">
-                                <a href="${pageContext.request.contextPath}/admin/categories?page=${currentPage + 1}${queryStr}" class="page-btn" style="text-decoration: none;">
-                                    <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
-                                </a>
+                                <li class="page-num-item">
+                                    <a href="${pageContext.request.contextPath}/admin/categories?action=list&page=${currentPage + 1}&search=${param.search}">
+                                        <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
+                                    </a>
+                                </li>
                             </c:if>
-                        </div>
+                        </ul>
                     </div>
                 </div>
             </div>
