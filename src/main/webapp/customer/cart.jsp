@@ -236,10 +236,7 @@
                                     <span>Tạm tính</span>
                                     <span id="cartSubtotalDisplay"><fmt:formatNumber value="${cartSubtotal}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
                                 </div>
-                                <div class="summary-row">
-                                    <span>Phí vận chuyển</span>
-                                    <span>30.000₫</span>
-                                </div>
+
                                 <div class="summary-row" style="color: #d9534f;">
                                     <span>Giảm giá</span>
                                     <span id="cartDiscountDisplay">
@@ -255,7 +252,7 @@
                                 <div class="summary-row total">
                                     <span>Tổng cộng</span>
                                     <span class="price" id="cartTotalDisplay">
-                                        <c:set var="totalValue" value="${cartSubtotal + 30000}" />
+                                        <c:set var="totalValue" value="${cartSubtotal}" />
                                         <c:if test="${not empty sessionScope.appliedDiscount}">
                                             <c:set var="totalValue" value="${totalValue - sessionScope.appliedDiscount}" />
                                         </c:if>
@@ -302,7 +299,7 @@
 
         <script>
 
-            const shippingFee = 30000;
+            const shippingFee = 0;
 
             function formatCurrency(amount) {
                 return amount.toLocaleString('vi-VN') + "₫";

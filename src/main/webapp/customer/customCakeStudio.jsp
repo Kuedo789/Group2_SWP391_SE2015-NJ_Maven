@@ -15,6 +15,46 @@
                 padding-top: 100px !important;
                 margin-top: 0 !important;
             }
+            
+            /* Custom Toast Notification */
+            .cz-toast {
+                position: fixed;
+                top: 80px;
+                right: -350px;
+                width: 320px;
+                background-color: #fff;
+                color: #333;
+                padding: 16px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                z-index: 9999;
+                transition: right 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                font-family: 'Outfit', sans-serif;
+                border-left: 5px solid #10b981;
+            }
+            .cz-toast.show {
+                right: 20px;
+            }
+            .cz-toast.error {
+                border-left-color: #ef4444;
+            }
+            .cz-toast-icon {
+                font-size: 20px;
+            }
+            .cz-toast.success .cz-toast-icon {
+                color: #10b981;
+            }
+            .cz-toast.error .cz-toast-icon {
+                color: #ef4444;
+            }
+            .cz-toast-message {
+                font-size: 14px;
+                font-weight: 500;
+                line-height: 1.4;
+            }
         </style>
     </head>
     <body>
@@ -293,6 +333,26 @@
                 document.getElementById('totalPriceDisplay').innerText = state.price.toLocaleString('vi-VN') + '₫';
             }
 
+            function showToast(message, type = 'success') {
+                let toast = document.getElementById('cz-toast');
+                if (!toast) {
+                    toast = document.createElement('div');
+                    toast.id = 'cz-toast';
+                    document.body.appendChild(toast);
+                }
+                toast.className = 'cz-toast ' + type;
+                const iconHtml = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>';
+                toast.innerHTML = '<div class="cz-toast-icon">' + iconHtml + '</div><div class="cz-toast-message">' + message + '</div>';
+                
+                // Trigger reflow
+                void toast.offsetWidth;
+                toast.classList.add('show');
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
             function addToCart() {
             const canvas = document.getElementById('cakeDrawingCanvas');
             
@@ -339,14 +399,14 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    alert('✅ ' + data.message);
+                    showToast('Thêm vào giỏ hàng thành công!', 'success');
                 } else {
-                    alert('❌ ' + data.message);
+                    showToast(data.message, 'error');
                 }
             })
             .catch(err => {
                 console.error(err);
-                alert('❌ Lỗi kết nối. Vui lòng thử lại.');
+                showToast('Lỗi kết nối. Vui lòng thử lại.', 'error');
             })
             .finally(() => {
                 btn.disabled = false;

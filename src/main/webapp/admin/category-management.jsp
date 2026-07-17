@@ -13,6 +13,57 @@
         <jsp:include page="/common/admin-header.jsp">
             <jsp:param name="title" value="CakeZone Admin - Categories" />
         </jsp:include>
+        <style>
+            /* Pagination Design */
+            .pagination-area {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px 25px;
+                border-top: 1px solid #f1ede8;
+                background-color: #fff;
+            }
+            .pagination-text {
+                font-size: 13px;
+                color: #888888;
+            }
+            .pagination-nav {
+                display: flex;
+                gap: 5px;
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+
+            .page-num-item a {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 6px;
+                border: 1px solid #f1ede8;
+                font-size: 13px;
+                font-weight: 600;
+                color: #555;
+                text-decoration: none;
+                transition: all 0.2s;
+            }
+            .page-num-item a:hover {
+                background-color: #fafafa;
+                border-color: #ccc;
+            }
+            .page-num-item.active a {
+                background-color: #3f5f36;
+                border-color: #3f5f36;
+                color: #fff;
+            }
+            .page-num-item.disabled a {
+                opacity: 0.5;
+                pointer-events: none;
+                background-color: #f8f6f4;
+            }
+        </style>
     </head>
     <body>
 
@@ -152,42 +203,31 @@
                         </tbody>
                     </table>
 
-                    <div class="pagination">
-                        <span>
-                            Tổng cộng <strong>${totalRecords != null ? totalRecords : 0}</strong> danh mục 
-                            <span style="color: #64748b; font-size: 13px; font-weight: normal; margin-left: 5px;">
-                                (${totalActive != null ? totalActive : 0} đang hoạt động / <span style="color: #ef4444;">${totalDisabled != null ? totalDisabled : 0} đã vô hiệu hóa</span>)
-                            </span>
-                        </span>
-
-                        <c:set var="queryStr" value="&search=${searchQuery}&filterType=${filterType}" />
-
-                        <div class="page-numbers">
+                    <div class="pagination-area">
+                        <span class="pagination-text">Trang số <b>${currentPage}</b> trên tổng số <b>${totalPages != null && totalPages > 0 ? totalPages : 1}</b> trang</span>
+                        <ul class="pagination-nav">
                             <c:if test="${currentPage > 1}">
-                                <a href="${pageContext.request.contextPath}/admin/categories?page=${currentPage - 1}${queryStr}" class="page-btn" style="text-decoration: none;">
-                                    <i class="fa-solid fa-chevron-left" style="font-size: 10px;"></i>
-                                </a>
+                                <li class="page-num-item">
+                                    <a href="${pageContext.request.contextPath}/admin/categories?action=list&page=${currentPage - 1}&search=${param.search}">
+                                        <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
+                                    </a>
+                                </li>
                             </c:if>
 
                             <c:forEach begin="1" end="${totalPages != null && totalPages > 0 ? totalPages : 1}" var="i">
-                                <c:choose>
-                                    <c:when test="${currentPage == i}">
-                                        <span class="page-btn active">${i}</span>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <a href="${pageContext.request.contextPath}/admin/categories?page=${i}${queryStr}" class="page-btn" style="text-decoration: none; color: inherit;">
-                                            ${i}
-                                        </a>
-                                    </c:otherwise>
-                                </c:choose>
+                                <li class="page-num-item ${currentPage == i ? 'active' : ''}">
+                                    <a href="${pageContext.request.contextPath}/admin/categories?action=list&page=${i}&search=${param.search}">${i}</a>
+                                </li>
                             </c:forEach>
 
                             <c:if test="${currentPage < totalPages}">
-                                <a href="${pageContext.request.contextPath}/admin/categories?page=${currentPage + 1}${queryStr}" class="page-btn" style="text-decoration: none;">
-                                    <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i>
-                                </a>
+                                <li class="page-num-item">
+                                    <a href="${pageContext.request.contextPath}/admin/categories?action=list&page=${currentPage + 1}&search=${param.search}">
+                                        <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
+                                    </a>
+                                </li>
                             </c:if>
-                        </div>
+                        </ul>
                     </div>
                 </div>
             </div>
