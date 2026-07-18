@@ -166,11 +166,17 @@ public class CartServlet extends HttpServlet {
                 request.setAttribute("appliedVoucherCode", appliedVoucherCode);
                 request.setAttribute("appliedVoucher", voucher);
                 session.setAttribute("appliedDiscount", appliedDiscount); // Keep synced for checkout
+                session.setAttribute("voucherDiscountType", discountType);
+                session.setAttribute("voucherDiscountValue", voucher.getDiscountValue());
+                session.setAttribute("voucherMaxDiscount", voucher.getMaxDiscountAmount());
             } else {
                 // Voucher no longer valid (e.g. subtotal dropped below minimum)
                 session.removeAttribute("appliedVoucherCode");
                 session.removeAttribute("appliedVoucherId");
                 session.removeAttribute("appliedDiscount");
+                session.removeAttribute("voucherDiscountType");
+                session.removeAttribute("voucherDiscountValue");
+                session.removeAttribute("voucherMaxDiscount");
                 request.setAttribute("voucherError", "Giỏ hàng không còn đủ điều kiện áp dụng voucher này.");
             }
         }
@@ -244,6 +250,9 @@ public class CartServlet extends HttpServlet {
         session.removeAttribute("appliedVoucherId");
         session.removeAttribute("appliedVoucherCode");
         session.removeAttribute("appliedDiscount");
+        session.removeAttribute("voucherDiscountType");
+        session.removeAttribute("voucherDiscountValue");
+        session.removeAttribute("voucherMaxDiscount");
         response.sendRedirect(request.getContextPath() + "/cart");
     }
 }

@@ -301,6 +301,28 @@
 
             const shippingFee = 0;
 
+            // Voucher metadata baked in from session at render time
+            const voucherDiscountType  = "${not empty sessionScope.voucherDiscountType  ? sessionScope.voucherDiscountType  : ''}";
+            const voucherDiscountValue = parseFloat("${not empty sessionScope.voucherDiscountValue ? sessionScope.voucherDiscountValue : 0}") || 0;
+            const voucherMaxDiscount   = parseFloat("${not empty sessionScope.voucherMaxDiscount   ? sessionScope.voucherMaxDiscount   : 0}") || 0;
+            const hasVoucher = voucherDiscountType !== '' && voucherDiscountValue > 0;
+
+            function computeDiscount(subtotal) {
+                if (!hasVoucher) return 0;
+                const type = voucherDiscountType.toUpperCase();
+                let discount = 0;
+                if (type === 'PERCENT' || type === 'PERCENTAGE') {
+                    discount = subtotal * (voucherDiscountValue / 100);
+                    if (voucherMaxDiscount > 0 && discount > voucherMaxDiscount) {
+                        discount = voucherMaxDiscount;
+                    }
+                } else {
+                    // FIXED or FIXED_AMOUNT
+                    discount = voucherDiscountValue;
+                }
+                return Math.min(discount, subtotal); // discount can never exceed subtotal
+            }
+
             function formatCurrency(amount) {
                 return amount.toLocaleString('vi-VN') + "₫";
             }
@@ -387,12 +409,7 @@
                 // Persist selection across page reloads (e.g. when applying voucher or updating quantity)
                 sessionStorage.setItem("selectedCartItems", JSON.stringify(checkedIds));
 
-                let discount = parseFloat("${not empty sessionScope.appliedDiscount ? sessionScope.appliedDiscount : 0}") || 0;
-                
-                // Discount can't exceed subtotal
-                if (discount > subtotal) {
-                    discount = subtotal;
-                }
+                let discount = computeDiscount(subtotal);
 
                 let finalTotal = 0;
                 if (subtotal > 0) {
