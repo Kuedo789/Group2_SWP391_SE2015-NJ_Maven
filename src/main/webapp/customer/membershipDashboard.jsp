@@ -27,6 +27,98 @@
                 padding-top: 100px !important;
                 margin-top: 0 !important;
             }
+
+            /* ── Voucher wallet filter pills (mirrors admin voucher page style) ── */
+            .wallet-filter-bar {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin: 18px 0 14px;
+                padding-bottom: 16px;
+                border-bottom: 1px solid var(--border, #eee5dc);
+            }
+            .pill-tab {
+                padding: 7px 18px;
+                border-radius: 50px;
+                font-size: 13px;
+                font-weight: 600;
+                cursor: pointer;
+                text-decoration: none;
+                border: 1.5px solid var(--border, #eee5dc);
+                color: var(--text, #241d18);
+                background: #fff;
+                transition: background 0.18s, color 0.18s, border-color 0.18s;
+                white-space: nowrap;
+            }
+            .pill-tab:hover  { background: #f8f6f4; }
+            .pill-tab.active { background: var(--primary, #345f3d); color: #fff; border-color: var(--primary, #345f3d); }
+
+            /* ── Wallet search bar ─────────────────────────────────────────── */
+            .wallet-search-form {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+                margin-left: auto;       /* push to the right of the pills */
+                flex-shrink: 0;
+            }
+            .wallet-search-input {
+                padding: 7px 14px;
+                border: 1.5px solid var(--border, #eee5dc);
+                border-radius: 50px;
+                font-size: 13px;
+                outline: none;
+                background: #fff;
+                color: var(--text, #241d18);
+                width: 210px;
+                transition: border-color 0.18s;
+            }
+            .wallet-search-input:focus { border-color: var(--primary, #345f3d); }
+            .wallet-search-btn {
+                padding: 7px 16px;
+                border-radius: 50px;
+                font-size: 13px;
+                font-weight: 600;
+                border: none;
+                background: var(--primary, #345f3d);
+                color: #fff;
+                cursor: pointer;
+                transition: opacity 0.18s;
+            }
+            .wallet-search-btn:hover { opacity: 0.88; }
+            .wallet-clear-link {
+                font-size: 12px;
+                color: var(--text-muted, #756b64);
+                text-decoration: none;
+                white-space: nowrap;
+            }
+            .wallet-clear-link:hover { text-decoration: underline; }
+
+            /* ── Wallet loading spinner ───────────────────────────────────────── */
+            #wallet-list-area {
+                min-height: 80px;
+                position: relative;
+                transition: opacity 0.18s;
+            }
+            #wallet-list-area.wallet-loading {
+                opacity: 0.45;
+                pointer-events: none;
+            }
+            .wallet-spinner {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 40px 0;
+            }
+            .wallet-spinner::after {
+                content: '';
+                width: 32px; height: 32px;
+                border: 3px solid var(--border, #eee5dc);
+                border-top-color: var(--primary, #345f3d);
+                border-radius: 50%;
+                animation: wallet-spin 0.7s linear infinite;
+            }
+            @keyframes wallet-spin { to { transform: rotate(360deg); } }
         </style>
     </head>
 
@@ -358,6 +450,55 @@
                         </a>
                     </div>
 
+                    <%-- ── Wallet filter pills + search bar ── --%>
+                    <div class="wallet-filter-bar">
+
+                        <%-- Tất cả --%>
+                        <button type="button" id="pill-all"
+                                class="pill-tab ${walletScope == 'all' ? 'active' : ''}"
+                                onclick="fetchWallet('all', document.getElementById('wallet-search-input').value)">
+                            Tất cả
+                        </button>
+
+                        <%-- Toàn đơn --%>
+                        <button type="button" id="pill-ORDER"
+                                class="pill-tab ${walletScope == 'ORDER' ? 'active' : ''}"
+                                onclick="fetchWallet('ORDER', document.getElementById('wallet-search-input').value)">
+                            Toàn đơn
+                        </button>
+
+                        <%-- Freeship --%>
+                        <button type="button" id="pill-SHIPPING"
+                                class="pill-tab ${walletScope == 'SHIPPING' ? 'active' : ''}"
+                                onclick="fetchWallet('SHIPPING', document.getElementById('wallet-search-input').value)">
+                            Freeship
+                        </button>
+
+                        <%-- Search form: submit is intercepted by JS – no page reload --%>
+                        <form id="wallet-search-form" class="wallet-search-form"
+                              onsubmit="return false;">
+                            <input type="text" id="wallet-search-input"
+                                   class="wallet-search-input"
+                                   value="${walletSearch}"
+                                   placeholder="Tìm mã hoặc tên voucher..."
+                                   oninput="onWalletSearchInput(this.value)">
+                            <button type="button" class="wallet-search-btn"
+                                    onclick="fetchWallet(currentScope, document.getElementById('wallet-search-input').value)">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </button>
+                            <%-- Clear button: shown/hidden by JS --%>
+                            <a href="#" id="wallet-clear-btn"
+                               class="wallet-clear-link"
+                               style="${not empty walletSearch ? '' : 'display:none;'}"
+                               onclick="clearWalletSearch(); return false;">
+                                <i class="fa-solid fa-xmark"></i> Xóa
+                            </a>
+                        </form>
+
+                    </div><%-- /wallet-filter-bar --%>
+
+                    <%-- The voucher list is replaced in-place by AJAX without a full reload --%>
+                    <div id="wallet-list-area">
                     <c:choose>
                         <c:when test="${not empty ownedVouchers}">
 
@@ -426,7 +567,20 @@
                         <c:otherwise>
                             <div class="ms-wallet-empty">
                                 <span class="ms-wallet-empty-icon">🎫</span>
-                                <p>Bạn chưa đổi voucher nào.</p>
+                                <c:choose>
+                                    <c:when test="${not empty walletSearch}">
+                                        <p>Không tìm thấy voucher khớp với từ khóa “${walletSearch}”.</p>
+                                    </c:when>
+                                    <c:when test="${walletScope == 'ORDER'}">
+                                        <p>Bạn chưa có voucher toàn đơn nào.</p>
+                                    </c:when>
+                                    <c:when test="${walletScope == 'SHIPPING'}">
+                                        <p>Bạn chưa có voucher freeship nào.</p>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <p>Bạn chưa đổi voucher nào.</p>
+                                    </c:otherwise>
+                                </c:choose>
                                 <p class="ms-wallet-empty-sub">
                                     Hãy dùng điểm để đổi thưởng ngay!
                                     <a href="${pageContext.request.contextPath}/rewards">Đổi ngay →</a>
@@ -434,6 +588,7 @@
                             </div>
                         </c:otherwise>
                     </c:choose>
+                    </div><%-- /wallet-list-area --%>
 
                 </div><%-- /ms-wallet-card --%>
 
@@ -445,10 +600,103 @@
         <jsp:include page="../common/scripts.jsp" />
 
         <script>
+            /* ================================================================
+             *  Wallet AJAX filter/search
+             *  Replaces #wallet-list-area content without reloading the page.
+             * ================================================================ */
+
+            // Server-rendered initial state baked in on first load
+            var currentScope  = '${walletScope}';
+            var searchDebounceTimer = null;
+
             /**
-             * Copies the voucher code to the clipboard and gives the user a
-             * brief visual "Đã sao chép!" confirmation on the badge element.
+             * Fetches the wallet fragment from the server via AJAX and injects
+             * it into #wallet-list-area.
+             *
+             * @param {string} scope   - 'all' | 'ORDER' | 'SHIPPING'
+             * @param {string} keyword - current search term (may be empty)
              */
+            function fetchWallet(scope, keyword) {
+                if (!scope) scope = 'all';
+                if (!keyword) keyword = '';
+
+                currentScope = scope;
+
+                var listArea = document.getElementById('wallet-list-area');
+                var clearBtn = document.getElementById('wallet-clear-btn');
+
+                // Highlight active pill
+                document.querySelectorAll('.pill-tab').forEach(function(btn) {
+                    var pillId = btn.id.replace('pill-', '');
+                    btn.classList.toggle('active', pillId === scope);
+                    btn.disabled = true;   // briefly disable all pills during fetch
+                });
+
+                // Show/hide the clear button based on whether there is a keyword
+                if (clearBtn) {
+                    clearBtn.style.display = keyword.trim() ? '' : 'none';
+                }
+
+                // Dim the list area (opacity fade acts as a lightweight loading cue)
+                listArea.classList.add('wallet-loading');
+
+                // Build URL
+                var url = '${pageContext.request.contextPath}/membership'
+                        + '?scope=' + encodeURIComponent(scope)
+                        + '&search=' + encodeURIComponent(keyword.trim());
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(function(res) {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.text();
+                })
+                .then(function(html) {
+                    listArea.innerHTML = html;
+                    listArea.classList.remove('wallet-loading');
+                    // Re-enable all pills
+                    document.querySelectorAll('.pill-tab').forEach(function(btn) {
+                        btn.disabled = false;
+                    });
+                })
+                .catch(function(err) {
+                    console.error('Wallet fetch failed:', err);
+                    listArea.classList.remove('wallet-loading');
+                    document.querySelectorAll('.pill-tab').forEach(function(btn) {
+                        btn.disabled = false;
+                    });
+                });
+            }
+
+            /**
+             * Debounced handler for the search input.
+             * Waits 380ms after the user stops typing before firing the request.
+             */
+            function onWalletSearchInput(value) {
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(function() {
+                    fetchWallet(currentScope, value);
+                }, 380);
+
+                // Show/hide the clear button in real time
+                var clearBtn = document.getElementById('wallet-clear-btn');
+                if (clearBtn) clearBtn.style.display = value.trim() ? '' : 'none';
+            }
+
+            /**
+             * Clears the search input and reloads the wallet with the current scope.
+             */
+            function clearWalletSearch() {
+                var input = document.getElementById('wallet-search-input');
+                if (input) { input.value = ''; input.focus(); }
+                fetchWallet(currentScope, '');
+            }
+
+            /* ================================================================
+             *  Copy-to-clipboard helper (unchanged behaviour)
+             * ================================================================ */
             function copyCode(code, elementId) {
                 navigator.clipboard.writeText(code).then(function () {
                     var el = document.getElementById(elementId);
@@ -463,7 +711,6 @@
                         el.style.color = '';
                     }, 1800);
                 }).catch(function () {
-                    // Fallback for older browsers
                     var ta = document.createElement('textarea');
                     ta.value = code;
                     ta.style.position = 'fixed';

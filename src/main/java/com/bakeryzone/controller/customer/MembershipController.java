@@ -60,6 +60,10 @@ public class MembershipController extends HttpServlet {
         User user = (User) session.getAttribute("user");
         String userId = user.getUserId();
 
+        // Detect whether this is an AJAX wallet-filter request.
+        // The JS Fetch call will include the header X-Requested-With: XMLHttpRequest.
+        boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+
         // Load membership record; create defaults on first visit if absent
         UserMembership membership = membershipDAO.getMembershipByUserId(userId);
 
@@ -72,6 +76,12 @@ public class MembershipController extends HttpServlet {
         }
 
         if (membership == null) {
+            if (isAjax) {
+                // Return a minimal error fragment for the AJAX caller
+                response.setContentType("text/html;charset=UTF-8");
+                response.getWriter().write("<div class=\"ms-wallet-empty\"><p>Không thể tải dữ liệu.</p></div>");
+                return;
+            }
             // Fallback safety: membership tables may not be set up yet
             request.setAttribute("membershipError",
                     "Không thể tải thông tin hạng thành viên. Vui lòng thử lại sau.");
@@ -80,20 +90,41 @@ public class MembershipController extends HttpServlet {
             return;
         }
 
-        // Load all tiers for the benefits-matrix table
+        // Load the user's own un-used, still-valid vouchers for the wallet section.
+        // Honour optional ?scope= and ?search= query parameters for wallet filtering.
+        String walletScope  = request.getParameter("scope");   // null | all | ORDER | SHIPPING
+        String walletSearch = request.getParameter("search");  // null | keyword
+        if (walletScope == null || walletScope.isBlank()) {
+            walletScope = "all";
+        }
+        if (walletSearch == null) {
+            walletSearch = "";
+        }
+        List<Voucher> ownedVouchers = membershipDAO.getUserOwnedVouchers(
+                userId,
+                "all".equalsIgnoreCase(walletScope) ? null : walletScope,
+                walletSearch);
+
+        request.setAttribute("ownedVouchers", ownedVouchers);
+        request.setAttribute("walletScope",   walletScope);
+        request.setAttribute("walletSearch",  walletSearch);
+
+        // ── AJAX path: return only the voucher list fragment ──────────────────
+        if (isAjax) {
+            response.setContentType("text/html;charset=UTF-8");
+            request.getRequestDispatcher("/customer/walletFragment.jsp")
+                    .forward(request, response);
+            return;
+        }
+
+        // ── Full-page path: load the remaining data and render the dashboard ──
         List<MembershipTier> allTiers = membershipDAO.getAllTiers();
-
-        // Load recent point-history entries for the point-log sub-tab
-        List<PointHistory> pointHistory = membershipDAO.getPointHistory(userId, POINT_HISTORY_LIMIT);
-
-        // Load the user's own un-used, still-valid vouchers for the wallet section
-        List<Voucher> ownedVouchers = membershipDAO.getUserOwnedVouchers(userId);
+        List<PointHistory>   pointHistory = membershipDAO.getPointHistory(userId, POINT_HISTORY_LIMIT);
 
         // Bind to request scope → JSP reads via EL: ${membership}, ${ownedVouchers}, etc.
         request.setAttribute("membership",    membership);
         request.setAttribute("allTiers",      allTiers);
         request.setAttribute("pointHistory",  pointHistory);
-        request.setAttribute("ownedVouchers", ownedVouchers);
 
         // Also consume the PRG flash message placed by RewardsController on success
         String rewardSuccess = (String) session.getAttribute("rewardSuccess");

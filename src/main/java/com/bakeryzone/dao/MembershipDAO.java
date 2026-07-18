@@ -252,36 +252,51 @@ public class MembershipDAO {
     /**
      * Retrieves all active, un-used vouchers that the user has claimed via the
      * rewards exchange.  Only returns vouchers that are still valid today.
-     *
-     * SQL mirrors the specification:
-     * <pre>
-     *   SELECT v.* FROM UserVoucher uv
-     *   JOIN Voucher v ON uv.VoucherID = v.VoucherID
-     *   WHERE uv.UserID = ?
-     *     AND uv.IsUsed  = 0
-     *     AND v.IsActive = 1
-     *     AND CURDATE() &lt;= v.EndDate
-     *   ORDER BY uv.AssignedAt DESC
-     * </pre>
+     * Optionally filters by scope (ORDER / CATEGORY / TIER) and search keyword.
      *
      * @param userId the user whose wallet is being queried
+     * @param scope  null or "all" = no scope filter;
+     *               "ORDER"    = VoucherScope = 'ORDER'
+     *               "CATEGORY" = VoucherScope = 'CATEGORY'
+     *               "TIER"     = RequiredTierID IS NOT NULL
+     * @param search null or empty = no keyword filter; otherwise matched
+     *               against VoucherCode and Title (case-insensitive)
      * @return list of owned, still-valid, un-used Voucher objects (never null)
      */
-    public List<com.bakeryzone.model.Voucher> getUserOwnedVouchers(String userId) {
+    public List<com.bakeryzone.model.Voucher> getUserOwnedVouchers(
+            String userId, String scope, String search) {
 
         List<com.bakeryzone.model.Voucher> list = new ArrayList<>();
 
-        String sql =
+        StringBuilder sql = new StringBuilder(
             "SELECT v.VoucherID, v.VoucherCode, v.Title, v.DiscountType, v.DiscountValue, "
             + "       v.MaxDiscountAmount, v.MinOrderValue, v.StartDate, v.EndDate, "
-            + "       v.IsActive, v.UsageLimit, v.RequiredTierID "
+            + "       v.IsActive, v.UsageLimit, v.RequiredTierID, "
+            + "       v.VoucherScope, v.TargetCategory "
             + "FROM UserVoucher uv "
             + "JOIN Voucher v ON uv.VoucherID = v.VoucherID "
             + "WHERE uv.UserID = ? "
             + "  AND uv.IsUsed  = 0 "
             + "  AND v.IsActive = 1 "
-            + "  AND CURDATE() <= v.EndDate "
-            + "ORDER BY uv.AssignedAt DESC";
+            + "  AND CURDATE() <= v.EndDate ");
+
+        // --- Scope filter ---
+        boolean scopeIsOrder    = "ORDER".equalsIgnoreCase(scope);
+        boolean scopeIsShipping = "SHIPPING".equalsIgnoreCase(scope);
+
+        if (scopeIsOrder) {
+            sql.append("  AND v.VoucherScope = 'ORDER' ");
+        } else if (scopeIsShipping) {
+            sql.append("  AND v.VoucherScope = 'SHIPPING' ");
+        }
+
+        // --- Search filter ---
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        if (hasSearch) {
+            sql.append("  AND (v.VoucherCode LIKE ? OR v.Title LIKE ?) ");
+        }
+
+        sql.append("ORDER BY uv.AssignedAt DESC");
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -293,8 +308,14 @@ public class MembershipDAO {
                 return list;
             }
 
-            ps = conn.prepareStatement(sql);
-            ps.setString(1, userId);
+            ps = conn.prepareStatement(sql.toString());
+            int idx = 1;
+            ps.setString(idx++, userId);
+            if (hasSearch) {
+                String pattern = "%" + search.trim() + "%";
+                ps.setString(idx++, pattern);
+                ps.setString(idx, pattern);
+            }
             rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -308,6 +329,13 @@ public class MembershipDAO {
         }
 
         return list;
+    }
+
+    /**
+     * Convenience overload with no filtering – delegates to the full version.
+     */
+    public List<com.bakeryzone.model.Voucher> getUserOwnedVouchers(String userId) {
+        return getUserOwnedVouchers(userId, null, null);
     }
 
     // -----------------------------------------------------------------------
@@ -376,6 +404,7 @@ public class MembershipDAO {
     /**
      * Maps a Voucher from a plain (non-aliased) result set row produced by
      * the getUserOwnedVouchers JOIN query.
+     * Now also reads the new VoucherScope and TargetCategory columns.
      */
     private com.bakeryzone.model.Voucher mapOwnedVoucher(ResultSet rs) throws Exception {
         com.bakeryzone.model.Voucher v = new com.bakeryzone.model.Voucher();
@@ -392,6 +421,8 @@ public class MembershipDAO {
         v.setUsageLimit(rs.getInt("UsageLimit"));
         int reqTier = rs.getInt("RequiredTierID");
         v.setRequiredTierId(rs.wasNull() ? null : reqTier);
+        v.setVoucherScope(rs.getString("VoucherScope"));
+        v.setTargetCategory(rs.getString("TargetCategory"));
         // pointCost is not needed for the wallet display; leave at default 0
         return v;
     }

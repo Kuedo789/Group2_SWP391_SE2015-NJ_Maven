@@ -18,7 +18,7 @@ public class Voucher {
     private int voucherId;
     private String voucherCode;
     private String title;
-    private String discountType;         // "PERCENT" or "FIXED"
+    private String discountType;         // "PERCENT", "PERCENTAGE" or "FIXED"
     private BigDecimal discountValue;
     private BigDecimal maxDiscountAmount; // cap for PERCENT discounts
     private BigDecimal minOrderValue;
@@ -27,6 +27,10 @@ public class Voucher {
     private boolean active;
     private int usageLimit;
     private Integer requiredTierId;      // nullable – null = any tier
+
+    /** New categorization columns (DB refactor). */
+    private String voucherScope;         // "ORDER" | "CATEGORY"
+    private String targetCategory;       // e.g. "CAT_COMBO" – null when scope = ORDER
 
     /**
      * Transient field: point cost to redeem this voucher.
@@ -146,6 +150,22 @@ public class Voucher {
         this.pointCost = pointCost;
     }
 
+    public String getVoucherScope() {
+        return voucherScope;
+    }
+
+    public void setVoucherScope(String voucherScope) {
+        this.voucherScope = voucherScope;
+    }
+
+    public String getTargetCategory() {
+        return targetCategory;
+    }
+
+    public void setTargetCategory(String targetCategory) {
+        this.targetCategory = targetCategory;
+    }
+
     // -----------------------------------------------------------------------
     // Convenience helpers used in JSTL
     // -----------------------------------------------------------------------
@@ -155,10 +175,10 @@ public class Voucher {
      * "Giảm 20%" or "Giảm 50.000 ₫"
      */
     public String getDiscountLabel() {
-        if ("PERCENT".equalsIgnoreCase(discountType)) {
+        if ("PERCENT".equalsIgnoreCase(discountType) || "PERCENTAGE".equalsIgnoreCase(discountType)) {
             return "Giảm " + discountValue.stripTrailingZeros().toPlainString() + "%";
         }
-        if ("FIXED".equalsIgnoreCase(discountType) && discountValue != null) {
+        if (("FIXED".equalsIgnoreCase(discountType) || "FIXED_AMOUNT".equalsIgnoreCase(discountType)) && discountValue != null) {
             return "Giảm " + String.format("%,.0f", discountValue.doubleValue()) + " ₫";
         }
         return title != null ? title : "Voucher";
