@@ -1,17 +1,20 @@
-<%--
-    Document   : voucher-add
-    Created on : Jul 9, 2026
-    Author     : thais / antigravity
---%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
+<%@ taglib uri="jakarta.tags.fmt"  prefix="fmt" %>
 
-<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+    voucher-edit.jsp
+    Admin edit form for an existing Voucher.
+    Layout and style mirrors voucher-add.jsp exactly.
+
+    Request attributes expected (set by VoucherManagementServlet action=edit):
+      • editVoucher : Voucher – the record being edited
+-%>
 
 <!DOCTYPE html>
 <html lang="vi">
     <head>
         <jsp:include page="/common/admin-header.jsp">
-            <jsp:param name="title" value="CakeZone Admin – Thêm Voucher mới" />
+            <jsp:param name="title" value="CakeZone Admin – Chỉnh sửa Voucher" />
         </jsp:include>
         <style>
             .form-card {
@@ -62,6 +65,11 @@
             .form-control:focus {
                 border-color: var(--primary-green, #22c55e);
                 background: white;
+            }
+            .form-control[readonly] {
+                background: #f8f9fb;
+                color: var(--text-muted);
+                cursor: not-allowed;
             }
 
             .form-row {
@@ -132,8 +140,21 @@
             input:checked + .slider { background: var(--primary-green, #22c55e); }
             input:checked + .slider:before { transform: translateX(22px); }
 
-            /* Conditional field visibility */
-            #maxDiscountGroup { display: block; }
+            /* Voucher code badge */
+            .code-badge {
+                display: inline-block;
+                background: #f1f5f9;
+                border: 1.5px solid var(--border-soft);
+                border-radius: 8px;
+                padding: 10px 15px;
+                font-size: 16px;
+                font-weight: 700;
+                letter-spacing: 1.5px;
+                color: var(--text-dark);
+                font-family: 'Courier New', monospace;
+                width: 100%;
+                box-sizing: border-box;
+            }
         </style>
     </head>
     <body>
@@ -149,14 +170,14 @@
                 <jsp:param name="parentUrl"   value="${pageContext.request.contextPath}/admin/vouchers" />
                 <jsp:param name="parentMenu2" value="Quản lý Voucher" />
                 <jsp:param name="parentUrl2"  value="${pageContext.request.contextPath}/admin/vouchers" />
-                <jsp:param name="activeMenu"  value="Thêm Voucher mới" />
+                <jsp:param name="activeMenu"  value="Chỉnh sửa Voucher" />
             </jsp:include>
 
             <div class="content">
                 <div class="page-header">
                     <div class="page-title">
-                        <h2>Thêm Voucher mới</h2>
-                        <p>Điền đầy đủ thông tin bên dưới để tạo mã giảm giá mới cho cửa hàng.</p>
+                        <h2>Chỉnh sửa Voucher</h2>
+                        <p>Cập nhật thông tin voucher <strong><c:out value="${editVoucher.voucherCode}"/></strong>.</p>
                     </div>
                 </div>
 
@@ -168,7 +189,7 @@
                             <c:when test="${error == 'missing_fields'}">Vui lòng điền đầy đủ các trường bắt buộc.</c:when>
                             <c:when test="${error == 'invalid_discount'}">Giá trị giảm giá không hợp lệ.</c:when>
                             <c:when test="${error == 'invalid_dates'}">Định dạng ngày không hợp lệ. Vui lòng chọn lại.</c:when>
-                            <c:when test="${error == 'db_error'}">Lỗi cơ sở dữ liệu. Mã voucher có thể đã tồn tại.</c:when>
+                            <c:when test="${error == 'db_error'}">Lỗi cơ sở dữ liệu. Vui lòng thử lại.</c:when>
                             <c:otherwise>Đã xảy ra lỗi. Vui lòng kiểm tra lại thông tin.</c:otherwise>
                         </c:choose>
                     </div>
@@ -176,11 +197,13 @@
 
                 <div class="form-card">
                     <form action="${pageContext.request.contextPath}/admin/vouchers"
-                          method="POST" id="voucherForm">
+                          method="POST" id="voucherEditForm">
 
-                        <input type="hidden" name="formAction" value="create">
+                        <!-- Hidden fields: form type + PK -->
+                        <input type="hidden" name="formAction"  value="update">
+                        <input type="hidden" name="voucherId"   value="${editVoucher.voucherId}">
 
-                        <!-- ── Section 1: Identity ──────────────────────── -->
+                        <!-- ── Section 1: Identity ────────────────────────── -->
                         <div class="form-section-title">
                             <i class="fa-solid fa-tag"></i> Thông tin cơ bản
                         </div>
@@ -188,15 +211,13 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label" for="voucherCode">
-                                    Mã Voucher <span class="req">*</span>
+                                    Mã Voucher
+                                    <span style="font-weight:400;color:var(--text-muted);font-size:12px;">(không thể thay đổi)</span>
                                 </label>
-                                <input type="text" id="voucherCode" name="voucherCode"
-                                       class="form-control"
-                                       placeholder="VD: SALE20, FREESHIP50..."
-                                       required maxlength="50"
-                                       style="text-transform:uppercase;"
-                                       oninput="this.value=this.value.toUpperCase().replace(/\s/g,'')">
-                                <span class="form-hint">Chỉ chữ in hoa, số và dấu gạch ngang. Không có khoảng trắng.</span>
+                                <%-- Code is the natural key – show as read-only badge --%>
+                                <div class="code-badge">
+                                    <c:out value="${editVoucher.voucherCode}"/>
+                                </div>
                             </div>
 
                             <div class="form-group">
@@ -205,12 +226,13 @@
                                 </label>
                                 <input type="text" id="title" name="title"
                                        class="form-control"
+                                       value="<c:out value='${editVoucher.title}'/>"
                                        placeholder="VD: Giảm 20% đơn từ 200.000₫"
                                        required maxlength="100">
                             </div>
                         </div>
 
-                        <!-- ── Section 2: Discount ──────────────────────── -->
+                        <!-- ── Section 2: Discount ────────────────────────── -->
                         <div class="form-section-title" style="margin-top:8px;">
                             <i class="fa-solid fa-percent"></i> Cấu hình giảm giá
                         </div>
@@ -221,9 +243,8 @@
                                     Loại giảm giá <span class="req">*</span>
                                 </label>
                                 <select id="discountType" name="discountType" class="form-control" required>
-                                    <option value="" disabled selected>-- Chọn loại giảm --</option>
-                                    <option value="PERCENT">Phần trăm (%)</option>
-                                    <option value="FIXED">Tiền mặt cố định (₫)</option>
+                                    <option value="PERCENT" ${editVoucher.discountType == 'PERCENT' ? 'selected' : ''}>Phần trăm (%)</option>
+                                    <option value="FIXED"   ${editVoucher.discountType == 'FIXED'   ? 'selected' : ''}>Tiền mặt cố định (₫)</option>
                                 </select>
                             </div>
 
@@ -233,6 +254,7 @@
                                 </label>
                                 <input type="number" id="discountValue" name="discountValue"
                                        class="form-control"
+                                       value="${editVoucher.discountValue}"
                                        placeholder="VD: 20 (cho %) hoặc 50000 (cho ₫)"
                                        required min="0.01" step="0.01">
                             </div>
@@ -246,6 +268,7 @@
                                 </label>
                                 <input type="number" id="maxDiscountAmount" name="maxDiscountAmount"
                                        class="form-control"
+                                       value="${editVoucher.maxDiscountAmount}"
                                        placeholder="VD: 100000"
                                        min="0" step="1000">
                                 <span class="form-hint">Để trống = không giới hạn số tiền giảm.</span>
@@ -257,26 +280,27 @@
                                 </label>
                                 <input type="number" id="minOrderValue" name="minOrderValue"
                                        class="form-control"
+                                       value="${editVoucher.minOrderValue}"
                                        placeholder="VD: 200000"
-                                       min="0" step="1000" value="0">
+                                       min="0" step="1000">
                                 <span class="form-hint">Nhập 0 hoặc để trống = áp dụng mọi đơn hàng.</span>
                             </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label" for="voucherScope">
                                     Phạm vi áp dụng (Scope) <span class="req">*</span>
                                 </label>
                                 <select id="voucherScope" name="voucherScope" class="form-control" required>
-                                    <option value="ORDER" selected>Toàn đơn (ORDER)</option>
-                                    <option value="SHIPPING">Freeship (SHIPPING)</option>
+                                    <option value="ORDER" ${editVoucher.voucherScope == 'ORDER' ? 'selected' : ''}>Toàn đơn (ORDER)</option>
+                                    <option value="SHIPPING" ${editVoucher.voucherScope == 'SHIPPING' ? 'selected' : ''}>Freeship (SHIPPING)</option>
                                 </select>
                             </div>
 
                         </div>
 
-                        <!-- ── Section 3: Validity ──────────────────────── -->
+                        <!-- ── Section 3: Validity ────────────────────────── -->
                         <div class="form-section-title" style="margin-top:8px;">
                             <i class="fa-regular fa-calendar"></i> Thời hạn &amp; Giới hạn
                         </div>
@@ -287,7 +311,8 @@
                                     Ngày bắt đầu <span class="req">*</span>
                                 </label>
                                 <input type="date" id="startDate" name="startDate"
-                                       class="form-control" required>
+                                       class="form-control" required
+                                       value="<fmt:formatDate value='${editVoucher.startDate}' pattern='yyyy-MM-dd'/>">
                             </div>
 
                             <div class="form-group">
@@ -295,7 +320,8 @@
                                     Ngày kết thúc <span class="req">*</span>
                                 </label>
                                 <input type="date" id="endDate" name="endDate"
-                                       class="form-control" required>
+                                       class="form-control" required
+                                       value="<fmt:formatDate value='${editVoucher.endDate}' pattern='yyyy-MM-dd'/>">
                             </div>
 
                             <div class="form-group">
@@ -304,13 +330,14 @@
                                 </label>
                                 <input type="number" id="usageLimit" name="usageLimit"
                                        class="form-control"
+                                       value="${editVoucher.usageLimit > 0 ? editVoucher.usageLimit : ''}"
                                        placeholder="VD: 100"
                                        min="1" step="1">
                                 <span class="form-hint">Để trống = không giới hạn số lượt sử dụng.</span>
                             </div>
                         </div>
 
-                        <!-- ── Section 4: Status ────────────────────────── -->
+                        <!-- ── Section 4: Status ──────────────────────────── -->
                         <div class="form-section-title" style="margin-top:8px;">
                             <i class="fa-solid fa-toggle-on"></i> Trạng thái
                         </div>
@@ -320,30 +347,28 @@
                                 <label class="switch">
                                     <input type="checkbox" id="isActiveToggle" name="isActiveCheckbox"
                                            onchange="document.getElementById('isActiveHidden').value = this.checked ? 'true' : 'false';"
-                                           checked>
+                                           ${editVoucher.active ? 'checked' : ''}>
                                     <span class="slider"></span>
                                 </label>
-                                <input type="hidden" id="isActiveHidden" name="isActive" value="true">
+                                <input type="hidden" id="isActiveHidden" name="isActive"
+                                       value="${editVoucher.active ? 'true' : 'false'}">
                                 <label for="isActiveToggle">
-                                    Kích hoạt ngay sau khi tạo
+                                    Kích hoạt voucher
                                 </label>
                             </div>
                             <span class="form-hint" style="margin-top:8px;">
-                                Nếu tắt, voucher sẽ được lưu nhưng ở trạng thái vô hiệu và khách hàng không thể sử dụng.
+                                Nếu tắt, voucher sẽ ở trạng thái vô hiệu và khách hàng không thể sử dụng.
                             </span>
                         </div>
 
-                        <!-- ── Actions ──────────────────────────────────── -->
+                        <!-- ── Actions ────────────────────────────────────── -->
                         <div class="form-actions">
-                            <button type="submit" class="btn-primary" id="submitBtn">
-                                <i class="fa-solid fa-floppy-disk"></i> Lưu Voucher
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
                             </button>
-                            <a href="${pageContext.request.contextPath}/admin/vouchers" class="btn-secondary">
+                            <a href="${pageContext.request.contextPath}/admin/vouchers" class="btn btn-secondary">
                                 <i class="fa-solid fa-arrow-left"></i> Quay lại
                             </a>
-                            <button type="reset" class="btn-secondary" style="margin-left:auto;">
-                                <i class="fa-solid fa-rotate-right"></i> Đặt lại
-                            </button>
                         </div>
 
                     </form>
@@ -367,37 +392,29 @@
                 }
             }
             typeSelect.addEventListener('change', handleTypeChange);
-            // Run once on page load
-            handleTypeChange();
-
-            // ── Default start date to today ──────────────────────────────────
-            const startDateInput = document.getElementById('startDate');
-            const endDateInput   = document.getElementById('endDate');
-            if (!startDateInput.value) {
-                const today = new Date().toISOString().split('T')[0];
-                startDateInput.value = today;
-            }
+            handleTypeChange();   // Run once on load to reflect the pre-filled value
 
             // ── Ensure end date >= start date ─────────────────────────────────
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput   = document.getElementById('endDate');
+
             startDateInput.addEventListener('change', function () {
                 if (endDateInput.value && endDateInput.value < this.value) {
                     endDateInput.value = this.value;
                 }
                 endDateInput.min = this.value;
             });
-            // Fire once on init
             if (startDateInput.value) endDateInput.min = startDateInput.value;
 
             // ── Form validation before submit ─────────────────────────────────
-            document.getElementById('voucherForm').addEventListener('submit', function (e) {
-                const code  = document.getElementById('voucherCode').value.trim();
+            document.getElementById('voucherEditForm').addEventListener('submit', function (e) {
                 const title = document.getElementById('title').value.trim();
                 const type  = document.getElementById('discountType').value;
                 const val   = parseFloat(document.getElementById('discountValue').value);
                 const start = document.getElementById('startDate').value;
                 const end   = document.getElementById('endDate').value;
 
-                if (!code || !title || !type) {
+                if (!title || !type) {
                     e.preventDefault();
                     alert('Vui lòng điền đầy đủ các trường bắt buộc (*).');
                     return;

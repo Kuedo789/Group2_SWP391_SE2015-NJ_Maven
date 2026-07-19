@@ -334,23 +334,11 @@
             }
 
             function showToast(message, type = 'success') {
-                let toast = document.getElementById('cz-toast');
-                if (!toast) {
-                    toast = document.createElement('div');
-                    toast.id = 'cz-toast';
-                    document.body.appendChild(toast);
+                if (typeof showFloatingAlert === 'function') {
+                    showFloatingAlert(message, type);
+                } else {
+                    alert(message);
                 }
-                toast.className = 'cz-toast ' + type;
-                const iconHtml = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : '<i class="fa-solid fa-circle-exclamation"></i>';
-                toast.innerHTML = '<div class="cz-toast-icon">' + iconHtml + '</div><div class="cz-toast-message">' + message + '</div>';
-                
-                // Trigger reflow
-                void toast.offsetWidth;
-                toast.classList.add('show');
-                
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3000);
             }
 
             function addToCart() {

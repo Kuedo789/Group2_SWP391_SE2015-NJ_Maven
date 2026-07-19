@@ -53,6 +53,9 @@ public class CartServlet extends HttpServlet {
             String targetId = parts.length > 1 ? parts[1] : null;
 
             switch (command) {
+                case "add":
+                    handleAddSnapshot(request, response, userId);
+                    return; // Method sends JSON response directly
                 case "increase":
                     handleQuantityChange(targetId, userId, 1);
                     break;
@@ -81,6 +84,30 @@ public class CartServlet extends HttpServlet {
 
         // Strict PRG Rule: Always finish POST with a redirect to prevent double submissions
         response.sendRedirect(request.getContextPath() + "/cart");
+    }
+
+    private void handleAddSnapshot(HttpServletRequest request, HttpServletResponse response, String userId) throws IOException {
+        String productId = request.getParameter("productId");
+        String name = request.getParameter("name");
+        String priceStr = request.getParameter("price");
+        String image = request.getParameter("image");
+        String qtyStr = request.getParameter("qty");
+
+        boolean success = false;
+        try {
+            BigDecimal price = (priceStr != null && !priceStr.isEmpty()) ? new BigDecimal(priceStr) : BigDecimal.ZERO;
+            int qty = (qtyStr != null && !qtyStr.isEmpty()) ? Integer.parseInt(qtyStr) : 1;
+            success = cartDAO.addSnapshotToCart(userId, productId, name, price, image, qty);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        int newCount = cartDAO.getCartCountForUser(userId);
+        request.getSession().setAttribute("cartCount", newCount);
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"success\": " + success + ", \"cartCount\": " + newCount + "}");
     }
 
     // =========================================================

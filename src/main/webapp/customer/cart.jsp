@@ -450,6 +450,20 @@
 
             // Restore previous selection on page load, or leave unchecked if first visit
             document.addEventListener("DOMContentLoaded", function() {
+                // Restore Scroll Position to prevent jump-to-top on form submit
+                const savedScroll = sessionStorage.getItem("cartScrollPos");
+                if (savedScroll) {
+                    window.scrollTo(0, parseInt(savedScroll));
+                    sessionStorage.removeItem("cartScrollPos"); // clear after using
+                }
+
+                // Save Scroll Position on form submit (quantity update, remove, voucher, etc)
+                document.querySelectorAll('form').forEach(form => {
+                    form.addEventListener('submit', function() {
+                        sessionStorage.setItem("cartScrollPos", window.scrollY);
+                    });
+                });
+
                 const savedSelection = sessionStorage.getItem("selectedCartItems");
                 if (savedSelection) {
                     try {

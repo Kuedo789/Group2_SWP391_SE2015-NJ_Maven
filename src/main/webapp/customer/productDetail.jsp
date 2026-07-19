@@ -284,40 +284,56 @@
             }
 
             function addItemToCart(isBuyNow) {
-                let cart = getCart();
-                if (!Array.isArray(cart)) cart = [];
-
                 const selectedVar = variants[selectedVariant];
-                const item = {
-                    id: product.id + "_" + selectedVariant,
-                    templateId: product.id,
-                    name: selectedVar.name,
-                    desc: selectedVar.note,
-                    price: selectedVar.price,
-                    qty: quantity,
-                    image: getResolvedImage(product.image)
-                };
+                const name = selectedVar.name;
+                const price = selectedVar.price;
+                const image = getResolvedImage(product.image);
 
-                const existingItem = cart.find(x => x && x.name === item.name);
-                if (existingItem) {
-                    existingItem.qty = (parseInt(existingItem.qty) || 0) + quantity;
-                } else {
-                    cart.push(item);
-                }
+                const params = new URLSearchParams();
+                params.append("action", "add");
+                params.append("productId", product.id);
+                params.append("name", name);
+                params.append("price", price);
+                params.append("image", image);
+                params.append("qty", quantity);
 
-                saveCart(cart);
-
-                if (isBuyNow) {
-                    window.location.href = contextPath + "/checkout";
-                } else {
-                    const countEl = document.getElementById("navCartCount");
-                    if (countEl) {
-                        let totalQty = 0;
-                        cart.forEach(c => { if (c) totalQty += (parseInt(c.qty) || 1); });
-                        countEl.innerText = totalQty;
+                fetch(contextPath + "/cart", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
                     }
-                    alert("Đã thêm " + quantity + " sản phẩm \"" + item.name + "\" vào giỏ hàng!");
-                }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        if (isBuyNow) {
+                            window.location.href = contextPath + "/cart"; // Go to cart first so they can see it before checkout, or directly checkout
+                        } else {
+                            const countEl = document.getElementById("navCartCount");
+                            if (countEl && data.cartCount !== undefined) {
+                                countEl.innerText = data.cartCount;
+                            }
+                            if (typeof showFloatingAlert === 'function') {
+                                showFloatingAlert("Đã thêm " + quantity + " sản phẩm \"" + name + "\" vào giỏ hàng!", "success");
+                            } else {
+                                alert("Đã thêm " + quantity + " sản phẩm \"" + name + "\" vào giỏ hàng!");
+                            }
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error("Error adding to cart:", err);
+                    if (typeof showFloatingAlert === 'function') {
+                        showFloatingAlert("Có lỗi xảy ra khi thêm vào giỏ hàng.", "error");
+                    } else {
+                        alert("Có lỗi xảy ra khi thêm vào giỏ hàng.");
+                    }
+                });
             }
 
             function addToCartIconOnly() {

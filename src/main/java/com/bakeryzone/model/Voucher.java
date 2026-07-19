@@ -29,8 +29,10 @@ public class Voucher {
     private Integer requiredTierId;      // nullable – null = any tier
 
     /** New categorization columns (DB refactor). */
-    private String voucherScope;         // "ORDER" | "CATEGORY"
+    private String voucherScope;         // "ORDER" | "CATEGORY" | "SHIPPING"
     private String targetCategory;       // e.g. "CAT_COMBO" – null when scope = ORDER
+    
+    private boolean isStackable;         // Allows combining with other vouchers
 
     /**
      * Transient field: point cost to redeem this voucher.
@@ -148,6 +150,14 @@ public class Voucher {
 
     public void setPointCost(int pointCost) {
         this.pointCost = pointCost;
+    }
+
+    public boolean isStackable() {
+        return isStackable;
+    }
+
+    public void setStackable(boolean stackable) {
+        isStackable = stackable;
     }
 
     public String getVoucherScope() {
