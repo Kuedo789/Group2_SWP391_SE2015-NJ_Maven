@@ -48,72 +48,93 @@ public class DeliveryAddressServlet extends HttpServlet {
         String view = "list"; // default view is the list of addresses
 
         if (action != null) {
-            if (action.equalsIgnoreCase("delete")) {
-                String idStr = request.getParameter("id");
-                try {
-                    int id = Integer.parseInt(idStr);
-                    boolean deleted = addressDAO.deleteAddress(id, user.getUserId());
-                    if (deleted) {
-                        User freshUser = new com.bakeryzone.dao.UserDAO().getUserById(user.getUserId());
-                        session.setAttribute("user", freshUser);
-                        session.setAttribute("successMessage", "Xóa địa chỉ thành công.");
-                    } else {
-                        session.setAttribute("errorMessage", "Xóa địa chỉ thất bại.");
-                    }
-                } catch (NumberFormatException e) {
-                    session.setAttribute("errorMessage", "Mã địa chỉ không hợp lệ.");
-                }
-                response.sendRedirect(redirectUrl);
-                return;
-            } else if (action.equalsIgnoreCase("set-default")) {
-                String idStr = request.getParameter("id");
-                try {
-                    int id = Integer.parseInt(idStr);
-                    boolean set = addressDAO.setDefaultAddress(id, user.getUserId());
-                    if (set) {
-                        User freshUser = new com.bakeryzone.dao.UserDAO().getUserById(user.getUserId());
-                        session.setAttribute("user", freshUser);
-                        session.setAttribute("successMessage", "Thiết lập địa chỉ mặc định thành công.");
-                    } else {
-                        session.setAttribute("errorMessage", "Thiết lập địa chỉ mặc định thất bại.");
-                    }
-                } catch (NumberFormatException e) {
-                    session.setAttribute("errorMessage", "Mã địa chỉ không hợp lệ.");
-                }
-                response.sendRedirect(redirectUrl);
-                return;
-            } else if (action.equalsIgnoreCase("add")) {
-                view = "form";
-            } else if (action.equalsIgnoreCase("profile")) {
-                addressDAO.getAddressesByUserId(user.getUserId()).stream()
-                        .filter(DeliveryAddress::isDefault)
-                        .findFirst()
-                        .ifPresent(addr -> request.setAttribute("addressToEdit", addr));
-                view = "form";
-            } else if (action.equalsIgnoreCase("edit")) {
-                String idStr = request.getParameter("id");
-                try {
-                    int id = Integer.parseInt(idStr);
-                    DeliveryAddress addressToEdit = addressDAO.getAddressById(id, user.getUserId());
-                    if (addressToEdit != null) {
-                        request.setAttribute("addressToEdit", addressToEdit);
+            switch (action.toLowerCase()) {
+                case "delete":
+                    handleDeleteAddress(request, response, session, user, redirectUrl);
+                    return;
+                case "set-default":
+                    handleSetDefaultAddress(request, response, session, user, redirectUrl);
+                    return;
+                case "add":
+                    view = "form";
+                    break;
+                case "profile":
+                    handleProfileEdit(request, user);
+                    view = "form";
+                    break;
+                case "edit":
+                    if (handleEditAddress(request, session, user)) {
                         view = "form";
                     } else {
-                        session.setAttribute("errorMessage", "Không tìm thấy địa chỉ cần chỉnh sửa.");
                         response.sendRedirect(redirectUrl);
                         return;
                     }
-                } catch (NumberFormatException e) {
-                    session.setAttribute("errorMessage", "Mã địa chỉ không hợp lệ.");
-                    response.sendRedirect(redirectUrl);
-                    return;
-                }
+                    break;
             }
         }
 
         request.setAttribute("view", view);
         refetchAddresses(request, user);
         request.getRequestDispatcher("/customer/deliveryAddress.jsp").forward(request, response);
+    }
+
+    private void handleDeleteAddress(HttpServletRequest request, HttpServletResponse response, HttpSession session, User user, String redirectUrl) throws IOException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            if (addressDAO.deleteAddress(id, user.getUserId())) {
+                refreshUserSession(session, user.getUserId());
+                session.setAttribute("successMessage", "Xóa địa chỉ thành công.");
+            } else {
+                session.setAttribute("errorMessage", "Xóa địa chỉ thất bại.");
+            }
+        } catch (NumberFormatException e) {
+            session.setAttribute("errorMessage", "Mã địa chỉ không hợp lệ.");
+        }
+        response.sendRedirect(redirectUrl);
+    }
+
+    private void handleSetDefaultAddress(HttpServletRequest request, HttpServletResponse response, HttpSession session, User user, String redirectUrl) throws IOException {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            if (addressDAO.setDefaultAddress(id, user.getUserId())) {
+                refreshUserSession(session, user.getUserId());
+                session.setAttribute("successMessage", "Thiết lập địa chỉ mặc định thành công.");
+            } else {
+                session.setAttribute("errorMessage", "Thiết lập địa chỉ mặc định thất bại.");
+            }
+        } catch (NumberFormatException e) {
+            session.setAttribute("errorMessage", "Mã địa chỉ không hợp lệ.");
+        }
+        response.sendRedirect(redirectUrl);
+    }
+
+    private void handleProfileEdit(HttpServletRequest request, User user) {
+        addressDAO.getAddressesByUserId(user.getUserId()).stream()
+                .filter(DeliveryAddress::isDefault)
+                .findFirst()
+                .ifPresent(addr -> request.setAttribute("addressToEdit", addr));
+    }
+
+    private boolean handleEditAddress(HttpServletRequest request, HttpSession session, User user) {
+        try {
+            int id = Integer.parseInt(request.getParameter("id"));
+            DeliveryAddress addressToEdit = addressDAO.getAddressById(id, user.getUserId());
+            if (addressToEdit != null) {
+                request.setAttribute("addressToEdit", addressToEdit);
+                return true;
+            } else {
+                session.setAttribute("errorMessage", "Không tìm thấy địa chỉ cần chỉnh sửa.");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            session.setAttribute("errorMessage", "Mã địa chỉ không hợp lệ.");
+            return false;
+        }
+    }
+
+    private void refreshUserSession(HttpSession session, String userId) {
+        User freshUser = new com.bakeryzone.dao.UserDAO().getUserById(userId);
+        session.setAttribute("user", freshUser);
     }
 
     @Override
@@ -169,68 +190,28 @@ public class DeliveryAddressServlet extends HttpServlet {
         boolean isLockedName = receiverName.equals(user.getFullName());
         boolean isLockedPhone = receiverPhone.equals(user.getPhone());
 
-        if (isEmpty(receiverName)) {
-            request.setAttribute("errorMessage", "Vui lòng nhập tên người nhận.");
+        // Validate address fields
+        String validationError = validateAddress(receiverName, receiverPhone, isLockedName, isLockedPhone, addressDetail, latitudeRaw, longitudeRaw);
+        if (validationError != null) {
+            request.setAttribute("errorMessage", validationError);
             preserveState.run();
             request.getRequestDispatcher("/customer/deliveryAddress.jsp").forward(request, response);
             return;
         }
 
-        if (!isLockedName && (receiverName.length() > 30 || !receiverName.matches("[\\p{L}]+( [\\p{L}]+)*"))) {
-            request.setAttribute("errorMessage", "Tên người nhận không hợp lệ.");
-            preserveState.run();
-            request.getRequestDispatcher("/customer/deliveryAddress.jsp").forward(request, response);
-            return;
-        }
-
-        if (isEmpty(receiverPhone) || (!isLockedPhone && !receiverPhone.matches("0(3|5|7|8|9)\\d{8}"))) {
-            request.setAttribute("errorMessage", "Số điện thoại người nhận không hợp lệ.");
-            preserveState.run();
-            request.getRequestDispatcher("/customer/deliveryAddress.jsp").forward(request, response);
-            return;
-        }
-
-        if (isEmpty(addressDetail)) {
-            request.setAttribute("errorMessage", "Vui lòng tìm và chọn địa chỉ giao hàng.");
-            preserveState.run();
-            request.getRequestDispatcher("/customer/deliveryAddress.jsp").forward(request, response);
-            return;
-        }
-
-        if (isEmpty(latitudeRaw) || isEmpty(longitudeRaw)) {
-            request.setAttribute("errorMessage", "Vui lòng tìm địa chỉ trên bản đồ trước khi lưu.");
-            preserveState.run();
-            request.getRequestDispatcher("/customer/deliveryAddress.jsp").forward(request, response);
-            return;
-        }
-
-        double latitude;
-        double longitude;
-
-        try {
-            latitude = Double.parseDouble(latitudeRaw);
-            longitude = Double.parseDouble(longitudeRaw);
-        } catch (NumberFormatException e) {
-            request.setAttribute("errorMessage", "Tọa độ địa chỉ không hợp lệ.");
-            preserveState.run();
-            request.getRequestDispatcher("/customer/deliveryAddress.jsp").forward(request, response);
-            return;
-        }
+        double latitude = Double.parseDouble(latitudeRaw);
+        double longitude = Double.parseDouble(longitudeRaw);
 
         boolean success;
+        DeliveryAddress address = new DeliveryAddress(
+                user.getUserId(), receiverName, receiverPhone, addressDetail,
+                latitude, longitude, isDefault
+        );
+
         if (!isEmpty(addressIdRaw)) {
             // Edit mode
             try {
                 int addressId = Integer.parseInt(addressIdRaw);
-                DeliveryAddress address = new DeliveryAddress(
-                        user.getUserId(),
-                        receiverName,
-                        receiverPhone,
-                        addressDetail,
-                        latitude,
-                        longitude,
-                        isDefault
-                );
                 address.setAddressId(addressId);
                 success = addressDAO.updateAddress(address);
                 if (success) {
@@ -249,15 +230,6 @@ public class DeliveryAddressServlet extends HttpServlet {
             }
         } else {
             // Insert/Add mode
-            DeliveryAddress address = new DeliveryAddress(
-                    user.getUserId(),
-                    receiverName,
-                    receiverPhone,
-                    addressDetail,
-                    latitude,
-                    longitude,
-                    isDefault
-            );
             success = addressDAO.insertAddress(address);
             if (success) {
                 session.setAttribute("successMessage", "Thêm địa chỉ giao hàng thành công.");
@@ -270,12 +242,31 @@ public class DeliveryAddressServlet extends HttpServlet {
         }
 
         if (success) {
-            User freshUser = new com.bakeryzone.dao.UserDAO().getUserById(user.getUserId());
-            session.setAttribute("user", freshUser);
+            refreshUserSession(session, user.getUserId());
         }
 
         // Post-Redirect-Get: Redirect back to the address list view
         response.sendRedirect(redirectUrl);
+    }
+
+    private String validateAddress(String receiverName, String receiverPhone, boolean isLockedName, boolean isLockedPhone, String addressDetail, String latitudeRaw, String longitudeRaw) {
+        if (isEmpty(receiverName)) return "Vui lòng nhập tên người nhận.";
+        if (!isLockedName && (receiverName.length() > 30 || !receiverName.matches("[\\p{L}]+( [\\p{L}]+)*"))) return "Tên người nhận không hợp lệ.";
+
+        if (isEmpty(receiverPhone) || (!isLockedPhone && !receiverPhone.matches("0(3|5|7|8|9)\\d{8}"))) return "Số điện thoại người nhận không hợp lệ.";
+
+        if (isEmpty(addressDetail)) return "Vui lòng tìm và chọn địa chỉ giao hàng.";
+
+        if (isEmpty(latitudeRaw) || isEmpty(longitudeRaw)) return "Vui lòng tìm địa chỉ trên bản đồ trước khi lưu.";
+        
+        try {
+            Double.parseDouble(latitudeRaw);
+            Double.parseDouble(longitudeRaw);
+        } catch (NumberFormatException e) {
+            return "Tọa độ địa chỉ không hợp lệ.";
+        }
+        
+        return null;
     }
 
     private void refetchAddresses(HttpServletRequest request, User user) {

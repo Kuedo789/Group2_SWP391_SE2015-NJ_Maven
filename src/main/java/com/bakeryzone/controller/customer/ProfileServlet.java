@@ -59,40 +59,14 @@ public class ProfileServlet extends HttpServlet {
         String newPassword = trim(request.getParameter("newPassword"));
         String confirmPassword = trim(request.getParameter("confirmPassword"));
 
-        // 1. Validate họ tên
-        if (isEmpty(fullName)) {
-            forwardError(request, response, "Vui lòng nhập họ và tên.");
+        // 1. Validate họ tên và số điện thoại
+        String profileError = validateProfile(fullName, phone);
+        if (profileError != null) {
+            forwardError(request, response, profileError);
             return;
         }
 
-        if (fullName.length() > 30) {
-            forwardError(request, response, "Họ và tên không được quá 30 ký tự.");
-            return;
-        }
-
-        if (fullName.contains("  ")) {
-            forwardError(request, response, "Họ và tên không được có quá 1 khoảng trắng liên tiếp.");
-            return;
-        }
-
-        if (!fullName.matches("[\\p{L}]+( [\\p{L}]+)*")) {
-            forwardError(request, response, "Họ và tên không được chứa số hoặc ký tự đặc biệt.");
-            return;
-        }
-
-        // 2. Validate số điện thoại Việt Nam
-        if (isEmpty(phone)) {
-            forwardError(request, response, "Vui lòng nhập số điện thoại.");
-            return;
-        }
-
-        if (!phone.matches("0(3|5|7|8|9)\\d{8}")) {
-            forwardError(request, response,
-                    "Số điện thoại không hợp lệ. Số điện thoại Việt Nam phải bắt đầu bằng 03, 05, 07, 08 hoặc 09 và có đúng 10 chữ số.");
-            return;
-        }
-
-        // 3. Kiểm tra có muốn đổi mật khẩu không
+        // 2. Kiểm tra có muốn đổi mật khẩu không
         boolean wantChangePassword =
                 !isEmpty(currentPassword)
                 || !isEmpty(newPassword)
@@ -101,67 +75,28 @@ public class ProfileServlet extends HttpServlet {
         if (wantChangePassword) {
             request.setAttribute("showPasswordBox", true);
 
-            if (isEmpty(currentPassword)) {
-                forwardError(request, response, "Vui lòng nhập mật khẩu hiện tại.");
-                return;
-            }
-
             User dbUser = userDAO.getUserById(user.getUserId());
-
             if (dbUser == null || dbUser.getPassword() == null) {
                 forwardError(request, response, "Không tìm thấy thông tin tài khoản.");
                 return;
             }
 
-            if (!PasswordUtils.checkPassword(currentPassword, dbUser.getPassword())) {
-                forwardError(request, response, "Mật khẩu hiện tại không đúng.");
-                return;
-            }
-
-            if (isEmpty(newPassword)) {
-                forwardError(request, response, "Vui lòng nhập mật khẩu mới.");
-                return;
-            }
-
-            if (newPassword.length() < 6 || newPassword.length() > 20) {
-                forwardError(request, response, "Mật khẩu mới phải từ 6 đến 20 ký tự.");
-                return;
-            }
-
-            if (newPassword.equals(currentPassword)) {
-                forwardError(request, response, "Mật khẩu mới không được trùng với mật khẩu hiện tại.");
-                return;
-            }
-
-            if (isEmpty(confirmPassword)) {
-                forwardError(request, response, "Vui lòng xác nhận mật khẩu mới.");
-                return;
-            }
-
-            if (confirmPassword.length() > 20) {
-                forwardError(request, response, "Xác nhận mật khẩu mới không được quá 20 ký tự.");
-                return;
-            }
-
-            if (!newPassword.equals(confirmPassword)) {
-                forwardError(request, response, "Xác nhận mật khẩu mới không khớp.");
+            String passwordError = validatePasswordChange(currentPassword, newPassword, confirmPassword, dbUser.getPassword());
+            if (passwordError != null) {
+                forwardError(request, response, passwordError);
                 return;
             }
         }
 
-        // 4. Sau khi validate OK mới update
-        boolean updated = userDAO.updateProfile(
-                user.getUserId(),
-                fullName,
-                phone
-        );
-
+        // 3. Sau khi validate OK mới update profile
+        boolean updated = userDAO.updateProfile(user.getUserId(), fullName, phone);
         if (updated) {
             user.setFullName(fullName);
             user.setPhone(phone);
             session.setAttribute("user", user);
         }
 
+        // 4. Update mật khẩu nếu cần
         if (wantChangePassword) {
             String hashedNewPassword = PasswordUtils.hashPassword(newPassword);
 
@@ -184,6 +119,34 @@ public class ProfileServlet extends HttpServlet {
         } else {
             forwardError(request, response, "Cập nhật thất bại. Vui lòng thử lại.");
         }
+    }
+
+    private String validateProfile(String fullName, String phone) {
+        if (isEmpty(fullName)) return "Vui lòng nhập họ và tên.";
+        if (fullName.length() > 30) return "Họ và tên không được quá 30 ký tự.";
+        if (fullName.contains("  ")) return "Họ và tên không được có quá 1 khoảng trắng liên tiếp.";
+        if (!fullName.matches("[\\p{L}]+( [\\p{L}]+)*")) return "Họ và tên không được chứa số hoặc ký tự đặc biệt.";
+
+        if (isEmpty(phone)) return "Vui lòng nhập số điện thoại.";
+        if (!phone.matches("0(3|5|7|8|9)\\d{8}")) {
+            return "Số điện thoại không hợp lệ. Số điện thoại Việt Nam phải bắt đầu bằng 03, 05, 07, 08 hoặc 09 và có đúng 10 chữ số.";
+        }
+        return null;
+    }
+
+    private String validatePasswordChange(String currentPassword, String newPassword, String confirmPassword, String dbPassword) {
+        if (isEmpty(currentPassword)) return "Vui lòng nhập mật khẩu hiện tại.";
+        if (!PasswordUtils.checkPassword(currentPassword, dbPassword)) return "Mật khẩu hiện tại không đúng.";
+
+        if (isEmpty(newPassword)) return "Vui lòng nhập mật khẩu mới.";
+        if (newPassword.length() < 6 || newPassword.length() > 20) return "Mật khẩu mới phải từ 6 đến 20 ký tự.";
+        if (newPassword.equals(currentPassword)) return "Mật khẩu mới không được trùng với mật khẩu hiện tại.";
+
+        if (isEmpty(confirmPassword)) return "Vui lòng xác nhận mật khẩu mới.";
+        if (confirmPassword.length() > 20) return "Xác nhận mật khẩu mới không được quá 20 ký tự.";
+        if (!newPassword.equals(confirmPassword)) return "Xác nhận mật khẩu mới không khớp.";
+
+        return null;
     }
 
     private String trim(String value) {

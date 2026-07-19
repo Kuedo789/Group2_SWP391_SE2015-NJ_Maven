@@ -95,210 +95,192 @@ public class CustomerCheckoutServlet extends HttpServlet {
         }
 
         try {
-            // ── 1. Parse form parameters ───────────────────────────────────────────
+            // 1. Parse form parameters
             String addressIdRaw  = request.getParameter("addressId");
-            String timeSlot      = request.getParameter("timeSlot");   // e.g. "08:00 - 09:00"
-            String deliveryDate  = request.getParameter("deliveryDate"); // e.g. "2026-06-19"
+            String timeSlot      = request.getParameter("timeSlot");
+            String deliveryDate  = request.getParameter("deliveryDate");
             String note          = request.getParameter("note");
-            String cartDataJson  = request.getParameter("cartData");    // JSON array from localStorage
-            String paymentMethod = request.getParameter("paymentMethod"); // e.g. "BANK_TRANSFER_FULL" or "DIRECT_DEPOSIT_20"
+            String cartDataJson  = request.getParameter("cartData");
+            String paymentMethod = request.getParameter("paymentMethod");
+            String shippingFeeStr = request.getParameter("shippingFee");
 
-            // ── 2. Resolve delivery address string ─────────────────────────────────
-            String deliveryAddressStr = null;
-            if (addressIdRaw != null && !addressIdRaw.trim().isEmpty()) {
-                try {
-                    int addressId = Integer.parseInt(addressIdRaw.trim());
-                    DeliveryAddress addr = addressDAO.getAddressById(addressId, currentUser.getUserId());
-                    if (addr != null) {
-                        deliveryAddressStr = addr.getReceiverName()
-                                + " | " + addr.getReceiverPhone()
-                                + " | " + addr.getAddressDetail();
-                    }
-                } catch (NumberFormatException ignored) {}
+            // 2. Validate ghi chú đơn hàng (Note length check)
+            if (note != null && note.length() > 500) {
+                response.sendRedirect(request.getContextPath() + "/checkout?error=note_too_long");
+                return;
             }
 
+            // 3. Resolve delivery address string
+            String deliveryAddressStr = resolveDeliveryAddress(addressIdRaw, currentUser.getUserId());
             if (deliveryAddressStr == null) {
                 response.sendRedirect(request.getContextPath() + "/checkout?error=empty_address");
                 return;
             }
 
-            // ── 3. Build Delivery Window timestamps ────────────────────────────────
-            // timeSlot format: "HH:mm - HH:mm"
-            Timestamp deliveryWindowStart = null;
-            Timestamp deliveryWindowEnd   = null;
-            Timestamp orderTime           = new Timestamp(System.currentTimeMillis());
-
-            if (deliveryDate != null && !deliveryDate.trim().isEmpty()
-                    && timeSlot != null && !timeSlot.trim().isEmpty()) {
-                try {
-                    String[] parts = timeSlot.split("-");
-                    String startTime = parts[0].trim(); // e.g. "08:00"
-                    String endTime   = parts[1].trim(); // e.g. "09:00"
-
-                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                    Date startDate = sdf.parse(deliveryDate + " " + startTime);
-                    Date endDate   = sdf.parse(deliveryDate + " " + endTime);
-                    deliveryWindowStart = new Timestamp(startDate.getTime());
-                    deliveryWindowEnd   = new Timestamp(endDate.getTime());
-                } catch (Exception e) {
-                    System.err.println("[WARN] Failed to parse delivery date/time: " + e.getMessage());
-                }
-            }
-            
-            // Fallback for missing delivery date/time to avoid DB NOT NULL constraint error
-            if (deliveryWindowStart == null || deliveryWindowEnd == null) {
-                long tomorrow = System.currentTimeMillis() + 24L * 3600 * 1000;
-                deliveryWindowStart = new Timestamp(tomorrow);
-                deliveryWindowEnd = new Timestamp(tomorrow + 2L * 3600 * 1000);
-            }
-
-            // ── 4. Parse cart JSON to OrderItem list ───────────────────────────────
-            // Cart item shape (from localStorage): { id, name, price, qty, image, desc, templateId? }
+            // 4. Build base order object
             Order order = new Order();
             String orderNo = "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             order.setOrderNo(orderNo);
-            String customerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
-            order.setCustomerId(customerId);
-            order.setOrderTime(orderTime);
-            order.setDeliveryWindowStart(deliveryWindowStart);
-            order.setDeliveryWindowEnd(deliveryWindowEnd);
+            order.setCustomerId(orderDAO.getCustomerIdByUserId(currentUser.getUserId()));
+            order.setOrderTime(new Timestamp(System.currentTimeMillis()));
             order.setDeliveryAddress(deliveryAddressStr);
             order.setOrderStatus("Pending");
+            order.setCustomerNote(note);
+            order.setPaymentMethod(paymentMethod);
+            
+            setDeliveryWindow(order, deliveryDate, timeSlot);
 
-            BigDecimal productTotal = BigDecimal.ZERO;
-
-            if (cartDataJson != null && !cartDataJson.trim().isEmpty() && !cartDataJson.equals("[]")) {
-                JsonArray cartArray = JsonParser.parseString(cartDataJson).getAsJsonArray();
-
-                for (JsonElement el : cartArray) {
-                    if (el.isJsonNull()) continue;
-                    JsonObject cartItem = el.getAsJsonObject();
-
-                    String itemId     = getStr(cartItem, "id");
-                    String itemName   = getStr(cartItem, "name");
-                    String itemImage  = getStr(cartItem, "image");
-                    String templateId = getStr(cartItem, "templateId");
-                    double price      = cartItem.has("price") ? cartItem.get("price").getAsDouble() : 0;
-                    int qty           = cartItem.has("qty")   ? cartItem.get("qty").getAsInt()   : 1;
-
-                    BigDecimal itemPrice = BigDecimal.valueOf(price);
-                    productTotal = productTotal.add(itemPrice.multiply(BigDecimal.valueOf(qty)));
-
-                    OrderItem oi = new OrderItem();
-                    oi.setQuantity(qty);
-                    oi.setPriceAtPurchase(itemPrice);
-                    oi.setItemName(itemName);
-                    oi.setItemImage(itemImage);
-                    oi.setTemplateId(templateId);
-
-                    if (templateId != null && !templateId.isEmpty()) {
-                        // It's a cake template → create custom_cake entry
-                        String cakeId = "CAKE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-                        oi.setCustomCakeId(cakeId);
-                        oi.setAccessoryId(null);
-                    } else if (itemId != null && itemId.startsWith("ACC-")) {
-                        // It's an accessory
-                        oi.setAccessoryId(itemId);
-                        oi.setCustomCakeId(null);
-                    } else {
-                        // Generic product → treat as accessory link (safe default)
-                        oi.setAccessoryId(null);
-                        oi.setCustomCakeId(null);
-                        if (templateId == null || templateId.isEmpty()) {
-                            // Create custom_cake with item id as template ref
-                            String cakeId = "CAKE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-                            oi.setCustomCakeId(cakeId);
-                            oi.setTemplateId(itemId); // Use product id as template ref
-                        }
-                    }
-
-                    order.getItems().add(oi);
-                }
-            }
-
-if (order.getItems().isEmpty()) {
+            // 5. Parse cart JSON to OrderItem list
+            BigDecimal productTotal = parseCartItemsAndGetTotal(order, cartDataJson);
+            if (order.getItems().isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/checkout?error=empty_cart");
                 return;
             }
 
-            // 1. Resolve Shipping Fee (Parse from request, fallback to 25k default if missing)
-            String shippingFeeStr = request.getParameter("shippingFee");
-            BigDecimal shippingFee = BigDecimal.valueOf(25000); // Default fallback
-            if (shippingFeeStr != null && !shippingFeeStr.trim().isEmpty()) {
-                try {
-                    shippingFee = new BigDecimal(shippingFeeStr.trim());
-                } catch (NumberFormatException e) {
-                    // Keep default 25000 if parsing fails
-                }
-            }
+            // 6. Calculate totals
+            calculateAndSetTotals(order, productTotal, shippingFeeStr, paymentMethod, session);
 
-            // 2. Extract and Apply Voucher Discount
-            BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
-            if (appliedDiscount == null) {
-                appliedDiscount = BigDecimal.ZERO;
-            }
-            
-            // 3. Compute Final Total Cost
-            BigDecimal totalCost = productTotal.add(shippingFee).subtract(appliedDiscount);
-            if (totalCost.compareTo(BigDecimal.ZERO) < 0) {
-                totalCost = BigDecimal.ZERO;
-            }
-            
-            // 4. Determine Deposit and COD Splits based on Payment Method
-            BigDecimal deposit = BigDecimal.ZERO;
-            BigDecimal remainingCod = totalCost;
-
-            if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
-                deposit = totalCost; // Full upfront bank transfer
-                remainingCod = BigDecimal.ZERO;
-            } else {
-                // Default COD: Calculate a standard 30% upfront commitment deposit
-                deposit = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
-                remainingCod = totalCost.subtract(deposit);
-            }
-
-            order.setTotalCost(totalCost);
-            order.setDepositAmount(deposit);
-            order.setRemainingCodBalance(remainingCod);
-            order.setShippingFee(shippingFee);
-            order.setPaymentMethod(paymentMethod);
-            order.setCustomerNote(note);
-
-            // ── 5. Persist order ───────────────────────────────────────────────────
-            System.out.println("[INFO] Attempting to place order: " + orderNo 
-                    + " for customerId: " + order.getCustomerId() 
-                    + " | deliveryWindow: " + order.getDeliveryWindowStart()
-                    + " | cart items size: " + order.getItems().size());
-            
+            // 7. Persist order
             boolean success = orderDAO.insertOrder(order);
-
-            System.out.println("[INFO] Order placed: " + orderNo + " by user " + currentUser.getUserId()
-                    + " | success=" + success + " | total=" + totalCost);
-
             if (success) {
-                // Mark voucher as used if applicable and clear session attributes
-                Integer appliedVoucherId = (Integer) session.getAttribute("appliedVoucherId");
-                if (appliedVoucherId != null) {
-                    voucherDAO.markVoucherUsed(appliedVoucherId, currentUser.getUserId());
-                    session.removeAttribute("appliedVoucherId");
-                    session.removeAttribute("appliedVoucherCode");
-                    session.removeAttribute("appliedDiscount");
-                }
-
-                // Redirect target evaluation based on payment configuration
-                if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
-                    String totalEncoded = java.net.URLEncoder.encode(totalCost.toPlainString(), "UTF-8");
-                    response.sendRedirect(request.getContextPath() + "/bank-transfer?orderNo=" + orderNo + "&total=" + totalEncoded);
-                } else {
-                    response.sendRedirect(request.getContextPath() + "/order-success?orderNo=" + orderNo);
-                }
+                handleSuccessfulOrder(session, currentUser.getUserId(), paymentMethod, orderNo, order.getTotalCost(), response, request.getContextPath());
             } else {
                 response.sendRedirect(request.getContextPath() + "/checkout?error=save_failed");
             }
-
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/checkout?error=server_error");
+        }
+    }
+
+    private String resolveDeliveryAddress(String addressIdRaw, String userId) {
+        if (addressIdRaw != null && !addressIdRaw.trim().isEmpty()) {
+            try {
+                int addressId = Integer.parseInt(addressIdRaw.trim());
+                DeliveryAddress addr = addressDAO.getAddressById(addressId, userId);
+                if (addr != null) {
+                    return addr.getReceiverName() + " | " + addr.getReceiverPhone() + " | " + addr.getAddressDetail();
+                }
+            } catch (NumberFormatException ignored) {}
+        }
+        return null;
+    }
+
+    private void setDeliveryWindow(Order order, String deliveryDate, String timeSlot) {
+        Timestamp deliveryWindowStart = null;
+        Timestamp deliveryWindowEnd   = null;
+
+        if (deliveryDate != null && !deliveryDate.trim().isEmpty() && timeSlot != null && !timeSlot.trim().isEmpty()) {
+            try {
+                String[] parts = timeSlot.split("-");
+                String startTime = parts[0].trim();
+                String endTime   = parts[1].trim();
+
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                deliveryWindowStart = new Timestamp(sdf.parse(deliveryDate + " " + startTime).getTime());
+                deliveryWindowEnd   = new Timestamp(sdf.parse(deliveryDate + " " + endTime).getTime());
+            } catch (Exception e) {
+                System.err.println("[WARN] Failed to parse delivery date/time: " + e.getMessage());
+            }
+        }
+        
+        if (deliveryWindowStart == null || deliveryWindowEnd == null) {
+            long tomorrow = System.currentTimeMillis() + 24L * 3600 * 1000;
+            deliveryWindowStart = new Timestamp(tomorrow);
+            deliveryWindowEnd = new Timestamp(tomorrow + 2L * 3600 * 1000);
+        }
+        
+        order.setDeliveryWindowStart(deliveryWindowStart);
+        order.setDeliveryWindowEnd(deliveryWindowEnd);
+    }
+
+    private BigDecimal parseCartItemsAndGetTotal(Order order, String cartDataJson) {
+        BigDecimal productTotal = BigDecimal.ZERO;
+        if (cartDataJson != null && !cartDataJson.trim().isEmpty() && !cartDataJson.equals("[]")) {
+            JsonArray cartArray = JsonParser.parseString(cartDataJson).getAsJsonArray();
+            for (JsonElement el : cartArray) {
+                if (el.isJsonNull()) continue;
+                JsonObject cartItem = el.getAsJsonObject();
+
+                String itemId     = getStr(cartItem, "id");
+                String itemName   = getStr(cartItem, "name");
+                String itemImage  = getStr(cartItem, "image");
+                String templateId = getStr(cartItem, "templateId");
+                double price      = cartItem.has("price") ? cartItem.get("price").getAsDouble() : 0;
+                int qty           = cartItem.has("qty")   ? cartItem.get("qty").getAsInt()   : 1;
+
+                BigDecimal itemPrice = BigDecimal.valueOf(price);
+                productTotal = productTotal.add(itemPrice.multiply(BigDecimal.valueOf(qty)));
+
+                OrderItem oi = new OrderItem();
+                oi.setQuantity(qty);
+                oi.setPriceAtPurchase(itemPrice);
+                oi.setItemName(itemName);
+                oi.setItemImage(itemImage);
+                oi.setTemplateId(templateId);
+
+                if (templateId != null && !templateId.isEmpty()) {
+                    oi.setCustomCakeId("CAKE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+                    oi.setAccessoryId(null);
+                } else if (itemId != null && itemId.startsWith("ACC-")) {
+                    oi.setAccessoryId(itemId);
+                    oi.setCustomCakeId(null);
+                } else {
+                    oi.setAccessoryId(null);
+                    oi.setCustomCakeId("CAKE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+                    oi.setTemplateId(itemId);
+                }
+                order.getItems().add(oi);
+            }
+        }
+        return productTotal;
+    }
+
+    private void calculateAndSetTotals(Order order, BigDecimal productTotal, String shippingFeeStr, String paymentMethod, HttpSession session) {
+        BigDecimal shippingFee = BigDecimal.valueOf(25000);
+        if (shippingFeeStr != null && !shippingFeeStr.trim().isEmpty()) {
+            try {
+                shippingFee = new BigDecimal(shippingFeeStr.trim());
+            } catch (NumberFormatException ignored) {}
+        }
+
+        BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
+        if (appliedDiscount == null) appliedDiscount = BigDecimal.ZERO;
+        
+        BigDecimal totalCost = productTotal.add(shippingFee).subtract(appliedDiscount);
+        if (totalCost.compareTo(BigDecimal.ZERO) < 0) totalCost = BigDecimal.ZERO;
+        
+        BigDecimal deposit = BigDecimal.ZERO;
+        BigDecimal remainingCod = totalCost;
+
+        if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
+            deposit = totalCost;
+            remainingCod = BigDecimal.ZERO;
+        } else {
+            deposit = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
+            remainingCod = totalCost.subtract(deposit);
+        }
+
+        order.setTotalCost(totalCost);
+        order.setDepositAmount(deposit);
+        order.setRemainingCodBalance(remainingCod);
+        order.setShippingFee(shippingFee);
+    }
+
+    private void handleSuccessfulOrder(HttpSession session, String userId, String paymentMethod, String orderNo, BigDecimal totalCost, HttpServletResponse response, String contextPath) throws IOException {
+        Integer appliedVoucherId = (Integer) session.getAttribute("appliedVoucherId");
+        if (appliedVoucherId != null) {
+            voucherDAO.markVoucherUsed(appliedVoucherId, userId);
+            session.removeAttribute("appliedVoucherId");
+            session.removeAttribute("appliedVoucherCode");
+            session.removeAttribute("appliedDiscount");
+        }
+
+        if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
+            String totalEncoded = java.net.URLEncoder.encode(totalCost.toPlainString(), "UTF-8");
+            response.sendRedirect(contextPath + "/bank-transfer?orderNo=" + orderNo + "&total=" + totalEncoded);
+        } else {
+            response.sendRedirect(contextPath + "/order-success?orderNo=" + orderNo);
         }
     }
 

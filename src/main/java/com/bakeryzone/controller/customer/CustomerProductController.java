@@ -43,32 +43,13 @@ public class CustomerProductController extends HttpServlet {
             throws ServletException, IOException {
 
         ProductSearchResult result = productDAO.getAllProductsAdmin(
-                "",
-                "Active",
-                "",
-                "newest",
-                1,
-                100
+                "", "Active", "", "newest", 1, 100
         );
-
-        List<Product> productList = result.list();
         List<Map<String, String>> categoryList = productDAO.getAllProductCategories();
-
-        com.google.gson.Gson gson = new com.google.gson.Gson();
         String contextPath = request.getContextPath();
 
-        List<Map<String, Object>> productDtoList = new ArrayList<>();
-        for (Product p : productList) {
-            productDtoList.add(mapProductToDto(p, contextPath));
-        }
-
-        List<String> categoriesJsonList = new ArrayList<>();
-        for (Map<String, String> c : categoryList) {
-            categoriesJsonList.add(c.get("name"));
-        }
-
-        request.setAttribute("productsJson", gson.toJson(productDtoList));
-        request.setAttribute("categoriesJson", gson.toJson(categoriesJsonList));
+        request.setAttribute("productsJson", getProductsJson(result.list(), contextPath));
+        request.setAttribute("categoriesJson", getCategoriesJson(categoryList));
 
         request.getRequestDispatcher("/customer/productList.jsp").forward(request, response);
     }
@@ -77,55 +58,86 @@ public class CustomerProductController extends HttpServlet {
             throws ServletException, IOException {
 
         String id = request.getParameter("id");
-
         if (id == null || id.trim().isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/products");
             return;
         }
 
         Product product = productDAO.getProductById(id);
-
         if (product == null) {
             response.sendRedirect(request.getContextPath() + "/products");
             return;
         }
 
-        ProductSearchResult result = productDAO.getAllProductsAdmin(
-                product.getCategoryName(),
-                "Active",
-                "",
-                "newest",
-                1,
-                4
-        );
-
         String contextPath = request.getContextPath();
         com.google.gson.Gson gson = new com.google.gson.Gson();
 
-        List<Map<String, Object>> relatedProductsDto = new ArrayList<>();
+        request.setAttribute("relatedProductsJson", getRelatedProductsJson(product, contextPath));
+        setUserReviewStatus(request, product.getId());
+        request.setAttribute("reviewsJson", getReviewsJson(product.getId()));
 
+        List<String> resolvedImages = getResolvedImages(product, contextPath);
+        request.setAttribute("imagesJson", gson.toJson(resolvedImages));
+
+        Map<String, Object> productDto = mapProductToDto(product, contextPath);
+        if (!resolvedImages.isEmpty()) {
+            productDto.put("image", resolvedImages.get(0)); // override image with first resolved image
+        }
+        request.setAttribute("productJson", gson.toJson(productDto));
+
+        request.getRequestDispatcher("/customer/productDetail.jsp").forward(request, response);
+    }
+
+    private String getProductsJson(List<Product> productList, String contextPath) {
+        List<Map<String, Object>> productDtoList = new ArrayList<>();
+        for (Product p : productList) {
+            productDtoList.add(mapProductToDto(p, contextPath));
+        }
+        return new com.google.gson.Gson().toJson(productDtoList);
+    }
+
+    private String getCategoriesJson(List<Map<String, String>> categoryList) {
+        List<String> categoriesJsonList = new ArrayList<>();
+        for (Map<String, String> c : categoryList) {
+            categoriesJsonList.add(c.get("name"));
+        }
+        return new com.google.gson.Gson().toJson(categoriesJsonList);
+    }
+
+    private String getRelatedProductsJson(Product product, String contextPath) {
+        ProductSearchResult result = productDAO.getAllProductsAdmin(
+                product.getCategoryName(), "Active", "", "newest", 1, 4
+        );
+        List<Map<String, Object>> relatedProductsDto = new ArrayList<>();
         for (Product p : result.list()) {
             if (!p.getId().equals(product.getId())) {
                 relatedProductsDto.add(mapProductToDto(p, contextPath));
             }
         }
+        return new com.google.gson.Gson().toJson(relatedProductsDto);
+    }
 
-        // Check purchase and review status
-        HttpSession session = request.getSession();
-        User currentUser = (User) session.getAttribute("user");
+    private void setUserReviewStatus(HttpServletRequest request, String productId) {
+        HttpSession session = request.getSession(false);
         boolean hasBought = false;
         boolean hasReviewed = false;
         String currentUserId = "";
-        
-        if (currentUser != null) {
+
+        if (session != null && session.getAttribute("user") != null) {
+            User currentUser = (User) session.getAttribute("user");
             currentUserId = currentUser.getUserId();
-            String customerId = new com.bakeryzone.dao.OrderDAO().getCustomerIdByUserId(currentUser.getUserId());
-            hasBought = reviewDAO.hasBoughtProduct(customerId, product.getId());
-            hasReviewed = reviewDAO.hasReviewed(customerId, product.getId());
+            String customerId = new com.bakeryzone.dao.OrderDAO().getCustomerIdByUserId(currentUserId);
+            hasBought = reviewDAO.hasBoughtProduct(customerId, productId);
+            hasReviewed = reviewDAO.hasReviewed(customerId, productId);
         }
 
-        // Load reviews
-        List<Review> reviewsList = reviewDAO.getReviewsByProductId(product.getId());
+        request.setAttribute("hasBought", hasBought);
+        request.setAttribute("hasReviewed", hasReviewed);
+        request.setAttribute("currentUserId", currentUserId);
+    }
+
+    private String getReviewsJson(String productId) {
+        List<Review> reviewsList = reviewDAO.getReviewsByProductId(productId);
         List<Map<String, Object>> reviewsDtoList = new ArrayList<>();
         for (Review r : reviewsList) {
             Map<String, Object> rDto = new java.util.HashMap<>();
@@ -139,8 +151,10 @@ public class CustomerProductController extends HttpServlet {
             rDto.put("greetingText", r.getGreetingText() != null ? r.getGreetingText() : "");
             reviewsDtoList.add(rDto);
         }
+        return new com.google.gson.Gson().toJson(reviewsDtoList);
+    }
 
-        // Images logic
+    private List<String> getResolvedImages(Product product, String contextPath) {
         List<String> imageList = new ArrayList<>();
         if (product.getImageUrl() != null && !product.getImageUrl().trim().isEmpty()) {
             imageList.add(product.getImageUrl());
@@ -155,25 +169,12 @@ public class CustomerProductController extends HttpServlet {
         if (imageList.isEmpty()) {
             imageList.add("assets/images/products/basic.png");
         }
-        
+
         List<String> resolvedImages = new ArrayList<>();
         for (String img : imageList) {
             resolvedImages.add(resolveImageUrl(img, contextPath));
         }
-
-        Map<String, Object> productDto = mapProductToDto(product, contextPath);
-        productDto.put("image", resolvedImages.get(0)); // override image with first resolved image
-
-        request.setAttribute("productJson", gson.toJson(productDto));
-        request.setAttribute("imagesJson", gson.toJson(resolvedImages));
-        request.setAttribute("relatedProductsJson", gson.toJson(relatedProductsDto));
-        request.setAttribute("reviewsJson", gson.toJson(reviewsDtoList));
-        
-        request.setAttribute("hasBought", hasBought);
-        request.setAttribute("hasReviewed", hasReviewed);
-        request.setAttribute("currentUserId", currentUserId);
-
-        request.getRequestDispatcher("/customer/productDetail.jsp").forward(request, response);
+        return resolvedImages;
     }
     
     private Map<String, Object> mapProductToDto(Product p, String contextPath) {
