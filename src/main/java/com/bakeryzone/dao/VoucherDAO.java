@@ -403,6 +403,47 @@ public class VoucherDAO {
     }
 
     /**
+     * Fetches all valid, unused vouchers for a specific user, ordered by scope and discount value.
+     */
+    public List<Voucher> getAvailableVouchersForUser(String userId) {
+        List<Voucher> list = new ArrayList<>();
+        String sql =
+            "SELECT v.VoucherID, v.VoucherCode, v.Title, v.DiscountType, v.DiscountValue, "
+            + "       v.MaxDiscountAmount, v.MinOrderValue, v.StartDate, v.EndDate, "
+            + "       v.IsActive, v.UsageLimit, v.RequiredTierID, v.VoucherScope, v.TargetCategory, v.IsStackable "
+            + "FROM UserVoucher uv "
+            + "JOIN Voucher v ON uv.VoucherID = v.VoucherID "
+            + "WHERE uv.UserID = ? "
+            + "  AND uv.IsUsed = 0 "
+            + "  AND v.IsActive = 1 "
+            + "  AND CURDATE() BETWEEN v.StartDate AND v.EndDate "
+            + "ORDER BY v.VoucherScope DESC, v.DiscountValue DESC";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return list;
+
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, userId);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapVoucher(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+
+        return list;
+    }
+
+    /**
      * Marks a user's private voucher as used after a successful checkout.
      */
     public void markVoucherUsed(int voucherId, String userId) {
