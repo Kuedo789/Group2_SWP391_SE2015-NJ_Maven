@@ -46,6 +46,28 @@ public class CustomerCheckoutServlet extends HttpServlet {
             return;
         }
 
+        // Fetch selected cart items from DB
+        com.bakeryzone.dao.CartDAO cartDAO = new com.bakeryzone.dao.CartDAO();
+        List<com.bakeryzone.model.CartItemDTO> allCartItems = cartDAO.getCartItemsForUser(currentUser.getUserId());
+        List<com.bakeryzone.model.CartItemDTO> checkoutCartItems = new java.util.ArrayList<>();
+        BigDecimal productTotalSum = BigDecimal.ZERO;
+
+        @SuppressWarnings("unchecked")
+        List<String> checkoutSelectedItems = (List<String>) session.getAttribute("checkoutSelectedItems");
+        
+        if (checkoutSelectedItems != null && allCartItems != null) {
+            for (com.bakeryzone.model.CartItemDTO item : allCartItems) {
+                if (item.isActive() && checkoutSelectedItems.contains(item.getCartItemId())) {
+                    checkoutCartItems.add(item);
+                    if (item.getUnitPrice() != null) {
+                        productTotalSum = productTotalSum.add(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                    }
+                }
+            }
+        }
+        request.setAttribute("checkoutCartItems", checkoutCartItems);
+        request.setAttribute("productTotalSum", productTotalSum);
+
         // Retrieve customer's saved delivery addresses
         List<DeliveryAddress> addressList = addressDAO.getAddressesByUserId(currentUser.getUserId());
         request.setAttribute("addressList", addressList);
@@ -65,11 +87,46 @@ public class CustomerCheckoutServlet extends HttpServlet {
         request.setAttribute("selectedAddress", selectedAddress);
 
         // Fetch voucher discount from session
-        BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
-        String appliedVoucherCode = (String) session.getAttribute("appliedVoucherCode");
+        String appliedOrderVoucherCode = (String) session.getAttribute("appliedOrderVoucherCode");
+        BigDecimal calculatedOrderDiscount = BigDecimal.ZERO;
         
-        request.setAttribute("checkoutDiscount", appliedDiscount != null ? appliedDiscount : BigDecimal.ZERO);
-        request.setAttribute("checkoutVoucherCode", appliedVoucherCode);
+        if (appliedOrderVoucherCode != null) {
+            com.bakeryzone.model.Voucher orderVoucher = voucherDAO.getVoucherByCodeAndUser(appliedOrderVoucherCode, currentUser.getUserId());
+            if (orderVoucher != null) {
+                // Ensure order meets minimum
+                BigDecimal minOrder = orderVoucher.getMinOrderValue() != null ? orderVoucher.getMinOrderValue() : BigDecimal.ZERO;
+                if (productTotalSum.compareTo(minOrder) >= 0) {
+                    boolean isPercentage = "PERCENT".equalsIgnoreCase(orderVoucher.getDiscountType()) || "PERCENTAGE".equalsIgnoreCase(orderVoucher.getDiscountType());
+                    if (isPercentage) {
+                        calculatedOrderDiscount = productTotalSum.multiply(orderVoucher.getDiscountValue()).divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
+                        if (orderVoucher.getMaxDiscountAmount() != null && orderVoucher.getMaxDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
+                            calculatedOrderDiscount = calculatedOrderDiscount.min(orderVoucher.getMaxDiscountAmount());
+                        }
+                    } else {
+                        calculatedOrderDiscount = orderVoucher.getDiscountValue();
+                    }
+                    calculatedOrderDiscount = calculatedOrderDiscount.min(productTotalSum);
+                } else {
+                    // Invalidated by deselecting items
+                    appliedOrderVoucherCode = null;
+                }
+            }
+        }
+        
+        request.setAttribute("checkoutOrderDiscount", calculatedOrderDiscount);
+        request.setAttribute("checkoutOrderVoucherCode", appliedOrderVoucherCode);
+
+        String appliedShippingVoucherCode = (String) session.getAttribute("appliedShippingVoucherCode");
+        request.setAttribute("checkoutShippingVoucherCode", appliedShippingVoucherCode);
+        
+        if (appliedShippingVoucherCode != null) {
+            com.bakeryzone.model.Voucher shippingVoucher = voucherDAO.getVoucherByCodeAndUser(appliedShippingVoucherCode, currentUser.getUserId());
+            if (shippingVoucher != null) {
+                request.setAttribute("shippingVoucherType", shippingVoucher.getDiscountType());
+                request.setAttribute("shippingVoucherValue", shippingVoucher.getDiscountValue());
+                request.setAttribute("shippingVoucherMax", shippingVoucher.getMaxDiscountAmount() != null ? shippingVoucher.getMaxDiscountAmount() : BigDecimal.ZERO);
+            }
+        }
 
         // Forward to the checkout page
         request.getRequestDispatcher("/customer/checkout.jsp").forward(request, response);
@@ -233,13 +290,34 @@ if (order.getItems().isEmpty()) {
             }
 
             // 2. Extract and Apply Voucher Discount
-            BigDecimal appliedDiscount = (BigDecimal) session.getAttribute("appliedDiscount");
-            if (appliedDiscount == null) {
-                appliedDiscount = BigDecimal.ZERO;
+            BigDecimal appliedOrderDiscount = (BigDecimal) session.getAttribute("appliedOrderDiscount");
+            if (appliedOrderDiscount == null) {
+                appliedOrderDiscount = BigDecimal.ZERO;
+            }
+
+            BigDecimal appliedShippingDiscount = BigDecimal.ZERO;
+            String appliedShippingVoucherCode = (String) session.getAttribute("appliedShippingVoucherCode");
+            if (appliedShippingVoucherCode != null) {
+                com.bakeryzone.model.Voucher shippingVoucher = voucherDAO.getVoucherByCodeAndUser(appliedShippingVoucherCode, currentUser.getUserId());
+                if (shippingVoucher != null) {
+                    boolean isPercentage = "PERCENT".equalsIgnoreCase(shippingVoucher.getDiscountType()) 
+                                        || "PERCENTAGE".equalsIgnoreCase(shippingVoucher.getDiscountType());
+                    if (isPercentage) {
+                        appliedShippingDiscount = shippingFee.multiply(shippingVoucher.getDiscountValue())
+                                                .divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
+                        if (shippingVoucher.getMaxDiscountAmount() != null && shippingVoucher.getMaxDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
+                            appliedShippingDiscount = appliedShippingDiscount.min(shippingVoucher.getMaxDiscountAmount());
+                        }
+                    } else {
+                        appliedShippingDiscount = shippingVoucher.getDiscountValue();
+                    }
+                    appliedShippingDiscount = appliedShippingDiscount.min(shippingFee);
+                }
             }
             
             // 3. Compute Final Total Cost
-            BigDecimal totalCost = productTotal.add(shippingFee).subtract(appliedDiscount);
+            BigDecimal finalShippingFee = shippingFee.subtract(appliedShippingDiscount);
+            BigDecimal totalCost = productTotal.add(finalShippingFee).subtract(appliedOrderDiscount);
             if (totalCost.compareTo(BigDecimal.ZERO) < 0) {
                 totalCost = BigDecimal.ZERO;
             }
@@ -277,13 +355,20 @@ if (order.getItems().isEmpty()) {
 
             if (success) {
                 // Mark voucher as used if applicable and clear session attributes
-                Integer appliedVoucherId = (Integer) session.getAttribute("appliedVoucherId");
-                if (appliedVoucherId != null) {
-                    voucherDAO.markVoucherUsed(appliedVoucherId, currentUser.getUserId());
-                    session.removeAttribute("appliedVoucherId");
-                    session.removeAttribute("appliedVoucherCode");
-                    session.removeAttribute("appliedDiscount");
+                Integer appliedOrderVoucherId = (Integer) session.getAttribute("appliedOrderVoucherId");
+                if (appliedOrderVoucherId != null) {
+                    voucherDAO.markVoucherUsed(appliedOrderVoucherId, currentUser.getUserId());
                 }
+                Integer appliedShippingVoucherId = (Integer) session.getAttribute("appliedShippingVoucherId");
+                if (appliedShippingVoucherId != null) {
+                    voucherDAO.markVoucherUsed(appliedShippingVoucherId, currentUser.getUserId());
+                }
+
+                session.removeAttribute("appliedOrderVoucherId");
+                session.removeAttribute("appliedOrderVoucherCode");
+                session.removeAttribute("appliedOrderDiscount");
+                session.removeAttribute("appliedShippingVoucherId");
+                session.removeAttribute("appliedShippingVoucherCode");
 
                 // Redirect target evaluation based on payment configuration
                 if ("BANK_TRANSFER_FULL".equals(paymentMethod)) {
