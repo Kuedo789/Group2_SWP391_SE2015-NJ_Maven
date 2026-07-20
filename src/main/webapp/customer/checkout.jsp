@@ -88,6 +88,11 @@
                 Đã có lỗi xảy ra trong quá trình đặt hàng. Vui lòng thử lại sau.
             </div>
         </c:if>
+        <c:if test="${param.error == 'note_too_long'}">
+            <div class="alert alert-danger" style="color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;">
+                Ghi chú đơn hàng quá dài (tối đa 500 ký tự). Vui lòng viết ngắn gọn hơn.
+            </div>
+        </c:if>
         <c:if test="${param.error == 'voucher_invalid'}">
             <div class="alert alert-danger" style="color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;">
                 <strong>&#9888; Mã giảm giá không còn hợp lệ</strong> và đã được gỡ bỏ tự động.

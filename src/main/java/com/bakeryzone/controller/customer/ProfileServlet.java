@@ -34,6 +34,15 @@ public class ProfileServlet extends HttpServlet {
             session.removeAttribute("successMessage");
         }
 
+        User user = (User) session.getAttribute("user");
+        if (user != null && "CUSTOMER".equalsIgnoreCase(user.getRoleId())) {
+            com.bakeryzone.dao.DeliveryAddressDAO addressDAO = new com.bakeryzone.dao.DeliveryAddressDAO();
+            addressDAO.getAddressesByUserId(user.getUserId()).stream()
+                    .filter(com.bakeryzone.model.DeliveryAddress::isDefault)
+                    .findFirst()
+                    .ifPresent(addr -> request.setAttribute("defaultDeliveryAddress", addr));
+        }
+
         request.getRequestDispatcher("/customer/profile.jsp").forward(request, response);
     }
 

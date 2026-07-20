@@ -141,12 +141,11 @@ public class CartDAO {
         if (productId != null && !productId.isEmpty()) {
             String sqlCheck = "SELECT ci.Cart_Item_ID FROM cart_item ci " +
                               "JOIN custom_cake cc ON ci.Custom_Cake_ID = cc.Custom_Cake_ID " +
-                              "WHERE ci.User_ID = ? AND ci.Product_ID = ? AND cc.Cake_Hash_Structure = ?";
+                              "WHERE ci.User_ID = ? AND cc.Cake_Hash_Structure = ?";
             try (Connection conn = DBContext.getJDBCConnection();
                  PreparedStatement psCheck = conn.prepareStatement(sqlCheck)) {
                 psCheck.setString(1, userId);
-                psCheck.setString(2, productId);
-                psCheck.setString(3, templateName);
+                psCheck.setString(2, templateName);
                 try (ResultSet rs = psCheck.executeQuery()) {
                     if (rs.next()) {
                         String existingCartItemId = rs.getString("Cart_Item_ID");
@@ -169,7 +168,7 @@ public class CartDAO {
         String cartItemId = "CRT-" + java.util.UUID.randomUUID().toString().toUpperCase();
 
         String sqlCake = "INSERT INTO custom_cake (Custom_Cake_ID, Canvas_Image_URL, Greeting_Text, Cake_Hash_Structure, Calculated_Price) VALUES (?, ?, ?, ?, ?)";
-        String sqlCart = "INSERT INTO cart_item (Cart_Item_ID, User_ID, Custom_Cake_ID, Product_ID, Quantity, Added_At) VALUES (?, ?, ?, ?, ?, ?)";
+        String sqlCart = "INSERT INTO cart_item (Cart_Item_ID, User_ID, Custom_Cake_ID, Quantity, Added_At) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DBContext.getJDBCConnection()) {
             conn.setAutoCommit(false);
@@ -188,9 +187,8 @@ public class CartDAO {
                 psCart.setString(1, cartItemId);
                 psCart.setString(2, userId);
                 psCart.setString(3, customCakeId);
-                psCart.setString(4, productId);
-                psCart.setInt(5, quantity);
-                psCart.setTimestamp(6, new java.sql.Timestamp(System.currentTimeMillis()));
+                psCart.setInt(4, quantity);
+                psCart.setTimestamp(5, new java.sql.Timestamp(System.currentTimeMillis()));
                 psCart.executeUpdate();
 
                 conn.commit();

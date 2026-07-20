@@ -270,8 +270,30 @@ public class DeliveryAddressServlet extends HttpServlet {
     }
 
     private void refetchAddresses(HttpServletRequest request, User user) {
-        List<DeliveryAddress> addressList = addressDAO.getAddressesByUserId(user.getUserId());
+        int page = 1;
+        int limit = 4;
+        String pageParam = request.getParameter("page");
+        if (pageParam != null) {
+            try {
+                page = Integer.parseInt(pageParam);
+                if (page < 1) page = 1;
+            } catch (NumberFormatException e) {
+                // Ignore and use default page 1
+            }
+        }
+
+        int totalAddresses = addressDAO.getTotalAddressesByUserId(user.getUserId());
+        int totalPages = (int) Math.ceil((double) totalAddresses / limit);
+        if (page > totalPages && totalPages > 0) {
+            page = totalPages;
+        }
+
+        int offset = (page - 1) * limit;
+
+        List<DeliveryAddress> addressList = addressDAO.getPaginatedAddressesByUserId(user.getUserId(), limit, offset);
         request.setAttribute("addressList", addressList);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
     }
 
     private String trim(String value) {

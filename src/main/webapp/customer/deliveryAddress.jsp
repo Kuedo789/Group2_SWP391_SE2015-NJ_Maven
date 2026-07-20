@@ -118,6 +118,46 @@
                                 </c:otherwise>
                             </c:choose>
                         </div>
+                        
+                        <%-- Pagination Controls --%>
+                        <c:if test="${requestScope.totalPages > 1}">
+                            <div class="pagination" style="display: flex; justify-content: center; gap: 8px; margin-top: 20px;">
+                                
+                                <%-- Previous Button --%>
+                                <c:if test="${requestScope.currentPage > 1}">
+                                    <a href="${pageContext.request.contextPath}/delivery-address?page=${requestScope.currentPage - 1}${sourceParam}" 
+                                       style="padding: 6px 12px; border: 1px solid var(--border, #eee5dc); border-radius: 4px; text-decoration: none; color: var(--text, #241d18); background-color: white;">
+                                        &laquo;
+                                    </a>
+                                </c:if>
+
+                                <c:forEach begin="1" end="${requestScope.totalPages}" var="i">
+                                    <c:choose>
+                                        <%-- Always show first, last, current, and adjacent pages --%>
+                                        <c:when test="${i == 1 || i == requestScope.totalPages || (i >= requestScope.currentPage - 1 && i <= requestScope.currentPage + 1)}">
+                                            <a href="${pageContext.request.contextPath}/delivery-address?page=${i}${sourceParam}" 
+                                               style="padding: 6px 12px; border: 1px solid var(--border, #eee5dc); border-radius: 4px; text-decoration: none; font-size: 14px; font-weight: 500;
+                                                      ${i == requestScope.currentPage ? 'background-color: var(--primary, #345f3d); color: white; border-color: var(--primary, #345f3d);' : 'color: var(--text, #241d18); background-color: white;'}">
+                                                ${i}
+                                            </a>
+                                        </c:when>
+                                        <%-- Show ellipses for gaps --%>
+                                        <c:when test="${i == requestScope.currentPage - 2 || i == requestScope.currentPage + 2}">
+                                            <span style="padding: 6px 4px; color: var(--text, #241d18);">...</span>
+                                        </c:when>
+                                    </c:choose>
+                                </c:forEach>
+
+                                <%-- Next Button --%>
+                                <c:if test="${requestScope.currentPage < requestScope.totalPages}">
+                                    <a href="${pageContext.request.contextPath}/delivery-address?page=${requestScope.currentPage + 1}${sourceParam}" 
+                                       style="padding: 6px 12px; border: 1px solid var(--border, #eee5dc); border-radius: 4px; text-decoration: none; color: var(--text, #241d18); background-color: white;">
+                                        &raquo;
+                                    </a>
+                                </c:if>
+
+                            </div>
+                        </c:if>
                     </div>
                 </div>
             </c:when>
@@ -216,19 +256,23 @@
 
                             <c:choose>
                             <c:when test="${isProfileMode}">
+                                <label class="checkbox-row">
+                                    <input type="checkbox" checked disabled>
+                                    Đặt làm địa chỉ mặc định
+                                </label>
                                 <input type="hidden" name="isDefault" value="on">
                             </c:when>
                             <c:otherwise>
-                            <label class="checkbox-row">
-                                <input type="checkbox" name="isDefault" ${(isEditMode and addressToEdit.isDefault()) ? 'checked disabled' : ''} ${(!isEditMode and empty addressList) ? 'checked disabled' : ''}>
-                                Đặt làm địa chỉ mặc định
-                            </label>
-                            <c:if test="${isEditMode and addressToEdit.isDefault()}">
-                                <input type="hidden" name="isDefault" value="on">
-                            </c:if>
-                            <c:if test="${!isEditMode and empty addressList}">
-                                <input type="hidden" name="isDefault" value="on">
-                            </c:if>
+                                <label class="checkbox-row">
+                                    <input type="checkbox" name="isDefault" ${(isEditMode and addressToEdit.isDefault()) ? 'checked disabled' : ''} ${(!isEditMode and empty addressList) ? 'checked disabled' : ''}>
+                                    Đặt làm địa chỉ mặc định
+                                </label>
+                                <c:if test="${isEditMode and addressToEdit.isDefault()}">
+                                    <input type="hidden" name="isDefault" value="on">
+                                </c:if>
+                                <c:if test="${!isEditMode and empty addressList}">
+                                    <input type="hidden" name="isDefault" value="on">
+                                </c:if>
                             </c:otherwise>
                             </c:choose>
 
