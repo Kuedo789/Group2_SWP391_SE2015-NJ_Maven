@@ -62,6 +62,9 @@ public class AdminProductController extends HttpServlet {
             case "edit":
                 showEditForm(request, response);
                 break;
+            case "checkName":
+                checkProductNameAjax(request, response);
+                break;
             default:
                 handleList(request, response);
                 break;
@@ -518,7 +521,15 @@ public class AdminProductController extends HttpServlet {
             System.err.println("[ERROR] Error reading additional image parts: " + e.getMessage());
         }
 
-        if (!nameValid || !laborValid || !marginValid || !serviceValid || imageError != null) {
+        boolean isDuplicateName = false;
+        if (nameValid) {
+            String checkId = (isNew || id == null || id.trim().isEmpty() || "new".equalsIgnoreCase(id.trim())) ? "new" : id;
+            if (productDAO.isProductNameExists(name, checkId)) {
+                isDuplicateName = true;
+            }
+        }
+
+        if (!nameValid || isDuplicateName || !laborValid || !marginValid || !serviceValid || imageError != null) {
             Product product = new Product();
             product.setId(id);
             product.setName(name);
@@ -536,6 +547,8 @@ public class AdminProductController extends HttpServlet {
             StringBuilder errorMsg = new StringBuilder("Dữ liệu nhập vào không hợp lệ: ");
             if (!nameValid) {
                 errorMsg.append("Tên bánh phải từ 3 đến 100 ký tự. ");
+            } else if (isDuplicateName) {
+                errorMsg.append("Tên bánh kem này đã tồn tại trên hệ thống. Vui lòng chọn tên khác! ");
             }
             if (!laborValid) {
                 errorMsg.append("Thời gian làm việc phải là số lớn hơn hoặc bằng 0. ");
@@ -680,5 +693,14 @@ public class AdminProductController extends HttpServlet {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
+    }
+
+    private void checkProductNameAjax(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        String name = request.getParameter("name");
+        String id = request.getParameter("id");
+        boolean exists = productDAO.isProductNameExists(name, id);
+        response.getWriter().write("{\"exists\":" + exists + "}");
     }
 }

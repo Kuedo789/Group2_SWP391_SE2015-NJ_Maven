@@ -594,4 +594,32 @@ public class ProductDAO {
         }
         return "TPL_0001";
     }
+
+    /**
+     * Checks if a product name already exists in cake_template (case-insensitive).
+     * If excludeProductId is provided (for update mode), it excludes the product with that ID.
+     */
+    public boolean isProductNameExists(String name, String excludeProductId) {
+        if (name == null || name.trim().isEmpty()) {
+            return false;
+        }
+        StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM cake_template WHERE LOWER(TRIM(Template_Name)) = LOWER(TRIM(?))");
+        if (excludeProductId != null && !excludeProductId.trim().isEmpty() && !"new".equalsIgnoreCase(excludeProductId.trim())) {
+            sql.append(" AND Template_ID <> ?");
+        }
+        try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            ps.setString(1, name.trim());
+            if (excludeProductId != null && !excludeProductId.trim().isEmpty() && !"new".equalsIgnoreCase(excludeProductId.trim())) {
+                ps.setString(2, excludeProductId.trim());
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to check if product name exists: " + name, e);
+        }
+        return false;
+    }
 }
