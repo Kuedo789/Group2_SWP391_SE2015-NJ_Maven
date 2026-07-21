@@ -45,6 +45,7 @@
                         <select class="filter-select" name="status" onchange="this.form.submit()">
                             <option value="all" ${empty status || status eq 'all' ? 'selected' : ''}>Tất cả trạng thái</option>
                             <option value="Pending" ${status eq 'Pending' ? 'selected' : ''}>Chờ xác nhận</option>
+                            <option value="Confirmed" ${status eq 'Confirmed' ? 'selected' : ''}>Đã xác nhận</option>
                             <option value="PAID" ${status eq 'PAID' ? 'selected' : ''}>Đã thanh toán (Duyệt gấp)</option>
                             <option value="Processing" ${status eq 'Processing' ? 'selected' : ''}>Đang làm bánh</option>
                             <option value="Delivering" ${status eq 'Delivering' ? 'selected' : ''}>Đang giao hàng</option>
@@ -82,14 +83,13 @@
                 <table class="cz-table">
                     <thead>
                         <tr>
-                            <th style="width: 120px;">Mã đơn</th>
-                            <th>Khách hàng</th>
-                            <th style="width: 160px;">Thời gian đặt</th>
-                            <th style="width: 130px; text-align: center;">Kiểu bánh</th>
-                            <th style="width: 150px; text-align: right;">Tiền cọc</th>
-                            <th style="width: 150px; text-align: right;">Tổng cộng</th>
-                            <th style="width: 150px; text-align: center;">Trạng thái</th>
-                            <th style="width: 120px; text-align: center;">Hành động</th>
+                            <th style="width: 13%; text-align: left;">Mã đơn</th>
+                            <th style="width: 23%; text-align: left;">Khách hàng</th>
+                            <th style="width: 17%; text-align: center;">Thời gian đặt</th>
+                            <th style="width: 14%; text-align: center;">Kiểu bánh</th>
+                            <th style="width: 16%; text-align: right;">Tổng cộng</th>
+                            <th style="width: 15%; text-align: center;">Trạng thái</th>
+                            <th style="width: 12%; text-align: center;">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -99,19 +99,19 @@
                                     <tr class="clickable-row"
                                         onclick="window.location.href='${pageContext.request.contextPath}/admin/orders?action=detail&orderNo=${o.orderNo}'"
                                     >
-                                        <td class="fw-bold" style="color: var(--cz-primary);">
+                                        <td class="fw-bold" style="color: var(--cz-primary); text-align: left;">
                                             #${o.orderNo.replace("ORD_", "")}
                                         </td>
-                                        <td>
+                                        <td style="text-align: left;">
                                             <div class="fw-bold"><c:out value="${not empty o.customerName ? o.customerName : 'Khách vãng lai'}" /></div>
                                             <div class="text-muted" style="font-size: 12px;">ID: ${o.customerId}</div>
                                         </td>
-                                        <td>
+                                        <td style="text-align: center;">
                                             <fmt:formatDate value="${o.orderTime}" pattern="dd/MM/yyyy HH:mm" />
                                         </td>
                                         <td style="text-align: center;">
                                             <c:choose>
-                                                <c:when test="${o.mixedCakeTypes}">
+                                                <c:when test="${o.cakeTypeLabel eq 'Hỗn hợp'}">
                                                     <%-- Đơn hỗn hợp: vừa có bánh có sẵn (TPL) vừa có bánh thiết kế (CC) --%>
                                                     <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
                                                         <span class="badge" style="background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 700; padding: 3px 8px; border-radius: 8px; font-size: 11px; width: fit-content;">
@@ -122,7 +122,7 @@
                                                         </span>
                                                     </div>
                                                 </c:when>
-                                                <c:when test="${o.customCake}">
+                                                <c:when test="${o.cakeTypeLabel eq 'Thiết kế'}">
                                                     <span class="badge" style="background-color: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; font-weight: 700; padding: 4px 10px; border-radius: 8px; font-size: 11.5px;">
                                                         <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Thiết kế
                                                     </span>
@@ -135,11 +135,16 @@
                                             </c:choose>
                                         </td>
 
-                                        <td style="text-align: right;" class="font-monospace admin-order-deposit">
-                                            <fmt:formatNumber value="${o.depositAmount}" type="number" pattern="#,##0"/>đ
-                                        </td>
-                                        <td style="text-align: right;" class="fw-bold font-monospace admin-order-total" title="Giá tiền cuối phải trả">
-                                            <fmt:formatNumber value="${o.totalCost}" type="number" pattern="#,##0"/>đ
+                                        <td style="text-align: right;" class="fw-bold font-monospace admin-order-total" title="Số tiền thu cuối (sau cọc/giảm giá)">
+                                            <c:choose>
+                                                <c:when test="${not empty o.remainingCodBalance}">
+                                                    <fmt:formatNumber value="${o.remainingCodBalance}" type="number" pattern="#,##0"/>đ
+                                                </c:when>
+                                                <c:when test="${not empty o.totalCost}">
+                                                    <fmt:formatNumber value="${o.totalCost}" type="number" pattern="#,##0"/>đ
+                                                </c:when>
+                                                <c:otherwise>0đ</c:otherwise>
+                                            </c:choose>
                                         </td>
 
                                         <td style="text-align: center;">
@@ -177,7 +182,7 @@
                             </c:when>
                             <c:otherwise>
                                 <tr>
-                                    <td colspan="8" class="text-center py-5 text-muted">
+                                    <td colspan="7" class="text-center py-5 text-muted">
                                         <i class="fa-solid fa-box-open d-block fs-3 mb-3" style="color: #ccc;"></i>
                                         Không tìm thấy đơn hàng nào phù hợp với bộ lọc.
                                     </td>

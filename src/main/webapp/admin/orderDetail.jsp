@@ -226,9 +226,17 @@
                                             <i class="fa-solid fa-pen-nib me-1"></i> Thông điệp trang trí: <strong style="color: #6b21a8;"><%= greeting %></strong>
                                         </div>
                                     <% } %>
-                                    <% if (ccId != null && !ccId.trim().isEmpty()) { %>
+                                    <% 
+                                        String displayCakeId = "";
+                                        if (tplId != null && !tplId.trim().isEmpty()) {
+                                            displayCakeId = tplId;
+                                        } else if (ccId != null && !ccId.trim().isEmpty()) {
+                                            displayCakeId = ccId;
+                                        }
+                                        if (!displayCakeId.isEmpty()) {
+                                    %>
                                         <div class="item-meta" style="font-size: 11px;">
-                                            Mã bánh: <span><%= ccId %></span>
+                                            Mã bánh: <span><%= displayCakeId %></span>
                                         </div>
                                     <% } %>
                                 </div>
@@ -437,6 +445,9 @@
                             double depositAmtVal = orderObj.getDepositAmount() != null ? orderObj.getDepositAmount().doubleValue() : 0;
                             if (totalCostVal > 0) {
                                 calcDepPercent = (int) Math.round((depositAmtVal * 100) / totalCostVal);
+                                if (calcDepPercent > 100) {
+                                    calcDepPercent = 100;
+                                }
                             }
                             
                             if (orderObj.getDiscountAmount() != null && orderObj.getDiscountAmount().doubleValue() > 0) {
@@ -532,7 +543,7 @@
                             </span>
                         </div>
                         <div class="cost-row total" style="background-color: #fdf2f2; border: 1px dashed #f8b4b4; padding: 10px; border-radius: 6px; margin-top: 15px;">
-                            <span style="color: #9b1c1c; font-weight: 800;">TIỀN THU HỘ (COD):</span>
+                            <span style="color: #9b1c1c; font-weight: 800;">THÀNH TIỀN:</span>
                             <span class="font-mono" style="color: #9b1c1c; font-size: 18px; font-weight: 800;">
                                 <c:choose>
                                     <c:when test="${order.paymentMethod eq 'BANK_TRANSFER_FULL' || order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">

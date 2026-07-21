@@ -1,6 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<div class="breadcrumbs">
+<div class="breadcrumbs" style="display: flex; align-items: center; flex-wrap: wrap; gap: 4px;">
     <a href="${pageContext.request.contextPath}/admin/dashboard">Bảng điều khiển</a>
     
     <%-- Level 1 Parent --%>
@@ -34,7 +34,29 @@
         <span>&gt;</span>
         <span class="active text-dark fw-bold" style="font-weight: 700; color: #1e293b;">${param.activeMenu}</span>
     </c:if>
+
 </div>
+
+<style>
+    .bc-drop-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        color: #334155 !important;
+        text-decoration: none !important;
+        font-weight: 500;
+        transition: background 0.15s, color 0.15s;
+    }
+    .bc-drop-item:hover {
+        background-color: #f8fafc !important;
+        color: #0f172a !important;
+    }
+    .breadcrumb-dropdown-btn:hover {
+        background: #e2e8f0 !important;
+        border-color: #94a3b8 !important;
+    }
+</style>
 
 <script>
     function showFloatingAlert(msg, type) {
@@ -89,6 +111,22 @@
     }
 
     document.addEventListener("DOMContentLoaded", function() {
+        const bcBtn = document.getElementById("breadcrumbNavBtn");
+        const bcMenu = document.getElementById("breadcrumbNavMenu");
+        if (bcBtn && bcMenu) {
+            bcBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                const isVisible = bcMenu.style.display === "block";
+                bcMenu.style.display = isVisible ? "none" : "block";
+            });
+            document.addEventListener("click", function() {
+                bcMenu.style.display = "none";
+            });
+            bcMenu.addEventListener("click", function(e) {
+                e.stopPropagation();
+            });
+        }
+
         <c:if test="${not empty sessionScope.successMessage}">
             showFloatingAlert(`${sessionScope.successMessage}`, 'success');
             <c:remove var="successMessage" scope="session" />
