@@ -976,6 +976,55 @@
             }
         }
 
+        // Real-time check for duplicate product name
+        let isDuplicateProductName = false;
+        async function checkDuplicateProductName() {
+            const nameInput = document.getElementById('productName');
+            const errorName = document.getElementById('error-name');
+            const productId = document.querySelector('input[name="id"]')?.value || 'new';
+
+            if (!nameInput) return false;
+            const nameVal = nameInput.value.trim();
+            if (nameVal.length < 3 || nameVal.length > 100) return false;
+
+            try {
+                const response = await fetch(`${pageContext.request.contextPath}/admin/product?action=checkName&name=` + encodeURIComponent(nameVal) + `&id=` + encodeURIComponent(productId));
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.exists) {
+                        isDuplicateProductName = true;
+                        if (errorName) {
+                            errorName.textContent = 'Tên bánh kem này đã tồn tại trên hệ thống. Vui lòng chọn tên khác.';
+                            errorName.style.display = 'block';
+                        }
+                        nameInput.classList.add('is-invalid');
+                        return true;
+                    } else {
+                        isDuplicateProductName = false;
+                        if (errorName && errorName.textContent.includes('đã tồn tại')) {
+                            errorName.style.display = 'none';
+                            nameInput.classList.remove('is-invalid');
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Lỗi kiểm tra trùng tên bánh:", err);
+            }
+            return false;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const productNameInput = document.getElementById('productName');
+            if (productNameInput) {
+                productNameInput.addEventListener('blur', checkDuplicateProductName);
+                productNameInput.addEventListener('input', function() {
+                    if (isDuplicateProductName) {
+                        checkDuplicateProductName();
+                    }
+                });
+            }
+        });
+
         // Sync Quill HTML contents on form submit
         const form = document.querySelector('form');
         form.addEventListener('submit', function(e) {
@@ -1017,6 +1066,13 @@
                 } else if (nameVal.length > 100) {
                     if (errorName) {
                         errorName.textContent = 'Tên bánh kem không được vượt quá 100 ký tự.';
+                        errorName.style.display = 'block';
+                    }
+                    nameInput.classList.add('is-invalid');
+                    hasError = true;
+                } else if (isDuplicateProductName) {
+                    if (errorName) {
+                        errorName.textContent = 'Tên bánh kem này đã tồn tại trên hệ thống. Vui lòng nhập tên khác.';
                         errorName.style.display = 'block';
                     }
                     nameInput.classList.add('is-invalid');
