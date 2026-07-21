@@ -606,7 +606,31 @@ public class OrderDAO {
             order.setShipperNote(rs.getString("Shipper_Note"));
         } catch (SQLException ignored) {
         }
+        try {
+            order.setDiscountAmount(rs.getBigDecimal("Discount_Amount"));
+        } catch (SQLException ignored) {
+        }
+        try {
+            order.setAppliedVoucherCode(rs.getString("Applied_Voucher_Code"));
+        } catch (SQLException ignored) {
+        }
         return order;
+    }
+
+    public static boolean canCustomerCancel(String status) {
+        if (status == null) return false;
+        String s = status.trim().toLowerCase();
+        if (s.equals("ready") || s.contains("chờ vận chuyển") || s.contains("sẵn sàng")) return false;
+        if (s.equals("delivering") || s.contains("đang giao")) return false;
+        if (s.equals("completed") || s.contains("hoàn thành") || s.contains("đã giao")) return false;
+        if (s.equals("cancelled") || s.equals("canceled") || s.contains("hủy")) return false;
+        return true; // Allowed for Pending, Confirmed, PAID, Processing, Chờ xác nhận, Đang làm bánh
+    }
+
+    public static boolean isTerminalState(String status) {
+        if (status == null) return false;
+        String s = status.trim().toLowerCase();
+        return s.equals("completed") || s.contains("hoàn thành") || s.equals("cancelled") || s.equals("canceled") || s.contains("hủy");
     }
 
     public boolean updateOrderStatus(String orderNo, String status) {
@@ -637,7 +661,7 @@ public class OrderDAO {
     }
 
     public boolean insertOrder(Order order) {
-        String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus, Shipping_Fee, Discount_Amount, Payment_Method, Receiver_Name, Receiver_Phone, Customer_Note, Applied_Voucher_Code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus, Shipping_Fee, Discount_Amount, Payment_Method, Receiver_Name, Receiver_Phone, Customer_Note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String sqlCake = "INSERT INTO `custom_cake` (Custom_Cake_ID, Canvas_Image_URL, Greeting_Text, Cake_Hash_Structure, Calculated_Price) VALUES (?, ?, ?, ?, ?)";
         String sqlItem = "INSERT INTO `order_item` (Order_Item_ID, Order_No, Custom_Cake_ID, Accessory_ID, Quantity, Price_At_Purchase) VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -681,7 +705,6 @@ public class OrderDAO {
             psOrder.setString(15, receiverName);
             psOrder.setString(16, receiverPhone);
             psOrder.setString(17, order.getCustomerNote());
-            psOrder.setString(18, order.getAppliedVoucherCode());
             psOrder.executeUpdate();
 
             psCake = conn.prepareStatement(sqlCake);
@@ -694,18 +717,22 @@ public class OrderDAO {
                 psItem.setString(2, order.getOrderNo());
 
                 if (item.getCustomCakeId() != null && !item.getCustomCakeId().trim().isEmpty()) {
-                    // It's a custom cake template, insert custom_cake first
-                    psCake.setString(1, item.getCustomCakeId());
-                    psCake.setString(2,
-                            item.getItemImage() != null ? item.getItemImage() : "assets/images/default-cake.png");
-                    psCake.setString(3,
-                            item.getGreetingText() != null ? item.getGreetingText() : "Chúc mừng sinh nhật!");
-                    String hash = (item.getTemplateId() != null && !item.getTemplateId().trim().isEmpty())
-                            ? item.getTemplateId().trim()
-                            : "STANDARD_CAKE_HASH";
-                    psCake.setString(4, hash);
-                    psCake.setBigDecimal(5, item.getPriceAtPurchase());
-                    psCake.executeUpdate();
+                    // Insert into custom_cake if not present
+                    try {
+                        psCake.setString(1, item.getCustomCakeId());
+                        psCake.setString(2,
+                                item.getItemImage() != null ? item.getItemImage() : "assets/images/default-cake.png");
+                        psCake.setString(3,
+                                item.getGreetingText() != null ? item.getGreetingText() : "Chúc mừng sinh nhật!");
+                        String hash = (item.getTemplateId() != null && !item.getTemplateId().trim().isEmpty())
+                                ? item.getTemplateId().trim()
+                                : "STANDARD_CAKE_HASH";
+                        psCake.setString(4, hash);
+                        psCake.setBigDecimal(5, item.getPriceAtPurchase() != null ? item.getPriceAtPurchase() : BigDecimal.ZERO);
+                        psCake.executeUpdate();
+                    } catch (Exception cakeEx) {
+                        // Ignore duplicate key if custom_cake ID already exists
+                    }
 
                     psItem.setString(3, item.getCustomCakeId());
                     psItem.setNull(4, java.sql.Types.VARCHAR);
@@ -862,6 +889,7 @@ public class OrderDAO {
                     orders.add(order);
                 }
             }
+            populateOrderItems(orders, conn);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -872,11 +900,16 @@ public class OrderDAO {
             String endDateStr) {
         int count = 0;
         StringBuilder sql = new StringBuilder(
-                "SELECT COUNT(*) FROM `orders` o " +
-                        "JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                "SELECT COUNT(DISTINCT o.Order_No) FROM `orders` o " +
+                        "LEFT JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                        "LEFT JOIN `staff` s ON (s.Staff_ID = ? OR s.User_ID = ?) " +
                         "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
-                        "WHERE t.Shipper_ID = ?");
+                        "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID " +
+                        "OR s.Managed_Zone IS NULL OR s.Managed_Zone = '' OR s.Managed_Zone LIKE '%Toàn thành phố%' " +
+                        "OR LOCATE(LOWER(s.Managed_Zone), LOWER(o.Delivery_Address)) > 0)");
         List<Object> params = new ArrayList<>();
+        params.add(shipperId);
+        params.add(shipperId);
         params.add(shipperId);
 
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -922,12 +955,16 @@ public class OrderDAO {
             String sort, int pageIndex, int pageSize) {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-                "SELECT o.*, c.Full_Name AS Customer_Name, s.Managed_Zone FROM `orders` o " +
-                        "JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
-                        "JOIN `staff` s ON t.Shipper_ID = s.Staff_ID " +
+                "SELECT DISTINCT o.*, c.Full_Name AS Customer_Name, s.Managed_Zone FROM `orders` o " +
+                        "LEFT JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                        "LEFT JOIN `staff` s ON (s.Staff_ID = ? OR s.User_ID = ?) " +
                         "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
-                        "WHERE t.Shipper_ID = ?");
+                        "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID " +
+                        "OR s.Managed_Zone IS NULL OR s.Managed_Zone = '' OR s.Managed_Zone LIKE '%Toàn thành phố%' " +
+                        "OR LOCATE(LOWER(s.Managed_Zone), LOWER(o.Delivery_Address)) > 0)");
         List<Object> params = new ArrayList<>();
+        params.add(shipperId);
+        params.add(shipperId);
         params.add(shipperId);
 
         if (keyword != null && !keyword.trim().isEmpty()) {
@@ -952,20 +989,20 @@ public class OrderDAO {
             params.add(endDateStr + " 23:59:59");
         }
 
-        String orderByClause = " ORDER BY (o.Delivery_Address LIKE CONCAT('%', IFNULL(s.Managed_Zone, '___'), '%')) DESC, o.Order_Time DESC ";
+        String orderByClause = " ORDER BY o.Order_Time DESC ";
         if (sort != null && !sort.trim().isEmpty()) {
             switch (sort.trim().toLowerCase()) {
                 case "date_asc":
-                    orderByClause = " ORDER BY (o.Delivery_Address LIKE CONCAT('%', IFNULL(s.Managed_Zone, '___'), '%')) DESC, o.Order_Time ASC ";
+                    orderByClause = " ORDER BY o.Order_Time ASC ";
                     break;
                 case "price_desc":
-                    orderByClause = " ORDER BY (o.Delivery_Address LIKE CONCAT('%', IFNULL(s.Managed_Zone, '___'), '%')) DESC, o.Total_Cost DESC ";
+                    orderByClause = " ORDER BY o.Total_Cost DESC ";
                     break;
                 case "price_asc":
-                    orderByClause = " ORDER BY (o.Delivery_Address LIKE CONCAT('%', IFNULL(s.Managed_Zone, '___'), '%')) DESC, o.Total_Cost ASC ";
+                    orderByClause = " ORDER BY o.Total_Cost ASC ";
                     break;
                 default:
-                    orderByClause = " ORDER BY (o.Delivery_Address LIKE CONCAT('%', IFNULL(s.Managed_Zone, '___'), '%')) DESC, o.Order_Time DESC ";
+                    orderByClause = " ORDER BY o.Order_Time DESC ";
                     break;
             }
         }
@@ -984,6 +1021,7 @@ public class OrderDAO {
                     orders.add(order);
                 }
             }
+            populateOrderItems(orders, conn);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1707,5 +1745,213 @@ public class OrderDAO {
             e.printStackTrace();
         }
         return "TRIP_" + System.currentTimeMillis();
+    }
+
+    public java.util.Map<String, Object> getShipperDailyStats(String shipperId) {
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+        double todayRevenue = 0.0;
+        double yesterdayRevenue = 0.0;
+        int todayDeliveriesCount = 0;
+        int yesterdayDeliveriesCount = 0;
+
+        String todaySql = "SELECT COALESCE(SUM(o.Total_Cost), 0) AS total_rev, COUNT(o.Order_No) AS total_count " +
+                "FROM `orders` o " +
+                "LEFT JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                "LEFT JOIN `staff` s ON (s.Staff_ID = ? OR s.User_ID = ?) " +
+                "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID OR s.Managed_Zone IS NULL OR s.Managed_Zone = '' OR s.Managed_Zone LIKE '%Toàn thành phố%' OR LOCATE(LOWER(s.Managed_Zone), LOWER(o.Delivery_Address)) > 0) " +
+                "AND o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                "AND DATE(o.Order_Time) = CURDATE()";
+
+        String yesterdaySql = "SELECT COALESCE(SUM(o.Total_Cost), 0) AS total_rev, COUNT(o.Order_No) AS total_count " +
+                "FROM `orders` o " +
+                "LEFT JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                "LEFT JOIN `staff` s ON (s.Staff_ID = ? OR s.User_ID = ?) " +
+                "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID OR s.Managed_Zone IS NULL OR s.Managed_Zone = '' OR s.Managed_Zone LIKE '%Toàn thành phố%' OR LOCATE(LOWER(s.Managed_Zone), LOWER(o.Delivery_Address)) > 0) " +
+                "AND o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                "AND DATE(o.Order_Time) = DATE_SUB(CURDATE(), INTERVAL 1 DAY)";
+
+        try (Connection conn = DBContext.getJDBCConnection()) {
+            try (PreparedStatement ps = conn.prepareStatement(todaySql)) {
+                ps.setString(1, shipperId);
+                ps.setString(2, shipperId);
+                ps.setString(3, shipperId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        todayRevenue = rs.getDouble("total_rev");
+                        todayDeliveriesCount = rs.getInt("total_count");
+                    }
+                }
+            }
+
+            try (PreparedStatement ps = conn.prepareStatement(yesterdaySql)) {
+                ps.setString(1, shipperId);
+                ps.setString(2, shipperId);
+                ps.setString(3, shipperId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        yesterdayRevenue = rs.getDouble("total_rev");
+                        yesterdayDeliveriesCount = rs.getInt("total_count");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        double revDiffPercent = 0.0;
+        if (yesterdayRevenue > 0) {
+            revDiffPercent = ((todayRevenue - yesterdayRevenue) / yesterdayRevenue) * 100.0;
+        } else if (todayRevenue > 0) {
+            revDiffPercent = 100.0;
+        }
+
+        int deliveriesDiffCount = todayDeliveriesCount - yesterdayDeliveriesCount;
+
+        stats.put("todayRevenue", todayRevenue);
+        stats.put("yesterdayRevenue", yesterdayRevenue);
+        stats.put("todayDeliveriesCount", todayDeliveriesCount);
+        stats.put("yesterdayDeliveriesCount", yesterdayDeliveriesCount);
+        stats.put("revDiffPercent", revDiffPercent);
+        stats.put("deliveriesDiffCount", deliveriesDiffCount);
+
+        return stats;
+    }
+
+    public List<Order> getReadyOrdersForShipper(String shipperId, int limit) {
+        List<Order> orders = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT DISTINCT o.*, c.Full_Name AS Customer_Name FROM `orders` o " +
+                "LEFT JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                "LEFT JOIN `staff` s ON (s.Staff_ID = ? OR s.User_ID = ?) " +
+                "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
+                "WHERE o.OrderStatus IN ('Processing', 'Confirmed', 'PAID', 'Chờ xử lý', 'Đang làm bánh', 'Đã xác nhận', 'Chờ giao') " +
+                "AND (t.Shipper_ID IS NULL OR t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID " +
+                "OR s.Managed_Zone IS NULL OR s.Managed_Zone = '' OR s.Managed_Zone LIKE '%Toàn thành phố%' " +
+                "OR LOCATE(LOWER(s.Managed_Zone), LOWER(o.Delivery_Address)) > 0) " +
+                "ORDER BY o.Order_Time DESC ");
+        if (limit > 0) {
+            sql.append("LIMIT ?");
+        }
+
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            ps.setString(1, shipperId);
+            ps.setString(2, shipperId);
+            ps.setString(3, shipperId);
+            if (limit > 0) {
+                ps.setInt(4, limit);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    orders.add(mapRowToOrder(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    public List<Order> getDeliveredOrdersForShipper(String shipperId, int limit) {
+        List<Order> orders = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+                "SELECT DISTINCT o.*, c.Full_Name AS Customer_Name FROM `orders` o " +
+                "LEFT JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
+                "LEFT JOIN `staff` s ON (s.Staff_ID = ? OR s.User_ID = ?) " +
+                "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
+                "WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao') " +
+                "AND (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID " +
+                "OR s.Managed_Zone IS NULL OR s.Managed_Zone = '' OR s.Managed_Zone LIKE '%Toàn thành phố%' " +
+                "OR LOCATE(LOWER(s.Managed_Zone), LOWER(o.Delivery_Address)) > 0) " +
+                "ORDER BY o.Order_Time DESC ");
+        if (limit > 0) {
+            sql.append("LIMIT ?");
+        }
+
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            ps.setString(1, shipperId);
+            ps.setString(2, shipperId);
+            ps.setString(3, shipperId);
+            if (limit > 0) {
+                ps.setInt(4, limit);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    orders.add(mapRowToOrder(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    public boolean acceptOrderForShipper(String shipperId, String orderNo) {
+        if (shipperId == null || orderNo == null) return false;
+        try (Connection conn = DBContext.getJDBCConnection()) {
+            conn.setAutoCommit(false);
+            
+            // Tìm Staff_ID từ User_ID nếu truyền User_ID
+            String staffId = shipperId;
+            String getStaffSql = "SELECT Staff_ID FROM `staff` WHERE User_ID = ? OR Staff_ID = ?";
+            try (PreparedStatement ps = conn.prepareStatement(getStaffSql)) {
+                ps.setString(1, shipperId);
+                ps.setString(2, shipperId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        staffId = rs.getString("Staff_ID");
+                    }
+                }
+            }
+
+            // Kiểm tra xem đơn hàng đã có Trip_ID chưa
+            String checkOrderSql = "SELECT Trip_ID FROM `orders` WHERE Order_No = ?";
+            String currentTripId = null;
+            try (PreparedStatement ps = conn.prepareStatement(checkOrderSql)) {
+                ps.setString(1, orderNo);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        currentTripId = rs.getString("Trip_ID");
+                    }
+                }
+            }
+
+            if (currentTripId == null || currentTripId.trim().isEmpty()) {
+                currentTripId = generateTripId(conn);
+                String insertTripSql = "INSERT INTO `delivery_trip` (Trip_ID, Shipper_ID, OSRM_Distance_Km, OSRM_Duration_Min, Calculated_Shipping_Fee) VALUES (?, ?, 0.0, 0, 0.0)";
+                try (PreparedStatement ps = conn.prepareStatement(insertTripSql)) {
+                    ps.setString(1, currentTripId);
+                    ps.setString(2, staffId);
+                    ps.executeUpdate();
+                }
+
+                String updateOrderTripSql = "UPDATE `orders` SET Trip_ID = ?, OrderStatus = 'Delivering' WHERE Order_No = ?";
+                try (PreparedStatement ps = conn.prepareStatement(updateOrderTripSql)) {
+                    ps.setString(1, currentTripId);
+                    ps.setString(2, orderNo);
+                    ps.executeUpdate();
+                }
+            } else {
+                String updateTripSql = "UPDATE `delivery_trip` SET Shipper_ID = ? WHERE Trip_ID = ?";
+                try (PreparedStatement ps = conn.prepareStatement(updateTripSql)) {
+                    ps.setString(1, staffId);
+                    ps.setString(2, currentTripId);
+                    ps.executeUpdate();
+                }
+
+                String updateOrderSql = "UPDATE `orders` SET OrderStatus = 'Delivering' WHERE Order_No = ?";
+                try (PreparedStatement ps = conn.prepareStatement(updateOrderSql)) {
+                    ps.setString(1, orderNo);
+                    ps.executeUpdate();
+                }
+            }
+
+            conn.commit();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

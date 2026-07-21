@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ page import="com.bakeryzone.model.Order" %>
 <%@ page import="com.bakeryzone.model.OrderItem" %>
+<%@ page import="com.bakeryzone.model.User" %>
 <%@ page import="java.text.DecimalFormat" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
@@ -52,6 +53,23 @@
             background-color: #d1fae5;
             color: #065f46;
         }
+        .item-name-link {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.2s ease, text-decoration 0.2s ease;
+        }
+        .item-name-link:hover {
+            color: #e11d48;
+            text-decoration: underline;
+        }
+        .item-img-clickable {
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .item-img-clickable:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
@@ -92,7 +110,7 @@
                             <span class="status-badge status-processing">Đang xử lý</span>
                         </c:when>
                         <c:when test="${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao'}">
-                            <span class="status-badge status-delivering">Đang giao</span>
+                            <span class="status-badge status-delivering">Đang giao hàng</span>
                         </c:when>
                         <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao'}">
                             <span class="status-badge status-completed">Hoàn thành</span>
@@ -164,17 +182,48 @@
                                     int qty           = oi.getQuantity();
                                     double price      = oi.getPriceAtPurchase() != null ? oi.getPriceAtPurchase().doubleValue() : 0;
                                     double lineTotal  = price * qty;
+
+                                    User sessionUserObj = (User) session.getAttribute("user");
+                                    String userRole = sessionUserObj != null ? sessionUserObj.getRoleId() : "";
+                                    boolean canManageProducts = "ADMIN".equalsIgnoreCase(userRole) || "STAFF".equalsIgnoreCase(userRole);
+
+                                    String tplId     = oi.getTemplateId();
+                                    String itemLink  = "";
+                                    if (tplId != null && !tplId.trim().isEmpty()) {
+                                        if (canManageProducts) {
+                                            itemLink = ctxPath + "/admin/product?action=detail&id=" + tplId.trim();
+                                        } else {
+                                            itemLink = ctxPath + "/product-detail?id=" + tplId.trim();
+                                        }
+                                    } else if (oi.getAccessoryId() != null && !oi.getAccessoryId().trim().isEmpty()) {
+                                        if (canManageProducts) {
+                                            itemLink = ctxPath + "/admin/product?action=list";
+                                        } else {
+                                            itemLink = ctxPath + "/products";
+                                        }
+                                    }
                         %>
                             <div class="order-item-row">
-                                <img src="<%= resolvedImg %>" data-template-image="<%= resolvedTemplateImg %>" alt="<%= itemName %>" class="item-img"
-                                     onerror="this.src = this.getAttribute('data-template-image') || '<%= defaultImg %>'; this.onerror = function() { this.src = '<%= defaultImg %>'; };">
+                                <% if (itemLink != null && !itemLink.isEmpty()) { %>
+                                    <a href="<%= itemLink %>" title="Xem chi tiết sản phẩm">
+                                        <img src="<%= resolvedImg %>" data-template-image="<%= resolvedTemplateImg %>" alt="<%= itemName %>" class="item-img item-img-clickable"
+                                             onerror="this.src = this.getAttribute('data-template-image') || '<%= defaultImg %>'; this.onerror = function() { this.src = '<%= defaultImg %>'; };">
+                                    </a>
+                                <% } else { %>
+                                    <img src="<%= resolvedImg %>" data-template-image="<%= resolvedTemplateImg %>" alt="<%= itemName %>" class="item-img"
+                                         onerror="this.src = this.getAttribute('data-template-image') || '<%= defaultImg %>'; this.onerror = function() { this.src = '<%= defaultImg %>'; };">
+                                <% } %>
                                 <div class="item-details">
-                                    <div class="item-name"><%= itemName %></div>
+                                    <% if (itemLink != null && !itemLink.isEmpty()) { %>
+                                        <div class="item-name"><a href="<%= itemLink %>" class="item-name-link" title="Xem chi tiết sản phẩm"><%= itemName %></a></div>
+                                    <% } else { %>
+                                        <div class="item-name"><%= itemName %></div>
+                                    <% } %>
                                     <div class="item-meta">Phân loại: <span><%= catName %></span></div>
                                     <div class="item-meta">Kích cỡ/Tùy chọn: <span><%= varName %></span></div>
                                     <% if (greeting != null && !greeting.trim().isEmpty()) { %>
-                                        <div class="item-meta" style="color: var(--cz-primary); font-style: italic;">
-                                            Lời chúc trên bánh: <span>"<%= greeting %>"</span>
+                                        <div class="item-meta mt-1 mb-1" style="font-size: 12px; color: #7e22ce; background-color: #f3e8ff; border: 1px solid #e9d5ff; padding: 4px 10px; border-radius: 8px; display: inline-block;">
+                                            <i class="fa-solid fa-pen-nib me-1"></i> Thông điệp trang trí: <strong style="color: #6b21a8;"><%= greeting %></strong>
                                         </div>
                                     <% } %>
                                     <% if (ccId != null && !ccId.trim().isEmpty()) { %>
@@ -299,8 +348,8 @@
                         <div class="row">
                             <!-- 1. Minh chứng lấy bánh tại tiệm -->
                             <div class="col-md-6 text-center" style="border-right: 1px dashed #ddd; padding: 15px;">
-                                <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">1. Ảnh lấy bánh tại tiệm (Pickup)</h6>
-                                <div style="margin-bottom: 10px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                <h6 class="proof-placeholder-title">1. Ảnh lấy bánh tại tiệm (Pickup)</h6>
+                                <div class="proof-placeholder-box">
                                     <c:choose>
                                         <c:when test="${not empty pickupPhoto}">
                                             <img src="${pageContext.request.contextPath}/${pickupPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
@@ -309,8 +358,8 @@
                                             </div>
                                         </c:when>
                                         <c:otherwise>
-                                            <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
-                                            <span style="font-size: 12px; color: #888;">Shipper chưa chụp ảnh lấy bánh.</span>
+                                            <i class="fa-regular fa-image proof-placeholder-icon"></i>
+                                            <span class="proof-placeholder-text">Shipper chưa chụp ảnh lấy bánh.</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
@@ -318,8 +367,8 @@
                             
                             <!-- 2. Minh chứng giao bánh cho khách -->
                             <div class="col-md-6 text-center" style="padding: 15px;">
-                                <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">2. Ảnh bàn giao cho khách (Delivery)</h6>
-                                <div style="margin-bottom: 10px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                <h6 class="proof-placeholder-title">2. Ảnh bàn giao cho khách (Delivery)</h6>
+                                <div class="proof-placeholder-box">
                                     <c:choose>
                                         <c:when test="${not empty deliveryPhoto}">
                                             <img src="${pageContext.request.contextPath}/${deliveryPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
@@ -328,8 +377,8 @@
                                             </div>
                                         </c:when>
                                         <c:otherwise>
-                                            <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
-                                            <span style="font-size: 12px; color: #888;">Shipper chưa chụp ảnh giao bánh.</span>
+                                            <i class="fa-regular fa-image proof-placeholder-icon"></i>
+                                            <span class="proof-placeholder-text">Shipper chưa chụp ảnh giao bánh.</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
@@ -349,54 +398,39 @@
                             <input type="hidden" name="action" value="update-status">
                             <input type="hidden" name="orderNo" value="${order.orderNo}">
                             
-                            <select name="status" class="status-select" ${order.orderStatus eq 'Completed' || order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Canceled' ? 'disabled' : ''}>
-                                <c:choose>
-                                     <c:when test="${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận'}">
-                                         <!-- Đơn chưa thanh toán tiền cọc/toàn bộ (đang Chờ xác nhận): Chỉ có thể giữ Chờ xác nhận hoặc Hủy đơn -->
-                                         <option value="Pending" selected>Chờ xác nhận</option>
-                                         <option value="Cancelled">Hủy đơn hàng</option>
-                                     </c:when>
-                                    <c:when test="${order.orderStatus eq 'PAID' || order.orderStatus eq 'Đã chuyển khoản'}">
-                                        <option value="PAID" selected>Đã thanh toán (Duyệt gấp)</option>
-                                        <option value="Processing">Đang làm bánh</option>
-                                        <option value="Cancelled">Hủy đơn hàng</option>
-                                    </c:when>
-                                    <c:when test="${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận'}">
-                                        <option value="Confirmed" selected>Đã xác nhận</option>
-                                        <option value="Processing">Đang làm bánh</option>
-                                        <option value="Cancelled">Hủy đơn hàng</option>
-                                    </c:when>
-                                    <c:when test="${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý'}">
-                                        <option value="Processing" selected>Đang làm bánh</option>
-                                        <option value="Delivering">Đang giao hàng</option>
-                                    </c:when>
-                                    <c:when test="${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao'}">
-                                        <option value="Delivering" selected>Đang giao hàng</option>
-                                        <option value="Completed">Hoàn thành</option>
-                                    </c:when>
-                                    <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành'}">
-                                        <option value="Completed" selected>Hoàn thành</option>
-                                    </c:when>
-                                    <c:when test="${order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Đã hủy' || order.orderStatus eq 'Canceled'}">
-                                        <option value="Cancelled" selected>Đã hủy</option>
-                                    </c:when>
-                                    <c:otherwise>
-                                        <option value="${order.orderStatus}" selected>${order.orderStatus}</option>
-                                    </c:otherwise>
-                                </c:choose>
-                            </select>
-
-                            <c:if test="${order.orderStatus ne 'Completed' && order.orderStatus ne 'Cancelled' && order.orderStatus ne 'Canceled'}">
-                                <button type="submit" class="btn-update-status" onclick="return confirm('Bạn có chắc chắn muốn chuyển trạng thái đơn hàng này không?')">
-                                    Cập nhật trạng thái
-                                </button>
-                            </c:if>
-                        </form>
+                        <c:choose>
+                            <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' || order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Canceled' || order.orderStatus eq 'Đã hủy'}">
+                                <div style="padding: 20px; text-align: center; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px; font-weight: bold;">
+                                    <i class="fa-solid fa-lock" style="font-size: 24px; margin-bottom: 8px; display: block; color: #721c24;"></i>
+                                    Đơn hàng đã hoàn thành hoặc đã hủy.<br>Không thể thay đổi trạng thái nữa.
+                                </div>
+                            </c:when>
+                            <c:otherwise>
+                                <form action="${pageContext.request.contextPath}/admin/orders" method="POST" class="status-form">
+                                    <input type="hidden" name="action" value="update-status">
+                                    <input type="hidden" name="orderNo" value="${order.orderNo}">
+                                    
+                                    <select name="status" class="status-select" style="padding: 10px; width: 100%; border-radius: 6px; border: 1px solid #ccc; font-weight: 500; font-size: 14.5px;">
+                                        <option value="Pending" ${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận' ? 'selected' : ''}>Chờ xác nhận</option>
+                                        <option value="Confirmed" ${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận' ? 'selected' : ''}>Đã xác nhận</option>
+                                        <option value="Processing" ${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý' || order.orderStatus eq 'Đang làm bánh' ? 'selected' : ''}>Đang làm bánh</option>
+                                        <option value="Delivering" ${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao' ? 'selected' : ''}>Đang giao hàng</option>
+                                        <option value="Completed" ${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' ? 'selected' : ''}>Hoàn thành</option>
+                                        <option value="Cancelled" ${order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Canceled' || order.orderStatus eq 'Đã hủy' ? 'selected' : ''}>Hủy đơn</option>
+                                    </select>
+                                    
+                                    <button type="submit" class="btn btn-update-status mt-3 w-100" style="padding: 10px; border-radius: 8px; font-weight: bold;">
+                                        <i class="fa-solid fa-floppy-disk me-1"></i> Cập nhật trạng thái
+                                    </button>
+                                </form>
+                            </c:otherwise>
+                        </c:choose>
                     </div>
 
                     <!-- Payment Summary -->
                     <%
-                        int calcDepPercent = 30;
+                        int calcDepPercent = 0;
+                        double calcDiscountVal = 0;
                         com.bakeryzone.model.Order orderObj = (com.bakeryzone.model.Order) request.getAttribute("order");
                         if (orderObj != null) {
                             double totalCostVal = orderObj.getTotalCost() != null ? orderObj.getTotalCost().doubleValue() : 0;
@@ -404,8 +438,25 @@
                             if (totalCostVal > 0) {
                                 calcDepPercent = (int) Math.round((depositAmtVal * 100) / totalCostVal);
                             }
+                            
+                            if (orderObj.getDiscountAmount() != null && orderObj.getDiscountAmount().doubleValue() > 0) {
+                                calcDiscountVal = orderObj.getDiscountAmount().doubleValue();
+                            } else if (orderObj.getAppliedVoucherCode() != null && !orderObj.getAppliedVoucherCode().trim().isEmpty()) {
+                                double sub = 0;
+                                if (orderObj.getItems() != null) {
+                                    for (com.bakeryzone.model.OrderItem item : orderObj.getItems()) {
+                                        double p = item.getPriceAtPurchase() != null ? item.getPriceAtPurchase().doubleValue() : 0;
+                                        sub += p * item.getQuantity();
+                                    }
+                                }
+                                double ship = orderObj.getShippingFee() != null ? orderObj.getShippingFee().doubleValue() : 0;
+                                if (sub + ship > totalCostVal && totalCostVal > 0) {
+                                    calcDiscountVal = (sub + ship) - totalCostVal;
+                                }
+                            }
                         }
                         pageContext.setAttribute("calcDepPercent", calcDepPercent);
+                        pageContext.setAttribute("calcDiscountVal", calcDiscountVal);
                     %>
                     <div class="cz-card">
                         <div class="cz-card-title">
@@ -427,11 +478,29 @@
                                 <fmt:formatNumber value="${not empty order.shippingFee ? order.shippingFee : 0}" type="number" pattern="#,##0"/>đ
                             </span>
                         </div>
+                        <div class="cost-row" style="color: ${calcDiscountVal > 0 ? '#2b8a3e' : 'inherit'};">
+                            <span>Voucher giảm giá <c:if test="${not empty order.appliedVoucherCode}">(${order.appliedVoucherCode})</c:if>:</span>
+                            <span class="font-mono">
+                                <c:choose>
+                                    <c:when test="${calcDiscountVal > 0}">
+                                        -<fmt:formatNumber value="${calcDiscountVal}" type="number" pattern="#,##0"/>đ
+                                    </c:when>
+                                    <c:otherwise>0đ</c:otherwise>
+                                </c:choose>
+                            </span>
+                        </div>
+                        <c:set var="calcTotal" value="${subtot + (not empty order.shippingFee ? order.shippingFee : 0) - calcDiscountVal}" />
+                        <div class="cost-row" style="font-weight: 700; border-top: 1px dashed #ddd; border-bottom: 1px dashed #ddd; padding: 6px 0; margin: 6px 0;">
+                            <span>Tổng cộng đơn hàng:</span>
+                            <span class="font-mono" style="font-size: 16px;">
+                                <fmt:formatNumber value="${calcTotal > 0 ? calcTotal : (not empty order.totalCost ? order.totalCost : 0)}" type="number" pattern="#,##0"/>đ
+                            </span>
+                        </div>
                         <div class="cost-row">
                             <span>Phương thức thanh toán:</span>
                             <span style="font-weight: 500;">
                                 <c:choose>
-                                    <c:when test="${order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
+                                    <c:when test="${order.paymentMethod eq 'BANK_TRANSFER_FULL' || order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
                                         Chuyển khoản
                                     </c:when>
                                     <c:otherwise>
@@ -443,7 +512,7 @@
                         <div class="cost-row">
                             <span>
                                 <c:choose>
-                                    <c:when test="${order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
+                                    <c:when test="${order.paymentMethod eq 'BANK_TRANSFER_FULL' || order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
                                         Tiền đặt cọc (0%):
                                     </c:when>
                                     <c:otherwise>
@@ -453,7 +522,7 @@
                             </span>
                             <span class="font-mono">
                                 <c:choose>
-                                    <c:when test="${order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
+                                    <c:when test="${order.paymentMethod eq 'BANK_TRANSFER_FULL' || order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
                                         0đ
                                     </c:when>
                                     <c:otherwise>
@@ -462,22 +531,18 @@
                                 </c:choose>
                             </span>
                         </div>
-                        <div class="cost-row total">
-                            <span>SỐ TIỀN CẦN THU:</span>
-                            <span class="font-mono">
-                                <fmt:formatNumber value="${order.remainingCodBalance}" type="number" pattern="#,##0"/>đ
+                        <div class="cost-row total" style="background-color: #fdf2f2; border: 1px dashed #f8b4b4; padding: 10px; border-radius: 6px; margin-top: 15px;">
+                            <span style="color: #9b1c1c; font-weight: 800;">TIỀN THU HỘ (COD):</span>
+                            <span class="font-mono" style="color: #9b1c1c; font-size: 18px; font-weight: 800;">
+                                <c:choose>
+                                    <c:when test="${order.paymentMethod eq 'BANK_TRANSFER_FULL' || order.paymentMethod eq 'Bank Transfer' || order.paymentMethod eq 'Chuyển khoản'}">
+                                        0đ
+                                    </c:when>
+                                    <c:otherwise>
+                                        <fmt:formatNumber value="${not empty order.remainingCodBalance ? order.remainingCodBalance : 0}" type="number" pattern="#,##0"/>đ
+                                    </c:otherwise>
+                                </c:choose>
                             </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
                         </div>
                     </div>
                 </div>

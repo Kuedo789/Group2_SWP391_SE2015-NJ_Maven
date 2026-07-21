@@ -60,28 +60,28 @@
         if (dbStatus.equalsIgnoreCase("Pending")) {
             dataStatus = "processing";
             badgeClass = "status-processing";
+            displayStatus = "Chờ thanh toán";
+        } else if (dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("PAID")) {
+            dataStatus = "processing";
+            badgeClass = "status-processing";
             displayStatus = "Chờ xác nhận";
-        } else if (dbStatus.equalsIgnoreCase("Confirmed")) {
+        } else if (dbStatus.equalsIgnoreCase("Processing") || dbStatus.equals("Đang làm bánh")) {
             dataStatus = "processing";
             badgeClass = "status-processing";
-            displayStatus = "Đang chuẩn bị bánh";
-        } else if (dbStatus.equalsIgnoreCase("PAID")) {
-            dataStatus = "processing";
-            badgeClass = "status-processing";
-            displayStatus = "Đã thanh toán";
-        } else if (dbStatus.equalsIgnoreCase("Processing")) {
-            dataStatus = "processing";
-            badgeClass = "status-processing";
-            displayStatus = "Đang chuẩn bị bánh";
-        } else if (dbStatus.equalsIgnoreCase("Delivering")) {
+            displayStatus = "Đang làm bánh";
+        } else if (dbStatus.equalsIgnoreCase("Ready") || dbStatus.equals("Chờ vận chuyển") || dbStatus.equals("Sẵn sàng giao")) {
+            dataStatus = "shipping";
+            badgeClass = "status-shipping";
+            displayStatus = "Chờ vận chuyển";
+        } else if (dbStatus.equalsIgnoreCase("Delivering") || dbStatus.equals("Đang vận chuyển") || dbStatus.equals("Đang giao hàng")) {
             dataStatus = "shipping";
             badgeClass = "status-shipping";
             displayStatus = "Đang giao hàng";
-        } else if (dbStatus.equalsIgnoreCase("Completed")) {
+        } else if (dbStatus.equalsIgnoreCase("Completed") || dbStatus.equals("Hoàn thành")) {
             dataStatus = "completed";
             badgeClass = "status-completed";
             displayStatus = "Hoàn thành";
-        } else if (dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled")) {
+        } else if (dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled") || dbStatus.equals("Đã hủy")) {
             dataStatus = "cancelled";
             badgeClass = "status-cancelled";
             displayStatus = "Đã hủy";
@@ -164,10 +164,11 @@
     // Payment Method & Status
     String method = order.getPaymentMethod() != null ? order.getPaymentMethod() : "COD";
     String paymentMethodStr = "";
-    if ("BANK_TRANSFER_FULL".equalsIgnoreCase(method) || "Chuyển khoản".equalsIgnoreCase(method)) {
-        paymentMethodStr = "Chuyển khoản ngân hàng (Cần thanh toán: 0đ)";
+    if ("BANK_TRANSFER_FULL".equalsIgnoreCase(method) || "Chuyển khoản".equalsIgnoreCase(method) || "Bank Transfer".equalsIgnoreCase(method)) {
+        paymentMethodStr = "Chuyển khoản (Cần thanh toán: 0đ)";
     } else {
-        paymentMethodStr = "Thanh toán khi nhận hàng (Cần thanh toán: " + currencyFormat.format(totalCost) + "đ)";
+        double remCod = order.getRemainingCodBalance() != null ? order.getRemainingCodBalance().doubleValue() : totalCost;
+        paymentMethodStr = "COD (Nhận hàng) (Cần thanh toán: " + currencyFormat.format(remCod) + "đ)";
     }
 %>
 
@@ -213,11 +214,7 @@
                     Cần hỗ trợ?
                 </button>
                 
-                <% if (dbStatus != null && 
-                       !dbStatus.equalsIgnoreCase("Delivering") && 
-                       !dbStatus.equalsIgnoreCase("Completed") && 
-                       !dbStatus.equalsIgnoreCase("Cancelled") && 
-                       !dbStatus.equalsIgnoreCase("Canceled")) { %>
+                <% if (com.bakeryzone.dao.OrderDAO.canCustomerCancel(dbStatus)) { %>
                     <button class="btn btn-cancel" onclick="confirmCancelOrder()">
                         Hủy đơn hàng
                     </button>
@@ -355,18 +352,20 @@
                                             <div class="food-name"><%= item.getItemName() %></div>
                                         <% } %>
                                         
-                                        <!-- Custom note or Category classification -->
+                                        <!-- Category classification -->
                                         <div class="food-note" style="margin-bottom: 4px;">
-                                            <% if (item.getGreetingText() != null && !item.getGreetingText().trim().isEmpty()) { %>
-                                                Ghi chú viết lên bánh: <span>"<%= item.getGreetingText() %>"</span>
-                                            <% } else { %>
-                                                Phân loại: <span><%= item.getCategoryName() != null ? item.getCategoryName() : "Sản phẩm" %></span>
-                                            <% } %>
+                                            Phân loại: <span><%= item.getCategoryName() != null ? item.getCategoryName() : "Sản phẩm" %></span>
                                         </div>
                                         
                                         <div class="food-version" style="font-size: 13px; color: var(--muted); margin-bottom: 8px;">
                                             Phiên bản: <span><%= item.getVariationName() != null ? item.getVariationName() : "Tiêu chuẩn" %></span>
                                         </div>
+
+                                        <% if (item.getGreetingText() != null && !item.getGreetingText().trim().isEmpty()) { %>
+                                            <div class="food-note mb-2" style="font-size: 12px; color: #7e22ce; background-color: #f3e8ff; border: 1px solid #e9d5ff; padding: 4px 10px; border-radius: 8px; display: inline-block;">
+                                                <i class="fa-solid fa-pen-nib me-1"></i> Thông điệp trang trí: <strong style="color: #6b21a8;"><%= item.getGreetingText() %></strong>
+                                            </div>
+                                        <% } %>
                                         
                                         <div class="food-qty-badge" style="margin-bottom: 5px;">Số lượng: x<%= item.getQuantity() %></div>
 

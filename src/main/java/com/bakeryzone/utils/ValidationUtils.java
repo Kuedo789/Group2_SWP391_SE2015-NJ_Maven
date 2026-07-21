@@ -6,12 +6,13 @@ public class ValidationUtils {
     public static final int PASSWORD_MIN_LENGTH = 6;
     public static final int PASSWORD_MAX_LENGTH = 20;
 
-    public static String validateRegisterInput(String fullName, String email, String phone, String password, String confirmPassword) {
+    public static String validateRegisterInput(String fullName, String email, String phone, String password,
+            String confirmPassword) {
         if (fullName == null || fullName.isEmpty() ||
-            email == null || email.isEmpty() ||
-            phone == null || phone.isEmpty() ||
-            password == null || password.isEmpty() ||
-            confirmPassword == null || confirmPassword.isEmpty()) {
+                email == null || email.isEmpty() ||
+                phone == null || phone.isEmpty() ||
+                password == null || password.isEmpty() ||
+                confirmPassword == null || confirmPassword.isEmpty()) {
             return "Vui lòng nhập đầy đủ thông tin đăng ký.";
         }
         if (fullName.length() > NAME_MAX_LENGTH) {
@@ -106,7 +107,8 @@ public class ValidationUtils {
     }
 
     public static boolean isValidDateRange(String startDateStr, String endDateStr) {
-        if (startDateStr == null || startDateStr.trim().isEmpty() || endDateStr == null || endDateStr.trim().isEmpty()) {
+        if (startDateStr == null || startDateStr.trim().isEmpty() || endDateStr == null
+                || endDateStr.trim().isEmpty()) {
             return true;
         }
         try {
@@ -120,38 +122,37 @@ public class ValidationUtils {
 
     public static String validateSystemSettings(
             String bakeryName, String hotline, String email, String address,
-            String depositPercent, String shippingRate, String maxCakesPerHour,
+            String depositPercent, String shippingRate,
             String systemEmail, String appPassword, String otpExpiry) {
-        
+
         if (bakeryName == null || bakeryName.trim().isEmpty() ||
-            hotline == null || hotline.trim().isEmpty() ||
-            email == null || email.trim().isEmpty() ||
-            address == null || address.trim().isEmpty() ||
-            depositPercent == null || depositPercent.trim().isEmpty() ||
-            shippingRate == null || shippingRate.trim().isEmpty() ||
-            maxCakesPerHour == null || maxCakesPerHour.trim().isEmpty() ||
-            systemEmail == null || systemEmail.trim().isEmpty() ||
-            appPassword == null || appPassword.trim().isEmpty() ||
-            otpExpiry == null || otpExpiry.trim().isEmpty()) {
+                hotline == null || hotline.trim().isEmpty() ||
+                email == null || email.trim().isEmpty() ||
+                address == null || address.trim().isEmpty() ||
+                depositPercent == null || depositPercent.trim().isEmpty() ||
+                shippingRate == null || shippingRate.trim().isEmpty() ||
+                systemEmail == null || systemEmail.trim().isEmpty() ||
+                appPassword == null || appPassword.trim().isEmpty() ||
+                otpExpiry == null || otpExpiry.trim().isEmpty()) {
             return "Vui lòng nhập đầy đủ các trường thông tin bắt buộc.";
         }
 
         if (bakeryName.trim().length() > 10) {
             return "Tên tiệm bánh không được vượt quá 10 ký tự.";
         }
-        
+
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z]+\\.[A-Za-z.]+$") ||
-            !systemEmail.matches("^[A-Za-z0-9+_.-]+@[A-Za-z]+\\.[A-Za-z.]+$")) {
+                !systemEmail.matches("^[A-Za-z0-9+_.-]+@[A-Za-z]+\\.[A-Za-z.]+$")) {
             return "Email không đúng định dạng (tên miền sau dấu @ chỉ chứa chữ cái).";
         }
-        
+
         if (!hotline.matches("^0\\d{9}$")) {
             return "Số điện thoại Hotline phải bắt đầu bằng số 0 và có đúng 10 chữ số.";
         }
         if (hotline.substring(1).matches("^(\\d)\\1{8}$")) {
             return "Số điện thoại Hotline không hợp lệ (không được trùng lặp liên tiếp các chữ số).";
         }
-        
+
         try {
             int deposit = Integer.parseInt(depositPercent);
             if (deposit < 0 || deposit > 100) {
@@ -171,15 +172,6 @@ public class ValidationUtils {
         }
 
         try {
-            int maxCakes = Integer.parseInt(maxCakesPerHour);
-            if (maxCakes <= 0) {
-                return "Số bánh tối đa/giờ phải lớn hơn 0.";
-            }
-        } catch (NumberFormatException e) {
-            return "Số bánh tối đa/giờ phải là một số nguyên.";
-        }
-
-        try {
             int otp = Integer.parseInt(otpExpiry);
             if (otp <= 0) {
                 return "Thời gian hiệu lực OTP phải lớn hơn 0.";
@@ -187,7 +179,7 @@ public class ValidationUtils {
         } catch (NumberFormatException e) {
             return "Thời gian hiệu lực OTP phải là một số nguyên.";
         }
-        
+
         return null;
     }
 

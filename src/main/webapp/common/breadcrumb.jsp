@@ -11,7 +11,7 @@
                 <a href="${param.parentUrl}">${param.parentMenu}</a>
             </c:when>
             <c:otherwise>
-                <a href="#">${param.parentMenu}</a>
+                <span class="text-secondary">${param.parentMenu}</span>
             </c:otherwise>
         </c:choose>
     </c:if>
@@ -24,7 +24,7 @@
                 <a href="${param.parentUrl2}">${param.parentMenu2}</a>
             </c:when>
             <c:otherwise>
-                <a href="#">${param.parentMenu2}</a>
+                <span class="text-secondary">${param.parentMenu2}</span>
             </c:otherwise>
         </c:choose>
     </c:if>
@@ -32,7 +32,7 @@
     <%-- Active Page --%>
     <c:if test="${not empty param.activeMenu}">
         <span>&gt;</span>
-        <a href="#" class="active text-dark font-weight-bold">${param.activeMenu}</a>
+        <span class="active text-dark fw-bold" style="font-weight: 700; color: #1e293b;">${param.activeMenu}</span>
     </c:if>
 </div>
 

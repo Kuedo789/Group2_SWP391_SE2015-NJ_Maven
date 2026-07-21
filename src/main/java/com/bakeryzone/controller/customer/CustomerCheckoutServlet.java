@@ -174,12 +174,13 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     if (el.isJsonNull()) continue;
                     JsonObject cartItem = el.getAsJsonObject();
 
-                    String itemId     = getStr(cartItem, "id");
-                    String itemName   = getStr(cartItem, "name");
-                    String itemImage  = getStr(cartItem, "image");
-                    String templateId = getStr(cartItem, "templateId");
-                    double price      = cartItem.has("price") ? cartItem.get("price").getAsDouble() : 0;
-                    int qty           = cartItem.has("qty")   ? cartItem.get("qty").getAsInt()   : 1;
+                    String itemId       = getStr(cartItem, "id");
+                    String itemName     = getStr(cartItem, "name");
+                    String itemImage    = getStr(cartItem, "image");
+                    String templateId   = getStr(cartItem, "templateId");
+                    String customCakeId = getStr(cartItem, "customCakeId");
+                    double price        = cartItem.has("price") ? cartItem.get("price").getAsDouble() : 0;
+                    int qty             = cartItem.has("qty")   ? cartItem.get("qty").getAsInt()   : 1;
 
                     BigDecimal itemPrice = BigDecimal.valueOf(price);
                     productTotal = productTotal.add(itemPrice.multiply(BigDecimal.valueOf(qty)));
@@ -189,27 +190,26 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     oi.setPriceAtPurchase(itemPrice);
                     oi.setItemName(itemName);
                     oi.setItemImage(itemImage);
-                    oi.setTemplateId(templateId);
 
-                    if (templateId != null && !templateId.isEmpty()) {
-                        // It's a cake template → create custom_cake entry
-                        String cakeId = "CAKE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                    // Phân loại mã bánh/sản phẩm có sẵn từ giỏ hàng (Không sinh mã mới tại Checkout)
+                    if (itemId != null && itemId.startsWith("ACC-")) {
+                        // 1. Phụ kiện
+                        oi.setAccessoryId(itemId);
+                        oi.setTemplateId(null);
+                        oi.setCustomCakeId(null);
+                    } else if ((itemId != null && itemId.startsWith("CC-")) || (customCakeId != null && customCakeId.startsWith("CC-"))) {
+                        // 2. Bánh tự thiết kế từ Studio Custom
+                        String finalCcId = (itemId != null && itemId.startsWith("CC-")) ? itemId : customCakeId;
+                        oi.setCustomCakeId(finalCcId);
+                        oi.setTemplateId(null);
+                        oi.setAccessoryId(null);
+                    } else {
+                        // 3. Bánh mẫu có sẵn từ Menu Admin (TPL_XXXX)
+                        String finalTplId = (templateId != null && !templateId.isEmpty()) ? templateId : itemId;
+                        oi.setTemplateId(finalTplId);
+                        String cakeId = "CC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
                         oi.setCustomCakeId(cakeId);
                         oi.setAccessoryId(null);
-                    } else if (itemId != null && itemId.startsWith("ACC-")) {
-                        // It's an accessory
-                        oi.setAccessoryId(itemId);
-                        oi.setCustomCakeId(null);
-                    } else {
-                        // Generic product → treat as accessory link (safe default)
-                        oi.setAccessoryId(null);
-                        oi.setCustomCakeId(null);
-                        if (templateId == null || templateId.isEmpty()) {
-                            // Create custom_cake with item id as template ref
-                            String cakeId = "CAKE-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-                            oi.setCustomCakeId(cakeId);
-                            oi.setTemplateId(itemId); // Use product id as template ref
-                        }
                     }
 
                     order.getItems().add(oi);

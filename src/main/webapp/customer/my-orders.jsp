@@ -185,24 +185,24 @@
                     String displayStatus = dbStatus != null ? dbStatus : "Đang xử lý";
 
                     if (dbStatus != null) {
-                        // English keys
-                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equals("Chờ xác nhận")) {
+                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equals("Chờ thanh toán")) {
+                            dataStatus = "processing";
+                            badgeClass = "status-processing";
+                            displayStatus = "Chờ thanh toán";
+                        } else if (dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equals("Chờ xác nhận") || dbStatus.equalsIgnoreCase("PAID")) {
                             dataStatus = "processing";
                             badgeClass = "status-processing";
                             displayStatus = "Chờ xác nhận";
-                        } else if (dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equals("Đã xác nhận")) {
+                        } else if (dbStatus.equalsIgnoreCase("Processing") || dbStatus.equals("Đang làm bánh") || dbStatus.equals("Đang xử lý")) {
                             dataStatus = "processing";
                             badgeClass = "status-processing";
-                            displayStatus = "Đang chuẩn bị bánh";
-                        } else if (dbStatus.equalsIgnoreCase("PAID") || dbStatus.equals("Đã chuyển khoản")) {
-                            dataStatus = "processing";
-                            badgeClass = "status-processing";
-                            displayStatus = "Đã thanh toán";
-                        } else if (dbStatus.equalsIgnoreCase("Processing") || dbStatus.equals("Đang xử lý")) {
-                            dataStatus = "processing";
-                            badgeClass = "status-processing";
-                            displayStatus = "Đang chuẩn bị bánh";
+                            displayStatus = "Đang làm bánh";
+                        } else if (dbStatus.equalsIgnoreCase("Ready") || dbStatus.equals("Chờ vận chuyển") || dbStatus.equals("Sẵn sàng giao")) {
+                            dataStatus = "shipping";
+                            badgeClass = "status-shipping";
+                            displayStatus = "Chờ vận chuyển";
                         } else if (dbStatus.equalsIgnoreCase("Delivering")
+                                || dbStatus.equals("Đang vận chuyển")
                                 || dbStatus.equals("Đang giao hàng")
                                 || dbStatus.equals("Đang giao")) {
                             dataStatus = "shipping";

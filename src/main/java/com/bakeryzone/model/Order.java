@@ -218,6 +218,44 @@ public class Order {
         this.paymentMethod = paymentMethod;
     }
 
+    public boolean isCustomCake() {
+        if (items != null && !items.isEmpty()) {
+            for (OrderItem item : items) {
+                String tplId = item.getTemplateId();
+                String ccId = item.getCustomCakeId();
+                // Bánh tự thiết kế (Custom Studio): Không có Template_ID của Admin mẫu, chỉ có Custom_Cake_ID
+                if ((tplId == null || tplId.trim().isEmpty()) && (ccId != null && !ccId.trim().isEmpty())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Kiểm tra đơn hàng có cả bánh có sẵn (TPL) lẫn bánh thiết kế (CC) không
+    public boolean hasMixedCakeTypes() {
+        if (items == null || items.isEmpty()) return false;
+        boolean hasCustom = false;
+        boolean hasTemplate = false;
+        for (OrderItem item : items) {
+            String tplId = item.getTemplateId();
+            String ccId = item.getCustomCakeId();
+            if ((tplId == null || tplId.trim().isEmpty()) && (ccId != null && !ccId.trim().isEmpty())) {
+                hasCustom = true;
+            } else {
+                hasTemplate = true;
+            }
+            if (hasCustom && hasTemplate) return true;
+        }
+        return false;
+    }
+
+    public String getCakeTypeLabel() {
+        if (hasMixedCakeTypes()) return "Hỗn hợp";
+        return isCustomCake() ? "Thiết kế" : "Có sẵn";
+    }
+
+
     public BigDecimal getRemainingAmount() {
         if (remainingCodBalance != null) {
             return remainingCodBalance;

@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "AdminOrderController", urlPatterns = {"/admin/orders"})
+@WebServlet(name = "AdminOrderController", urlPatterns = {"/admin/orders", "/staff/orders"})
 public class AdminOrderController extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
@@ -204,30 +204,17 @@ public class AdminOrderController extends HttpServlet {
 
         String currentStatus = order.getOrderStatus();
         
-        // Ngăn chặn thay đổi nếu đơn hàng đã bị huỷ hoặc hoàn thành (hỗ trợ cả Việt/Anh)
-        if (currentStatus != null && (
-                currentStatus.equalsIgnoreCase("Cancelled") || currentStatus.equals("Đã hủy") ||
-                currentStatus.equalsIgnoreCase("Completed") || currentStatus.equals("Hoàn thành") || currentStatus.equals("Đã giao"))) {
+        // Ngăn chặn thay đổi nếu đơn hàng đã bị huỷ hoặc hoàn thành
+        if (OrderDAO.isTerminalState(currentStatus)) {
             session.setAttribute("errorMessage", "Đơn hàng đã hoàn thành hoặc đã huỷ, không thể thay đổi trạng thái!");
             response.sendRedirect(request.getContextPath() + "/admin/orders?action=detail&orderNo=" + orderNo);
             return;
         }
 
-        // Đơn hàng chưa thanh toán (đang Pending) chỉ được phép giữ nguyên hoặc chuyển sang Cancelled
-        if (currentStatus != null && (currentStatus.equalsIgnoreCase("Pending") || currentStatus.equals("Chờ xác nhận"))) {
-            if (!"Cancelled".equalsIgnoreCase(status) && !"Pending".equalsIgnoreCase(status)) {
-                session.setAttribute("errorMessage", "Đơn hàng chưa được thanh toán (chưa chuyển khoản) chỉ có thể chuyển sang trạng thái hủy!");
-                response.sendRedirect(request.getContextPath() + "/admin/orders?action=detail&orderNo=" + orderNo);
-                return;
-            }
-        }
-
-        // Admin có quyền chuyển sang bất kỳ trạng thái nào trong whitelist
-
         boolean success = orderDAO.updateOrderStatus(orderNo, status);
         if (success) {
-            // Tự động phân công Shipper & Gom đơn khi Admin xác nhận, bắt đầu xử lý đơn hàng hoặc khi đã chuyển khoản
-            if ("Confirmed".equalsIgnoreCase(status) || "Processing".equalsIgnoreCase(status) || "PAID".equalsIgnoreCase(status)) {
+            // Tự động phân công Shipper & Gom đơn khi xác nhận/bắt đầu làm/sẵn sàng giao
+            if ("Confirmed".equalsIgnoreCase(status) || "Processing".equalsIgnoreCase(status) || "Ready".equalsIgnoreCase(status) || "PAID".equalsIgnoreCase(status)) {
                 orderDAO.autoAssignShipperAndTrip(orderNo);
             }
             session.setAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + orderNo + " thành công!");

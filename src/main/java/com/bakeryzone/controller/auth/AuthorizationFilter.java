@@ -59,9 +59,17 @@ public class AuthorizationFilter implements Filter {
             return;
         }
 
-        // 1. Phân quyền khu vực Shipper (/shipper/*): Chỉ ADMIN và SHIPPER được phép truy cập
-        if (servletPath.startsWith("/shipper/")) {
-            if ("SHIPPER".equals(roleId)) {
+        // Cho phép tất cả nội bộ (không phải CUSTOMER) truy cập dashboard theo role
+        if (servletPath.startsWith("/admin/dashboard") || servletPath.startsWith("/shipper/dashboard") || servletPath.startsWith("/staff/dashboard")) {
+            if (!"CUSTOMER".equals(roleId)) {
+                chain.doFilter(servletRequest, servletResponse);
+                return;
+            }
+        }
+
+        // 1. Phân quyền khu vực Shipper (/shipper, /shipper/*): Chỉ ADMIN và SHIPPER được phép truy cập
+        if (servletPath.startsWith("/shipper") || servletPath.equalsIgnoreCase("/shipper")) {
+            if ("SHIPPER".equals(roleId) || "ADMIN".equals(roleId)) {
                 chain.doFilter(servletRequest, servletResponse);
             } else {
                 sendForbidden(request, response, roleId, servletPath);
@@ -71,8 +79,11 @@ public class AuthorizationFilter implements Filter {
 
         // 2. Các khu vực khác (/admin/*, /staff/*): Kiểm tra theo bảng phân quyền động (screen_permission)
         String normalizedPath = servletPath;
-        if (servletPath.startsWith("/staff/")) {
-            normalizedPath = "/admin/" + servletPath.substring(7);
+        if (normalizedPath.endsWith("/") && normalizedPath.length() > 1) {
+            normalizedPath = normalizedPath.substring(0, normalizedPath.length() - 1);
+        }
+        if (normalizedPath.startsWith("/staff/")) {
+            normalizedPath = "/admin/" + normalizedPath.substring(7);
         }
 
         String action = request.getParameter("action");

@@ -48,6 +48,23 @@
             background-color: #fee2e2;
             color: #991b1b;
         }
+        .item-name-link {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.2s ease, text-decoration 0.2s ease;
+        }
+        .item-name-link:hover {
+            color: #e11d48;
+            text-decoration: underline;
+        }
+        .item-img-clickable {
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .item-img-clickable:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
     </style>
 </head>
 <body>
@@ -60,8 +77,8 @@
         <!-- Top Header -->
         <jsp:include page="/common/top-header.jsp">
             <jsp:param name="parentMenu" value="Đơn hàng được phân công" />
-            <jsp:param name="parentUrl" value="${pageContext.request.contextPath}/shipper/orders" />
-            <jsp:param name="activeMenu" value="Chi tiết giao hàng" />
+            <jsp:param name="parentUrl" value="${pageContext.request.contextPath}/shipper/orders?action=list" />
+            <jsp:param name="activeMenu" value="Chi tiết đơn hàng" />
         </jsp:include>
 
         <div class="content-container">
@@ -174,17 +191,35 @@
                                     int qty           = oi.getQuantity();
                                     double price      = oi.getPriceAtPurchase() != null ? oi.getPriceAtPurchase().doubleValue() : 0;
                                     double lineTotal  = price * qty;
+                                    String tplId     = oi.getTemplateId();
+                                    String itemLink  = "";
+                                    if (tplId != null && !tplId.trim().isEmpty()) {
+                                        itemLink = ctxPath + "/product-detail?id=" + tplId.trim();
+                                    } else if (oi.getAccessoryId() != null && !oi.getAccessoryId().trim().isEmpty()) {
+                                        itemLink = ctxPath + "/products";
+                                    }
                         %>
                             <div class="order-item-row">
-                                <img src="<%= resolvedImg %>" data-template-image="<%= resolvedTemplateImg %>" alt="<%= itemName %>" class="item-img"
-                                     onerror="this.src = this.getAttribute('data-template-image') || '<%= defaultImg %>'; this.onerror = function() { this.src = '<%= defaultImg %>'; };">
+                                <% if (itemLink != null && !itemLink.isEmpty()) { %>
+                                    <a href="<%= itemLink %>" title="Xem chi tiết sản phẩm">
+                                        <img src="<%= resolvedImg %>" data-template-image="<%= resolvedTemplateImg %>" alt="<%= itemName %>" class="item-img item-img-clickable"
+                                             onerror="this.src = this.getAttribute('data-template-image') || '<%= defaultImg %>'; this.onerror = function() { this.src = '<%= defaultImg %>'; };">
+                                    </a>
+                                <% } else { %>
+                                    <img src="<%= resolvedImg %>" data-template-image="<%= resolvedTemplateImg %>" alt="<%= itemName %>" class="item-img"
+                                         onerror="this.src = this.getAttribute('data-template-image') || '<%= defaultImg %>'; this.onerror = function() { this.src = '<%= defaultImg %>'; };">
+                                <% } %>
                                 <div class="item-details">
-                                    <div class="item-name"><%= itemName %></div>
+                                    <% if (itemLink != null && !itemLink.isEmpty()) { %>
+                                        <div class="item-name"><a href="<%= itemLink %>" class="item-name-link" title="Xem chi tiết sản phẩm"><%= itemName %></a></div>
+                                    <% } else { %>
+                                        <div class="item-name"><%= itemName %></div>
+                                    <% } %>
                                     <div class="item-meta">Phân loại: <span><%= catName %></span></div>
                                     <div class="item-meta">Kích cỡ/Tùy chọn: <span><%= varName %></span></div>
                                     <% if (greeting != null && !greeting.trim().isEmpty()) { %>
-                                        <div class="item-meta" style="color: var(--cz-primary); font-style: italic;">
-                                            Lời chúc trên bánh: <span>"<%= greeting %>"</span>
+                                        <div class="item-meta mt-1 mb-1" style="font-size: 12px; color: #7e22ce; background-color: #f3e8ff; border: 1px solid #e9d5ff; padding: 4px 10px; border-radius: 8px; display: inline-block;">
+                                            <i class="fa-solid fa-pen-nib me-1"></i> Thông điệp trang trí: <strong style="color: #6b21a8;"><%= greeting %></strong>
                                         </div>
                                     <% } %>
                                     <% if (ccId != null && !ccId.trim().isEmpty()) { %>
@@ -298,16 +333,16 @@
                         </c:if>
                     </div>
 
-                    <!-- Bằng chứng giao hàng (Shipper tải lên) -->
+                    <!-- Bằng chứng giao hàng (Shipper tải lên trực tiếp) -->
                     <div class="cz-card">
-                        <div class="cz-card-title">
-                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Ảnh minh chứng giao nhận (Yêu cầu thực tế)
+                        <div class="cz-card-title" style="margin-bottom: 15px;">
+                            <i class="fa-solid fa-camera" style="color: var(--cz-primary);"></i> Chụp ảnh minh chứng giao hàng
                         </div>
                         <div class="row" style="padding: 10px 20px;">
                             <!-- 1. Minh chứng lấy bánh tại tiệm -->
                             <div class="col-md-6 text-center" style="border-right: 1px dashed #ddd; padding: 15px;">
-                                <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">1. Ảnh lấy bánh tại tiệm (Pickup)</h6>
-                                <div id="pickup-preview-container" style="margin-bottom: 15px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                <h6 class="proof-placeholder-title">1. Ảnh lấy bánh tại tiệm (Pickup)</h6>
+                                <div id="pickup-preview-container" class="proof-placeholder-box">
                                     <c:choose>
                                         <c:when test="${not empty pickupPhoto}">
                                             <img src="${pageContext.request.contextPath}/${pickupPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
@@ -316,8 +351,8 @@
                                             </div>
                                         </c:when>
                                         <c:otherwise>
-                                            <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
-                                            <span style="font-size: 12px; color: #888;">Chưa chụp ảnh lấy bánh.</span>
+                                            <i class="fa-regular fa-image proof-placeholder-icon"></i>
+                                            <span class="proof-placeholder-text">Chưa chụp ảnh lấy bánh.</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
@@ -329,8 +364,8 @@
                             
                             <!-- 2. Minh chứng giao bánh cho khách -->
                             <div class="col-md-6 text-center" style="padding: 15px;">
-                                <h6 style="font-weight: 600; color: #555; margin-bottom: 12px;">2. Ảnh bàn giao cho khách (Delivery)</h6>
-                                <div id="delivery-preview-container" style="margin-bottom: 15px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; padding: 10px;">
+                                <h6 class="proof-placeholder-title">2. Ảnh bàn giao cho khách (Delivery)</h6>
+                                <div id="delivery-preview-container" class="proof-placeholder-box">
                                     <c:choose>
                                         <c:when test="${not empty deliveryPhoto}">
                                             <img src="${pageContext.request.contextPath}/${deliveryPhoto}" style="max-width: 100%; max-height: 150px; border-radius: 6px; object-fit: contain; box-shadow: 0 1px 5px rgba(0,0,0,0.1);" />
@@ -339,8 +374,8 @@
                                             </div>
                                         </c:when>
                                         <c:otherwise>
-                                            <i class="fa-regular fa-image" style="font-size: 40px; color: #ccc; margin-bottom: 8px;"></i>
-                                            <span style="font-size: 12px; color: #888;">Chưa chụp ảnh giao bánh.</span>
+                                            <i class="fa-regular fa-image proof-placeholder-icon"></i>
+                                            <span class="proof-placeholder-text">Chưa chụp ảnh giao bánh.</span>
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
@@ -361,7 +396,7 @@
                             <i class="fa-solid fa-arrows-spin" style="color: var(--cz-primary);"></i> Xử lý trạng thái đơn
                         </div>
                         <c:choose>
-                            <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' || order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Đã hủy'}">
+                            <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' || order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Canceled' || order.orderStatus eq 'Đã hủy'}">
                                 <div style="padding: 20px; text-align: center; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px; font-weight: bold;">
                                     <i class="fa-solid fa-lock" style="font-size: 24px; margin-bottom: 8px; display: block; color: #721c24;"></i>
                                     Đơn hàng đã hoàn thành hoặc đã hủy. Không thể thay đổi trạng thái nữa.
@@ -373,20 +408,17 @@
                                     <input type="hidden" name="orderNo" value="${order.orderNo}">
                                     
                                     <select name="status" id="shipper-status-select" class="status-select" style="padding: 12px; width: 100%; border-radius: 6px; border: 1px solid #ccc; font-weight: 500; font-size: 14.5px; margin-bottom: 15px;">
-                                        <c:if test="${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận'}">
-                                            <option value="Pending" selected disabled>Chờ xác nhận (Chỉ đọc)</option>
+                                        <c:if test="${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ thanh toán'}">
+                                            <option value="Pending" selected disabled>Chờ thanh toán (Chỉ đọc)</option>
                                         </c:if>
-                                        <c:if test="${order.orderStatus eq 'PAID' || order.orderStatus eq 'Đã chuyển khoản'}">
-                                            <option value="PAID" selected disabled>Đã thanh toán (Duyệt gấp) (Chỉ đọc)</option>
+                                        <c:if test="${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Chờ xác nhận' || order.orderStatus eq 'PAID'}">
+                                            <option value="Confirmed" selected disabled>Chờ xác nhận (Chỉ đọc)</option>
                                         </c:if>
-                                        <c:if test="${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận'}">
-                                            <option value="Confirmed" selected disabled>Đã xác nhận (Chỉ đọc)</option>
-                                        </c:if>
-                                        <c:if test="${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý'}">
+                                        <c:if test="${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang làm bánh'}">
                                             <option value="Processing" selected disabled>Đang làm bánh (Chỉ đọc)</option>
                                         </c:if>
                                         <option value="Delivering" ${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao' ? 'selected' : ''}>Đang giao hàng</option>
-                                        <option value="Completed" ${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' ? 'selected' : ''}>Hoàn thành đơn hàng</option>
+                                        <option value="Completed" ${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' ? 'selected' : ''}>Hoàn thành đơn hàng</option>
                                         <option value="Cancelled" ${order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Đã hủy' ? 'selected' : ''}>Hủy đơn / Giao thất bại</option>
                                     </select>
                                     
@@ -404,6 +436,29 @@
                     </div>
 
                     <!-- Payment Summary -->
+                    <%
+                        double calcDiscountValStaff = 0;
+                        com.bakeryzone.model.Order orderStaffObj = (com.bakeryzone.model.Order) request.getAttribute("order");
+                        if (orderStaffObj != null) {
+                            if (orderStaffObj.getDiscountAmount() != null && orderStaffObj.getDiscountAmount().doubleValue() > 0) {
+                                calcDiscountValStaff = orderStaffObj.getDiscountAmount().doubleValue();
+                            } else if (orderStaffObj.getAppliedVoucherCode() != null && !orderStaffObj.getAppliedVoucherCode().trim().isEmpty()) {
+                                double sub = 0;
+                                if (orderStaffObj.getItems() != null) {
+                                    for (com.bakeryzone.model.OrderItem item : orderStaffObj.getItems()) {
+                                        double p = item.getPriceAtPurchase() != null ? item.getPriceAtPurchase().doubleValue() : 0;
+                                        sub += p * item.getQuantity();
+                                    }
+                                }
+                                double ship = orderStaffObj.getShippingFee() != null ? orderStaffObj.getShippingFee().doubleValue() : 0;
+                                double tot = orderStaffObj.getTotalCost() != null ? orderStaffObj.getTotalCost().doubleValue() : 0;
+                                if (sub + ship > tot && tot > 0) {
+                                    calcDiscountValStaff = (sub + ship) - tot;
+                                }
+                            }
+                        }
+                        pageContext.setAttribute("calcDiscountValStaff", calcDiscountValStaff);
+                    %>
                     <div class="cz-card">
                         <div class="cz-card-title">
                             <i class="fa-solid fa-receipt" style="color: var(--cz-primary);"></i> Tóm tắt thanh toán
@@ -422,6 +477,24 @@
                             <span>Phí vận chuyển:</span>
                             <span class="font-mono">
                                 <fmt:formatNumber value="${not empty order.shippingFee ? order.shippingFee : 0}" type="number" pattern="#,##0"/>đ
+                            </span>
+                        </div>
+                        <div class="cost-row" style="color: ${calcDiscountValStaff > 0 ? '#2b8a3e' : 'inherit'};">
+                            <span>Voucher giảm giá <c:if test="${not empty order.appliedVoucherCode}">(${order.appliedVoucherCode})</c:if>:</span>
+                            <span class="font-mono">
+                                <c:choose>
+                                    <c:when test="${calcDiscountValStaff > 0}">
+                                        -<fmt:formatNumber value="${calcDiscountValStaff}" type="number" pattern="#,##0"/>đ
+                                    </c:when>
+                                    <c:otherwise>0đ</c:otherwise>
+                                </c:choose>
+                            </span>
+                        </div>
+                        <c:set var="calcTotal" value="${subtot + (not empty order.shippingFee ? order.shippingFee : 0) - calcDiscountValStaff}" />
+                        <div class="cost-row" style="font-weight: 700; border-top: 1px dashed #ddd; border-bottom: 1px dashed #ddd; padding: 6px 0; margin: 6px 0;">
+                            <span>Tổng cộng đơn hàng:</span>
+                            <span class="font-mono" style="font-size: 16px;">
+                                <fmt:formatNumber value="${calcTotal > 0 ? calcTotal : (not empty order.totalCost ? order.totalCost : 0)}" type="number" pattern="#,##0"/>đ
                             </span>
                         </div>
                         <div class="cost-row">

@@ -15,7 +15,7 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "ShipperOrderServlet", urlPatterns = {"/shipper/orders"})
+@WebServlet(name = "ShipperOrderServlet", urlPatterns = {"/shipper/orders", "/shipper", "/shipper/", "/shipper/dashboard"})
 @jakarta.servlet.annotation.MultipartConfig(
     fileSizeThreshold = 1024 * 1024 * 2, // 2MB
     maxFileSize = 1024 * 1024 * 10,      // 10MB
@@ -31,6 +31,12 @@ public class ShipperOrderServlet extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
 
+        String servletPath = request.getServletPath();
+        if ("/shipper/dashboard".equalsIgnoreCase(servletPath)) {
+            request.getRequestDispatcher("/admin/dashboard").forward(request, response);
+            return;
+        }
+
         String action = request.getParameter("action");
         if (action == null || action.trim().isEmpty()) {
             action = "list";
@@ -38,6 +44,12 @@ public class ShipperOrderServlet extends HttpServlet {
         switch (action) {
             case "detail":
                 showOrderDetail(request, response);
+                break;
+            case "accept":
+                handleAcceptOrder(request, response);
+                break;
+            case "detail-json":
+                handleGetOrderDetailJson(request, response);
                 break;
             case "list":
             default:
@@ -60,6 +72,8 @@ public class ShipperOrderServlet extends HttpServlet {
         String action = request.getParameter("action");
         if ("update-status".equals(action)) {
             handleUpdateStatus(request, response);
+        } else if ("accept".equals(action)) {
+            handleAcceptOrder(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/shipper/orders");
         }
@@ -195,10 +209,17 @@ public class ShipperOrderServlet extends HttpServlet {
 
         List<Order> orders = orderDAO.getOrdersByShipperPaged(shipperId, keyword, statusForDao, startDate, endDate, sort, page, pageSize);
 
+        java.util.Map<String, Object> dailyStats = orderDAO.getShipperDailyStats(shipperId);
+        List<Order> readyOrders = orderDAO.getReadyOrdersForShipper(shipperId, 5);
+        List<Order> deliveredOrders = orderDAO.getDeliveredOrdersForShipper(shipperId, 5);
+
         String managedZone = orderDAO.getManagedZoneByStaffId(shipperId);
         request.setAttribute("managedZone", managedZone);
 
         request.setAttribute("orders", orders);
+        request.setAttribute("dailyStats", dailyStats);
+        request.setAttribute("readyOrders", readyOrders);
+        request.setAttribute("deliveredOrders", deliveredOrders);
         request.setAttribute("currentPage", page);
         request.setAttribute("totalPages", totalPages);
         request.setAttribute("totalRecords", totalRecords);
@@ -209,6 +230,88 @@ public class ShipperOrderServlet extends HttpServlet {
         request.setAttribute("sort", sort);
 
         request.getRequestDispatcher("/shipper/orderList.jsp").forward(request, response);
+    }
+
+    private void handleAcceptOrder(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        User user = (session != null) ? (User) session.getAttribute("user") : null;
+        if (user == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        String orderNo = request.getParameter("orderNo");
+        if (orderNo != null && !orderNo.trim().isEmpty()) {
+            boolean success = orderDAO.acceptOrderForShipper(user.getUserId(), orderNo);
+            if (success) {
+                session.setAttribute("successMessage", "Đã tiếp nhận đơn hàng #" + orderNo.replace("ORD_", "") + " thành công!");
+            } else {
+                session.setAttribute("errorMessage", "Không thể nhận đơn hàng #" + orderNo.replace("ORD_", ""));
+            }
+        }
+
+        String isAjax = request.getHeader("X-Requested-With");
+        if ("XMLHttpRequest".equalsIgnoreCase(isAjax) || "true".equals(request.getParameter("ajax"))) {
+            handleGetOrderDetailJson(request, response);
+            return;
+        }
+
+        response.sendRedirect(request.getContextPath() + "/shipper/orders?action=detail&orderNo=" + orderNo);
+    }
+
+    private void handleGetOrderDetailJson(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        String orderNo = request.getParameter("orderNo");
+        if (orderNo == null || orderNo.trim().isEmpty()) {
+            response.getWriter().print("{\"success\":false,\"message\":\"Thiếu mã đơn hàng\"}");
+            return;
+        }
+
+        Order order = orderDAO.getOrderByNo(orderNo);
+        if (order == null) {
+            response.getWriter().print("{\"success\":false,\"message\":\"Không tìm thấy đơn hàng\"}");
+            return;
+        }
+
+        StringBuilder json = new StringBuilder();
+        json.append("{\"success\":true");
+        json.append(",\"orderNo\":\"").append(escapeJson(order.getOrderNo())).append("\"");
+        json.append(",\"customerName\":\"").append(escapeJson(order.getCustomerName() != null ? order.getCustomerName() : "Khách hàng")).append("\"");
+        json.append(",\"deliveryAddress\":\"").append(escapeJson(order.getDeliveryAddress() != null ? order.getDeliveryAddress() : "")).append("\"");
+        json.append(",\"totalCost\":").append(order.getTotalCost() != null ? order.getTotalCost() : 0);
+        json.append(",\"depositAmount\":").append(order.getDepositAmount() != null ? order.getDepositAmount() : 0);
+        json.append(",\"shippingFee\":").append(order.getShippingFee() != null ? order.getShippingFee() : 0);
+        json.append(",\"orderStatus\":\"").append(escapeJson(order.getOrderStatus() != null ? order.getOrderStatus() : "")).append("\"");
+        json.append(",\"receiverName\":\"").append(escapeJson(order.getReceiverName() != null ? order.getReceiverName() : "")).append("\"");
+        json.append(",\"receiverPhone\":\"").append(escapeJson(order.getReceiverPhone() != null ? order.getReceiverPhone() : "")).append("\"");
+        json.append(",\"customerNote\":\"").append(escapeJson(order.getCustomerNote() != null ? order.getCustomerNote() : "")).append("\"");
+        json.append(",\"items\":[");
+        List<com.bakeryzone.model.OrderItem> items = order.getItems();
+        for (int i = 0; i < items.size(); i++) {
+            com.bakeryzone.model.OrderItem item = items.get(i);
+            if (i > 0) json.append(",");
+            json.append("{")
+                .append("\"itemName\":\"").append(escapeJson(item.getItemName() != null ? item.getItemName() : "")).append("\",")
+                .append("\"variation\":\"").append(escapeJson(item.getVariationName() != null ? item.getVariationName() : "")).append("\",")
+                .append("\"quantity\":").append(item.getQuantity()).append(",")
+                .append("\"price\":").append(item.getPriceAtPurchase() != null ? item.getPriceAtPurchase() : 0)
+                .append("}");
+        }
+        json.append("]}");
+        response.getWriter().print(json.toString());
+    }
+
+    private String escapeJson(String input) {
+        if (input == null) return "";
+        return input.replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\b", "\\b")
+                    .replace("\f", "\\f")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r")
+                    .replace("\t", "\\t");
     }
 
     private void showOrderDetail(HttpServletRequest request, HttpServletResponse response)
@@ -274,9 +377,7 @@ public class ShipperOrderServlet extends HttpServlet {
         }
 
         String currentStatus = order.getOrderStatus();
-        if (currentStatus != null && (
-                currentStatus.equalsIgnoreCase("Cancelled") || currentStatus.equals("Đã hủy") ||
-                currentStatus.equalsIgnoreCase("Completed") || currentStatus.equals("Hoàn thành") || currentStatus.equals("Đã giao"))) {
+        if (OrderDAO.isTerminalState(currentStatus)) {
             session.setAttribute("errorMessage", "Đơn hàng đã hoàn thành hoặc đã huỷ, không thể thay đổi trạng thái!");
             response.sendRedirect(request.getContextPath() + "/shipper/orders?action=detail&orderNo=" + orderNo);
             return;

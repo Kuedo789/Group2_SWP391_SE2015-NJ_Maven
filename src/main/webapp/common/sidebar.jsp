@@ -41,10 +41,10 @@
                                                             class="fa-solid fa-house"></i> Xem trang chủ</a>
                                                 </li>
                                                 <c:if
-                                                    test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/dashboard')}">
-                                                    <li
+                                                    test="${sessionScope.user.roleId eq 'ADMIN' || sessionScope.user.roleId eq 'STAFF' || sessionScope.user.roleId eq 'SHIPPER' || requestScope.LIVE_PERMISSIONS.contains('/admin/dashboard')}">
+                                                     <li
                                                         class="menu-item ${param.activeMenu == 'dashboard' ? 'active' : ''}">
-                                                        <a href="${pageContext.request.contextPath}/admin/dashboard"><i
+                                                        <a href="${pageContext.request.contextPath}/${sessionScope.user.roleId eq 'SHIPPER' ? 'shipper' : (sessionScope.user.roleId eq 'STAFF' ? 'staff' : 'admin')}/dashboard"><i
                                                                 class="fa-solid fa-gauge"></i> Bảng điều khiển</a>
                                                     </li>
                                                 </c:if>
@@ -55,10 +55,10 @@
                                                 <!-- Đơn hàng -->
                                                 <c:if
                                                     test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/orders?action=list')}">
-                                                    <li
+                                                     <li
                                                         class="menu-item ${param.activeMenu == 'orders' ? 'active' : ''}">
                                                         <a
-                                                            href="${pageContext.request.contextPath}/${sessionScope.user.roleId eq 'SHIPPER' ? 'shipper' : 'admin'}/orders?action=list"><i
+                                                            href="${pageContext.request.contextPath}/${sessionScope.user.roleId eq 'SHIPPER' ? 'shipper' : (sessionScope.user.roleId eq 'STAFF' ? 'staff' : 'admin')}/orders?action=list"><i
                                                                 class="fa-solid fa-receipt"></i> Đơn hàng</a>
                                                     </li>
                                                 </c:if>

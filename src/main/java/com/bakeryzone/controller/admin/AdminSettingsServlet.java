@@ -84,7 +84,6 @@ public class AdminSettingsServlet extends HttpServlet {
 
         String depositPercent = request.getParameter("depositPercent");
         String shippingRate = request.getParameter("shippingRate");
-        String maxCakesPerHour = request.getParameter("maxCakesPerHour");
         String openingTime = request.getParameter("openingTime");
         String closingTime = request.getParameter("closingTime");
 
@@ -109,7 +108,7 @@ public class AdminSettingsServlet extends HttpServlet {
         // Xác thực dữ liệu đầu vào bằng ValidationUtils
         String errorMsg = com.bakeryzone.utils.ValidationUtils.validateSystemSettings(
             bakeryName, hotline, email, address,
-            depositPercent, shippingRate, maxCakesPerHour,
+            depositPercent, shippingRate,
             systemEmail, appPassword, otpExpiry
         );
         
@@ -124,7 +123,6 @@ public class AdminSettingsServlet extends HttpServlet {
             settings.put("address", address);
             settings.put("depositPercent", depositPercent);
             settings.put("shippingRate", shippingRate);
-            settings.put("maxCakesPerHour", maxCakesPerHour);
             settings.put("openingTime", openingTime);
             settings.put("closingTime", closingTime);
             settings.put("systemEmail", systemEmail);
@@ -180,7 +178,6 @@ public class AdminSettingsServlet extends HttpServlet {
 
         settings.put("depositPercent", depositPercent);
         settings.put("shippingRate", shippingRate);
-        settings.put("maxCakesPerHour", maxCakesPerHour);
         settings.put("openingTime", openingTime);
         settings.put("closingTime", closingTime);
 
@@ -226,7 +223,6 @@ public class AdminSettingsServlet extends HttpServlet {
 
         defaults.put("depositPercent", "30");
         defaults.put("shippingRate", "5000");
-        defaults.put("maxCakesPerHour", "15000");
         defaults.put("openingTime", "07:00 AM");
         defaults.put("closingTime", "09:00 PM");
 

@@ -201,12 +201,7 @@ public class CustomerOrderController extends HttpServlet {
 
                 if (order != null && order.getCustomerId().equals(actualCustomerId)) {
                     String dbStatus = order.getOrderStatus();
-                    if (dbStatus != null && 
-                        !dbStatus.equalsIgnoreCase("Delivering") && 
-                        !dbStatus.equalsIgnoreCase("Completed") && 
-                        !dbStatus.equalsIgnoreCase("Cancelled") && 
-                        !dbStatus.equalsIgnoreCase("Canceled")) {
-                        
+                    if (OrderDAO.canCustomerCancel(dbStatus)) {
                         boolean success = orderDAO.updateOrderStatus(orderNo, "Cancelled");
                         if (success) {
                             session.setAttribute("successMessage", "Huỷ đơn hàng #" + orderNo + " thành công!");
@@ -214,10 +209,10 @@ public class CustomerOrderController extends HttpServlet {
                             session.setAttribute("errorMessage", "Không thể huỷ đơn hàng.");
                         }
                     } else {
-                        if (dbStatus != null && (dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled"))) {
-                            session.setAttribute("errorMessage", "Đơn hàng này đã được huỷ từ trước.");
+                        if (OrderDAO.isTerminalState(dbStatus)) {
+                            session.setAttribute("errorMessage", "Đơn hàng này đã hoàn thành hoặc đã huỷ từ trước.");
                         } else {
-                            session.setAttribute("errorMessage", "Đơn hàng đang giao hoặc đã hoàn thành, không thể huỷ!");
+                            session.setAttribute("errorMessage", "Bánh đã làm xong/đang vận chuyển, không thể huỷ đơn hàng nữa!");
                         }
                     }
                 }

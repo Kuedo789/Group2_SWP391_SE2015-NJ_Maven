@@ -45,7 +45,7 @@
                             <div class="form-row">
                                 <div class="form-group full-width">
                                     <label>Tên tiệm bánh</label>
-                                    <input type="text" name="bakeryName" value="${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}" class="settings-input" required maxlength="10" />
+                                    <input type="text" name="bakeryName" value="${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}" class="settings-input" required maxlength="100" />
                                 </div>
                             </div>
                             <div class="form-row form-cols-2">
@@ -73,16 +73,15 @@
                     <div class="settings-card">
                         <div class="settings-card-header">Quy tắc đặt hàng & Giao hàng</div>
                         <div class="settings-card-body">
-                            <div class="form-row form-cols-3">
+                            <div class="form-row form-cols-2">
                                 <div class="form-group">
                                     <label>Tỷ lệ đặt cọc bánh thiết kế (%)</label>
                                     <input type="number" name="depositPercent" value="${not empty settings.depositPercent ? settings.depositPercent : '30'}" class="settings-input" required min="0" max="100" />
                                 </div>
                                 <div class="form-group">
-                                    <label>Đơn giá ship/km</label>
+                                    <label>Đơn giá ship/km (VNĐ)</label>
                                     <input type="number" name="shippingRate" value="${not empty settings.shippingRate ? settings.shippingRate : '5000'}" class="settings-input" required min="0" step="any" />
                                 </div>
-
                             </div>
                             <div class="form-row form-cols-2">
                                 <div class="form-group">

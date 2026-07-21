@@ -13,6 +13,18 @@
     --cz-text-muted: #756d64;
     --cz-dark-bg: #1e251b;
     --cz-sidebar-active: #2f4728;
+    
+    --text-dark: #1f2937;
+    --cz-row-bg-pending: #fffbeb;
+    --cz-row-bg-confirmed: #eff6ff;
+    --cz-row-bg-processing: #faf5ff;
+    --cz-row-bg-delivering: #ecfeff;
+    --cz-row-bg-completed: #f0fdf4;
+    --cz-row-bg-cancelled: #fef2f2;
+}
+
+.cz-text-dark {
+    color: var(--text-dark, #1f2937) !important;
 }
 
 
@@ -342,7 +354,7 @@ a.stat-card:hover .stat-value {
 /* Bento Grid Layout for Bottom Row */
 .bento-row {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1.2fr 1fr;
     gap: 25px;
     margin-bottom: 30px;
 }
@@ -537,7 +549,7 @@ a.stat-card:hover .stat-value {
 /* Bento Grid Layout for Bottom Row */
 .bento-row {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1.2fr 1fr;
     gap: 25px;
     margin-bottom: 30px;
 }
@@ -800,6 +812,13 @@ html.dark-theme {
     --bg-cream:          #0f110e;
     --text-dark:         #eae6df;
     --text-muted:        #959893;
+    
+    --cz-row-bg-pending: #2c2514;
+    --cz-row-bg-confirmed: #152233;
+    --cz-row-bg-processing: #221533;
+    --cz-row-bg-delivering: #122b33;
+    --cz-row-bg-completed: #122818;
+    --cz-row-bg-cancelled: #2d1212;
 }
 
 html.dark-theme .navbar.dashboard-navbar {
@@ -827,12 +846,17 @@ html.dark-theme .bento-card-title {
 
 html.dark-theme .bento-table th {
     border-bottom-color: var(--cz-border-color);
-    color: var(--cz-text-muted);
+    color: #cbd5e1 !important;
+    font-weight: 700;
 }
 
 html.dark-theme .bento-table td {
     border-bottom-color: var(--cz-border-color);
-    color: #eae6df;
+    color: #f8fafc !important;
+}
+
+html.dark-theme .cz-text-dark {
+    color: #f1f5f9 !important;
 }
 
 html.dark-theme .bento-product-name {
@@ -892,3 +916,589 @@ html.dark-theme .badge-cancelled { background-color: #2a1414; color: #f87171; bo
 html.dark-theme .bento-revenue {
     color: #b5cfa3 !important;
 }
+
+/* =========================================================
+   STAFF & SHIPPER UNIFIED DASHBOARD STYLES
+   ========================================================= */
+.dashboard-badge-staff {
+    background-color: #0284c7;
+    color: #ffffff;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.dashboard-badge-shipper {
+    background-color: #d97706;
+    color: #ffffff;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Staff Kitchen Queue Styles */
+.kitchen-queue-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.kitchen-card {
+    background: #ffffff;
+    border: 1px solid #eee5d8;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    transition: transform 0.2s ease;
+}
+
+.kitchen-card:hover {
+    border-color: var(--cz-primary);
+}
+
+.kitchen-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.kitchen-order-id {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--cz-primary);
+}
+
+.kitchen-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background-color: #e0f2fe;
+    color: #0369a1;
+}
+
+.kitchen-pill.baking {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.kitchen-pill.ready {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.kitchen-items-list {
+    font-size: 13px;
+    color: #4b5563;
+    margin-bottom: 14px;
+    line-height: 1.5;
+}
+
+.kitchen-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Shipper Map & Delivery Panel */
+.shipper-delivery-panel {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #eee5d8;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.shipper-map-wrapper {
+    width: 100%;
+    height: 240px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    background: #f8fafc;
+}
+
+.shipper-active-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 14px 18px;
+}
+
+/* Customer Notes Card */
+.customer-notes-card {
+    background: #fffdf5;
+    border: 1px solid #fef3c7;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+}
+
+.customer-notes-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #92400e;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.customer-notes-content {
+    font-size: 13px;
+    color: #78350f;
+    font-style: italic;
+}
+
+/* --- KITCHEN PRODUCTION QUEUE (HÀNG ĐỢI CHẾ BIẾN) --- */
+.kitchen-queue-container {
+    background: #ffffff;
+    color: #2c2620;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #eee5d8;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+    margin-bottom: 24px;
+}
+
+.kitchen-queue-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #eee5d8;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.kitchen-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #b45309;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.kitchen-badge-live {
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    color: #b45309;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+}
+
+.kitchen-badge-count {
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+}
+
+.kitchen-section-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #d97706;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.kitchen-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kitchen-order-card {
+    background: #fbf9f5;
+    border: 1px solid #eee5d8;
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s;
+}
+
+.kitchen-order-card:hover {
+    border-color: #d97706;
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.12);
+}
+
+.kitchen-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.kitchen-order-no {
+    font-size: 18px;
+    font-weight: 800;
+    color: #1e293b;
+    letter-spacing: -0.3px;
+}
+
+.kitchen-pickup-time {
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.kitchen-status-badge {
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    color: #b45309;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.kitchen-items-list {
+    margin-bottom: 14px;
+}
+
+.kitchen-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    padding: 5px 0;
+    color: #334155;
+    border-bottom: 1px dashed #f1f5f9;
+}
+
+.kitchen-item-row:last-child {
+    border-bottom: none;
+}
+
+.kitchen-item-qty {
+    color: #d97706;
+    font-weight: 700;
+}
+
+.kitchen-item-status {
+    font-size: 11px;
+    color: #64748b;
+}
+
+.kitchen-btn-finish {
+    background: #15803d;
+    color: #ffffff;
+    border: none;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: background 0.2s;
+    box-shadow: 0 2px 6px rgba(21, 128, 61, 0.2);
+}
+
+.kitchen-btn-finish:hover {
+    background: #166534;
+    color: #ffffff;
+}
+
+/* --- KITCHEN QUEUE DARK THEME OVERRIDES (html.dark-theme) --- */
+html.dark-theme .kitchen-queue-container {
+    background-color: var(--cz-card-bg, #131612) !important;
+    border-color: var(--cz-border-color, rgba(255, 255, 255, 0.05)) !important;
+    color: #eae6df !important;
+    box-shadow: none !important;
+}
+
+html.dark-theme .kitchen-queue-header {
+    border-bottom-color: var(--cz-border-color, rgba(255, 255, 255, 0.05)) !important;
+}
+
+html.dark-theme .kitchen-title {
+    color: #fbbf24 !important;
+}
+
+html.dark-theme .kitchen-badge-live {
+    background: transparent !important;
+    border-color: #fbbf24 !important;
+    color: #fbbf24 !important;
+}
+
+html.dark-theme .kitchen-badge-count {
+    background: #242a24 !important;
+    color: #94a3b8 !important;
+}
+
+/* --- SHIPPER DASHBOARD MAP STYLES --- */
+.shipper-map-wrapper {
+    width: 100%;
+    height: 340px;
+    border-radius: 12px;
+    border: 1px solid var(--cz-border-color, #eee5d8);
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.shipper-active-box {
+    background: #fbf9f5;
+    border: 1px solid #eee5d8;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+html.dark-theme .shipper-map-wrapper {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    background-color: #1e251b !important;
+}
+
+html.dark-theme .shipper-active-box {
+    background-color: #1a1e1a !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark-theme .kitchen-section-label {
+    color: #f59e0b !important;
+}
+
+html.dark-theme .kitchen-order-card {
+    background-color: #1a1e1a !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark-theme .kitchen-order-card:hover {
+    border-color: #fbbf24 !important;
+    box-shadow: 0 4px 16px rgba(251, 191, 36, 0.15) !important;
+}
+
+html.dark-theme .kitchen-order-no {
+    color: #ffffff !important;
+}
+
+html.dark-theme .kitchen-pickup-time {
+    color: #94a3b8 !important;
+}
+
+html.dark-theme .kitchen-status-badge {
+    background-color: #272a27 !important;
+    color: #fbbf24 !important;
+    border-color: rgba(251, 191, 36, 0.3) !important;
+}
+
+html.dark-theme .kitchen-item-row {
+    color: #e2e8f0 !important;
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark-theme .kitchen-item-qty {
+    color: #fbbf24 !important;
+}
+
+html.dark-theme .kitchen-item-status {
+    color: #94a3b8 !important;
+}
+
+html.dark-theme .kitchen-btn-finish {
+    background: #0d9488 !important;
+    background-color: #0d9488 !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4) !important;
+}
+
+html.dark-theme .kitchen-btn-finish:hover {
+    background: #0f766e !important;
+    background-color: #0f766e !important;
+    box-shadow: 0 4px 18px rgba(15, 118, 110, 0.55) !important;
+}
+
+.kitchen-btn-recipe {
+    background: transparent;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.kitchen-btn-recipe:hover {
+    border-color: #fbbf24;
+    color: #fbbf24;
+}
+
+.kitchen-pending-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: #1c201c;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.kitchen-pending-table th {
+    background: #272a27;
+    color: #94a3b8;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    padding: 12px 16px;
+    border-bottom: 1px solid #2e342e;
+}
+
+.kitchen-pending-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #272a27;
+    color: #f1f5f9;
+}
+
+.kitchen-btn-start {
+    color: #fbbf24;
+    background: transparent;
+    border: none;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+}
+
+.kitchen-btn-start:hover {
+    text-decoration: underline;
+}
+
+/* Các thành phần giao diện bổ sung cho Shipper và Doanh thu Dashboard (Phần do Minh Quân phát triển) */
+.shipper-section-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    margin-bottom: 24px;
+    overflow: hidden;
+    transition: all 0.2s ease-in-out;
+}
+.shipper-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: #ffffff;
+    border-bottom: 1px solid #f1f5f9;
+}
+.shipper-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.btn-see-all {
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background-color: #eff6ff;
+    transition: all 0.2s ease;
+}
+.btn-see-all:hover {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    text-decoration: none;
+}
+.revenue-hero-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+.revenue-amount-main {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #f8fafc;
+    margin: 8px 0;
+}
+.badge-comparison {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.badge-comp-positive {
+    background-color: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.badge-comp-negative {
+    background-color: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.ready-order-item, .delivered-order-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.15s ease;
+}
+.ready-order-item:last-child, .delivered-order-item:last-child {
+    border-bottom: none;
+}
+.ready-order-item:hover, .delivered-order-item:hover {
+    background-color: #f8fafc;
+}
+.btn-accept-order {
+    background-color: #10b981;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+.btn-accept-order:hover {
+    background-color: #059669;
+    color: #ffffff;
+}
+
