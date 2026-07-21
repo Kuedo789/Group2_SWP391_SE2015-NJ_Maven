@@ -109,7 +109,7 @@ public class StaffServlet extends HttpServlet {
         }
 
         List<Staff> staffList = dao.searchAndFilterStaffs(keyword, roleId, status, pageIndex, pageSize);
-
+ 
         request.setAttribute("USERS", staffList); 
         request.setAttribute("currentPage", pageIndex);
         request.setAttribute("endPage", totalPages);

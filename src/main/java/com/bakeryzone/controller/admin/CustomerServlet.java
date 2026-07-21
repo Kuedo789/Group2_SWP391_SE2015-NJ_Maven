@@ -53,7 +53,6 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -95,7 +94,16 @@ public class CustomerServlet extends HttpServlet {
         }
 
         List<Customer> customerList = dao.searchAndFilterCustomers(keyword, status, pageIndex, pageSize);
-
+        /*
+        List<Customer> filteredList = new java.util.ArrayList<>();
+        for (int i = 0; i < customerList.size(); i++) {
+            int stt = (pageIndex - 1) * pageSize + (i + 1);
+            if (stt % 2 != 0) { 
+                filteredList.add(customerList.get(i));
+            }
+        }
+        customerList = filteredList;
+*/
         request.setAttribute("CUSTOMERS", customerList);
         request.setAttribute("currentPage", pageIndex);
         request.setAttribute("endPage", totalPages);
