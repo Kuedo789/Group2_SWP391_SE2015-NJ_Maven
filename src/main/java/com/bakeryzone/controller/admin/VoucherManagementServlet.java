@@ -47,6 +47,9 @@ public class VoucherManagementServlet extends HttpServlet {
                 case "add":
                     showAddForm(request, response);
                     break;
+                case "edit":
+                    showEditForm(request, response);
+                    break;
                 case "delete":
                     handleDelete(request, response);
                     break;
@@ -78,6 +81,8 @@ public class VoucherManagementServlet extends HttpServlet {
 
             if ("create".equals(formAction)) {
                 handleCreate(request, response);
+            } else if ("update".equals(formAction)) {
+                handleUpdate(request, response);
             } else {
                 response.sendRedirect(request.getContextPath() + "/admin/vouchers");
             }
@@ -159,6 +164,36 @@ public class VoucherManagementServlet extends HttpServlet {
     }
 
     /**
+     * Shows the edit form pre-filled with data from an existing voucher.
+     * Requires ?id=N in the query string.
+     */
+    private void showEditForm(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/vouchers?error=invalid_id");
+            return;
+        }
+
+        int id;
+        try { id = Integer.parseInt(idParam.trim()); }
+        catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/vouchers?error=invalid_id");
+            return;
+        }
+
+        Voucher v = dao.getVoucherById(id);
+        if (v == null) {
+            response.sendRedirect(request.getContextPath() + "/admin/vouchers?error=not_found");
+            return;
+        }
+
+        request.setAttribute("editVoucher", v);
+        request.getRequestDispatcher("/admin/voucher-edit.jsp").forward(request, response);
+    }
+
+    /**
      * Parses and validates the POST form, builds a Voucher model object,
      * calls the DAO insert, then redirects.
      */
@@ -201,8 +236,13 @@ public class VoucherManagementServlet extends HttpServlet {
             try { usageLimit = Integer.parseInt(usageLimitParam.trim()); } catch (NumberFormatException ignored) {}
         }
 
-        // -- Active state --
+        // -- Active state & Scope/Stackable --
         boolean isActive = !"false".equalsIgnoreCase(request.getParameter("isActive"));
+        String voucherScope = request.getParameter("voucherScope");
+        if (voucherScope == null || voucherScope.trim().isEmpty()) {
+            voucherScope = "ORDER";
+        }
+        boolean isStackable = "true".equalsIgnoreCase(request.getParameter("isStackable"));
 
         // -- Build model --
         Voucher v = new Voucher();
@@ -216,6 +256,8 @@ public class VoucherManagementServlet extends HttpServlet {
         v.setEndDate(endDate);
         v.setUsageLimit(usageLimit);
         v.setActive(isActive);
+        v.setVoucherScope(voucherScope.toUpperCase());
+        v.setStackable(isStackable);
 
         // -- Persist --
         boolean ok = dao.addVoucher(v);
@@ -223,6 +265,93 @@ public class VoucherManagementServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/admin/vouchers?success=created");
         } else {
             response.sendRedirect(request.getContextPath() + "/admin/vouchers?action=add&error=db_error");
+        }
+    }
+
+    /**
+     * Parses and validates the edit POST form, calls updateVoucher, then redirects.
+     * VoucherCode is NOT changed — it is the natural key and must stay stable.
+     */
+    private void handleUpdate(HttpServletRequest request, HttpServletResponse response)
+            throws Exception {
+
+        // -- Resolve the ID being edited --
+        String idParam = request.getParameter("voucherId");
+        if (idParam == null || idParam.trim().isEmpty()) {
+            response.sendRedirect(request.getContextPath() + "/admin/vouchers?error=invalid_id");
+            return;
+        }
+        int id;
+        try { id = Integer.parseInt(idParam.trim()); }
+        catch (NumberFormatException e) {
+            response.sendRedirect(request.getContextPath() + "/admin/vouchers?error=invalid_id");
+            return;
+        }
+
+        // -- Strings --
+        String title = trimOrNull(request.getParameter("title"));
+        String type  = trimOrNull(request.getParameter("discountType"));
+
+        if (title == null || type == null) {
+            response.sendRedirect(request.getContextPath() + "/admin/vouchers?action=edit&id=" + id + "&error=missing_fields");
+            return;
+        }
+
+        // -- Numerics --
+        BigDecimal discountValue     = parseBigDecimal(request.getParameter("discountValue"));
+        BigDecimal maxDiscountAmount = parseBigDecimal(request.getParameter("maxDiscountAmount"));
+        BigDecimal minOrderValue     = parseBigDecimal(request.getParameter("minOrderValue"));
+
+        if (discountValue == null) {
+            response.sendRedirect(request.getContextPath() + "/admin/vouchers?action=edit&id=" + id + "&error=invalid_discount");
+            return;
+        }
+
+        // -- Dates --
+        Date startDate = parseDate(request.getParameter("startDate"));
+        Date endDate   = parseDate(request.getParameter("endDate"));
+
+        if (startDate == null || endDate == null) {
+            response.sendRedirect(request.getContextPath() + "/admin/vouchers?action=edit&id=" + id + "&error=invalid_dates");
+            return;
+        }
+
+        // -- Usage limit --
+        int usageLimit = 0;
+        String usageLimitParam = request.getParameter("usageLimit");
+        if (usageLimitParam != null && !usageLimitParam.trim().isEmpty()) {
+            try { usageLimit = Integer.parseInt(usageLimitParam.trim()); } catch (NumberFormatException ignored) {}
+        }
+
+        // -- Active state & Scope/Stackable --
+        boolean isActive = !"false".equalsIgnoreCase(request.getParameter("isActive"));
+        String voucherScope = request.getParameter("voucherScope");
+        if (voucherScope == null || voucherScope.trim().isEmpty()) {
+            voucherScope = "ORDER";
+        }
+        boolean isStackable = "true".equalsIgnoreCase(request.getParameter("isStackable"));
+
+        // -- Build model --
+        Voucher v = new Voucher();
+        v.setVoucherId(id);
+        v.setTitle(title);
+        v.setDiscountType(type.toUpperCase());
+        v.setDiscountValue(discountValue);
+        v.setMaxDiscountAmount(maxDiscountAmount);
+        v.setMinOrderValue(minOrderValue != null ? minOrderValue : BigDecimal.ZERO);
+        v.setStartDate(startDate);
+        v.setEndDate(endDate);
+        v.setUsageLimit(usageLimit);
+        v.setActive(isActive);
+        v.setVoucherScope(voucherScope.toUpperCase());
+        v.setStackable(isStackable);
+
+        // -- Persist --
+        boolean ok = dao.updateVoucher(v);
+        if (ok) {
+            response.sendRedirect(request.getContextPath() + "/admin/vouchers?success=updated");
+        } else {
+            response.sendRedirect(request.getContextPath() + "/admin/vouchers?action=edit&id=" + id + "&error=db_error");
         }
     }
 

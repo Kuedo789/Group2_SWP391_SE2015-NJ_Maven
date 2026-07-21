@@ -88,6 +88,11 @@
                 Đã có lỗi xảy ra trong quá trình đặt hàng. Vui lòng thử lại sau.
             </div>
         </c:if>
+        <c:if test="${param.error == 'note_too_long'}">
+            <div class="alert alert-danger" style="color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;">
+                Ghi chú đơn hàng quá dài (tối đa 100 ký tự). Vui lòng viết ngắn gọn hơn.
+            </div>
+        </c:if>
         <c:if test="${param.error == 'voucher_invalid'}">
             <div class="alert alert-danger" style="color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;">
                 <strong>&#9888; Mã giảm giá không còn hợp lệ</strong> và đã được gỡ bỏ tự động.
@@ -101,6 +106,8 @@
 
         <form id="checkoutForm" action="${pageContext.request.contextPath}/checkout" method="POST">
             <input type="hidden" name="cartData" id="cartDataInput">
+            <input type="hidden" name="appliedOrderVoucherCode" id="appliedOrderVoucherCodeInput">
+            <input type="hidden" name="appliedShippingVoucherCode" id="appliedShippingVoucherCodeInput">
             <input type="hidden" name="addressId" id="selectedAddressIdInput" value="${requestScope.selectedAddress.addressId}">
             <input type="hidden" name="timeSlot" id="selectedTimeSlotInput">
             <input type="hidden" name="shippingFee" id="shippingFeeInput" value="0">
@@ -197,7 +204,25 @@
                         </div>
 
                         <div class="product-checkout-list" id="checkoutProductList">
-                            <!-- Populated by JavaScript -->
+                            <c:if test="${empty checkoutCartItems}">
+                                <div class="empty-cart-state" style="padding: 30px; text-align: center; color: #888;">
+                                    <i class="fa fa-shopping-basket" style="font-size: 32px; margin-bottom: 12px; display: block; color: #ccc;"></i>
+                                    <p>Không có sản phẩm nào được chọn để thanh toán.</p>
+                                    <a href="${pageContext.request.contextPath}/cart" class="btn btn-primary" style="margin-top:10px; display:inline-block; padding:8px 16px; background:var(--primary-dark); color:white; border-radius:8px; text-decoration:none;">Quay lại giỏ hàng</a>
+                                </div>
+                            </c:if>
+                            <c:forEach var="item" items="${checkoutCartItems}">
+                                <div class="product-checkout-item" style="display: flex; gap: 12px; padding: 16px; border-bottom: 1px solid var(--border-color);">
+                                    <img src="${item.imageUrl}" alt="${item.name}" style="width: 70px; height: 70px; border-radius: 8px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border-color);">
+                                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
+                                        <div style="font-weight: 700; font-size: 15px; color: var(--text-dark); margin-bottom: 4px;">${item.name}</div>
+                                        <div style="font-size: 13px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;">
+                                            <span>Số lượng: <strong>${item.quantity}</strong></span>
+                                            <span style="font-weight: 700; color: var(--text-dark); font-size: 15px;"><fmt:formatNumber value="${item.unitPrice * item.quantity}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </c:forEach>
                         </div>
                     </div>
 
@@ -209,7 +234,7 @@
                             </h2>
                         </div>
                         <div style="margin-top: 16px;">
-                            <textarea name="note" id="note" rows="3" placeholder="Ví dụ: Giao hàng giờ hành chính, gọi điện trước khi giao..." style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 15px; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
+                            <textarea name="note" id="note" rows="3" maxlength="100" placeholder="Ví dụ: Giao hàng giờ hành chính, gọi điện trước khi giao..." style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 15px; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
                         </div>
                     </div>
 
@@ -225,7 +250,7 @@
                                 <input type="radio" name="paymentMethod" value="COD" checked>
                                 <div class="pm-radio-circle"></div>
                                 <i class="fa fa-truck pm-icon"></i>
-                                <span class="pm-title">Thanh toán khi nhận hàng</span>
+                                <span class="pm-title">Thanh toán khi nhận hàng <span style="font-size: 13px; color: #d9534f; font-weight: 600;">(Cọc 30%)</span></span>
                             </label>
                             
                             <label class="pm-card" onclick="document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('active')); this.classList.add('active');">
@@ -245,7 +270,7 @@
                         
                         <div class="summary-row">
                             <span>Tổng tiền sản phẩm</span>
-                            <span id="productTotalSum">0đ</span>
+                            <span id="productTotalSum" data-val="${productTotalSum}"><fmt:formatNumber value="${productTotalSum}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
                         </div>
 
                         <div class="summary-row">
@@ -256,13 +281,20 @@
                             <span id="shippingFeeSum">0đ</span>
                         </div>
                         <div id="discountContainer">
-                            <c:if test="${requestScope.checkoutDiscount > 0}">
+                            <c:if test="${requestScope.checkoutOrderDiscount > 0}">
                                 <div class="summary-row" id="discountSummaryRow" style="color: #d9534f;">
                                     <div class="summary-row-label">
-                                        <span>Giảm giá Voucher</span>
-                                        <span class="summary-sub-label">${requestScope.checkoutVoucherCode}</span>
+                                        <span>Giảm giá Đơn hàng</span>
                                     </div>
-                                    <span>- <fmt:formatNumber value="${requestScope.checkoutDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
+                                    <span>- <fmt:formatNumber value="${requestScope.checkoutOrderDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
+                                </div>
+                            </c:if>
+                            <c:if test="${not empty requestScope.checkoutShippingVoucherCode}">
+                                <div class="summary-row" id="shippingDiscountSummaryRow" style="color: #d9534f;">
+                                    <div class="summary-row-label">
+                                        <span>Giảm phí Vận chuyển</span>
+                                    </div>
+                                    <span id="shippingDiscountDisplay">- 0₫</span>
                                 </div>
                             </c:if>
                         </div>
@@ -275,28 +307,42 @@
                         </div>
 
                         <div class="voucher-group" id="voucherGroupContainer" style="margin-bottom: 24px;">
-                            <c:if test="${not empty sessionScope.voucherError}">
-                                <div id="checkoutVoucherErrorBanner" style="color: #d9534f; font-size: 13px; margin-bottom: 8px;"><i class="fa fa-exclamation-circle"></i> ${sessionScope.voucherError}</div>
-                                <c:remove var="voucherError" scope="session" />
-                            </c:if>
-                            <%-- Client-side error area (used by JS validation) --%>
-                            <div id="checkoutVoucherClientError" style="display:none; color:#d9534f; font-size:13px; margin-bottom:8px;"></div>
-                            <c:choose>
-                                <c:when test="${not empty requestScope.checkoutVoucherCode}">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
-                                        <span style="font-weight: 600; color: var(--primary);">${requestScope.checkoutVoucherCode}</span>
-                                        <button type="button" onclick="submitVoucherAjax('removeVoucher')" style="background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; font-weight: 600;">✕ Bỏ</button>
+                        <div class="voucher-group" id="voucherGroupContainer" style="margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-weight: 700; font-size: 14px; color: var(--text-dark);">Voucher đã áp dụng</span>
+                                <a href="${pageContext.request.contextPath}/cart" style="font-size: 13px; color: var(--primary); text-decoration: none; font-weight: 600;">Thay đổi</a>
+                            </div>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                    <input type="text" id="manualVoucherInput" placeholder="Nhập mã giảm giá..." style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none;">
+                                    <button type="button" onclick="applyManualVoucher()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">Áp dụng</button>
+                                </div>
+                                <div id="manualVoucherError" style="color: #d9534f; font-size: 13px; display: none; margin-bottom: 8px;"></div>
+                                <div id="appliedVouchersList" style="display: flex; flex-direction: column; gap: 8px;">
+                                <c:if test="${empty requestScope.checkoutOrderVoucherCode && empty requestScope.checkoutShippingVoucherCode}">
+                                    <div id="noVoucherText" style="font-size: 13px; color: var(--text-muted); font-style: italic;">Chưa có voucher nào được áp dụng.</div>
+                                </c:if>
+                                <c:if test="${not empty requestScope.checkoutOrderVoucherCode}">
+                                    <div class="applied-voucher-item" data-code="${requestScope.checkoutOrderVoucherCode}" data-scope="ORDER" data-type="PERCENT" data-val="${requestScope.checkoutOrderDiscount}" data-max="0" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span style="font-size: 12px; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-weight: 700;">ĐƠN HÀNG</span>
+                                            <span style="font-weight: 600; color: var(--primary);">${requestScope.checkoutOrderVoucherCode}</span>
+                                        </div>
+                                        <button type="button" onclick="removeVoucher('ORDER')" style="background: none; border: none; color: #d9534f; cursor: pointer;"><i class="fa fa-times"></i></button>
                                     </div>
-                                </c:when>
-                                <c:otherwise>
-                                    <div style="display: flex; gap: 8px;">
-                                        <input type="text" id="checkoutVoucherInput" placeholder="Nhập mã giảm giá" class="voucher-input" name="voucherCode"
-                                               maxlength="50" autocomplete="off" style="flex: 1; height: 40px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 8px; text-transform:uppercase;"
-                                               oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');">
-                                        <button type="button" id="checkoutVoucherBtn" onclick="validateAndApplyVoucher()" class="voucher-btn" style="height: 40px; padding: 0 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Áp dụng</button>
+                                </c:if>
+                                <c:if test="${not empty requestScope.checkoutShippingVoucherCode}">
+                                    <div class="applied-voucher-item" data-code="${requestScope.checkoutShippingVoucherCode}" data-scope="SHIPPING" data-type="${requestScope.shippingVoucherType}" data-val="${requestScope.shippingVoucherValue}" data-max="${requestScope.shippingVoucherMax}" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <span style="font-size: 12px; background: #4caf50; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 700;">VẬN CHUYỂN</span>
+                                            <span style="font-weight: 600; color: var(--primary);">${requestScope.checkoutShippingVoucherCode}</span>
+                                        </div>
+                                        <button type="button" onclick="removeVoucher('SHIPPING')" style="background: none; border: none; color: #d9534f; cursor: pointer;"><i class="fa fa-times"></i></button>
                                     </div>
-                                </c:otherwise>
-                            </c:choose>
+                                </c:if>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="banner-kitchen-verify">
@@ -342,148 +388,123 @@
     <script>
         let shopLat = 10.7769;
         let shopLng = 106.7009;
-        let currentCart = [];
         let selectedAddressId = null;
         let selectedTimeSlot = "";
         let currentShippingFee = 0;
-        let currentDiscount = parseFloat("${not empty requestScope.checkoutDiscount ? requestScope.checkoutDiscount : 0}") || 0;
 
-        // ── Checkout-page voucher frontend validation ────────────────────────────
-        function validateAndApplyVoucher() {
-            const input  = document.getElementById('checkoutVoucherInput');
-            const btn    = document.getElementById('checkoutVoucherBtn');
-            const errBox = document.getElementById('checkoutVoucherClientError');
-
-            function showClientError(msg) {
-                if (!errBox) return;
-                errBox.innerHTML = '<span>&#9888;</span> ' + msg;
-                errBox.style.display = 'block';
-                if (input) { input.style.borderColor = '#d9534f'; input.focus(); }
-            }
-
-            function clearClientError() {
-                if (errBox) errBox.style.display = 'none';
-                if (input) input.style.borderColor = '';
-            }
-
-            clearClientError();
-
-            if (!input) { submitVoucherAjax('applyVoucher'); return; }
-
-            const code = input.value.trim().toUpperCase();
-
-            // 1. Empty check
-            if (!code) {
-                showClientError('Vui long nhap ma voucher!');
-                return;
-            }
-
-            // 2. Format check - only uppercase letters A-Z and digits 0-9
-            if (!/^[A-Z0-9]+$/.test(code)) {
-                showClientError('Ma voucher chi duoc chua chu cai va so (khong dau, khong khoang trang).');
-                return;
-            }
-
-            // 3. Length check
-            if (code.length > 50) {
-                showClientError('Ma voucher khong duoc vuot qua 50 ky tu.');
-                return;
-            }
-
-            // Write canonical code back and set loading state
-            input.value   = code;
-            btn.disabled  = true;
-            btn.innerHTML = '&#8987; Dang kiem tra...';
-
-            submitVoucherAjax('applyVoucher');
-        }
-
-        function submitVoucherAjax(actionStr) {
-            const codeInput = document.getElementById('checkoutVoucherInput')
-                           || document.querySelector('input[name="voucherCode"]');
-            const code = codeInput ? codeInput.value : '';
-
-            const formData = new URLSearchParams();
-            formData.append("action", actionStr);
-            formData.append("ajax", "true");
-            if (code) formData.append("voucherCode", code);
-
-            fetch('${pageContext.request.contextPath}/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: formData.toString()
-            })
-            .then(res => res.json())
-            .then(data => {
-                const voucherGroup = document.getElementById('voucherGroupContainer');
-                let html = '';
-
-                if (data.error) {
-                    html += `<div id="checkoutVoucherClientError" style="color: #d9534f; font-size: 13px; margin-bottom: 8px;"><span>&#9888;</span> \${data.error}</div>`;
+        function updateSummary() {
+            const productTotalSumEl = document.getElementById("productTotalSum");
+            let productTotal = 0;
+            
+            if (typeof currentCart !== 'undefined' && Array.isArray(currentCart)) {
+                currentCart.forEach(item => {
+                    productTotal += (parseFloat(item.price) || 0) * (parseInt(item.qty) || 1);
+                });
+                if (productTotalSumEl) {
+                    productTotalSumEl.setAttribute("data-val", productTotal);
+                    productTotalSumEl.innerText = productTotal.toLocaleString("vi-VN") + "₫";
                 }
+            } else if (productTotalSumEl) {
+                productTotal = parseFloat(productTotalSumEl.getAttribute("data-val")) || 0;
+            }
 
-                if (data.code) {
-                    html += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
-                            <span style="font-weight: 600; color: var(--primary);">\${data.code}</span>
-                            <button type="button" onclick="submitVoucherAjax('removeVoucher')" style="background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; font-weight: 600;">&#10005; Bỏ</button>
-                        </div>
-                    `;
-                    currentDiscount = data.discount || 0;
-                    document.getElementById('discountContainer').innerHTML = `
-                        <div class="summary-row" id="discountSummaryRow" style="color: #d9534f;">
-                            <div class="summary-row-label">
-                                <span>Giảm giá Voucher</span>
-                                <span class="summary-sub-label">\${data.code}</span>
-                            </div>
-                            <span>- \${currentDiscount.toLocaleString("vi-VN")}&#8363;</span>
-                        </div>
-                    `;
-                } else {
-                    html += `
-                        <div id="checkoutVoucherClientError" style="display:none; color:#d9534f; font-size:13px; margin-bottom:8px;"></div>
-                        <div style="display: flex; gap: 8px;">
-                            <input type="text" id="checkoutVoucherInput" placeholder="Nhap ma giam gia" class="voucher-input" name="voucherCode"
-                                   maxlength="50" autocomplete="off"
-                                   style="flex: 1; height: 40px; padding: 0 12px; border: 1px solid var(--border-color); border-radius: 8px; text-transform:uppercase;"
-                                   oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');">
-                            <button type="button" id="checkoutVoucherBtn" onclick="validateAndApplyVoucher()" class="voucher-btn"
-                                    style="height: 40px; padding: 0 16px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Ap dung</button>
-                        </div>
-                    `;
-                    currentDiscount = 0;
-                    document.getElementById('discountContainer').innerHTML = '';
+            let appliedShippingDiscount = 0;
+            let appliedOrderDiscount = 0;
+            
+            // Collect applied vouchers from DOM
+            let activeOrderVoucher = "";
+            let activeShippingVoucher = "";
+            document.querySelectorAll(".applied-voucher-item").forEach(el => {
+                const scope = el.getAttribute("data-scope");
+                const code = el.getAttribute("data-code");
+                const type = el.getAttribute("data-type");
+                const val = parseFloat(el.getAttribute("data-val")) || 0;
+                const max = parseFloat(el.getAttribute("data-max")) || 0;
+                
+                if (scope === 'ORDER') {
+                    activeOrderVoucher = code;
+                    if (type === 'PERCENT' || type === 'PERCENTAGE') {
+                        appliedOrderDiscount = (productTotal * val) / 100;
+                        if (max > 0) appliedOrderDiscount = Math.min(appliedOrderDiscount, max);
+                    } else {
+                        appliedOrderDiscount = val;
+                    }
+                    appliedOrderDiscount = Math.min(appliedOrderDiscount, productTotal);
+                } else if (scope === 'SHIPPING') {
+                    activeShippingVoucher = code;
+                    if (type === 'PERCENT' || type === 'PERCENTAGE') {
+                        appliedShippingDiscount = (currentShippingFee * val) / 100;
+                        if (max > 0) appliedShippingDiscount = Math.min(appliedShippingDiscount, max);
+                    } else {
+                        appliedShippingDiscount = val;
+                    }
+                    appliedShippingDiscount = Math.min(appliedShippingDiscount, currentShippingFee);
                 }
-                voucherGroup.innerHTML = html;
-
-                // Re-bind Enter key after DOM update
-                const newInput = document.getElementById('checkoutVoucherInput');
-                if (newInput) {
-                    newInput.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') { e.preventDefault(); validateAndApplyVoucher(); }
-                    });
-                }
-
-                updateSummary();
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Co loi xay ra khi xu ly ma giam gia.");
             });
+
+            const appliedOrderVoucherCodeInput = document.getElementById("appliedOrderVoucherCodeInput");
+            const appliedShippingVoucherCodeInput = document.getElementById("appliedShippingVoucherCodeInput");
+            if (appliedOrderVoucherCodeInput) appliedOrderVoucherCodeInput.value = activeOrderVoucher;
+            if (appliedShippingVoucherCodeInput) appliedShippingVoucherCodeInput.value = activeShippingVoucher;
+
+            const orderDiscountRow = document.getElementById("orderDiscountSummaryRow");
+            if (appliedOrderDiscount > 0) {
+                if (!orderDiscountRow) {
+                    const row = document.createElement("div");
+                    row.className = "summary-row";
+                    row.id = "orderDiscountSummaryRow";
+                    row.style.color = "#d9534f";
+                    row.innerHTML = `<div class="summary-row-label"><span>Giảm giá đơn hàng</span></div><div class="summary-row-value"><span></span></div>`;
+                    
+                    const shippingRow = document.getElementById("shippingDiscountSummaryRow");
+                    if (shippingRow && shippingRow.parentNode) {
+                        shippingRow.parentNode.insertBefore(row, shippingRow);
+                    } else {
+                        // Fallback if no shipping row yet, insert before total
+                        const totalRow = document.querySelector(".summary-row.total");
+                        if (totalRow) totalRow.parentNode.insertBefore(row, totalRow);
+                    }
+                }
+                const orderRowVal = document.querySelector("#orderDiscountSummaryRow .summary-row-value span");
+                if (orderRowVal) orderRowVal.innerText = "- " + appliedOrderDiscount.toLocaleString("vi-VN") + "₫";
+                const orderDiscountRowEl = document.getElementById("orderDiscountSummaryRow");
+                if (orderDiscountRowEl) orderDiscountRowEl.style.display = "flex";
+            } else if (orderDiscountRow) {
+                orderDiscountRow.style.display = "none";
+            }
+
+            let finalShippingFee = currentShippingFee - appliedShippingDiscount;
+            if (finalShippingFee < 0) finalShippingFee = 0;
+
+            let finalTotal = 0;
+            if (productTotal > 0) {
+                finalTotal = productTotal + finalShippingFee - appliedOrderDiscount;
+                if (finalTotal < 0) finalTotal = 0;
+            }
+
+            const shippingEl = document.getElementById("shippingFeeSum");
+            const shippingDiscountEl = document.getElementById("shippingDiscountDisplay");
+            const totalEl = document.getElementById("finalTotalSum");
+
+            if (shippingEl) shippingEl.innerText = currentShippingFee.toLocaleString("vi-VN") + "₫";
+            
+            const shippingDiscountRow = document.getElementById("shippingDiscountSummaryRow");
+            if (shippingDiscountRow) {
+                if (appliedShippingDiscount > 0) {
+                    const sdVal = shippingDiscountRow.querySelector(".summary-row-value span");
+                    if (sdVal) sdVal.innerText = "- " + appliedShippingDiscount.toLocaleString("vi-VN") + "₫";
+                    shippingDiscountRow.style.display = "flex";
+                } else {
+                    shippingDiscountRow.style.display = "none";
+                }
+            }
+            if (totalEl) totalEl.innerText = finalTotal.toLocaleString("vi-VN") + "₫";
+
+            const shippingFeeInput = document.getElementById("shippingFeeInput");
+            if (shippingFeeInput) shippingFeeInput.value = currentShippingFee;
         }
-        // ────────────────────────────────────────────────────────────────────────
 
         document.addEventListener("DOMContentLoaded", function () {
-            loadCartItems();
-
-            // Bind Enter key on checkout voucher input (initial page load)
-            const initialVoucherInput = document.getElementById('checkoutVoucherInput');
-            if (initialVoucherInput) {
-                initialVoucherInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') { e.preventDefault(); validateAndApplyVoucher(); }
-                });
-            }
-
             const activeAddressCard = document.querySelector(".address-card-option.active");
             if (activeAddressCard) {
                 const id = activeAddressCard.getAttribute("data-address-id");
@@ -520,10 +541,10 @@
 
             document.getElementById("checkoutForm").addEventListener("submit", function(e) {
                 const jsErrorBox = document.getElementById("jsErrorBox");
-
-                if (!Array.isArray(currentCart) || currentCart.length === 0) {
+                
+                if (typeof currentCart === 'undefined' || currentCart.length === 0) {
                     e.preventDefault();
-                    jsErrorBox.innerText = "Khong co san pham trong gio hang. Khong the dat banh!";
+                    jsErrorBox.innerText = "Không có sản phẩm để thanh toán.";
                     jsErrorBox.style.display = "block";
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     return;
@@ -532,7 +553,7 @@
                 const selectedAddressId = document.getElementById("selectedAddressIdInput").value;
                 if (!selectedAddressId || selectedAddressId.trim() === "") {
                     e.preventDefault();
-                    jsErrorBox.innerText = "Vui long them dia chi giao hang truoc khi dat hang.";
+                    jsErrorBox.innerText = "Vui lòng thêm địa chỉ giao hàng trước khi đặt hàng.";
                     jsErrorBox.style.display = "block";
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     return;
@@ -540,7 +561,7 @@
                 const timeSlot = document.getElementById("selectedTimeSlotInput").value;
                 if (!timeSlot || timeSlot.trim() === "") {
                     e.preventDefault();
-                    jsErrorBox.innerText = "Vui long chon khung gio giao hang hop le.";
+                    jsErrorBox.innerText = "Vui lòng chọn khung giờ giao hàng hợp lệ.";
                     jsErrorBox.style.display = "block";
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     return;
@@ -556,8 +577,10 @@
                 localStorage.setItem("checkout_state", JSON.stringify(checkoutState));
 
                 jsErrorBox.style.display = "none";
-                // Không xoá giỏ hàng ở đây nữa để có thể quay lại sửa đổi
             });
+
+            // Load cart items from localStorage before initializing anything else
+            loadCartItems();
 
             // Initialize available time slots on load
             updateAvailableTimeSlots();
@@ -602,6 +625,8 @@
             } catch (e) {
                 console.error("Failed to restore checkout state:", e);
             }
+            
+            updateSummary();
         });
 
         function updateAvailableTimeSlots() {
@@ -909,28 +934,6 @@
                       Math.sin(dLon/2) * Math.sin(dLon/2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             return R * c;
-        }
-
-        function updateSummary() {
-            let productTotal = Array.isArray(currentCart)
-                ? currentCart.reduce((sum, item) => sum + (parseFloat(item?.price || 0) * parseInt(item?.qty || 1)), 0)
-                : 0;
-
-            let finalTotal = 0;
-            if (productTotal > 0) {
-                finalTotal = productTotal + currentShippingFee - currentDiscount;
-                if (finalTotal < 0) finalTotal = 0;
-            }
-            const subtotalEl = document.getElementById("productTotalSum");
-            const shippingEl = document.getElementById("shippingFeeSum");
-            const totalEl = document.getElementById("finalTotalSum");
-
-            if (subtotalEl) subtotalEl.innerText = productTotal.toLocaleString("vi-VN") + "d";
-            if (shippingEl) shippingEl.innerText = currentShippingFee.toLocaleString("vi-VN") + "d";
-            if (totalEl) totalEl.innerText = finalTotal.toLocaleString("vi-VN") + "d";
-
-            const shippingFeeInput = document.getElementById("shippingFeeInput");
-            if (shippingFeeInput) shippingFeeInput.value = currentShippingFee;
         }
 
         document.addEventListener("DOMContentLoaded", function() {

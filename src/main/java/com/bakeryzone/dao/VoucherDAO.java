@@ -69,7 +69,7 @@ public class VoucherDAO {
         String sql =
             "SELECT VoucherID, VoucherCode, Title, DiscountType, DiscountValue, "
             + "       MaxDiscountAmount, MinOrderValue, StartDate, EndDate, "
-            + "       IsActive, UsageLimit, RequiredTierID "
+            + "       IsActive, UsageLimit, RequiredTierID, VoucherScope, TargetCategory, IsStackable "
             + "FROM Voucher "
             + "WHERE IsActive = 1 "
             + "  AND CURDATE() BETWEEN StartDate AND EndDate "
@@ -338,6 +338,10 @@ public class VoucherDAO {
         int reqTier = rs.getInt("RequiredTierID");
         v.setRequiredTierId(rs.wasNull() ? null : reqTier);
 
+        v.setVoucherScope(rs.getString("VoucherScope"));
+        v.setTargetCategory(rs.getString("TargetCategory"));
+        v.setStackable(rs.getBoolean("IsStackable"));
+
         // Derive point cost from discount value
         if (v.getDiscountValue() != null) {
             double dv = v.getDiscountValue().doubleValue();
@@ -364,7 +368,7 @@ public class VoucherDAO {
         String sql =
             "SELECT v.VoucherID, v.VoucherCode, v.Title, v.DiscountType, v.DiscountValue, "
             + "       v.MaxDiscountAmount, v.MinOrderValue, v.StartDate, v.EndDate, "
-            + "       v.IsActive, v.UsageLimit, v.RequiredTierID "
+            + "       v.IsActive, v.UsageLimit, v.RequiredTierID, v.VoucherScope, v.TargetCategory, v.IsStackable "
             + "FROM UserVoucher uv "
             + "JOIN Voucher v ON uv.VoucherID = v.VoucherID "
             + "WHERE v.VoucherCode = ? "
@@ -396,6 +400,47 @@ public class VoucherDAO {
         }
 
         return null;
+    }
+
+    /**
+     * Fetches all valid, unused vouchers for a specific user, ordered by scope and discount value.
+     */
+    public List<Voucher> getAvailableVouchersForUser(String userId) {
+        List<Voucher> list = new ArrayList<>();
+        String sql =
+            "SELECT v.VoucherID, v.VoucherCode, v.Title, v.DiscountType, v.DiscountValue, "
+            + "       v.MaxDiscountAmount, v.MinOrderValue, v.StartDate, v.EndDate, "
+            + "       v.IsActive, v.UsageLimit, v.RequiredTierID, v.VoucherScope, v.TargetCategory, v.IsStackable "
+            + "FROM UserVoucher uv "
+            + "JOIN Voucher v ON uv.VoucherID = v.VoucherID "
+            + "WHERE uv.UserID = ? "
+            + "  AND uv.IsUsed = 0 "
+            + "  AND v.IsActive = 1 "
+            + "  AND CURDATE() BETWEEN v.StartDate AND v.EndDate "
+            + "ORDER BY v.VoucherScope DESC, v.DiscountValue DESC";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return list;
+
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, userId);
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(mapVoucher(rs));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+
+        return list;
     }
 
     /**
@@ -538,7 +583,7 @@ public class VoucherDAO {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT VoucherID, VoucherCode, Title, DiscountType, DiscountValue, ")
            .append("       MaxDiscountAmount, MinOrderValue, StartDate, EndDate, ")
-           .append("       IsActive, UsageLimit, RequiredTierID ")
+           .append("       IsActive, UsageLimit, RequiredTierID, VoucherScope, TargetCategory, IsStackable ")
            .append("FROM voucher WHERE 1=1 ");
         appendStatusClause(sql, statusFilter, hasStatus);
         if (hasSearch) sql.append("AND (VoucherCode LIKE ? OR Title LIKE ?) ");
@@ -607,8 +652,8 @@ public class VoucherDAO {
     public boolean addVoucher(Voucher v) {
         String sql = "INSERT INTO voucher "
             + "(VoucherCode, Title, DiscountType, DiscountValue, MaxDiscountAmount, "
-            + " MinOrderValue, StartDate, EndDate, IsActive, UsageLimit) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + " MinOrderValue, StartDate, EndDate, IsActive, UsageLimit, VoucherScope, TargetCategory, IsStackable) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -632,6 +677,9 @@ public class VoucherDAO {
             } else {
                 ps.setNull(10, java.sql.Types.INTEGER);
             }
+            ps.setString(11, v.getVoucherScope());
+            ps.setString(12, v.getTargetCategory());
+            ps.setBoolean(13, v.isStackable());
 
             return ps.executeUpdate() > 0;
 
@@ -693,6 +741,96 @@ public class VoucherDAO {
             ps = conn.prepareStatement(sql);
             ps.setBoolean(1, active);
             ps.setInt(2, voucherId);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            close(conn, ps, null);
+        }
+    }
+
+    /**
+     * Loads a voucher by its primary key, regardless of active/expired state.
+     * Used by the admin edit form to pre-fill all fields.
+     *
+     * @param voucherId  the PK to look up
+     * @return the Voucher, or null if not found
+     */
+    public Voucher getVoucherById(int voucherId) {
+        String sql =
+            "SELECT VoucherID, VoucherCode, Title, DiscountType, DiscountValue, "
+            + "       MaxDiscountAmount, MinOrderValue, StartDate, EndDate, "
+            + "       IsActive, UsageLimit, RequiredTierID, VoucherScope, TargetCategory, IsStackable "
+            + "FROM voucher "
+            + "WHERE VoucherID = ?";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return null;
+
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, voucherId);
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                return mapVoucher(rs);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return null;
+    }
+
+    /**
+     * Updates all editable fields of an existing voucher.
+     * VoucherCode is intentionally kept immutable (unique natural key).
+     *
+     * @param v  Voucher with voucherId set and all editable fields populated
+     * @return true on success
+     */
+    public boolean updateVoucher(Voucher v) {
+        String sql =
+            "UPDATE voucher SET "
+            + "  Title = ?, DiscountType = ?, DiscountValue = ?, "
+            + "  MaxDiscountAmount = ?, MinOrderValue = ?, "
+            + "  StartDate = ?, EndDate = ?, IsActive = ?, UsageLimit = ?, "
+            + "  VoucherScope = ?, TargetCategory = ?, IsStackable = ? "
+            + "WHERE VoucherID = ?";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, v.getTitle());
+            ps.setString(2, v.getDiscountType());
+            ps.setBigDecimal(3, v.getDiscountValue());
+            ps.setBigDecimal(4, v.getMaxDiscountAmount());  // may be null
+            ps.setBigDecimal(5, v.getMinOrderValue() != null ? v.getMinOrderValue() : java.math.BigDecimal.ZERO);
+            ps.setDate(6, v.getStartDate());
+            ps.setDate(7, v.getEndDate());
+            ps.setBoolean(8, v.isActive());
+            if (v.getUsageLimit() > 0) {
+                ps.setInt(9, v.getUsageLimit());
+            } else {
+                ps.setNull(9, java.sql.Types.INTEGER);
+            }
+            ps.setString(10, v.getVoucherScope());
+            ps.setString(11, v.getTargetCategory());
+            ps.setBoolean(12, v.isStackable());
+            ps.setInt(13, v.getVoucherId());
+
             return ps.executeUpdate() > 0;
 
         } catch (Exception e) {

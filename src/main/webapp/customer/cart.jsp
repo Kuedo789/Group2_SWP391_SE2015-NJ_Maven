@@ -136,7 +136,7 @@
                                              data-image="${item.imageUrl}">
                                             
                                             <!-- Item Selection Checkbox -->
-                                            <input type="checkbox" class="cart-item-checkbox" ${item.active ? '' : 'disabled'} style="margin-right: 15px; width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);">
+                                            <input type="checkbox" name="selectedCartItems" value="${item.cartItemId}" class="cart-item-checkbox" ${item.active ? '' : 'disabled'} style="margin-right: 15px; width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);">
 
                                             <img src="${item.imageUrl}" alt="${item.name}" class="item-img">
 
@@ -261,28 +261,19 @@
                                     </span>
                                 </div>
 
-                                <div class="voucher-group" id="cartVoucherGroup">
-                                    <c:choose>
-                                        <c:when test="${not empty sessionScope.appliedVoucherCode}">
-                                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
-                                                <span style="font-weight: 600; color: var(--primary);">${sessionScope.appliedVoucherCode}</span>
-                                                <button type="submit" name="action" value="removeVoucher" style="background: none; border: none; color: #d9534f; cursor: pointer; font-size: 13px; font-weight: 600;">✕ Bỏ</button>
-                                            </div>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <%-- Frontend validation error message area --%>
-                                            <div id="cartVoucherClientError" style="display:none; color:#d9534f; font-size:13px; margin-bottom:6px; display:flex; align-items:center; gap:5px;"></div>
-                                            <div style="display:flex; gap:8px;">
-                                                <input type="text" id="cartVoucherInput" placeholder="Nhập mã giảm giá" class="voucher-input" name="voucherCode"
-                                                       maxlength="50" autocomplete="off" style="text-transform:uppercase;"
-                                                       oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');">
-                                                <button type="button" id="cartVoucherBtn" class="voucher-btn" onclick="submitCartVoucher()">Áp dụng</button>
-                                            </div>
-                                            <input type="hidden" id="cartVoucherCodeHidden" name="voucherCodeHidden">
-                                            <%-- Hidden submit button triggered programmatically after validation --%>
-                                            <button type="submit" id="cartVoucherSubmitHidden" name="action" value="applyVoucher" style="display:none;"></button>
-                                        </c:otherwise>
-                                    </c:choose>
+                                <div class="voucher-group" id="cartVoucherGroup" style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: #fff;" onclick="openVoucherModal()">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <i class="fa fa-ticket-alt" style="color: var(--primary);"></i>
+                                            <span style="font-weight: 600; font-size: 14px; color: var(--text-dark);">Chọn hoặc nhập mã voucher</span>
+                                        </div>
+                                        <i class="fa fa-chevron-right" style="color: var(--text-muted); font-size: 12px;"></i>
+                                    </div>
+
+                                    <%-- Compact Applied Summary --%>
+                                    <div id="appliedVouchersSummary" style="display: flex; flex-direction: column; gap: 6px;">
+                                        <!-- Rendered by JS -->
+                                    </div>
                                 </div>
                                 <button type="submit" name="action" value="checkout" class="checkout-btn" ${empty cartItems ? 'disabled' : ''}>Thanh toán ngay</button>
 
@@ -297,98 +288,331 @@
             </c:choose>
         </div>
 
-        <script>
+        <!-- Voucher Modal -->
+        <style>
+            .applied-voucher-badge {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 6px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 6px; font-size: 13px;
+            }
+            .applied-voucher-badge .badge-label { color: #555; font-weight: 600; }
+            .applied-voucher-badge .badge-code { color: var(--primary); font-weight: 700; margin-left: 6px; }
+            .applied-voucher-badge .badge-discount { color: #d9534f; font-weight: 700; }
+            
+            .modal-ticket {
+                display: flex; background: #fff; border: 1px solid #eee; border-radius: 8px; overflow: hidden;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.04); position: relative; transition: all 0.2s; cursor: pointer;
+            }
+            .modal-ticket.selected {
+                border-color: var(--primary);
+                background: #fcfdfc;
+            }
+            .modal-ticket.disabled {
+                opacity: 0.5; filter: grayscale(1); pointer-events: none;
+            }
+            .modal-ticket-left {
+                width: 90px; background: linear-gradient(135deg, #7dbb84, var(--primary)); display: flex; flex-direction: column;
+                align-items: center; justify-content: center; padding: 12px 8px; text-align: center; color: white; border-right: 1px dashed rgba(255,255,255,0.5);
+            }
+            .modal-ticket-right {
+                flex: 1; padding: 12px; display: flex; flex-direction: column; justify-content: center; gap: 4px; position: relative;
+            }
+            .modal-ticket-title { font-size: 14px; font-weight: 700; color: #333; line-height: 1.3; }
+            .modal-ticket-desc { font-size: 12px; color: #777; }
+            .modal-ticket-date { font-size: 11px; color: #999; margin-top: 4px; }
+            .modal-ticket-checkbox {
+                position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px;
+                border: 2px solid #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            }
+            .modal-ticket.selected .modal-ticket-checkbox {
+                border-color: var(--primary); background: var(--primary);
+            }
+            .modal-ticket.selected .modal-ticket-checkbox::after {
+                content: ''; width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0;
+                transform: rotate(45deg); margin-bottom: 2px;
+            }
+        </style>
+        <div id="voucherModal" class="voucher-modal-overlay" style="display:none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+            <div class="voucher-modal-content" style="background: #fffdf9; width: 100%; max-width: 480px; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; max-height: 90vh;">
+                <!-- Header -->
+                <div style="padding: 16px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fff;">
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--text-dark);">Chọn BakeryZone Voucher</h3>
+                    <button type="button" onclick="closeVoucherModal()" style="background: none; border: none; font-size: 20px; color: #999; cursor: pointer;">&times;</button>
+                </div>
+                
+                <!-- Input Area -->
+                <div style="padding: 16px 20px; background: #fff;">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="modalVoucherInput" placeholder="Mã Voucher (nếu có)" style="flex: 1; height: 42px; padding: 0 12px; border: 1px solid #ddd; border-radius: 6px; text-transform: uppercase;">
+                        <button type="button" onclick="applyManualVoucher()" id="modalVoucherBtn" style="background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 0 16px; font-weight: 600; cursor: pointer;">ÁP DỤNG</button>
+                    </div>
+                    <div id="modalVoucherError" style="color: #d9534f; font-size: 13px; margin-top: 6px; display: none;"></div>
+                </div>
 
+                <!-- Lists Area -->
+                <div style="flex: 1; overflow-y: auto; padding: 0 20px 20px 20px; background: #f9f9f9;">
+                    <div id="voucherListsContainer"></div>
+                </div>
+
+                <!-- Footer -->
+                <div style="padding: 16px 20px; border-top: 1px solid #eee; background: #fff; display: flex; justify-content: flex-end; gap: 12px;">
+                    <button type="button" onclick="closeVoucherModal()" style="padding: 10px 20px; border: 1px solid #ddd; background: #fff; border-radius: 6px; font-weight: 600; cursor: pointer;">TRỞ LẠI</button>
+                    <button type="button" onclick="confirmVoucherSelection()" style="padding: 10px 20px; border: none; background: var(--primary); color: #fff; border-radius: 6px; font-weight: 600; cursor: pointer;">ĐỒNG Ý</button>
+                </div>
+            </div>
+        </div>
+        <script>
             const shippingFee = 0;
 
-            // Voucher metadata baked in from session at render time
-            const voucherDiscountType  = "${not empty sessionScope.voucherDiscountType  ? sessionScope.voucherDiscountType  : ''}";
-            const voucherDiscountValue = parseFloat("${not empty sessionScope.voucherDiscountValue ? sessionScope.voucherDiscountValue : 0}") || 0;
-            const voucherMaxDiscount   = parseFloat("${not empty sessionScope.voucherMaxDiscount   ? sessionScope.voucherMaxDiscount   : 0}") || 0;
-            const hasVoucher = voucherDiscountType !== '' && voucherDiscountValue > 0;
+            let rawAvailableVouchers = [
+                <c:forEach var="v" items="${availableVouchers}" varStatus="loop">
+                    {
+                        code: "${v.voucherCode}",
+                        title: "${v.title}",
+                        scope: "${v.voucherScope}",
+                        discountType: "${v.discountType}",
+                        discountValue: ${v.discountValue},
+                        minOrder: ${v.minOrderValue != null ? v.minOrderValue : 0},
+                        maxDiscount: ${v.maxDiscountAmount != null ? v.maxDiscountAmount : 0},
+                        endDate: "${v.endDate}"
+                    }${!loop.last ? ',' : ''}
+                </c:forEach>
+            ];
+
+            // Deduplicate vouchers by code in case the user owns multiple copies of the same voucher
+            // This prevents multiple tickets from being visually selected simultaneously when clicking one
+            const availableVouchers = [];
+            const seenCodes = new Set();
+            for (let v of rawAvailableVouchers) {
+                if (!seenCodes.has(v.code)) {
+                    seenCodes.add(v.code);
+                    availableVouchers.push(v);
+                }
+            }
+
+            let selectedOrderCode = "${not empty sessionScope.appliedOrderVoucherCode ? sessionScope.appliedOrderVoucherCode : ''}";
+            let selectedShippingCode = "${not empty sessionScope.appliedShippingVoucherCode ? sessionScope.appliedShippingVoucherCode : ''}";
+            let stagingOrderCode = selectedOrderCode;
+            let stagingShippingCode = selectedShippingCode;
+            
+            let currentSubtotal = 0;
+            let isOrderExpanded = false;
+            let isShippingExpanded = false;
 
             function computeDiscount(subtotal) {
-                if (!hasVoucher) return 0;
-                const type = voucherDiscountType.toUpperCase();
                 let discount = 0;
-                if (type === 'PERCENT' || type === 'PERCENTAGE') {
-                    discount = subtotal * (voucherDiscountValue / 100);
-                    if (voucherMaxDiscount > 0 && discount > voucherMaxDiscount) {
-                        discount = voucherMaxDiscount;
+                if (selectedOrderCode) {
+                    const v = availableVouchers.find(x => x.code === selectedOrderCode);
+                    if (v && subtotal >= v.minOrder) {
+                        if (v.discountType === 'PERCENT' || v.discountType === 'PERCENTAGE') {
+                            let d = subtotal * (v.discountValue / 100);
+                            if (v.maxDiscount > 0 && d > v.maxDiscount) d = v.maxDiscount;
+                            discount += d;
+                        } else {
+                            discount += v.discountValue;
+                        }
                     }
-                } else {
-                    // FIXED or FIXED_AMOUNT
-                    discount = voucherDiscountValue;
                 }
-                return Math.min(discount, subtotal); // discount can never exceed subtotal
+                return Math.min(discount, subtotal);
             }
 
             function formatCurrency(amount) {
                 return amount.toLocaleString('vi-VN') + "₫";
             }
 
-            // ── Cart-page voucher frontend validation ─────────────────────────────
-            function submitCartVoucher() {
-                const input   = document.getElementById('cartVoucherInput');
-                const btn     = document.getElementById('cartVoucherBtn');
-                const errBox  = document.getElementById('cartVoucherClientError');
-
-                function showError(msg) {
-                    errBox.innerHTML = '<span style="font-size:14px;">&#9888;</span> ' + msg;
-                    errBox.style.display = 'flex';
-                    input.style.borderColor = '#d9534f';
-                    input.focus();
-                }
-
-                function clearError() {
-                    errBox.style.display = 'none';
-                    input.style.borderColor = '';
-                }
-
-                clearError();
-
-                const code = input.value.trim().toUpperCase();
-
-                // 1. Empty check
-                if (!code) {
-                    showError('Vui lòng nhập mã voucher!');
-                    return;
-                }
-
-                // 2. Format check – only uppercase letters A-Z and digits 0-9
-                if (!/^[A-Z0-9]+$/.test(code)) {
-                    showError('Mã voucher chỉ được chứa chữ cái và số (không dấu, không khoảng trắng).');
-                    return;
-                }
-
-                // 3. Length check
-                if (code.length > 50) {
-                    showError('Mã voucher không được vượt quá 50 ký tự.');
-                    return;
-                }
-
-                // All client-side checks passed — write canonical code & submit
-                input.value = code;
-                btn.disabled  = true;
-                btn.innerHTML = '&#8987; Đang kiểm tra...';
-
-                // Trigger the hidden submit button (carries name="action" value="applyVoucher")
-                document.getElementById('cartVoucherSubmitHidden').click();
+            function openVoucherModal() {
+                stagingOrderCode = selectedOrderCode;
+                stagingShippingCode = selectedShippingCode;
+                document.getElementById('modalVoucherError').style.display = 'none';
+                document.getElementById('voucherModal').style.display = 'flex';
+                renderModalLists();
             }
 
-            // Allow pressing Enter key inside the voucher input
-            document.addEventListener('DOMContentLoaded', function () {
-                const voucherInput = document.getElementById('cartVoucherInput');
-                if (voucherInput) {
-                    voucherInput.addEventListener('keydown', function (e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            submitCartVoucher();
-                        }
-                    });
+            function closeVoucherModal() {
+                document.getElementById('voucherModal').style.display = 'none';
+            }
+
+            function toggleVoucherSelection(code, scope) {
+                if (scope === 'ORDER') {
+                    if (stagingOrderCode === code) stagingOrderCode = '';
+                    else stagingOrderCode = code;
+                } else if (scope === 'SHIPPING') {
+                    if (stagingShippingCode === code) stagingShippingCode = '';
+                    else stagingShippingCode = code;
                 }
-            });
-            // ─────────────────────────────────────────────────────────────────────
+                renderModalLists();
+            }
+
+            function applyManualVoucher() {
+                const code = document.getElementById('modalVoucherInput').value.trim().toUpperCase();
+                const errBox = document.getElementById('modalVoucherError');
+                if (!code) return;
+                
+                const v = availableVouchers.find(x => x.code === code);
+                if (!v) {
+                    errBox.innerText = 'Voucher không tồn tại hoặc không dành cho bạn.';
+                    errBox.style.display = 'block';
+                    return;
+                }
+                if (currentSubtotal < v.minOrder) {
+                    errBox.innerText = 'Đơn hàng chưa đạt giá trị tối thiểu: ' + formatCurrency(v.minOrder);
+                    errBox.style.display = 'block';
+                    return;
+                }
+
+                errBox.style.display = 'none';
+                toggleVoucherSelection(v.code, v.scope);
+            }
+
+            function toggleMoreVouchers(scope) {
+                if (scope === 'ORDER') isOrderExpanded = !isOrderExpanded;
+                if (scope === 'SHIPPING') isShippingExpanded = !isShippingExpanded;
+                renderModalLists();
+            }
+
+            function renderModalLists() {
+                const container = document.getElementById('voucherListsContainer');
+                const shippingVouchers = availableVouchers.filter(v => v.scope === 'SHIPPING');
+                const orderVouchers = availableVouchers.filter(v => v.scope === 'ORDER');
+                
+                let html = '';
+                
+                if (shippingVouchers.length > 0) {
+                    html += `<h4 style="font-size: 14px; font-weight: 700; color: #555; margin: 16px 0 12px 0;">MÃ MIỄN PHÍ VẬN CHUYỂN</h4>
+                             <div style="display: flex; flex-direction: column; gap: 12px;">`;
+                    const limit = isShippingExpanded ? shippingVouchers.length : Math.min(2, shippingVouchers.length);
+                    for (let i = 0; i < limit; i++) {
+                        html += buildTicketHtml(shippingVouchers[i], stagingShippingCode);
+                    }
+                    html += `</div>`;
+                    if (shippingVouchers.length > 2) {
+                        html += `<div style="text-align: center; margin-top: 12px;">
+                                    <button type="button" onclick="toggleMoreVouchers('SHIPPING')" style="background: none; border: none; color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer;">
+                                        \${isShippingExpanded ? 'Thu gọn <i class="fa fa-chevron-up"></i>' : 'Xem thêm <i class="fa fa-chevron-down"></i>'}
+                                    </button>
+                                 </div>`;
+                    }
+                }
+
+                if (orderVouchers.length > 0) {
+                    html += `<h4 style="font-size: 14px; font-weight: 700; color: #555; margin: 24px 0 12px 0;">MÃ GIẢM GIÁ / HOÀN XU</h4>
+                             <div style="display: flex; flex-direction: column; gap: 12px;">`;
+                    const limit = isOrderExpanded ? orderVouchers.length : Math.min(2, orderVouchers.length);
+                    for (let i = 0; i < limit; i++) {
+                        html += buildTicketHtml(orderVouchers[i], stagingOrderCode);
+                    }
+                    html += `</div>`;
+                    if (orderVouchers.length > 2) {
+                        html += `<div style="text-align: center; margin-top: 12px;">
+                                    <button type="button" onclick="toggleMoreVouchers('ORDER')" style="background: none; border: none; color: var(--primary); font-size: 13px; font-weight: 600; cursor: pointer;">
+                                        \${isOrderExpanded ? 'Thu gọn <i class="fa fa-chevron-up"></i>' : 'Xem thêm <i class="fa fa-chevron-down"></i>'}
+                                    </button>
+                                 </div>`;
+                    }
+                }
+                
+                if (html === '') {
+                    html = '<div style="text-align:center; color:#999; padding: 30px;">Bạn hiện không có voucher nào.</div>';
+                }
+                container.innerHTML = html;
+            }
+
+            function buildTicketHtml(v, stagingCode) {
+                const isSelected = v.code === stagingCode;
+                const isValid = currentSubtotal >= v.minOrder;
+                const classStr = 'modal-ticket' + (isSelected ? ' selected' : '') + (isValid ? '' : ' disabled');
+                
+                let discountText = v.discountType === 'PERCENT' || v.discountType === 'PERCENTAGE' 
+                    ? v.discountValue + '%' : formatCurrency(v.discountValue);
+                
+                let descText = `Đơn tối thiểu \${formatCurrency(v.minOrder)}`;
+                if (v.maxDiscount > 0) {
+                    descText += ` - Giảm tối đa \${formatCurrency(v.maxDiscount)}`;
+                }
+                
+                return `
+                    <div class="\${classStr}" onclick="\${isValid ? `toggleVoucherSelection('\${v.code}', '\${v.scope}')` : ''}">
+                        <div class="modal-ticket-left">
+                            <span style="font-size: 18px; font-weight: 800;">Giảm</span>
+                            <span style="font-size: 16px; font-weight: 700;">\${discountText}</span>
+                        </div>
+                        <div class="modal-ticket-right">
+                            <div class="modal-ticket-title">\${v.code}</div>
+                            <div class="modal-ticket-desc">\${descText}</div>
+                            <div class="modal-ticket-date">HSD: \${v.endDate}</div>
+                            <div class="modal-ticket-checkbox"></div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function confirmVoucherSelection() {
+                const formData = new URLSearchParams();
+                formData.append('action', 'applyVouchersAjax');
+                if (stagingOrderCode) formData.append('orderCode', stagingOrderCode);
+                if (stagingShippingCode) formData.append('shippingCode', stagingShippingCode);
+
+                fetch('${pageContext.request.contextPath}/cart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData.toString()
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        selectedOrderCode = stagingOrderCode;
+                        selectedShippingCode = stagingShippingCode;
+                        closeVoucherModal();
+                        updateSummaryTotals();
+                    } else {
+                        document.getElementById('modalVoucherError').innerText = data.error;
+                        document.getElementById('modalVoucherError').style.display = 'block';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Có lỗi xảy ra khi áp dụng voucher.");
+                });
+            }
+
+            function renderAppliedSummary() {
+                const summaryDiv = document.getElementById('appliedVouchersSummary');
+                let html = '';
+                
+                if (selectedOrderCode) {
+                    const v = availableVouchers.find(x => x.code === selectedOrderCode);
+                    if (v) {
+                        let d = 0;
+                        if (v.discountType === 'PERCENT' || v.discountType === 'PERCENTAGE') {
+                            d = currentSubtotal * (v.discountValue / 100);
+                            if (v.maxDiscount > 0 && d > v.maxDiscount) d = v.maxDiscount;
+                        } else {
+                            d = v.discountValue;
+                        }
+                        d = Math.min(d, currentSubtotal);
+                        
+                        html += `
+                            <div class="applied-voucher-badge">
+                                <div><span class="badge-label">Toàn đơn:</span><span class="badge-code">\${v.code}</span></div>
+                                <span class="badge-discount">-\${formatCurrency(d)}</span>
+                            </div>
+                        `;
+                    }
+                }
+                
+                if (selectedShippingCode) {
+                    const v = availableVouchers.find(x => x.code === selectedShippingCode);
+                    if (v) {
+                        html += `
+                            <div class="applied-voucher-badge">
+                                <div><span class="badge-label">Vận chuyển:</span><span class="badge-code">\${v.code}</span></div>
+                                <span style="color:#555;">(Áp dụng khi Thanh toán)</span>
+                            </div>
+                        `;
+                    }
+                }
+                
+                summaryDiv.innerHTML = html;
+            }
 
             // 2. Dynamic JS Calculation
             function updateSummaryTotals() {
@@ -408,8 +632,26 @@
 
                 // Persist selection across page reloads (e.g. when applying voucher or updating quantity)
                 sessionStorage.setItem("selectedCartItems", JSON.stringify(checkedIds));
+                currentSubtotal = subtotal;
 
                 let discount = computeDiscount(subtotal);
+
+                // Auto-deselect vouchers if subtotal drops below minimums
+                if (selectedOrderCode) {
+                    const vo = availableVouchers.find(x => x.code === selectedOrderCode);
+                    if (vo && subtotal < vo.minOrder) {
+                        selectedOrderCode = '';
+                        discount = computeDiscount(subtotal);
+                    }
+                }
+                if (selectedShippingCode) {
+                    const vs = availableVouchers.find(x => x.code === selectedShippingCode);
+                    if (vs && subtotal < vs.minOrder) {
+                        selectedShippingCode = '';
+                    }
+                }
+                
+                renderAppliedSummary();
 
                 let finalTotal = 0;
                 if (subtotal > 0) {
@@ -450,6 +692,20 @@
 
             // Restore previous selection on page load, or leave unchecked if first visit
             document.addEventListener("DOMContentLoaded", function() {
+                // Restore Scroll Position to prevent jump-to-top on form submit
+                const savedScroll = sessionStorage.getItem("cartScrollPos");
+                if (savedScroll) {
+                    window.scrollTo(0, parseInt(savedScroll));
+                    sessionStorage.removeItem("cartScrollPos"); // clear after using
+                }
+
+                // Save Scroll Position on form submit (quantity update, remove, voucher, etc)
+                document.querySelectorAll('form').forEach(form => {
+                    form.addEventListener('submit', function() {
+                        sessionStorage.setItem("cartScrollPos", window.scrollY);
+                    });
+                });
+
                 const savedSelection = sessionStorage.getItem("selectedCartItems");
                 if (savedSelection) {
                     try {

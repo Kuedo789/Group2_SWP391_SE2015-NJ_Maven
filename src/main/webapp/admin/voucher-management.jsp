@@ -179,6 +179,7 @@
                         <i class="fa-solid fa-circle-check"></i>
                         <c:choose>
                             <c:when test="${success == 'created'}">Voucher mới đã được tạo thành công!</c:when>
+                            <c:when test="${success == 'updated'}">Voucher đã được cập nhật thành công!</c:when>
                             <c:when test="${success == 'deleted'}">Voucher đã bị xóa thành công.</c:when>
                             <c:when test="${success == 'deactivated'}">Voucher đã được vô hiệu hóa</c:when>
                             <c:when test="${success == 'activated'}">Voucher đã được kích hoạt lại.</c:when>
@@ -332,11 +333,18 @@
 
                                             <td>
                                                 <c:choose>
-                                                    <c:when test="${v.discountType == 'PERCENT'}">
-                                                        <span class="badge chip-percent">Phần trăm (%)</span>
+                                                    <c:when test="${v.voucherScope == 'SHIPPING'}">
+                                                        <span class="badge badge-info bg-info text-white">Freeship</span>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <span class="badge chip-fixed">Giảm tiền mặt</span>
+                                                        <c:choose>
+                                                            <c:when test="${v.discountType == 'PERCENT'}">
+                                                                <span class="badge badge-warning">Đơn hàng (%)</span>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="badge badge-warning">Đơn hàng (₫)</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
                                                     </c:otherwise>
                                                 </c:choose>
                                             </td>
@@ -437,11 +445,11 @@
                                                     </c:otherwise>
                                                 </c:choose>
 
-                                                <%-- Delete --%>
-                                                <a href="${pageContext.request.contextPath}/admin/vouchers?action=delete&id=${v.voucherId}"
-                                                   class="btn-icon" title="Xóa voucher"
-                                                   style="text-decoration:none;color:#ef4444;">
-                                                    <i class="fa-regular fa-trash-can"></i>
+                                                <%-- Edit --%>
+                                                <a href="${pageContext.request.contextPath}/admin/vouchers?action=edit&id=${v.voucherId}"
+                                                   class="btn-icon" title="Chỉnh sửa voucher"
+                                                   style="text-decoration:none;color:#3b82f6;">
+                                                    <i class="fa-regular fa-pen-to-square"></i>
                                                 </a>
                                             </td>
                                         </tr>

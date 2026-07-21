@@ -18,7 +18,7 @@
         alertDiv.innerHTML = icon + '<span>' + msg + '</span>';
         alertDiv.style.cssText = `
             position: fixed;
-            top: 24px;
+            top: 90px;
             right: 24px;
             z-index: 10000;
             padding: 14px 24px;

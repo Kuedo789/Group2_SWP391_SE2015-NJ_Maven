@@ -64,6 +64,56 @@ public class DeliveryAddressDAO {
         return list;
     }
 
+    public int getTotalAddressesByUserId(String userId) {
+        String sql = "SELECT COUNT(*) FROM delivery_address WHERE User_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, userId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
+    public List<DeliveryAddress> getPaginatedAddressesByUserId(String userId, int limit, int offset) {
+        List<DeliveryAddress> list = new ArrayList<>();
+        String sql = """
+            SELECT Address_ID, User_ID, Receiver_Name, Receiver_Phone, Address_Detail, Latitude, Longitude, Is_Default
+            FROM delivery_address
+            WHERE User_ID = ?
+            ORDER BY Is_Default DESC, Address_ID DESC
+            LIMIT ? OFFSET ?
+        """;
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, userId);
+            ps.setInt(2, limit);
+            ps.setInt(3, offset);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    DeliveryAddress address = new DeliveryAddress();
+                    address.setAddressId(rs.getInt("Address_ID"));
+                    address.setUserId(rs.getString("User_ID"));
+                    address.setReceiverName(rs.getString("Receiver_Name"));
+                    address.setReceiverPhone(rs.getString("Receiver_Phone"));
+                    address.setAddressDetail(rs.getString("Address_Detail"));
+                    address.setLatitude(rs.getDouble("Latitude"));
+                    address.setLongitude(rs.getDouble("Longitude"));
+                    address.setDefault(rs.getBoolean("Is_Default"));
+                    list.add(address);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public DeliveryAddress getAddressById(int addressId, String userId) {
         String sql = """
             SELECT Address_ID, User_ID, Receiver_Name, Receiver_Phone, Address_Detail, Latitude, Longitude, Is_Default

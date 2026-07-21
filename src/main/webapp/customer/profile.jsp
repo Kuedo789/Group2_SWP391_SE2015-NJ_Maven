@@ -81,7 +81,16 @@
                             <div class="address-profile-header">
                                 <div class="address-profile-title">
                                     <h3>Địa chỉ giao hàng</h3>
-                                    <p>${not empty sessionScope.user.defaultAddress ? sessionScope.user.defaultAddress : 'Chưa thiết lập địa chỉ mặc định. Vui lòng thêm địa chỉ.'}</p>
+                                    <c:choose>
+                                        <c:when test="${not empty requestScope.defaultDeliveryAddress}">
+                                            <p style="margin: 0; color: #666; font-size: 14px;">
+                                                ${requestScope.defaultDeliveryAddress.addressDetail}
+                                            </p>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <p>Chưa thiết lập địa chỉ mặc định. Vui lòng thêm địa chỉ.</p>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
     
                                 <a href="${pageContext.request.contextPath}/delivery-address?action=profile"

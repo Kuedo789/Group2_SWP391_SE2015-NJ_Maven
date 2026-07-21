@@ -177,41 +177,53 @@
                 const product = products.find(p => p.id == productId);
                 if (!product) return;
 
-                let cart = [];
-                try {
-                    const cartStr = localStorage.getItem("cart");
-                    if (cartStr) cart = JSON.parse(cartStr);
-                } catch (e) {}
-                if (!Array.isArray(cart)) cart = [];
+                const name = product.name + " 16cm";
+                const price = product.price;
+                const image = getResolvedImage(product.image);
 
-                const item = {
-                    id: product.id + "_0",
-                    templateId: product.id,
-                    name: product.name + " 16cm",
-                    desc: "Size bánh dành cho 4 - 6 người dùng.",
-                    price: product.price,
-                    qty: 1,
-                    image: getResolvedImage(product.image)
-                };
+                const params = new URLSearchParams();
+                params.append("action", "add");
+                params.append("productId", product.id);
+                params.append("name", name);
+                params.append("price", price);
+                params.append("image", image);
+                params.append("qty", "1");
 
-                const existingItem = cart.find(x => x && x.name === item.name);
-                if (existingItem) {
-                    existingItem.qty = (parseInt(existingItem.qty) || 0) + 1;
-                } else {
-                    cart.push(item);
-                }
+                fetch(contextPath + "/cart", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url; // Redirect to login if unauthenticated
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        // Update the navbar count if the server returned it
+                        const countEl = document.getElementById("navCartCount");
+                        if (countEl && data.cartCount !== undefined) {
+                            countEl.innerText = data.cartCount;
+                        }
 
-                localStorage.setItem("cart", JSON.stringify(cart));
-                window.dispatchEvent(new Event("storage"));
-                
-                const countEl = document.getElementById("navCartCount");
-                if (countEl) {
-                    let totalQty = 0;
-                    cart.forEach(c => { if (c) totalQty += (parseInt(c.qty) || 1); });
-                    countEl.innerText = totalQty;
-                }
-
-                alert("Đã thêm 1 sản phẩm \"" + item.name + "\" vào giỏ hàng!");
+                        if (typeof showFloatingAlert === 'function') {
+                            showFloatingAlert("Đã thêm 1 sản phẩm \"" + name + "\" vào giỏ hàng!", "success");
+                        } else {
+                            alert("Đã thêm 1 sản phẩm \"" + name + "\" vào giỏ hàng!");
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error("Error adding to cart:", err);
+                    if (typeof showFloatingAlert === 'function') {
+                        showFloatingAlert("Có lỗi xảy ra khi thêm vào giỏ hàng.", "error");
+                    } else {
+                        alert("Có lỗi xảy ra khi thêm vào giỏ hàng.");
+                    }
+                });
             }
 
             function getSortedProducts(list) {

@@ -284,40 +284,89 @@
             }
 
             function addItemToCart(isBuyNow) {
-                let cart = getCart();
-                if (!Array.isArray(cart)) cart = [];
-
                 const selectedVar = variants[selectedVariant];
-                const item = {
-                    id: product.id + "_" + selectedVariant,
-                    templateId: product.id,
-                    name: selectedVar.name,
-                    desc: selectedVar.note,
-                    price: selectedVar.price,
-                    qty: quantity,
-                    image: getResolvedImage(product.image)
-                };
-
-                const existingItem = cart.find(x => x && x.name === item.name);
-                if (existingItem) {
-                    existingItem.qty = (parseInt(existingItem.qty) || 0) + quantity;
-                } else {
-                    cart.push(item);
-                }
-
-                saveCart(cart);
+                const name = selectedVar.name;
+                const price = selectedVar.price;
+                const image = getResolvedImage(product.image);
 
                 if (isBuyNow) {
-                    window.location.href = contextPath + "/checkout";
-                } else {
-                    const countEl = document.getElementById("navCartCount");
-                    if (countEl) {
-                        let totalQty = 0;
-                        cart.forEach(c => { if (c) totalQty += (parseInt(c.qty) || 1); });
-                        countEl.innerText = totalQty;
+                    // For "Buy Now", just put the item in localStorage and go to checkout,
+                    // DO NOT add it to the backend cart.
+                    const itemObj = {
+                        id: product.id,
+                        name: name,
+                        price: price,
+                        qty: quantity,
+                        image: image
+                    };
+                    if (name && name.startsWith("SIZE_")) {
+                        itemObj.templateId = name;
                     }
-                    alert("Đã thêm " + quantity + " sản phẩm \"" + item.name + "\" vào giỏ hàng!");
+                    let localCart = [];
+                    try {
+                        const cartStr = localStorage.getItem("cart");
+                        if (cartStr) localCart = JSON.parse(cartStr);
+                        if (!Array.isArray(localCart)) localCart = [];
+                    } catch (e) {
+                        localCart = [];
+                    }
+                    
+                    const existingItemIndex = localCart.findIndex(item => item.id === itemObj.id && item.name === itemObj.name);
+                    if (existingItemIndex !== -1) {
+                        localCart[existingItemIndex].qty = parseInt(localCart[existingItemIndex].qty) + parseInt(itemObj.qty);
+                    } else {
+                        localCart.push(itemObj);
+                    }
+                    
+                    localStorage.setItem("cart", JSON.stringify(localCart));
+                    window.location.href = contextPath + "/checkout";
+                    return;
                 }
+
+                // For "Add to Cart", send to backend then redirect to /cart
+                const params = new URLSearchParams();
+                params.append("action", "add");
+                params.append("productId", product.id);
+                params.append("name", name);
+                params.append("price", price);
+                params.append("image", image);
+                params.append("qty", quantity);
+
+                fetch(contextPath + "/cart", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: params.toString()
+                })
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        const countEl = document.getElementById("navCartCount");
+                        if (countEl && data.cartCount !== undefined) {
+                            countEl.innerText = data.cartCount;
+                        }
+                        if (typeof showFloatingAlert === 'function') {
+                            showFloatingAlert("Đã thêm " + quantity + " sản phẩm \"" + name + "\" vào giỏ hàng!", "success");
+                        } else {
+                            alert("Đã thêm " + quantity + " sản phẩm \"" + name + "\" vào giỏ hàng!");
+                        }
+                    } else {
+                        alert("Không thể thêm vào giỏ hàng. Có lỗi xảy ra ở hệ thống.");
+                    }
+                })
+                .catch(err => {
+                    console.error("Error adding to cart:", err);
+                    if (typeof showFloatingAlert === 'function') {
+                        showFloatingAlert("Có lỗi xảy ra khi thêm vào giỏ hàng.", "error");
+                    } else {
+                        alert("Có lỗi xảy ra khi thêm vào giỏ hàng.");
+                    }
+                });
             }
 
             function addToCartIconOnly() {
