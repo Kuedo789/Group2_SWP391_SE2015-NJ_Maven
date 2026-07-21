@@ -62,7 +62,6 @@
                                                                 class="fa-solid fa-receipt"></i> Đơn hàng</a>
                                                     </li>
                                                 </c:if>
-
                                                 <c:set var="canViewProduct"
                                                     value="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/product?action=list')}" />
                                                 <c:set var="canViewCat"
@@ -72,11 +71,14 @@
                                                 <c:set var="canViewUnit"
                                                     value="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/unit?action=list')}" />
 
+                                                <c:set var="isProductActive"
+                                                    value="${param.activeMenu == 'products' || param.activeMenu == 'categories' || param.activeMenu == 'ingredients' || param.activeMenu == 'units' || param.activeMenu == 'attributes' || param.parentMenu == 'Sản phẩm' || param.activeMenu == 'Danh mục sản phẩm' || param.activeMenu == 'Danh sách bánh kem' || param.activeMenu == 'Chi tiết bánh kem' || param.activeMenu == 'Danh sách nguyên liệu' || param.activeMenu == 'Đơn vị tính'}" />
+
                                                 <c:if
                                                     test="${canViewProduct || canViewCat || canViewIng || canViewUnit}">
                                                     <li class="menu-item ${isProductActive ? 'active' : ''}"
                                                         id="product-parent-menu">
-                                                        <a href="${pageContext.request.contextPath}/admin/product?action=list"
+                                                        <a href="javascript:void(0);"
                                                             id="product-parent-link">
                                                             <i class="fa-solid fa-cookie-bite"></i> <span>Sản
                                                                 phẩm</span>
@@ -85,8 +87,17 @@
                                                         </a>
                                                     </li>
 
-                                                    <%-- 2. Các mục con (đóng các thẻ if của từng mục con ngay sau mỗi
-                                                        thẻ li) --%>
+                                                    <%-- 2. Các mục con --%>
+                                                        <c:if test="${canViewProduct}">
+                                                            <li class="menu-item ${param.activeMenu == 'products' || param.activeMenu == 'Danh sách bánh kem' ? 'active' : ''} product-child-item"
+                                                                style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
+                                                                <a href="${pageContext.request.contextPath}/admin/product?action=list"
+                                                                    style="font-size: 13px; padding: 8px 25px;">
+                                                                    <i class="fa-solid fa-caret-right"></i> Tất cả sản phẩm
+                                                                </a>
+                                                            </li>
+                                                        </c:if>
+
                                                         <c:if test="${canViewCat}">
                                                             <li class="menu-item ${param.activeMenu == 'categories' ? 'active' : ''} product-child-item"
                                                                 style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
@@ -198,6 +209,7 @@
                                                                 class="fa-solid fa-sliders"></i> Cài đặt chung</a>
                                                     </li>
                                                 </c:if>
+
                                             </ul>
 
                                             <!-- Technical Support button matching mockup -->
@@ -209,54 +221,40 @@
 
                                         <script>
                                             document.addEventListener("DOMContentLoaded", function () {
-                                                const productChevron = document.getElementById("product-chevron");
                                                 const productParentLink = document.getElementById("product-parent-link");
+                                                const productChevron = document.getElementById("product-chevron");
                                                 const childItems = document.querySelectorAll(".product-child-item");
 
                                                 function toggleProductMenu() {
-                                                    let isExpanded = false;
+                                                    if (childItems.length === 0) return;
+
+                                                    const firstItem = childItems[0];
+                                                    const isCurrentlyVisible = window.getComputedStyle(firstItem).display !== "none";
+
                                                     childItems.forEach(item => {
-                                                        if (item.style.display === "none" || item.style.display === "") {
-                                                            item.style.display = "block";
-                                                            isExpanded = true;
+                                                        if (isCurrentlyVisible) {
+                                                            item.style.setProperty("display", "none", "important");
                                                         } else {
-                                                            item.style.display = "none";
-                                                            isExpanded = false;
+                                                            item.style.setProperty("display", "block", "important");
                                                         }
                                                     });
+
                                                     if (productChevron) {
-                                                        if (isExpanded) {
-                                                            productChevron.classList.remove("fa-chevron-down");
-                                                            productChevron.classList.add("fa-chevron-up");
-                                                        } else {
+                                                        if (isCurrentlyVisible) {
                                                             productChevron.classList.remove("fa-chevron-up");
                                                             productChevron.classList.add("fa-chevron-down");
+                                                        } else {
+                                                            productChevron.classList.remove("fa-chevron-down");
+                                                            productChevron.classList.add("fa-chevron-up");
                                                         }
                                                     }
                                                 }
 
-                                                // Toggle when clicking the chevron
-                                                if (productChevron) {
-                                                    productChevron.addEventListener("click", function (e) {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        toggleProductMenu();
-                                                    });
-                                                }
-
-                                                // Allow clicking the parent link to ALWAYS navigate to the product list page
-                                                // (This ensures clicking 'Sản phẩm' will work even when viewing submenus like 'Danh mục' or 'Đơn vị tính')
                                                 if (productParentLink) {
                                                     productParentLink.addEventListener("click", function (e) {
-                                                        const activeMenu = "${param.activeMenu}";
-                                                        // If we are already on the main products list page, toggle the submenu instead of reloading
-                                                        if (activeMenu === "products") {
-                                                            e.preventDefault();
-                                                            toggleProductMenu();
-                                                        }
+                                                        e.preventDefault();
+                                                        toggleProductMenu();
                                                     });
                                                 }
                                             });
                                         </script>
-
-                                        <div class="nav-section-title">Quản lý</div>
