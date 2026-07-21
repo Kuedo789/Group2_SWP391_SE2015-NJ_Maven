@@ -90,7 +90,7 @@
         </c:if>
         <c:if test="${param.error == 'note_too_long'}">
             <div class="alert alert-danger" style="color: #842029; background-color: #f8d7da; border-color: #f5c2c7; padding: 1rem 1rem; margin-bottom: 1rem; border: 1px solid transparent; border-radius: .25rem; max-width: 1200px; margin-left: auto; margin-right: auto;">
-                Ghi chú đơn hàng quá dài (tối đa 500 ký tự). Vui lòng viết ngắn gọn hơn.
+                Ghi chú đơn hàng quá dài (tối đa 100 ký tự). Vui lòng viết ngắn gọn hơn.
             </div>
         </c:if>
         <c:if test="${param.error == 'voucher_invalid'}">
@@ -106,6 +106,8 @@
 
         <form id="checkoutForm" action="${pageContext.request.contextPath}/checkout" method="POST">
             <input type="hidden" name="cartData" id="cartDataInput">
+            <input type="hidden" name="appliedOrderVoucherCode" id="appliedOrderVoucherCodeInput">
+            <input type="hidden" name="appliedShippingVoucherCode" id="appliedShippingVoucherCodeInput">
             <input type="hidden" name="addressId" id="selectedAddressIdInput" value="${requestScope.selectedAddress.addressId}">
             <input type="hidden" name="timeSlot" id="selectedTimeSlotInput">
             <input type="hidden" name="shippingFee" id="shippingFeeInput" value="0">
@@ -232,7 +234,7 @@
                             </h2>
                         </div>
                         <div style="margin-top: 16px;">
-                            <textarea name="note" id="note" rows="3" placeholder="Ví dụ: Giao hàng giờ hành chính, gọi điện trước khi giao..." style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 15px; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
+                            <textarea name="note" id="note" rows="3" maxlength="100" placeholder="Ví dụ: Giao hàng giờ hành chính, gọi điện trước khi giao..." style="width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 15px; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
                         </div>
                     </div>
 
@@ -248,7 +250,7 @@
                                 <input type="radio" name="paymentMethod" value="COD" checked>
                                 <div class="pm-radio-circle"></div>
                                 <i class="fa fa-truck pm-icon"></i>
-                                <span class="pm-title">Thanh toán khi nhận hàng</span>
+                                <span class="pm-title">Thanh toán khi nhận hàng <span style="font-size: 13px; color: #d9534f; font-weight: 600;">(Cọc 30%)</span></span>
                             </label>
                             
                             <label class="pm-card" onclick="document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('active')); this.classList.add('active');">
@@ -312,25 +314,34 @@
                             </div>
                             
                             <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                    <input type="text" id="manualVoucherInput" placeholder="Nhập mã giảm giá..." style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none;">
+                                    <button type="button" onclick="applyManualVoucher()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px;">Áp dụng</button>
+                                </div>
+                                <div id="manualVoucherError" style="color: #d9534f; font-size: 13px; display: none; margin-bottom: 8px;"></div>
+                                <div id="appliedVouchersList" style="display: flex; flex-direction: column; gap: 8px;">
                                 <c:if test="${empty requestScope.checkoutOrderVoucherCode && empty requestScope.checkoutShippingVoucherCode}">
-                                    <div style="font-size: 13px; color: var(--text-muted); font-style: italic;">Chưa có voucher nào được áp dụng.</div>
+                                    <div id="noVoucherText" style="font-size: 13px; color: var(--text-muted); font-style: italic;">Chưa có voucher nào được áp dụng.</div>
                                 </c:if>
                                 <c:if test="${not empty requestScope.checkoutOrderVoucherCode}">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
+                                    <div class="applied-voucher-item" data-code="${requestScope.checkoutOrderVoucherCode}" data-scope="ORDER" data-type="PERCENT" data-val="${requestScope.checkoutOrderDiscount}" data-max="0" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
                                         <div style="display: flex; align-items: center; gap: 6px;">
                                             <span style="font-size: 12px; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-weight: 700;">ĐƠN HÀNG</span>
                                             <span style="font-weight: 600; color: var(--primary);">${requestScope.checkoutOrderVoucherCode}</span>
                                         </div>
+                                        <button type="button" onclick="removeVoucher('ORDER')" style="background: none; border: none; color: #d9534f; cursor: pointer;"><i class="fa fa-times"></i></button>
                                     </div>
                                 </c:if>
                                 <c:if test="${not empty requestScope.checkoutShippingVoucherCode}">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
+                                    <div class="applied-voucher-item" data-code="${requestScope.checkoutShippingVoucherCode}" data-scope="SHIPPING" data-type="${requestScope.shippingVoucherType}" data-val="${requestScope.shippingVoucherValue}" data-max="${requestScope.shippingVoucherMax}" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
                                         <div style="display: flex; align-items: center; gap: 6px;">
                                             <span style="font-size: 12px; background: #4caf50; color: white; padding: 2px 6px; border-radius: 4px; font-weight: 700;">VẬN CHUYỂN</span>
                                             <span style="font-weight: 600; color: var(--primary);">${requestScope.checkoutShippingVoucherCode}</span>
                                         </div>
+                                        <button type="button" onclick="removeVoucher('SHIPPING')" style="background: none; border: none; color: #d9534f; cursor: pointer;"><i class="fa fa-times"></i></button>
                                     </div>
                                 </c:if>
+                                </div>
                             </div>
                         </div>
 
@@ -380,31 +391,86 @@
         let selectedAddressId = null;
         let selectedTimeSlot = "";
         let currentShippingFee = 0;
-        let orderDiscount = parseFloat("${not empty requestScope.checkoutOrderDiscount ? requestScope.checkoutOrderDiscount : 0}") || 0;
-        let shippingDiscountType = "${requestScope.shippingVoucherType}";
-        let shippingDiscountValue = parseFloat("${requestScope.shippingVoucherValue}") || 0;
-        let shippingDiscountMax = parseFloat("${requestScope.shippingVoucherMax}") || 0;
 
         function updateSummary() {
             const productTotalSumEl = document.getElementById("productTotalSum");
             let productTotal = 0;
-            if (productTotalSumEl) {
+            
+            if (typeof currentCart !== 'undefined' && Array.isArray(currentCart)) {
+                currentCart.forEach(item => {
+                    productTotal += (parseFloat(item.price) || 0) * (parseInt(item.qty) || 1);
+                });
+                if (productTotalSumEl) {
+                    productTotalSumEl.setAttribute("data-val", productTotal);
+                    productTotalSumEl.innerText = productTotal.toLocaleString("vi-VN") + "₫";
+                }
+            } else if (productTotalSumEl) {
                 productTotal = parseFloat(productTotalSumEl.getAttribute("data-val")) || 0;
             }
 
             let appliedShippingDiscount = 0;
-            if (shippingDiscountValue > 0) {
-                if (shippingDiscountType === 'PERCENT' || shippingDiscountType === 'PERCENTAGE') {
-                    appliedShippingDiscount = currentShippingFee * (shippingDiscountValue / 100);
-                    if (shippingDiscountMax > 0 && appliedShippingDiscount > shippingDiscountMax) {
-                        appliedShippingDiscount = shippingDiscountMax;
+            let appliedOrderDiscount = 0;
+            
+            // Collect applied vouchers from DOM
+            let activeOrderVoucher = "";
+            let activeShippingVoucher = "";
+            document.querySelectorAll(".applied-voucher-item").forEach(el => {
+                const scope = el.getAttribute("data-scope");
+                const code = el.getAttribute("data-code");
+                const type = el.getAttribute("data-type");
+                const val = parseFloat(el.getAttribute("data-val")) || 0;
+                const max = parseFloat(el.getAttribute("data-max")) || 0;
+                
+                if (scope === 'ORDER') {
+                    activeOrderVoucher = code;
+                    if (type === 'PERCENT' || type === 'PERCENTAGE') {
+                        appliedOrderDiscount = (productTotal * val) / 100;
+                        if (max > 0) appliedOrderDiscount = Math.min(appliedOrderDiscount, max);
+                    } else {
+                        appliedOrderDiscount = val;
                     }
-                } else {
-                    appliedShippingDiscount = shippingDiscountValue;
+                    appliedOrderDiscount = Math.min(appliedOrderDiscount, productTotal);
+                } else if (scope === 'SHIPPING') {
+                    activeShippingVoucher = code;
+                    if (type === 'PERCENT' || type === 'PERCENTAGE') {
+                        appliedShippingDiscount = (currentShippingFee * val) / 100;
+                        if (max > 0) appliedShippingDiscount = Math.min(appliedShippingDiscount, max);
+                    } else {
+                        appliedShippingDiscount = val;
+                    }
+                    appliedShippingDiscount = Math.min(appliedShippingDiscount, currentShippingFee);
                 }
-                if (appliedShippingDiscount > currentShippingFee) {
-                    appliedShippingDiscount = currentShippingFee;
+            });
+
+            const appliedOrderVoucherCodeInput = document.getElementById("appliedOrderVoucherCodeInput");
+            const appliedShippingVoucherCodeInput = document.getElementById("appliedShippingVoucherCodeInput");
+            if (appliedOrderVoucherCodeInput) appliedOrderVoucherCodeInput.value = activeOrderVoucher;
+            if (appliedShippingVoucherCodeInput) appliedShippingVoucherCodeInput.value = activeShippingVoucher;
+
+            const orderDiscountRow = document.getElementById("orderDiscountSummaryRow");
+            if (appliedOrderDiscount > 0) {
+                if (!orderDiscountRow) {
+                    const row = document.createElement("div");
+                    row.className = "summary-row";
+                    row.id = "orderDiscountSummaryRow";
+                    row.style.color = "#d9534f";
+                    row.innerHTML = `<div class="summary-row-label"><span>Giảm giá đơn hàng</span></div><div class="summary-row-value"><span></span></div>`;
+                    
+                    const shippingRow = document.getElementById("shippingDiscountSummaryRow");
+                    if (shippingRow && shippingRow.parentNode) {
+                        shippingRow.parentNode.insertBefore(row, shippingRow);
+                    } else {
+                        // Fallback if no shipping row yet, insert before total
+                        const totalRow = document.querySelector(".summary-row.total");
+                        if (totalRow) totalRow.parentNode.insertBefore(row, totalRow);
+                    }
                 }
+                const orderRowVal = document.querySelector("#orderDiscountSummaryRow .summary-row-value span");
+                if (orderRowVal) orderRowVal.innerText = "- " + appliedOrderDiscount.toLocaleString("vi-VN") + "₫";
+                const orderDiscountRowEl = document.getElementById("orderDiscountSummaryRow");
+                if (orderDiscountRowEl) orderDiscountRowEl.style.display = "flex";
+            } else if (orderDiscountRow) {
+                orderDiscountRow.style.display = "none";
             }
 
             let finalShippingFee = currentShippingFee - appliedShippingDiscount;
@@ -412,7 +478,7 @@
 
             let finalTotal = 0;
             if (productTotal > 0) {
-                finalTotal = productTotal + finalShippingFee - orderDiscount;
+                finalTotal = productTotal + finalShippingFee - appliedOrderDiscount;
                 if (finalTotal < 0) finalTotal = 0;
             }
 
@@ -421,12 +487,15 @@
             const totalEl = document.getElementById("finalTotalSum");
 
             if (shippingEl) shippingEl.innerText = currentShippingFee.toLocaleString("vi-VN") + "₫";
-            if (shippingDiscountEl) {
+            
+            const shippingDiscountRow = document.getElementById("shippingDiscountSummaryRow");
+            if (shippingDiscountRow) {
                 if (appliedShippingDiscount > 0) {
-                    shippingDiscountEl.innerText = "- " + appliedShippingDiscount.toLocaleString("vi-VN") + "₫";
-                    document.getElementById("shippingDiscountSummaryRow").style.display = "flex";
+                    const sdVal = shippingDiscountRow.querySelector(".summary-row-value span");
+                    if (sdVal) sdVal.innerText = "- " + appliedShippingDiscount.toLocaleString("vi-VN") + "₫";
+                    shippingDiscountRow.style.display = "flex";
                 } else {
-                    document.getElementById("shippingDiscountSummaryRow").style.display = "none";
+                    shippingDiscountRow.style.display = "none";
                 }
             }
             if (totalEl) totalEl.innerText = finalTotal.toLocaleString("vi-VN") + "₫";
@@ -473,8 +542,7 @@
             document.getElementById("checkoutForm").addEventListener("submit", function(e) {
                 const jsErrorBox = document.getElementById("jsErrorBox");
                 
-                const productListItems = document.querySelectorAll(".product-checkout-item");
-                if (productListItems.length === 0) {
+                if (typeof currentCart === 'undefined' || currentCart.length === 0) {
                     e.preventDefault();
                     jsErrorBox.innerText = "Không có sản phẩm để thanh toán.";
                     jsErrorBox.style.display = "block";
@@ -510,6 +578,9 @@
 
                 jsErrorBox.style.display = "none";
             });
+
+            // Load cart items from localStorage before initializing anything else
+            loadCartItems();
 
             // Initialize available time slots on load
             updateAvailableTimeSlots();

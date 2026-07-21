@@ -302,7 +302,23 @@
                     if (name && name.startsWith("SIZE_")) {
                         itemObj.templateId = name;
                     }
-                    localStorage.setItem("cart", JSON.stringify([itemObj]));
+                    let localCart = [];
+                    try {
+                        const cartStr = localStorage.getItem("cart");
+                        if (cartStr) localCart = JSON.parse(cartStr);
+                        if (!Array.isArray(localCart)) localCart = [];
+                    } catch (e) {
+                        localCart = [];
+                    }
+                    
+                    const existingItemIndex = localCart.findIndex(item => item.id === itemObj.id && item.name === itemObj.name);
+                    if (existingItemIndex !== -1) {
+                        localCart[existingItemIndex].qty = parseInt(localCart[existingItemIndex].qty) + parseInt(itemObj.qty);
+                    } else {
+                        localCart.push(itemObj);
+                    }
+                    
+                    localStorage.setItem("cart", JSON.stringify(localCart));
                     window.location.href = contextPath + "/checkout";
                     return;
                 }
