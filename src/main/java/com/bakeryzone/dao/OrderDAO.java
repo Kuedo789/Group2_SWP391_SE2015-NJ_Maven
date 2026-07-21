@@ -783,24 +783,61 @@ public class OrderDAO {
         }
     }
 
+    private void appendKeywordCondition(StringBuilder sql, List<Object> params, String keyword) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ? OR o.Receiver_Name LIKE ? OR o.Receiver_Phone LIKE ?)");
+            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
+            params.add(kw);
+        }
+    }
+
+    private void appendStatusCondition(StringBuilder sql, List<Object> params, String status) {
+        if (status == null || status.trim().isEmpty() || status.equalsIgnoreCase("all")) {
+            return;
+        }
+        String st = status.trim();
+        switch (st) {
+            case "Pending":
+                sql.append(" AND o.OrderStatus IN ('Pending', 'Chờ xác nhận')");
+                break;
+            case "Confirmed":
+                sql.append(" AND o.OrderStatus IN ('Confirmed', 'Đã xác nhận', 'Chờ làm')");
+                break;
+            case "PAID":
+                sql.append(" AND o.OrderStatus IN ('PAID', 'Đã thanh toán', 'Đã chuyển khoản')");
+                break;
+            case "Processing":
+                sql.append(" AND o.OrderStatus IN ('Processing', 'Confirmed', 'Chờ xử lý', 'Đang làm bánh', 'Đã xác nhận')");
+                break;
+            case "Delivering":
+                sql.append(" AND o.OrderStatus IN ('Delivering', 'Đang giao hàng', 'Đang giao', 'Chờ giao')");
+                break;
+            case "Completed":
+                sql.append(" AND o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
+                break;
+            case "Cancelled":
+                sql.append(" AND o.OrderStatus IN ('Cancelled', 'Canceled', 'Đã hủy')");
+                break;
+            default:
+                sql.append(" AND (o.OrderStatus = ? OR o.OrderStatus LIKE ?)");
+                params.add(st);
+                params.add("%" + st + "%");
+                break;
+        }
+    }
+
     public int getTotalOrdersCount(String keyword, String status, String startDateStr, String endDateStr) {
         int count = 0;
         StringBuilder sql = new StringBuilder(
                 "SELECT COUNT(*) FROM `orders` o LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
-            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
-            params.add(kw);
-            params.add(kw);
-            params.add(kw);
-        }
-
-        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("all")) {
-            sql.append(" AND o.OrderStatus = ?");
-            params.add(status);
-        }
+        appendKeywordCondition(sql, params, keyword);
+        appendStatusCondition(sql, params, status);
 
         if (startDateStr != null && !startDateStr.trim().isEmpty()) {
             sql.append(" AND o.Order_Time >= ?");
@@ -834,18 +871,8 @@ public class OrderDAO {
                 "SELECT o.*, c.Full_Name AS Customer_Name FROM `orders` o LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
-            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
-            params.add(kw);
-            params.add(kw);
-            params.add(kw);
-        }
-
-        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("all")) {
-            sql.append(" AND o.OrderStatus = ?");
-            params.add(status);
-        }
+        appendKeywordCondition(sql, params, keyword);
+        appendStatusCondition(sql, params, status);
 
         if (startDateStr != null && !startDateStr.trim().isEmpty()) {
             sql.append(" AND o.Order_Time >= ?");
@@ -912,18 +939,8 @@ public class OrderDAO {
         params.add(shipperId);
         params.add(shipperId);
 
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
-            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
-            params.add(kw);
-            params.add(kw);
-            params.add(kw);
-        }
-
-        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("all")) {
-            sql.append(" AND o.OrderStatus = ?");
-            params.add(status);
-        }
+        appendKeywordCondition(sql, params, keyword);
+        appendStatusCondition(sql, params, status);
 
         if (startDateStr != null && !startDateStr.trim().isEmpty()) {
             sql.append(" AND o.Order_Time >= ?");
@@ -967,18 +984,8 @@ public class OrderDAO {
         params.add(shipperId);
         params.add(shipperId);
 
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            sql.append(" AND (o.Order_No LIKE ? OR c.Full_Name LIKE ? OR c.Phone LIKE ?)");
-            String kw = "%" + escapeWildcards(keyword.trim()) + "%";
-            params.add(kw);
-            params.add(kw);
-            params.add(kw);
-        }
-
-        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("all")) {
-            sql.append(" AND o.OrderStatus = ?");
-            params.add(status);
-        }
+        appendKeywordCondition(sql, params, keyword);
+        appendStatusCondition(sql, params, status);
 
         if (startDateStr != null && !startDateStr.trim().isEmpty()) {
             sql.append(" AND o.Order_Time >= ?");

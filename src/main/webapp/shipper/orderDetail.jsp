@@ -222,11 +222,19 @@
                                             <i class="fa-solid fa-pen-nib me-1"></i> Thông điệp trang trí: <strong style="color: #6b21a8;"><%= greeting %></strong>
                                         </div>
                                     <% } %>
-                                    <% if (ccId != null && !ccId.trim().isEmpty()) { %>
-                                        <div class="item-meta" style="font-size: 11px;">
-                                            Mã bánh: <span><%= ccId %></span>
-                                        </div>
-                                    <% } %>
+                                    <% 
+                                        String displayCakeId = "";
+                                        if (tplId != null && !tplId.trim().isEmpty()) {
+                                            displayCakeId = tplId;
+                                        } else if (ccId != null && !ccId.trim().isEmpty()) {
+                                            displayCakeId = ccId;
+                                        }
+                                        if (!displayCakeId.isEmpty()) {
+                                    %>
+                                         <div class="item-meta" style="font-size: 11px;">
+                                             Mã bánh: <span><%= displayCakeId %></span>
+                                         </div>
+                                     <% } %>
                                 </div>
                                 <div class="item-price-qty">
                                     <div class="item-price font-mono"><%= czFmt.format(price) %>đ</div>
@@ -517,7 +525,7 @@
                             </span>
                          </div>
                         <div class="cost-row total" style="background-color: #fdf2f2; border: 1px dashed #f8b4b4; padding: 10px; border-radius: 6px; margin-top: 15px;">
-                            <span style="color: #9b1c1c; font-weight: 800;">TIỀN THU HỘ (COD):</span>
+                            <span style="color: #9b1c1c; font-weight: 800;">THÀNH TIỀN:</span>
                             <span class="font-mono" style="color: #9b1c1c; font-size: 18px; font-weight: 800;">
                                 <fmt:formatNumber value="${order.remainingCodBalance}" type="number" pattern="#,##0"/>đ
                             </span>
