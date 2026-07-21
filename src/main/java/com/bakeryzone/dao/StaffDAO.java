@@ -295,6 +295,76 @@ public class StaffDAO {
         return list;
     }
 
+    public Staff getStaffByUserId(String userId) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            String sql = "SELECT s.Staff_ID, s.User_ID, s.Full_Name, s.Phone, s.Position, s.Is_Active_Staff, s.Managed_Zone, "
+                    + "u.Email, u.Password, u.Role_ID, u.Account_Status, u.Is_Verified "
+                    + "FROM `staff` s "
+                    + "JOIN `user` u ON s.User_ID = u.User_ID "
+                    + "WHERE s.User_ID = ?";
+            conn = DBContext.getJDBCConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, userId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                Staff s = new Staff();
+                s.setStaffId(rs.getString("Staff_ID"));
+                s.setUserId(rs.getString("User_ID"));
+                s.setFullName(rs.getString("Full_Name"));
+                s.setPhone(rs.getString("Phone"));
+                s.setPosition(rs.getString("Position"));
+                s.setIsActiveStaff(rs.getBoolean("Is_Active_Staff"));
+                s.setManagedZone(rs.getString("Managed_Zone"));
+
+                User u = new User();
+                u.setUserId(rs.getString("User_ID"));
+                u.setEmail(rs.getString("Email"));
+                u.setPassword(rs.getString("Password"));
+                u.setRoleId(rs.getString("Role_ID"));
+                u.setAccountStatus(rs.getString("Account_Status"));
+                u.setVerified(rs.getBoolean("Is_Verified"));
+
+                s.setUser(u);
+                return s;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return null;
+    }
+
+    public boolean updateShipperStatusAndZone(String staffId, boolean isActive, String workingZoneId) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            String sql;
+            if (workingZoneId == null || workingZoneId.trim().isEmpty()) {
+                sql = "UPDATE `staff` SET Is_Active_Staff = ? WHERE Staff_ID = ?";
+                ps = conn.prepareStatement(sql);
+                ps.setInt(1, isActive ? 1 : 0);
+                ps.setString(2, staffId);
+            } else {
+                sql = "UPDATE `staff` SET Is_Active_Staff = ?, Managed_Zone = ? WHERE Staff_ID = ?";
+                ps = conn.prepareStatement(sql);
+                ps.setInt(1, isActive ? 1 : 0);
+                ps.setString(2, workingZoneId);
+                ps.setString(3, staffId);
+            }
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, null);
+        }
+        return false;
+    }
+
     private void close(Connection conn, PreparedStatement ps, ResultSet rs) {
         try {
             if (rs != null) {

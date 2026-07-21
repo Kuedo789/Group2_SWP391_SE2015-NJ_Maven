@@ -21,6 +21,7 @@ public class Staff {
     private Timestamp createdAt;
 
     private User user;
+    private String managedZone;
 
     public Staff() {
     }
@@ -98,6 +99,14 @@ public class Staff {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getManagedZone() {
+        return managedZone;
+    }
+
+    public void setManagedZone(String managedZone) {
+        this.managedZone = managedZone;
     }
 
 }

@@ -213,8 +213,16 @@ public class ShipperOrderServlet extends HttpServlet {
         List<Order> readyOrders = orderDAO.getReadyOrdersForShipper(shipperId, 5);
         List<Order> deliveredOrders = orderDAO.getDeliveredOrdersForShipper(shipperId, 5);
 
-        String managedZone = orderDAO.getManagedZoneByStaffId(shipperId);
+        com.bakeryzone.dao.StaffDAO staffDAO = new com.bakeryzone.dao.StaffDAO();
+        com.bakeryzone.model.Staff staffInfo = staffDAO.getStaffByUserId(shipperId);
+        String managedZone = "";
+        boolean isActiveStaff = false;
+        if (staffInfo != null) {
+            managedZone = staffInfo.getManagedZone();
+            isActiveStaff = staffInfo.isIsActiveStaff();
+        }
         request.setAttribute("managedZone", managedZone);
+        request.setAttribute("isActiveStaff", isActiveStaff);
 
         request.setAttribute("orders", orders);
         request.setAttribute("dailyStats", dailyStats);

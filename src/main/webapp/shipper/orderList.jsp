@@ -36,6 +36,50 @@
                 </div>
             </div>
 
+            <!-- Shipper Working Status & Zone Picker -->
+            <div class="cz-card" style="margin-bottom: 20px; border-left: 5px solid var(--cz-primary); padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="background-color: #f5f3f0; padding: 10px; border-radius: 8px; color: var(--cz-primary);">
+                            <i class="fa-solid fa-truck-ramp-box" style="font-size: 24px; color: var(--cz-primary);"></i>
+                        </div>
+                        <div>
+                            <h5 style="margin: 0; font-weight: 700; color: #333;">Trạng thái hoạt động & Khu vực làm việc</h5>
+                            <p style="margin: 0; font-size: 13px; color: #666;">
+                                Cập nhật trạng thái trực tuyến và khu vực giao hàng của bạn để nhận đơn tự động
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <!-- Toggle Online/Offline -->
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-weight: 600; font-size: 14px;">Trạng thái:</span>
+                            <div class="form-check form-switch" style="padding-left: 2.5em; margin: 0; display: inline-block;">
+                                <input class="form-check-input" type="checkbox" role="switch" id="shipper-active-switch" style="width: 2.5em; height: 1.25em; cursor: pointer;" ${isActiveStaff ? 'checked' : ''}>
+                                <label class="form-check-label fw-bold" for="shipper-active-switch" id="shipper-status-label" style="cursor: pointer; margin-left: 5px; font-size: 13.5px; color: ${isActiveStaff ? '#166534' : '#991b1b'};">
+                                    ${isActiveStaff ? 'Trực tuyến (Online)' : 'Ngoại tuyến (Offline)'}
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Zone Selector -->
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-weight: 600; font-size: 14px;">Khu vực:</span>
+                            <select id="shipper-zone-select" class="filter-select" style="padding: 6px 12px; border-radius: 6px; font-size: 13.5px; width: 180px; border: 1px solid #ccc;" ${not isActiveStaff ? 'disabled' : ''}>
+                                <option value="Zone 1" ${managedZone eq 'Zone 1' ? 'selected' : ''}>Zone 1</option>
+                                <option value="Zone 2" ${managedZone eq 'Zone 2' ? 'selected' : ''}>Zone 2</option>
+                                <option value="Zone 3" ${managedZone eq 'Zone 3' ? 'selected' : ''}>Zone 3</option>
+                                <option value="Zone 4" ${managedZone eq 'Zone 4' ? 'selected' : ''}>Zone 4</option>
+                                <option value="Zone 5" ${managedZone eq 'Zone 5' ? 'selected' : ''}>Zone 5</option>
+                                <option value="Zone 6" ${managedZone eq 'Zone 6' ? 'selected' : ''}>Zone 6</option>
+                                <option value="Toàn thành phố" ${managedZone eq 'Toàn thành phố' ? 'selected' : ''}>Toàn thành phố</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="filter-card">
                 <form class="filter-form" action="${pageContext.request.contextPath}/shipper/orders" method="GET" style="display: flex; flex-direction: column; gap: 15px; align-items: stretch;">
                     <input type="hidden" name="action" value="list">
@@ -211,5 +255,70 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const activeSwitch = document.getElementById('shipper-active-switch');
+            const zoneSelect = document.getElementById('shipper-zone-select');
+            const statusLabel = document.getElementById('shipper-status-label');
+
+            if (activeSwitch && zoneSelect && statusLabel) {
+                function updateShipperStatusZone() {
+                    const isActive = activeSwitch.checked;
+                    const workingZoneId = zoneSelect.value;
+
+                    activeSwitch.disabled = true;
+                    zoneSelect.disabled = true;
+
+                    const payload = {
+                        isActive: isActive,
+                        workingZoneId: workingZoneId
+                    };
+
+                    fetch('${pageContext.request.contextPath}/api/v1/shipper/status-zone', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    })
+                    .then(res => {
+                        if (!res.ok) {
+                            return res.json().then(err => { throw new Error(err.message || 'Server error'); });
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            if (isActive) {
+                                statusLabel.innerText = 'Trực tuyến (Online)';
+                                statusLabel.style.color = '#166534';
+                                zoneSelect.disabled = false;
+                            } else {
+                                statusLabel.innerText = 'Ngoại tuyến (Offline)';
+                                statusLabel.style.color = '#991b1b';
+                                zoneSelect.disabled = true;
+                            }
+                            alert("Cập nhật trạng thái hoạt động thành công!");
+                            window.location.reload();
+                        } else {
+                            alert("Lỗi: " + data.message);
+                            window.location.reload();
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error updating shipper status/zone:", err);
+                        alert("Lỗi kết nối hoặc phân quyền: " + err.message);
+                        window.location.reload();
+                    })
+                    .finally(() => {
+                        activeSwitch.disabled = false;
+                    });
+                }
+
+                activeSwitch.addEventListener('change', updateShipperStatusZone);
+                zoneSelect.addEventListener('change', updateShipperStatusZone);
+            }
+        });
+    </script>
 </body>
 </html>
