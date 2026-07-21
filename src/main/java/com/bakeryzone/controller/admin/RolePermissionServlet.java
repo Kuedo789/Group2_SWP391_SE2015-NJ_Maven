@@ -38,7 +38,7 @@ public class RolePermissionServlet extends HttpServlet {
         if ("delete-feature".equals(action)) {
             String id = request.getParameter("id");
             if (permissionDAO.deleteScreen(id)) {
-                request.getSession().setAttribute("successMessage", "Xóa mềm (ẩn) tính năng khỏi hệ thống thành công!");
+                request.getSession().setAttribute("successMessage", "Xóa tính năng khỏi hệ thống thành công!");
             } else {
                 request.getSession().setAttribute("errorMessage", "Xóa tính năng thất bại!");
             }
