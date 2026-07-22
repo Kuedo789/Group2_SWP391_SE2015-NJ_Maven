@@ -183,14 +183,29 @@ public class CustomerServlet extends HttpServlet {
         Customer c = new Customer();
         User u = new User();
 
-        u.setEmail(request.getParameter("email") != null ? request.getParameter("email").trim() : "");
-        u.setAccountStatus(request.getParameter("accountStatus"));
-        u.setVerified(true);
-        u.setPassword(request.getParameter("password"));
+        String email = request.getParameter("email");
+        u.setEmail(email != null ? email.trim() : "");
 
-        c.setFullName(request.getParameter("fullName"));
-        c.setPhone(request.getParameter("phone"));
-        c.setDefaultAddress(request.getParameter("defaultAddress"));
+        String accountStatus = request.getParameter("accountStatus");
+        u.setAccountStatus(accountStatus != null ? accountStatus.trim() : "");
+
+        u.setVerified(true);
+
+        String password = request.getParameter("password");
+        if (password == null || password.trim().isEmpty()) {
+            password = "123456"; // Mật khẩu mặc định khi tạo mới
+        }
+        u.setPassword(password);
+
+        String fullName = request.getParameter("fullName");
+        c.setFullName(fullName != null ? fullName.trim() : "");
+
+        String phone = request.getParameter("phone");
+        c.setPhone(phone != null ? phone.trim() : "");
+
+        String defaultAddress = request.getParameter("defaultAddress");
+        c.setDefaultAddress(defaultAddress != null ? defaultAddress.trim() : "");
+
         c.setUser(u);
 
         if (isEdit) {
@@ -205,25 +220,20 @@ public class CustomerServlet extends HttpServlet {
         boolean isEdit = c.getCustomerId() != null;
         CustomerDAO dao = new CustomerDAO();
 
-        if (c.getFullName() == null || c.getFullName().trim().isEmpty()
-                || c.getUser().getEmail() == null || c.getUser().getEmail().trim().isEmpty()
-                || c.getPhone() == null || c.getPhone().trim().isEmpty()
-                || c.getUser().getAccountStatus() == null || c.getUser().getAccountStatus().trim().isEmpty()
-                || (!isEdit && (c.getUser().getPassword() == null || c.getUser().getPassword().trim().isEmpty()))) {
-            errorMessage = "Vui lòng điền đầy đủ các trường thông tin";
+        if (c.getFullName() == null || c.getFullName().isEmpty()) {
+            errorMessage = "Vui lòng nhập họ và tên khách hàng!";
+        } else if (c.getPhone() == null || c.getPhone().isEmpty()) {
+            errorMessage = "Vui lòng nhập số điện thoại liên lạc!";
         } else if (!c.getPhone().matches("^(0)[35789][0-9]{8}$")) {
-            errorMessage = "Số điện thoại phải là 10 chữ số đầu Việt Nam.";
-        } else if (!isEdit && c.getUser().getPassword().length() < 6) {
-            errorMessage = "Mật khẩu thêm mới phải từ 6 ký tự trở lên";
+            errorMessage = "Số điện thoại không hợp lệ! Phải gồm 10 chữ số (bắt đầu bằng đầu số VN: 03, 05, 07, 08, 09).";
+        } else if (c.getUser().getEmail() == null || c.getUser().getEmail().isEmpty()) {
+            errorMessage = "Vui lòng nhập địa chỉ Email!";
+        } else if (c.getUser().getAccountStatus() == null || c.getUser().getAccountStatus().isEmpty()) {
+            errorMessage = "Vui lòng chọn trạng thái tài khoản!";
         } else if (dao.checkEmailExist(c.getUser().getEmail(), isEdit ? c.getCustomerId() : null)) {
-            errorMessage = "Địa chỉ Email này đã được đăng ký bởi một khách hàng khác";
-        } else if (c.getDefaultAddress() != null) {
-            String trimmedAddr = c.getDefaultAddress().trim();
-            if (trimmedAddr.isEmpty()) {
-                errorMessage = "Vui lòng nhập địa chỉ mặc định cho khách hàng!";
-            } else if (trimmedAddr.length() > 100) {
-                errorMessage = "Địa chỉ không được vượt quá 100 ký tự. Vui lòng rút gọn!";
-            }
+            errorMessage = "Địa chỉ Email này đã được đăng ký bởi một khách hàng khác!";
+        } else if (c.getDefaultAddress() != null && c.getDefaultAddress().length() > 100) {
+            errorMessage = "Địa chỉ không được vượt quá 100 ký tự. Vui lòng rút gọn!";
         }
 
         if (errorMessage != null) {

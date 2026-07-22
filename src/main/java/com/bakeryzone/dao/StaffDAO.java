@@ -14,7 +14,7 @@ public class StaffDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT s.Staff_ID, s.User_ID, s.Full_Name, s.Phone, s.Position, s.Is_Active_Staff, "
+            String sql = "SELECT s.Staff_ID, s.User_ID, s.Full_Name, s.Phone, s.Position, s.Is_Active_Staff, s.Managed_Zone, "
                     + "u.Email, u.Password, u.Role_ID, u.Account_Status, u.Is_Verified "
                     + "FROM `staff` s "
                     + "JOIN `user` u ON s.User_ID = u.User_ID "
@@ -31,6 +31,7 @@ public class StaffDAO {
                 s.setPhone(rs.getString("Phone"));
                 s.setPosition(rs.getString("Position"));
                 s.setIsActiveStaff(rs.getBoolean("Is_Active_Staff"));
+                s.setManagedZone(rs.getString("Managed_Zone"));
 
                 User u = new User();
                 u.setUserId(rs.getString("User_ID"));
@@ -77,13 +78,14 @@ public class StaffDAO {
             psUser.executeUpdate();
 
             // 2. Insert vào bảng Staff
-            String sqlStaff = "INSERT INTO `staff` (Staff_ID, User_ID, Full_Name, Phone, Position, Is_Active_Staff) VALUES (?, ?, ?, ?, ?, 1)";
+            String sqlStaff = "INSERT INTO `staff` (Staff_ID, User_ID, Full_Name, Phone, Position, Managed_Zone, Is_Active_Staff) VALUES (?, ?, ?, ?, ?, ?, 1)";
             psStaff = conn.prepareStatement(sqlStaff);
             psStaff.setString(1, generatedStaffId);
             psStaff.setString(2, userId);
             psStaff.setString(3, s.getFullName());
             psStaff.setString(4, s.getPhone());
             psStaff.setString(5, s.getPosition());
+            psStaff.setString(6, s.getManagedZone() != null ? s.getManagedZone() : "Toàn thành phố");
             psStaff.executeUpdate();
 
             conn.commit();
@@ -110,18 +112,19 @@ public class StaffDAO {
         try {
             String sql = "UPDATE `staff` s "
                     + "JOIN `user` u ON s.User_ID = u.User_ID "
-                    + "SET s.Full_Name = ?, s.Phone = ?, s.Position = ?, u.Email = ?, u.Password = ?, u.Role_ID = ?, u.Account_Status = ? "
+                    + "SET s.Full_Name = ?, s.Phone = ?, s.Position = ?, s.Managed_Zone = ?, u.Email = ?, u.Password = ?, u.Role_ID = ?, u.Account_Status = ? "
                     + "WHERE s.Staff_ID = ?";
             conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, s.getFullName());
             ps.setString(2, s.getPhone());
             ps.setString(3, s.getPosition());
-            ps.setString(4, s.getUser().getEmail());
-            ps.setString(5, s.getUser().getPassword());
-            ps.setString(6, s.getUser().getRoleId());
-            ps.setString(7, s.getUser().getAccountStatus());
-            ps.setString(8, s.getStaffId());
+            ps.setString(4, s.getManagedZone() != null ? s.getManagedZone() : "Toàn thành phố");
+            ps.setString(5, s.getUser().getEmail());
+            ps.setString(6, s.getUser().getPassword());
+            ps.setString(7, s.getUser().getRoleId());
+            ps.setString(8, s.getUser().getAccountStatus());
+            ps.setString(9, s.getStaffId());
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -230,7 +233,7 @@ public class StaffDAO {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql = "SELECT s.Staff_ID, s.User_ID, s.Full_Name, s.Phone, s.Position, s.Is_Active_Staff, "
+            String sql = "SELECT s.Staff_ID, s.User_ID, s.Full_Name, s.Phone, s.Position, s.Is_Active_Staff, s.Managed_Zone, "
                     + "u.Email, u.Password, u.Role_ID, u.Account_Status, u.Is_Verified "
                     + "FROM `staff` s "
                     + "JOIN `user` u ON s.User_ID = u.User_ID "
@@ -275,6 +278,7 @@ public class StaffDAO {
                 s.setPhone(rs.getString("Phone"));
                 s.setPosition(rs.getString("Position"));
                 s.setIsActiveStaff(rs.getBoolean("Is_Active_Staff"));
+                s.setManagedZone(rs.getString("Managed_Zone"));
 
                 User u = new User();
                 u.setUserId(rs.getString("User_ID"));

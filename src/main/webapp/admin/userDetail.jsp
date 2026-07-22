@@ -320,18 +320,12 @@
 
                             <div class="col-md-6">
                                 <label class="form-label">Email đăng nhập hệ thống <span class="text-danger">*</span></label>
-                                <input type="email" name="email" value="${USER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required
-                                       ${param.action == 'edit' ? ' style=""' : ''}>
+                                <input type="email" name="email" value="${USER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required>
                             </div>
-                            <%--
-                                                      <div class="col-md-6">
-                                                          <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
-                                                          <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
-                                                      </div>
-                            --%>
+
                             <div class="col-md-6">
                                 <label class="form-label">Chức vụ hệ thống <span class="text-danger">*</span></label>
-                                <select name="roleId" class="form-select">
+                                <select name="roleId" id="roleSelect" class="form-select" onchange="toggleManagedZone()">
                                     <option value="SHIPPER" ${USER_DATA.user.roleId == 'SHIPPER' ? 'selected' : ''}>Người giao hàng</option>
                                     <option value="STAFF" ${USER_DATA.user.roleId == 'STAFF' ? 'selected' : ''}>Nhân viên</option>
                                     <option value="ADMIN" ${USER_DATA.user.roleId == 'ADMIN' ? 'selected' : ''}>Quản lý</option>
@@ -343,6 +337,22 @@
                                 <select name="accountStatus" class="form-select">
                                     <option value="Active" ${USER_DATA.user.accountStatus == 'Active' ? 'selected' : ''}>Active (Đang hoạt động)</option>
                                     <option value="Deactive" ${USER_DATA.user.accountStatus == 'Deactive' ? 'selected' : ''}>Deactive (Đã khóa)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6" id="managedZoneGroup" style="display: none;">
+                                <label class="form-label">Khu vực quản lý (Giao hàng) <span class="text-muted">(Dành cho Shipper)</span></label>
+                                <c:set var="mZone" value="${empty USER_DATA.managedZone ? 'Toàn thành phố' : USER_DATA.managedZone}" />
+                                <select name="managedZone" class="form-select">
+                                    <option value="Toàn thành phố" ${mZone == 'Toàn thành phố' ? 'selected' : ''}>Toàn thành phố (Tất cả khu vực)</option>
+                                    <option value="Đống Đa" ${mZone == 'Đống Đa' ? 'selected' : ''}>Đống Đa</option>
+                                    <option value="Cầu Giấy" ${mZone == 'Cầu Giấy' ? 'selected' : ''}>Cầu Giấy</option>
+                                    <option value="Thanh Xuân" ${mZone == 'Thanh Xuân' ? 'selected' : ''}>Thanh Xuân</option>
+                                    <option value="Hoàn Kiếm" ${mZone == 'Hoàn Kiếm' ? 'selected' : ''}>Hoàn Kiếm</option>
+                                    <option value="Hai Bà Trưng" ${mZone == 'Hai Bà Trưng' ? 'selected' : ''}>Hai Bà Trưng</option>
+                                    <option value="Ba Đình" ${mZone == 'Ba Đình' ? 'selected' : ''}>Ba Đình</option>
+                                    <option value="Nam Từ Liêm" ${mZone == 'Nam Từ Liêm' ? 'selected' : ''}>Nam Từ Liêm</option>
+                                    <option value="Bắc Từ Liêm" ${mZone == 'Bắc Từ Liêm' ? 'selected' : ''}>Bắc Từ Liêm</option>
                                 </select>
                             </div>
 
@@ -362,12 +372,27 @@
         </div>
 
         <script>
+            function toggleManagedZone() {
+                let roleSelect = document.getElementById("roleSelect");
+                let zoneGroup = document.getElementById("managedZoneGroup");
+                if (roleSelect && zoneGroup) {
+                    if (roleSelect.value === "SHIPPER") {
+                        zoneGroup.style.display = "block";
+                    } else {
+                        zoneGroup.style.display = "none";
+                    }
+                }
+            }
+
+            // Tự động kiểm tra hiển thị khi trang load xong (phục vụ mode Edit hoặc giữ state)
+            document.addEventListener("DOMContentLoaded", function() {
+                toggleManagedZone();
+            });
+
             function validateForm() {
                 let fullName = document.getElementsByName("fullName")[0].value.trim();
                 let email = document.getElementsByName("email")[0].value.trim();
                 let phone = document.getElementsByName("phone")[0].value.trim();
-                let password = document.getElementsByName("password")[0].value;
-                let action = document.getElementsByName("action")[0].value;
 
                 if (fullName.length < 2) {
                     alert("Họ và tên phải có ít nhất 2 ký tự!");
@@ -380,12 +405,7 @@
                     return false;
                 }
 
-                if (action !== "edit" && password.length < 6) {
-                    alert("Mật khẩu tạo mới phải từ 6 ký tự trở lên!");
-                    return false;
-                }
-
-                let phoneRegex = /^(0)[3|5|7|8|9][0-9]{8}$/;
+                let phoneRegex = /^(0)[35789][0-9]{8}$/;
                 if (!phoneRegex.test(phone)) {
                     alert("Số điện thoại không hợp lệ! Phải gồm 10 chữ số và bắt đầu bằng đầu số VN (03, 05, 07, 08, 09)!");
                     return false;

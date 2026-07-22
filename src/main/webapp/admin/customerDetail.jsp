@@ -281,7 +281,7 @@
 
                     <form action="${pageContext.request.contextPath}/admin/customer" method="POST">  
                         <input type="hidden" name="action" value="${not empty param.action ? param.action : (CUSTOMER_DATA.customerId != null ? 'edit' : 'add')}">
-                        <input type="hidden" name="isEdit" value="${CUSTOMER_DATA != null ? 'true' : 'false'}">                      
+                        <input type="hidden" name="isEdit" value="${CUSTOMER_DATA.customerId != null ? 'true' : 'false'}">                      
                         <input type="hidden" name="customerId" value="${cusId}">
 
                         <div class="row g-4">
@@ -299,12 +299,7 @@
                                 <label class="form-label">Email đăng nhập <span class="text-danger">*</span></label>
                                 <input type="email" name="email" value="${CUSTOMER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required>
                             </div>
-                            <%--
-                                                  <div class="col-md-6">
-                                                      <label class="form-label">Mật khẩu tài khoản <span class="text-danger">*</span></label>
-                                                      <input type="password" name="password" class="form-control" autocomplete="new-password" placeholder="${param.action == 'edit' ? 'Để trống nếu không muốn đổi...' : 'Tạo mật khẩu...'}" ${param.action == 'edit' ? '' : 'required'}>
-                                                  </div>
-                            --%>
+
                             <div class="col-12">
                                 <label class="form-label">Địa chỉ mặc định</label>
                                 <input type="text" name="defaultAddress" value="${CUSTOMER_DATA.defaultAddress}" class="form-control" placeholder="Nhập địa chỉ chi tiết (Ví dụ: Số 12 Nguyễn Trãi, Hà Nội)...">
@@ -343,10 +338,7 @@
                 let fullName = document.getElementsByName("fullName")[0].value.trim();
                 let email = document.getElementsByName("email")[0].value.trim();
                 let phone = document.getElementsByName("phone")[0].value.trim();
-                let password = document.getElementsByName("password")[0].value;
-                let action = document.getElementsByName("action")[0].value;
                 let defaultAddress = document.getElementsByName("defaultAddress")[0].value.trim();
-
 
                 if (fullName.length < 2) {
                     alert("Họ và tên khách hàng phải có ít nhất 2 ký tự!");
@@ -359,12 +351,7 @@
                     return false;
                 }
 
-                if (action !== "edit" && password.length < 6) {
-                    alert("Mật khẩu tạo mới phải từ 6 ký tự trở lên!");
-                    return false;
-                }
-
-                let phoneRegex = /^(0)[3|5|7|8|9][0-9]{8}$/;
+                let phoneRegex = /^(0)[35789][0-9]{8}$/;
                 if (!phoneRegex.test(phone)) {
                     alert("Số điện thoại không hợp lệ! Phải gồm 10 chữ số và bắt đầu bằng đầu số VN (03, 05, 07, 08, 09)!");
                     return false;

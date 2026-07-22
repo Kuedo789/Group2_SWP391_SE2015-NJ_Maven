@@ -190,19 +190,53 @@ public class StaffServlet extends HttpServlet {
   
     private Staff bindAndMapStaff(HttpServletRequest request, boolean isEdit) {
         String roleId = request.getParameter("roleId");
+        if (roleId != null) {
+            roleId = roleId.trim();
+        }
+
+        String email = request.getParameter("email");
+        if (email != null) {
+            email = email.trim();
+        }
+
+        String accountStatus = request.getParameter("accountStatus");
+        if (accountStatus != null) {
+            accountStatus = accountStatus.trim();
+        }
+
+        String password = request.getParameter("password");
+        if (password == null || password.trim().isEmpty()) {
+            password = "123456"; // Mật khẩu mặc định khi không truyền từ giao diện
+        }
 
         User u = new User();
-        u.setEmail(request.getParameter("email"));
+        u.setEmail(email);
         u.setRoleId(roleId);
-        u.setAccountStatus(request.getParameter("accountStatus"));
+        u.setAccountStatus(accountStatus);
         u.setVerified(true);
-        u.setPassword(request.getParameter("password"));
+        u.setPassword(password);
+
+        String fullName = request.getParameter("fullName");
+        if (fullName != null) {
+            fullName = fullName.trim();
+        }
+
+        String phone = request.getParameter("phone");
+        if (phone != null) {
+            phone = phone.trim();
+        }
 
         Staff s = new Staff();
-        s.setFullName(request.getParameter("fullName"));
-        s.setPhone(request.getParameter("phone"));
+        s.setFullName(fullName);
+        s.setPhone(phone);
         s.setIsActiveStaff(true);
         s.setUser(u);
+
+        String managedZone = request.getParameter("managedZone");
+        if (managedZone == null || managedZone.trim().isEmpty()) {
+            managedZone = "Toàn thành phố";
+        }
+        s.setManagedZone(managedZone.trim());
 
         if (isEdit) {
             s.setStaffId(request.getParameter("userId")); 
@@ -227,19 +261,20 @@ public class StaffServlet extends HttpServlet {
         boolean isEdit = s.getStaffId() != null;
         StaffDAO dao = new StaffDAO();
 
-        if (s.getFullName() == null || s.getFullName().trim().isEmpty()
-                || s.getUser().getEmail() == null || s.getUser().getEmail().trim().isEmpty()
-                || s.getPhone() == null || s.getPhone().trim().isEmpty()
-                || s.getUser().getRoleId() == null || s.getUser().getRoleId().trim().isEmpty()
-                || s.getUser().getAccountStatus() == null || s.getUser().getAccountStatus().trim().isEmpty()
-                || (!isEdit && (s.getUser().getPassword() == null || s.getUser().getPassword().trim().isEmpty()))) {
-            errorMessage = "Vui lòng điền đầy đủ các trường thông tin";
+        if (s.getFullName() == null || s.getFullName().isEmpty()) {
+            errorMessage = "Vui lòng nhập họ và tên nhân viên!";
+        } else if (s.getPhone() == null || s.getPhone().isEmpty()) {
+            errorMessage = "Vui lòng nhập số điện thoại liên lạc!";
         } else if (!s.getPhone().matches("^(0)[35789][0-9]{8}$")) {
-            errorMessage = "Số điện thoại phải là 10 chữ số";
-        } else if (!isEdit && s.getUser().getPassword().length() < 6) {
-            errorMessage = "Mật khẩu phải từ 6 kí tự trở lên";
+            errorMessage = "Số điện thoại không hợp lệ! Phải gồm 10 chữ số (bắt đầu bằng đầu số VN: 03, 05, 07, 08, 09).";
+        } else if (s.getUser().getEmail() == null || s.getUser().getEmail().isEmpty()) {
+            errorMessage = "Vui lòng nhập địa chỉ Email!";
+        } else if (s.getUser().getRoleId() == null || s.getUser().getRoleId().isEmpty()) {
+            errorMessage = "Vui lòng chọn chức vụ hệ thống!";
+        } else if (s.getUser().getAccountStatus() == null || s.getUser().getAccountStatus().isEmpty()) {
+            errorMessage = "Vui lòng chọn trạng thái tài khoản!";
         } else if (dao.checkEmailExist(s.getUser().getEmail(), isEdit ? s.getStaffId() : null)) {
-            errorMessage = "Địa chỉ Email này đã được đăng kí bởi một nhân viên khác";
+            errorMessage = "Địa chỉ Email này đã được đăng ký bởi một nhân viên khác!";
         }
 
         if (errorMessage != null) {
