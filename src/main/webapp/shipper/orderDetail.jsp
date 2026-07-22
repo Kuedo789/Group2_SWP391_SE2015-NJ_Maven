@@ -195,8 +195,6 @@
                                     String itemLink  = "";
                                     if (tplId != null && !tplId.trim().isEmpty()) {
                                         itemLink = ctxPath + "/product-detail?id=" + tplId.trim();
-                                    } else if (oi.getAccessoryId() != null && !oi.getAccessoryId().trim().isEmpty()) {
-                                        itemLink = ctxPath + "/products";
                                     }
                         %>
                             <div class="order-item-row">

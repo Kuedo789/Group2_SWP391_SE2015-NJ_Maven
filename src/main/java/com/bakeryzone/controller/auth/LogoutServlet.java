@@ -13,14 +13,13 @@ public class LogoutServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        // Xóa toàn bộ session
+      
         request.getSession().invalidate();
 
-        // Quay về home
+        
         response.sendRedirect(request.getContextPath() + "/home");
     }
 
-    // Nếu form dùng POST logout thì vẫn xử lý giống GET
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

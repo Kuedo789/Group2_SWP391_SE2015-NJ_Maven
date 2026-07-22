@@ -5,8 +5,8 @@ import java.util.List;
 
 /**
  * Model class representing a Product (Cake Template).
- * Synchronized with the updated database schema where static pricing, stock,
- * and accessory tables are removed, and pricing is computed dynamically.
+ * Synchronized with the updated database schema where static pricing and stock
+ * tables are removed, and pricing is computed dynamically.
  */
 public class Product {
     private String id;

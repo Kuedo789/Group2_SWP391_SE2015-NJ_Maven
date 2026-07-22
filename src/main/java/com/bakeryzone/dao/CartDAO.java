@@ -20,10 +20,9 @@ public class CartDAO {
     public String getCartAggregateStatus(String userId) {
         String sql = "SELECT "
                 + "  COUNT(ci.Cart_Item_ID) AS Total, "
-                + "  SUM(CASE WHEN (a.Status = 'Active' OR cc.Custom_Cake_ID IS NOT NULL) THEN 1 ELSE 0 END) AS ActiveCount, "
-                + "  SUM(CASE WHEN (a.Status != 'Active') THEN 1 ELSE 0 END) AS DisabledCount "
+                + "  SUM(CASE WHEN (cc.Custom_Cake_ID IS NOT NULL) THEN 1 ELSE 0 END) AS ActiveCount, "
+                + "  0 AS DisabledCount "
                 + "FROM cart_item ci "
-                + "LEFT JOIN accessory a ON ci.Accessory_ID = a.Accessory_ID "
                 + "LEFT JOIN custom_cake cc ON ci.Custom_Cake_ID = cc.Custom_Cake_ID "
                 + "WHERE ci.User_ID = ?";
 

@@ -83,14 +83,13 @@ public class OrderDAO {
                         + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
                         + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
                         + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
-                        + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
                         + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
         params.add(customerId);
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(
-                    " AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
+                    " AND (o.Order_No LIKE ? OR t.Template_Name LIKE ?)");
             String kw = "%" + escapeWildcards(keyword.trim()) + "%";
             params.add(kw);
             params.add(kw);
@@ -138,14 +137,13 @@ public class OrderDAO {
                         + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
                         + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
                         + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
-                        + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
                         + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
         params.add(customerId);
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(
-                    " AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
+                    " AND (o.Order_No LIKE ? OR t.Template_Name LIKE ?)");
             String kw = "%" + escapeWildcards(keyword.trim()) + "%";
             params.add(kw);
             params.add(kw);
@@ -222,14 +220,13 @@ public class OrderDAO {
                         + " (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR"
                         + " (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR"
                         + " (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))"
-                        + " LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID"
                         + " WHERE o.Customer_ID = ?");
         List<Object> params = new ArrayList<>();
         params.add(customerId);
 
         if (keyword != null && !keyword.trim().isEmpty()) {
             sql.append(
-                    " AND (o.Order_No LIKE ? OR COALESCE(NULLIF(TRIM(t.Template_Name),''), NULLIF(TRIM(a.Accessory_Name),'')) LIKE ?)");
+                    " AND (o.Order_No LIKE ? OR t.Template_Name LIKE ?)");
             String kw = "%" + escapeWildcards(keyword.trim()) + "%";
             params.add(kw);
             params.add(kw);
@@ -366,15 +363,14 @@ public class OrderDAO {
                     oi.Order_Item_ID,
                     oi.Order_No,
                     oi.Custom_Cake_ID,
-                    oi.Accessory_ID,
                     oi.Quantity,
                     oi.Price_At_Purchase,
-                    COALESCE(NULLIF(TRIM(t.Template_Name), ''), NULLIF(TRIM(a.Accessory_Name), '')) AS Item_Name,
-                    COALESCE(NULLIF(TRIM(cc.Canvas_Image_URL), ''), NULLIF(TRIM(t.Image_URL), ''), NULLIF(TRIM(a.Image_URL), '')) AS Item_Image,
+                    COALESCE(NULLIF(TRIM(t.Template_Name), ''), 'Bánh ngọt') AS Item_Name,
+                    COALESCE(NULLIF(TRIM(cc.Canvas_Image_URL), ''), NULLIF(TRIM(t.Image_URL), '')) AS Item_Image,
                     cc.Greeting_Text,
-                    COALESCE(NULLIF(TRIM(cat.Category_Name), ''), 'Phụ kiện') AS Category_Name,
+                    COALESCE(NULLIF(TRIM(cat.Category_Name), ''), 'Bánh ngọt') AS Category_Name,
                     t.Template_ID,
-                    COALESCE(NULLIF(TRIM(t.Image_URL), ''), NULLIF(TRIM(a.Image_URL), '')) AS Template_Image,
+                    NULLIF(TRIM(t.Image_URL), '') AS Template_Image,
                     (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0)
                      FROM template_ingredient_detail d
                      JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID
@@ -391,7 +387,6 @@ public class OrderDAO {
                     (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
                     (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))
                 LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID
-                LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID
                 WHERE oi.Order_No IN (
                 """
                 + inClause + ")";
@@ -406,7 +401,6 @@ public class OrderDAO {
                     item.setOrderItemId(rs.getString("Order_Item_ID"));
                     item.setOrderNo(rs.getString("Order_No"));
                     item.setCustomCakeId(rs.getString("Custom_Cake_ID"));
-                    item.setAccessoryId(rs.getString("Accessory_ID"));
                     item.setQuantity(rs.getInt("Quantity"));
                     item.setPriceAtPurchase(rs.getBigDecimal("Price_At_Purchase"));
                     item.setItemName(rs.getString("Item_Name"));
@@ -440,8 +434,6 @@ public class OrderDAO {
                         } else {
                             item.setVariationName("Size 24cm");
                         }
-                    } else if (item.getAccessoryId() != null && !item.getAccessoryId().trim().isEmpty()) {
-                        item.setVariationName("Phụ kiện");
                     } else {
                         item.setVariationName("Tiêu chuẩn");
                     }
@@ -462,15 +454,14 @@ public class OrderDAO {
                     oi.Order_Item_ID,
                     oi.Order_No,
                     oi.Custom_Cake_ID,
-                    oi.Accessory_ID,
                     oi.Quantity,
                     oi.Price_At_Purchase,
-                    COALESCE(NULLIF(TRIM(t.Template_Name), ''), NULLIF(TRIM(a.Accessory_Name), '')) AS Item_Name,
-                    COALESCE(NULLIF(TRIM(cc.Canvas_Image_URL), ''), NULLIF(TRIM(t.Image_URL), ''), NULLIF(TRIM(a.Image_URL), '')) AS Item_Image,
+                    COALESCE(NULLIF(TRIM(t.Template_Name), ''), 'Bánh ngọt') AS Item_Name,
+                    COALESCE(NULLIF(TRIM(cc.Canvas_Image_URL), ''), NULLIF(TRIM(t.Image_URL), '')) AS Item_Image,
                     cc.Greeting_Text,
-                    COALESCE(NULLIF(TRIM(cat.Category_Name), ''), 'Phụ kiện') AS Category_Name,
+                    COALESCE(NULLIF(TRIM(cat.Category_Name), ''), 'Bánh ngọt') AS Category_Name,
                     t.Template_ID,
-                    COALESCE(NULLIF(TRIM(t.Image_URL), ''), NULLIF(TRIM(a.Image_URL), '')) AS Template_Image,
+                    NULLIF(TRIM(t.Image_URL), '') AS Template_Image,
                     (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0)
                      FROM template_ingredient_detail d
                      JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID
@@ -487,7 +478,6 @@ public class OrderDAO {
                     (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
                     (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))
                 LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID
-                LEFT JOIN accessory a ON oi.Accessory_ID = a.Accessory_ID
                 WHERE oi.Order_No = ?
                 """;
 
@@ -499,7 +489,6 @@ public class OrderDAO {
                     item.setOrderItemId(rs.getString("Order_Item_ID"));
                     item.setOrderNo(rs.getString("Order_No"));
                     item.setCustomCakeId(rs.getString("Custom_Cake_ID"));
-                    item.setAccessoryId(rs.getString("Accessory_ID"));
                     item.setQuantity(rs.getInt("Quantity"));
                     item.setPriceAtPurchase(rs.getBigDecimal("Price_At_Purchase"));
                     item.setItemName(rs.getString("Item_Name"));
@@ -533,8 +522,6 @@ public class OrderDAO {
                         } else {
                             item.setVariationName("Size 24cm");
                         }
-                    } else if (item.getAccessoryId() != null && !item.getAccessoryId().trim().isEmpty()) {
-                        item.setVariationName("Phụ kiện");
                     } else {
                         item.setVariationName("Tiêu chuẩn");
                     }
@@ -663,7 +650,7 @@ public class OrderDAO {
     public boolean insertOrder(Order order) {
         String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus, Shipping_Fee, Discount_Amount, Payment_Method, Receiver_Name, Receiver_Phone, Customer_Note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String sqlCake = "INSERT INTO `custom_cake` (Custom_Cake_ID, Canvas_Image_URL, Greeting_Text, Cake_Hash_Structure, Calculated_Price) VALUES (?, ?, ?, ?, ?)";
-        String sqlItem = "INSERT INTO `order_item` (Order_Item_ID, Order_No, Custom_Cake_ID, Accessory_ID, Quantity, Price_At_Purchase) VALUES (?, ?, ?, ?, ?, ?)";
+        String sqlItem = "INSERT INTO `order_item` (Order_Item_ID, Order_No, Custom_Cake_ID, Quantity, Price_At_Purchase) VALUES (?, ?, ?, ?, ?)";
 
         Connection conn = null;
         PreparedStatement psOrder = null;
@@ -735,15 +722,12 @@ public class OrderDAO {
                     }
 
                     psItem.setString(3, item.getCustomCakeId());
-                    psItem.setNull(4, java.sql.Types.VARCHAR);
                 } else {
-                    // It's an accessory
                     psItem.setNull(3, java.sql.Types.VARCHAR);
-                    psItem.setString(4, item.getAccessoryId());
                 }
 
-                psItem.setInt(5, item.getQuantity());
-                psItem.setBigDecimal(6, item.getPriceAtPurchase());
+                psItem.setInt(4, item.getQuantity());
+                psItem.setBigDecimal(5, item.getPriceAtPurchase());
                 psItem.executeUpdate();
             }
 
@@ -1589,7 +1573,7 @@ public class OrderDAO {
         try (Connection conn = DBContext.getJDBCConnection()) {
             if (conn == null) return null;
             String tripId = generateTripId(conn);
-            String insertTripSql = "INSERT INTO `delivery_trip` (Trip_ID, Shipper_ID, OSRM_Distance_Km, OSRM_Duration_Min, Calculated_Shipping_Fee) VALUES (?, ?, 0.0, 0, 0.0)";
+            String insertTripSql = "INSERT INTO `delivery_trip` (Trip_ID, Shipper_ID, OSRM_Distance_Km, OSRM_Duration_Min) VALUES (?, ?, 0.0, 0)";
             try (PreparedStatement ps = conn.prepareStatement(insertTripSql)) {
                 ps.setString(1, tripId);
                 ps.setString(2, shipperId);
@@ -1862,7 +1846,7 @@ public class OrderDAO {
 
             if (currentTripId == null || currentTripId.trim().isEmpty()) {
                 currentTripId = generateTripId(conn);
-                String insertTripSql = "INSERT INTO `delivery_trip` (Trip_ID, Shipper_ID, OSRM_Distance_Km, OSRM_Duration_Min, Calculated_Shipping_Fee) VALUES (?, ?, 0.0, 0, 0.0)";
+                String insertTripSql = "INSERT INTO `delivery_trip` (Trip_ID, Shipper_ID, OSRM_Distance_Km, OSRM_Duration_Min) VALUES (?, ?, 0.0, 0)";
                 try (PreparedStatement ps = conn.prepareStatement(insertTripSql)) {
                     ps.setString(1, currentTripId);
                     ps.setString(2, staffId);
