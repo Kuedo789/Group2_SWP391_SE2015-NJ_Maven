@@ -14,7 +14,7 @@ public class OrderItem {
     private String categoryName;
     private String templateId;
     private String templateImage;
-
+    
     public OrderItem() {
     }
 

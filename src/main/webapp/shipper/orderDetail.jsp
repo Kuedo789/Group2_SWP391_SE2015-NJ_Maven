@@ -291,7 +291,7 @@
                         </div>
                         <div class="info-row">
                             <div class="info-label">Người nhận:</div>
-                            <div class="info-value"><strong><%= recName %></strong></div>
+                            <div class="info-value"><%= recName %></div>
                         </div>
                         <div class="info-row">
                             <div class="info-label">SĐT người nhận:</div>
@@ -323,7 +323,7 @@
                         </div>
                         <div class="info-row">
                             <div class="info-label">Ghi chú của khách:</div>
-                            <div class="info-value text-danger" style="font-weight: 600;">
+                            <div class="info-value text-danger">
                                 <c:out value="${not empty order.customerNote ? order.customerNote : 'Không có ghi chú'}" />
                             </div>
                         </div>
