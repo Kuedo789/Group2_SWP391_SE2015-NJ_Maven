@@ -1,5 +1,6 @@
 package com.bakeryzone.dao;
 
+import com.bakeryzone.model.MembershipAdminRow;
 import com.bakeryzone.model.MembershipTier;
 import com.bakeryzone.model.PointHistory;
 import com.bakeryzone.model.UserMembership;
@@ -106,6 +107,169 @@ public class MembershipDAO {
         }
 
         return null;
+    }
+
+    /**
+     * Retrieves member stats for the admin dashboard.
+     * @return int array: [totalMembers, standardCount, bronzeCount, silverCount, goldCount]
+     */
+    public int[] getMemberStats() {
+        int[] stats = new int[5];
+        String sql = "SELECT " +
+                     "  COUNT(*) AS total, " +
+                     "  SUM(CASE WHEN t.TierName = 'MEMBER' THEN 1 ELSE 0 END) AS standardCount, " +
+                     "  SUM(CASE WHEN t.TierName = 'BRONZE' THEN 1 ELSE 0 END) AS bronzeCount, " +
+                     "  SUM(CASE WHEN t.TierName = 'SILVER' THEN 1 ELSE 0 END) AS silverCount, " +
+                     "  SUM(CASE WHEN t.TierName = 'GOLD' THEN 1 ELSE 0 END) AS goldCount " +
+                     "FROM UserMembership um " +
+                     "LEFT JOIN MembershipTier t ON um.CurrentTierID = t.TierID";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn != null) {
+                ps = conn.prepareStatement(sql);
+                rs = ps.executeQuery();
+                if (rs.next()) {
+                    stats[0] = rs.getInt("total");
+                    stats[1] = rs.getInt("standardCount");
+                    stats[2] = rs.getInt("bronzeCount");
+                    stats[3] = rs.getInt("silverCount");
+                    stats[4] = rs.getInt("goldCount");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return stats;
+    }
+
+    /**
+     * Retrieves a paginated and filtered list of members for the admin overview.
+     */
+    public List<MembershipAdminRow> getMemberListPaged(String tierFilter, String search, int offset, int pageSize) {
+        List<MembershipAdminRow> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder(
+            "SELECT um.UserID, c.Full_Name, u.Email, t.TierName, um.AccumulatedPoints, um.TotalSpending " +
+            "FROM UserMembership um " +
+            "LEFT JOIN MembershipTier t ON um.CurrentTierID = t.TierID " +
+            "LEFT JOIN user u ON um.UserID = u.user_id " +
+            "LEFT JOIN customer c ON u.user_id = c.user_id " +
+            "WHERE 1=1 "
+        );
+
+        boolean hasTier = tierFilter != null && !tierFilter.equalsIgnoreCase("ALL");
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+
+        if (hasTier) {
+            sql.append(" AND t.TierName = ? ");
+        }
+        if (hasSearch) {
+            sql.append(" AND (c.Full_Name LIKE ? OR u.Email LIKE ? OR um.UserID LIKE ?) ");
+        }
+        sql.append(" ORDER BY um.TotalSpending DESC LIMIT ? OFFSET ?");
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return list;
+
+            ps = conn.prepareStatement(sql.toString());
+            int idx = 1;
+
+            if (hasTier) {
+                ps.setString(idx++, tierFilter.toUpperCase());
+            }
+            if (hasSearch) {
+                String pattern = "%" + search.trim() + "%";
+                ps.setString(idx++, pattern);
+                ps.setString(idx++, pattern);
+                ps.setString(idx++, pattern);
+            }
+
+            ps.setInt(idx++, pageSize);
+            ps.setInt(idx++, offset);
+
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                MembershipAdminRow row = new MembershipAdminRow(
+                    rs.getString("UserID"),
+                    rs.getString("Full_Name") != null ? rs.getString("Full_Name") : "Chưa cập nhật",
+                    rs.getString("Email"),
+                    rs.getString("TierName"),
+                    rs.getInt("AccumulatedPoints"),
+                    rs.getBigDecimal("TotalSpending")
+                );
+                list.add(row);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return list;
+    }
+
+    /**
+     * Gets total count of members matching the filter (for pagination).
+     */
+    public int getMemberCount(String tierFilter, String search) {
+        int count = 0;
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) FROM UserMembership um " +
+            "LEFT JOIN MembershipTier t ON um.CurrentTierID = t.TierID " +
+            "LEFT JOIN user u ON um.UserID = u.user_id " +
+            "LEFT JOIN customer c ON u.user_id = c.user_id " +
+            "WHERE 1=1 "
+        );
+
+        boolean hasTier = tierFilter != null && !tierFilter.equalsIgnoreCase("ALL");
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+
+        if (hasTier) {
+            sql.append(" AND t.TierName = ? ");
+        }
+        if (hasSearch) {
+            sql.append(" AND (c.Full_Name LIKE ? OR u.Email LIKE ? OR um.UserID LIKE ?) ");
+        }
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return 0;
+
+            ps = conn.prepareStatement(sql.toString());
+            int idx = 1;
+
+            if (hasTier) {
+                ps.setString(idx++, tierFilter.toUpperCase());
+            }
+            if (hasSearch) {
+                String pattern = "%" + search.trim() + "%";
+                ps.setString(idx++, pattern);
+                ps.setString(idx++, pattern);
+                ps.setString(idx++, pattern);
+            }
+
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                count = rs.getInt(1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return count;
     }
 
     /**
@@ -425,6 +589,255 @@ public class MembershipDAO {
         v.setTargetCategory(rs.getString("TargetCategory"));
         // pointCost is not needed for the wallet display; leave at default 0
         return v;
+    }
+
+    // -----------------------------------------------------------------------
+    // Admin Actions
+    // -----------------------------------------------------------------------
+
+    public boolean adjustPoints(String userId, int delta, String description) {
+        Connection conn = null;
+        PreparedStatement psUpdate = null;
+        PreparedStatement psInsert = null;
+
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+            
+            conn.setAutoCommit(false);
+            
+            // First check current points to cap at 0
+            UserMembership um = getMembershipByUserId(userId);
+            if (um == null) return false;
+            
+            int currentPoints = um.getAccumulatedPoints();
+            if (currentPoints + delta < 0) {
+                delta = -currentPoints;
+            }
+
+            String updateSql = "UPDATE UserMembership SET AccumulatedPoints = AccumulatedPoints + ? WHERE UserID = ?";
+            psUpdate = conn.prepareStatement(updateSql);
+            psUpdate.setInt(1, delta);
+            psUpdate.setString(2, userId);
+            int updated = psUpdate.executeUpdate();
+
+            if (updated > 0) {
+                String insertSql = "INSERT INTO PointHistory (UserID, Amount, ChangeType, Description, CreatedAt) VALUES (?, ?, 'ADJUST', ?, NOW())";
+                psInsert = conn.prepareStatement(insertSql);
+                psInsert.setString(1, userId);
+                psInsert.setInt(2, delta);
+                psInsert.setString(3, description);
+                psInsert.executeUpdate();
+                
+                conn.commit();
+                return true;
+            } else {
+                conn.rollback();
+            }
+        } catch (Exception e) {
+            if (conn != null) try { conn.rollback(); } catch (Exception ignored) {}
+            e.printStackTrace();
+        } finally {
+            try {
+                if (psUpdate != null) psUpdate.close();
+                if (psInsert != null) psInsert.close();
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    public boolean setTier(String userId, int newTierId) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+            
+            String sql = "UPDATE UserMembership SET CurrentTierID = ? WHERE UserID = ?";
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, newTierId);
+            ps.setString(2, userId);
+            
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, null);
+        }
+        return false;
+    }
+
+    public List<com.bakeryzone.model.Voucher> getAllActiveVouchers() {
+        List<com.bakeryzone.model.Voucher> list = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn != null) {
+                String sql = "SELECT * FROM Voucher WHERE IsActive = 1 AND EndDate >= CURDATE() ORDER BY RequiredTierID DESC, VoucherID DESC";
+                ps = conn.prepareStatement(sql);
+                rs = ps.executeQuery();
+                while (rs.next()) {
+                    list.add(mapOwnedVoucher(rs));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return list;
+    }
+
+    public boolean assignVoucher(String userId, int voucherId) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+            
+            // Check if already assigned and not used
+            String checkSql = "SELECT * FROM UserVoucher WHERE UserID = ? AND VoucherID = ? AND IsUsed = 0";
+            PreparedStatement psCheck = conn.prepareStatement(checkSql);
+            psCheck.setString(1, userId);
+            psCheck.setInt(2, voucherId);
+            ResultSet rs = psCheck.executeQuery();
+            if (rs.next()) {
+                // Already has an active version of this voucher
+                close(null, psCheck, rs);
+                return false;
+            }
+            close(null, psCheck, rs);
+            
+            String insertSql = "INSERT INTO UserVoucher (UserID, VoucherID, AssignedAt, IsUsed) VALUES (?, ?, NOW(), 0)";
+            ps = conn.prepareStatement(insertSql);
+            ps.setString(1, userId);
+            ps.setInt(2, voucherId);
+            
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, null);
+        }
+        return false;
+    }
+
+    public boolean assignVoucherByCode(String userId, String voucherCode) {
+        Connection conn = null;
+        PreparedStatement psFind = null;
+        ResultSet rsFind = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+            
+            // Find voucher ID by code
+            String findSql = "SELECT VoucherID FROM Voucher WHERE VoucherCode = ? AND Status = 'Active' AND EndDate >= CURDATE()";
+            psFind = conn.prepareStatement(findSql);
+            psFind.setString(1, voucherCode);
+            rsFind = psFind.executeQuery();
+            
+            if (rsFind.next()) {
+                int voucherId = rsFind.getInt("VoucherID");
+                return assignVoucher(userId, voucherId);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, psFind, rsFind);
+        }
+        return false;
+    }
+
+    // -----------------------------------------------------------------------
+    // Tier Config Admin Actions
+    // -----------------------------------------------------------------------
+    
+    public boolean saveTier(MembershipTier t) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+            
+            if (t.getTierId() > 0) {
+                // Update
+                String sql = "UPDATE MembershipTier SET TierName=?, MinSpending=?, PointMultiplier=?, MonthlyVouchers=?, Description=? WHERE TierID=?";
+                ps = conn.prepareStatement(sql);
+                ps.setString(1, t.getTierName());
+                ps.setBigDecimal(2, t.getMinSpending());
+                ps.setDouble(3, t.getPointMultiplier());
+                ps.setInt(4, t.getMonthlyVouchers());
+                ps.setString(5, t.getDescription());
+                ps.setInt(6, t.getTierId());
+            } else {
+                // Insert
+                String sql = "INSERT INTO MembershipTier (TierName, MinSpending, PointMultiplier, MonthlyVouchers, Description) VALUES (?, ?, ?, ?, ?)";
+                ps = conn.prepareStatement(sql);
+                ps.setString(1, t.getTierName());
+                ps.setBigDecimal(2, t.getMinSpending());
+                ps.setDouble(3, t.getPointMultiplier());
+                ps.setInt(4, t.getMonthlyVouchers());
+                ps.setString(5, t.getDescription());
+            }
+            
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, null);
+        }
+        return false;
+    }
+
+    public String deleteTier(int tierId) {
+        Connection conn = null;
+        PreparedStatement psCheck = null;
+        PreparedStatement psDel = null;
+        ResultSet rsCheck = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return "Lỗi kết nối database.";
+            
+            // Check usage
+            String checkSql = "SELECT COUNT(*) FROM UserMembership WHERE CurrentTierID = ?";
+            psCheck = conn.prepareStatement(checkSql);
+            psCheck.setInt(1, tierId);
+            rsCheck = psCheck.executeQuery();
+            
+            if (rsCheck.next()) {
+                int count = rsCheck.getInt(1);
+                if (count > 0) {
+                    return "Không thể xóa hạng này vì đang có " + count + " thành viên thuộc hạng.";
+                }
+            }
+            
+            String delSql = "DELETE FROM MembershipTier WHERE TierID = ?";
+            psDel = conn.prepareStatement(delSql);
+            psDel.setInt(1, tierId);
+            int rows = psDel.executeUpdate();
+            if (rows > 0) {
+                return "ok";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Lỗi hệ thống khi xóa hạng.";
+        } finally {
+            try { if (rsCheck != null) rsCheck.close(); } catch(Exception e) {}
+            try { if (psCheck != null) psCheck.close(); } catch(Exception e) {}
+            try { if (psDel != null) psDel.close(); } catch(Exception e) {}
+            if (conn != null) {
+                try { conn.close(); } catch (Exception e) {}
+            }
+        }
+        return "Không xóa được hạng này.";
     }
 
     // -----------------------------------------------------------------------

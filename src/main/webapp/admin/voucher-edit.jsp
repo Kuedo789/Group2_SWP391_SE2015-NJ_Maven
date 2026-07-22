@@ -298,6 +298,20 @@
                                 </select>
                             </div>
 
+                            <div class="form-group">
+                                <label class="form-label" for="requiredTier">
+                                    Hạng thành viên áp dụng
+                                    <span style="font-weight:400;color:var(--text-muted);font-size:12px;">(Required Tier)</span>
+                                </label>
+                                <select id="requiredTier" name="requiredTier" class="form-control">
+                                    <option value="ALL"     ${empty editVoucher.requiredTier || editVoucher.requiredTier == 'ALL'     ? 'selected' : ''}>Tất cả khách hàng (Default)</option>
+                                    <option value="BRONZE"  ${editVoucher.requiredTier == 'BRONZE'  ? 'selected' : ''}>Thành viên Đồng</option>
+                                    <option value="SILVER"  ${editVoucher.requiredTier == 'SILVER'  ? 'selected' : ''}>Thành viên Bạc</option>
+                                    <option value="GOLD"    ${editVoucher.requiredTier == 'GOLD'    ? 'selected' : ''}>Thành viên Vàng</option>
+                                    <option value="DIAMOND" ${editVoucher.requiredTier == 'DIAMOND' ? 'selected' : ''}>Thành viên Kim Cương</option>
+                                </select>
+                                <span class="form-hint">Giới hạn voucher chỉ dành cho khách đạt hạng được chọn trở lên.</span>
+                            </div>
                         </div>
 
                         <!-- ── Section 3: Validity ────────────────────────── -->
