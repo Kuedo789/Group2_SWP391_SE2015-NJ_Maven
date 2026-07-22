@@ -67,7 +67,7 @@
 
                         <div class="hero-actions">
                             <a href="<%= request.getContextPath() %>/products" class="btn btn-primary">Đặt bánh ngay</a>
-                            <a href="#" class="btn btn-outline">Tự thiết kế bánh của bạn</a>
+                            <a href="${pageContext.request.contextPath}/custom-cake" class="btn btn-outline">Tự thiết kế bánh của bạn</a>
                         </div>
                     </div>
 

@@ -216,7 +216,7 @@
                 box-shadow: -8px 0 40px rgba(0,0,0,0.12);
                 transition: right 0.32s cubic-bezier(0.4, 0, 0.2, 1);
                 border-radius: 20px 0 0 20px;
-                overflow: hidden;
+                /* NOTE: overflow must NOT be hidden here – it breaks native <select> dropdowns and input interactions */
             }
             .member-drawer.open { right: 0; }
 
@@ -229,6 +229,8 @@
                 align-items: flex-start;
                 gap: 16px;
                 flex-shrink: 0;
+                border-radius: 20px 0 0 0;
+                overflow: hidden;
             }
             .drawer-avatar {
                 width: 60px; height: 60px;
@@ -717,57 +719,65 @@
                 </div>
 
                 <!-- Assign Voucher Form (Hidden by default) -->
-                <div id="drawerVoucherForm" style="display:none; padding: 20px 28px; border-top: 1px solid var(--border-soft); background: #fafafa; border-radius: 8px; margin-top: 20px; position: relative; z-index: 1060; pointer-events: auto;">
-                    <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:#000;"><i class="fa-solid fa-ticket"></i> Gán Voucher</div>
-
+                <div id="drawerVoucherForm" style="display:none; padding: 20px 0 0 0; border-top: 1px solid var(--border-soft); margin-top: 20px;">
+                    <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:var(--text-dark);"><i class="fa-solid fa-ticket" style="color:#22c55e;"></i> Gán Voucher</div>
                     <div style="margin-bottom:12px;">
-                        <input type="text" id="assignVoucherInput" placeholder="Nhập mã voucher (VD: VIPCAKE)" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;outline:none;color:#000;pointer-events:auto;">
+                        <input type="text" id="assignVoucherInput"
+                               placeholder="Nhập mã voucher (VD: VIPCAKE)"
+                               style="display:block;width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;color:#1e293b;background:#fff;outline:none;">
                     </div>
                     <div style="display:flex;gap:10px;">
-                        <button class="btn-drawer-outline" style="pointer-events:auto;" onclick="hideVoucherForm()">Hủy</button>
-                        <button class="btn-drawer-primary" style="pointer-events:auto;" onclick="submitAssignVoucher()" id="btnSaveVoucher">Gán</button>
+                        <button class="btn-drawer-outline" onclick="hideVoucherForm()">Hủy</button>
+                        <button class="btn-drawer-primary" onclick="submitAssignVoucher()" id="btnSaveVoucher">Gán</button>
                     </div>
                 </div>
 
                 <!-- Tier Upgrade Form (Hidden by default) -->
-                <div id="drawerTierForm" style="display:none; padding: 20px 28px; border-top: 1px solid var(--border-soft); background: #fafafa; border-radius: 8px; margin-top: 20px; position: relative; z-index: 1060; pointer-events: auto;">
-                    <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:#000;"><i class="fa-solid fa-arrow-up"></i> Thay đổi hạng thành viên</div>
+                <div id="drawerTierForm" style="display:none; padding: 20px 0 0 0; border-top: 1px solid var(--border-soft); margin-top: 20px;">
+                    <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:var(--text-dark);"><i class="fa-solid fa-arrow-up" style="color:#22c55e;"></i> Thay đổi hạng thành viên</div>
                     <div style="margin-bottom:12px;">
-                        <select id="upgradeTierSelect" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;outline:none;color:#000;pointer-events:auto;">
+                        <select id="upgradeTierSelect"
+                                style="display:block;width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;color:#1e293b;background:#fff;outline:none;-webkit-appearance:auto;appearance:auto;">
                             <option value="">-- Chọn hạng mới --</option>
                             <c:forEach var="t" items="${allTiers}">
-                                <option value="${t.tierId}"><c:out value="${t.tierName}" default="Hạng ${t.tierId}" /></option>
+                                <option value="${t.tierId}"><c:out value="${t.tierName}" /></option>
                             </c:forEach>
                         </select>
                     </div>
                     <div style="display:flex;gap:10px;">
-                        <button class="btn-drawer-outline" style="pointer-events:auto;" onclick="hideTierForm()">Hủy</button>
-                        <button class="btn-drawer-primary" style="pointer-events:auto;" onclick="submitTierUpgrade()" id="btnSaveTier">Cập nhật</button>
+                        <button class="btn-drawer-outline" onclick="hideTierForm()">Hủy</button>
+                        <button class="btn-drawer-primary" onclick="submitTierUpgrade()" id="btnSaveTier">Cập nhật</button>
                     </div>
                 </div>
-                
+
                 <!-- Points Adjustment Form (Hidden by default) -->
-                <div id="drawerPointsForm" style="display:none; padding: 20px 28px; border-top: 1px solid var(--border-soft); background: #fafafa; border-radius: 8px; margin-top: 20px; position: relative; z-index: 1060; pointer-events: auto;">
-                    <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:#000;"><i class="fa-solid fa-sliders"></i> Điều chỉnh điểm</div>
-                    <div style="display:flex;gap:10px;margin-bottom:12px;">
-                        <input type="number" id="adjustPointsAmount" placeholder="Số điểm" max="9999" min="0" style="flex:1;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;outline:none;color:#000;pointer-events:auto;" oninput="if(this.value>9999)this.value=9999;if(this.value<0)this.value=0;">
+                <div id="drawerPointsForm" style="display:none; padding: 20px 0 0 0; border-top: 1px solid var(--border-soft); margin-top: 20px;">
+                    <div style="font-weight:700;margin-bottom:12px;font-size:14px;color:var(--text-dark);"><i class="fa-solid fa-sliders" style="color:#22c55e;"></i> Điều chỉnh điểm</div>
+                    <div style="margin-bottom:10px;">
+                        <input type="number" id="adjustPointsAmount"
+                               placeholder="Số điểm (0 – 9999)" max="9999" min="0"
+                               style="display:block;width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;color:#1e293b;background:#fff;outline:none;"
+                               oninput="if(this.value>9999)this.value=9999;if(this.value<0)this.value=0;">
                     </div>
-                    <div style="margin-bottom:12px;">
-                        <select id="adjustPointsReason" style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;outline:none;color:#000;pointer-events:auto;">
+                    <div style="margin-bottom:10px;">
+                        <select id="adjustPointsReason"
+                                style="display:block;width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;color:#1e293b;background:#fff;outline:none;-webkit-appearance:auto;appearance:auto;">
                             <option value="">-- Chọn lý do --</option>
-                            <option value="Reward Event">Sự kiện tặng thưởng (Reward Event)</option>
-                            <option value="Promotion">Khuyến mãi (Promotion)</option>
-                            <option value="Customer Service">Chăm sóc khách hàng (Customer Service)</option>
-                            <option value="Manual Correction">Điều chỉnh thủ công (Manual Correction)</option>
-                            <option value="Other">Khác (Other)</option>
+                            <option value="Reward Event">Sự kiện tặng thưởng</option>
+                            <option value="Promotion">Khuyến mãi</option>
+                            <option value="Customer Service">Chăm sóc khách hàng</option>
+                            <option value="Manual Correction">Điều chỉnh thủ công</option>
+                            <option value="Other">Khác</option>
                         </select>
                     </div>
                     <div style="margin-bottom:12px;">
-                        <textarea id="adjustPointsNotes" placeholder="Ghi chú thêm..." style="width:100%;padding:8px 12px;border:1px solid #e2e8f0;border-radius:8px;resize:none;height:60px;outline:none;color:#000;pointer-events:auto;"></textarea>
+                        <textarea id="adjustPointsNotes"
+                                  placeholder="Ghi chú thêm (tùy chọn)..."
+                                  style="display:block;width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;color:#1e293b;background:#fff;outline:none;resize:none;height:64px;"></textarea>
                     </div>
                     <div style="display:flex;gap:10px;">
-                        <button class="btn-drawer-outline" style="pointer-events:auto;" onclick="hidePointsForm()">Hủy</button>
-                        <button class="btn-drawer-primary" style="pointer-events:auto;" onclick="submitPointsAdjust()" id="btnSavePoints">Lưu thay đổi</button>
+                        <button class="btn-drawer-outline" onclick="hidePointsForm()">Hủy</button>
+                        <button class="btn-drawer-primary" onclick="submitPointsAdjust()" id="btnSavePoints">Lưu thay đổi</button>
                     </div>
                 </div>
 
