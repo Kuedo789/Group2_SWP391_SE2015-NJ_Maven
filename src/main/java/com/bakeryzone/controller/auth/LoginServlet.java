@@ -1,7 +1,7 @@
 package com.bakeryzone.controller.auth;
 
 import com.bakeryzone.dao.UserDAO;
-import com.bakeryzone.dao.CartDAO; // Import your CartDAO
+import com.bakeryzone.dao.CartDAO;
 import com.bakeryzone.model.User;
 import com.bakeryzone.utils.PasswordUtils;
 import com.bakeryzone.utils.ValidationUtils;
@@ -9,7 +9,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession; // Clean explicit import
+import jakarta.servlet.http.HttpSession; 
 import java.io.IOException;
 
 public class LoginServlet extends HttpServlet {

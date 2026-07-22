@@ -501,48 +501,13 @@
                                 jsonBuilder.append("{");
                                 
                                 String tplId = item.getTemplateId() != null ? item.getTemplateId() : "";
-                                String accId = item.getAccessoryId() != null ? item.getAccessoryId() : "";
                                 String varName = item.getVariationName() != null ? item.getVariationName() : "Tiêu chuẩn";
                                 double price = item.getPriceAtPurchase() != null ? item.getPriceAtPurchase().doubleValue() : 0.0;
                                 int qty = item.getQuantity();
                                 String name = item.getItemName() != null ? item.getItemName().replace("\"", "\\\"") : "";
-                                String image = "";
-                                String mainImg = item.getItemImage() != null ? item.getItemImage().trim() : "";
-                                String tplImg = item.getTemplateImage() != null ? item.getTemplateImage().trim() : "";
-
-                                if (!mainImg.isEmpty()) {
-                                    if (mainImg.startsWith("data:") || mainImg.startsWith("http:") || mainImg.startsWith("https:")) {
-                                        image = mainImg;
-                                    } else {
-                                        String cleanMain = mainImg.replace("\\", "/");
-                                        if (cleanMain.startsWith("/")) cleanMain = cleanMain.substring(1);
-                                        String realPath = application.getRealPath("/" + cleanMain);
-                                        if (realPath != null && new java.io.File(realPath).exists()) {
-                                            image = cleanMain;
-                                        }
-                                    }
-                                }
-                                if (image.isEmpty() && !tplImg.isEmpty()) {
-                                    if (tplImg.startsWith("data:") || tplImg.startsWith("http:") || tplImg.startsWith("https:")) {
-                                        image = tplImg;
-                                    } else {
-                                        String cleanTpl = tplImg.replace("\\", "/");
-                                        if (cleanTpl.startsWith("/")) cleanTpl = cleanTpl.substring(1);
-                                        String realPath = application.getRealPath("/" + cleanTpl);
-                                        if (realPath != null && new java.io.File(realPath).exists()) {
-                                            image = cleanTpl;
-                                        } else {
-                                            image = cleanTpl;
-                                        }
-                                    }
-                                }
-                                if (image.isEmpty()) {
-                                    image = "assets/images/default-cake.png";
-                                }
-                                image = image.replace("\\", "/");
+                                String image = item.getItemImage() != null ? item.getItemImage().replace("\\", "/") : "assets/images/default-cake.png";
                                 
                                 jsonBuilder.append("\"templateId\":\"").append(tplId).append("\",");
-                                jsonBuilder.append("\"accessoryId\":\"").append(accId).append("\",");
                                 jsonBuilder.append("\"variationName\":\"").append(varName).append("\",");
                                 jsonBuilder.append("\"price\":").append(price).append(",");
                                 jsonBuilder.append("\"qty\":").append(qty).append(",");
@@ -608,26 +573,12 @@
                     }
                     cartItemId = templateId.trim() + "_" + variantIndex;
                 } else {
-                    cartItemId = item.accessoryId || "ACC_UNKNOWN";
+                    cartItemId = "CAKE_ITEM_" + Math.random().toString(36).substring(7);
                     templateId = "";
                 }
                 
                 let finalName = item.name;
                 let finalDesc = "Bánh ngọt thủ công cao cấp";
-                if (templateId && templateId.trim() !== "") {
-                    if (item.variationName.includes("20cm")) {
-                        if (!finalName.includes("20cm")) finalName += " (Size 20cm)";
-                        finalDesc = "Kích thước vừa vặn cho các bữa tiệc nhỏ";
-                    } else if (item.variationName.includes("24cm")) {
-                        if (!finalName.includes("24cm")) finalName += " (Size 24cm)";
-                        finalDesc = "Phù hợp tiệc sinh nhật đông người";
-                    } else {
-                        if (!finalName.includes("16cm")) finalName += " (Size 16cm)";
-                        finalDesc = "Size bánh dành cho 4 - 6 người dùng.";
-                    }
-                } else {
-                    finalDesc = "Phụ kiện đi kèm";
-                }
                 
                 let resolvedImg = item.image;
                 const ctx = '<%= request.getContextPath() %>';

@@ -6,11 +6,8 @@ public class OrderItem {
     private String orderItemId;
     private String orderNo;
     private String customCakeId;
-    private String accessoryId;
     private int quantity;
     private BigDecimal priceAtPurchase;
-    
-    // Fields mapped from cake_template or accessory for displaying on UI
     private String itemName;
     private String itemImage;
     private String greetingText;
@@ -43,14 +40,6 @@ public class OrderItem {
 
     public void setCustomCakeId(String customCakeId) {
         this.customCakeId = customCakeId;
-    }
-
-    public String getAccessoryId() {
-        return accessoryId;
-    }
-
-    public void setAccessoryId(String accessoryId) {
-        this.accessoryId = accessoryId;
     }
 
     public int getQuantity() {

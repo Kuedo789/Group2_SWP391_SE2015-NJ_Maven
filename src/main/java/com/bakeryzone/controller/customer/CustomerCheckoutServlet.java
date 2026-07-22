@@ -262,25 +262,18 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     oi.setItemName(itemName);
                     oi.setItemImage(itemImage);
 
-                    // Phân loại mã bánh/sản phẩm có sẵn từ giỏ hàng (Không sinh mã mới tại Checkout)
-                    if (itemId != null && itemId.startsWith("ACC-")) {
-                        // 1. Phụ kiện
-                        oi.setAccessoryId(itemId);
-                        oi.setTemplateId(null);
-                        oi.setCustomCakeId(null);
-                    } else if ((itemId != null && itemId.startsWith("CC-")) || (customCakeId != null && customCakeId.startsWith("CC-"))) {
-                        // 2. Bánh tự thiết kế từ Studio Custom
+                    // Phân loại mã bánh từ giỏ hàng (Không sinh mã mới tại Checkout)
+                    if ((itemId != null && itemId.startsWith("CC-")) || (customCakeId != null && customCakeId.startsWith("CC-"))) {
+                        // 1. Bánh tự thiết kế từ Studio Custom
                         String finalCcId = (itemId != null && itemId.startsWith("CC-")) ? itemId : customCakeId;
                         oi.setCustomCakeId(finalCcId);
                         oi.setTemplateId(null);
-                        oi.setAccessoryId(null);
                     } else {
-                        // 3. Bánh mẫu có sẵn từ Menu Admin (TPL_XXXX)
+                        // 2. Bánh mẫu có sẵn từ Menu Admin (TPL_XXXX)
                         String finalTplId = (templateId != null && !templateId.isEmpty()) ? templateId : itemId;
                         oi.setTemplateId(finalTplId);
                         String cakeId = "CC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
                         oi.setCustomCakeId(cakeId);
-                        oi.setAccessoryId(null);
                     }
 
                     order.getItems().add(oi);
@@ -365,8 +358,16 @@ if (order.getItems().isEmpty()) {
                 deposit = totalCost; // Full upfront bank transfer
                 remainingCod = BigDecimal.ZERO;
             } else {
-                // Default COD: Calculate a standard 30% upfront commitment deposit
-                deposit = totalCost.multiply(BigDecimal.valueOf(0.3)).setScale(0, java.math.RoundingMode.HALF_UP);
+                // Calculate upfront deposit based on system settings (depositPercent, default 30%)
+                com.bakeryzone.dao.SettingDAO settingDAO = new com.bakeryzone.dao.SettingDAO();
+                java.util.Map<String, Object> settingsMap = settingDAO.getSettings();
+                double depPctVal = 30.0;
+                if (settingsMap != null && settingsMap.containsKey("depositPercent")) {
+                    try {
+                        depPctVal = Double.parseDouble(settingsMap.get("depositPercent").toString());
+                    } catch (Exception ignored) {}
+                }
+                deposit = totalCost.multiply(BigDecimal.valueOf(depPctVal / 100.0)).setScale(0, java.math.RoundingMode.HALF_UP);
                 remainingCod = totalCost.subtract(deposit);
             }
 

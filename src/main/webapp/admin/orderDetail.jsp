@@ -195,12 +195,6 @@
                                         } else {
                                             itemLink = ctxPath + "/product-detail?id=" + tplId.trim();
                                         }
-                                    } else if (oi.getAccessoryId() != null && !oi.getAccessoryId().trim().isEmpty()) {
-                                        if (canManageProducts) {
-                                            itemLink = ctxPath + "/admin/product?action=list";
-                                        } else {
-                                            itemLink = ctxPath + "/products";
-                                        }
                                     }
                         %>
                             <div class="order-item-row">
