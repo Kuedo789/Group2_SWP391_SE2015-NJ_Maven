@@ -167,35 +167,14 @@
                                             <div class="nav-section-title">Hạng Thành Viên</div>
                                             <ul class="sidebar-menu">
 
-                                                <%-- Parent toggle item --%>
-                                                <%
-                                                    String _activeMenuMembership = request.getParameter("activeMenu");
-                                                    boolean _isMembershipActive = "membership-overview".equals(_activeMenuMembership)
-                                                        || "tier-config".equals(_activeMenuMembership);
-                                                    pageContext.setAttribute("isMembershipActive", _isMembershipActive);
-                                                %>
-                                                <li class="menu-item ${isMembershipActive ? 'active' : ''}" id="membership-parent-menu">
-                                                    <a href="javascript:void(0);" id="membership-parent-link">
-                                                        <i class="fa-solid fa-id-card-clip"></i> <span>Thành viên</span>
-                                                        <i class="fa-solid ${isMembershipActive ? 'fa-chevron-up' : 'fa-chevron-down'} arrow" id="membership-chevron"></i>
+                                                <li class="menu-item ${param.activeMenu == 'membership-overview' ? 'active' : ''}">
+                                                    <a href="${pageContext.request.contextPath}/admin/membership">
+                                                        <i class="fa-solid fa-id-card-clip"></i> Hạng Thành viên
                                                     </a>
                                                 </li>
-
-                                                <%-- Child: Tổng quan --%>
-                                                <li class="menu-item ${param.activeMenu == 'membership-overview' ? 'active' : ''} membership-child-item"
-                                                    style="padding-left: 20px; display: ${isMembershipActive ? 'block' : 'none'};">
-                                                    <a href="${pageContext.request.contextPath}/admin/membership"
-                                                       style="font-size: 13px; padding: 8px 25px;">
-                                                        <i class="fa-solid fa-caret-right"></i> Hạng Thành viên
-                                                    </a>
-                                                </li>
-
-                                                <%-- Child: Cấu hình --%>
-                                                <li class="menu-item ${param.activeMenu == 'tier-config' ? 'active' : ''} membership-child-item"
-                                                    style="padding-left: 20px; display: ${isMembershipActive ? 'block' : 'none'};">
-                                                    <a href="${pageContext.request.contextPath}/admin/tier-config"
-                                                       style="font-size: 13px; padding: 8px 25px;">
-                                                        <i class="fa-solid fa-caret-right"></i> Cấu hình
+                                                <li class="menu-item ${param.activeMenu == 'tier-config' ? 'active' : ''}">
+                                                    <a href="${pageContext.request.contextPath}/admin/tier-config">
+                                                        <i class="fa-solid fa-sliders"></i> Cấu hình
                                                     </a>
                                                 </li>
 
@@ -280,7 +259,6 @@
                                                     });
                                                 }
 
-<<<<<<< Updated upstream
                                                 // Allow clicking the parent link to ALWAYS navigate to the product list page
                                                 // (This ensures clicking 'Sản phẩm' will work even when viewing submenus like 'Danh mục' or 'Đơn vị tính')
                                                 if (productParentLink) {
@@ -291,30 +269,6 @@
                                                             e.preventDefault();
                                                             toggleProductMenu();
                                                         }
-=======
-                                                // ── Membership submenu toggle ────────────────────
-                                                const membershipParentLink = document.getElementById("membership-parent-link");
-                                                const membershipChevron    = document.getElementById("membership-chevron");
-                                                const membershipChildItems = document.querySelectorAll(".membership-child-item");
-
-                                                function toggleMembershipMenu() {
-                                                    if (membershipChildItems.length === 0) return;
-                                                    const firstChild = membershipChildItems[0];
-                                                    const isVisible = window.getComputedStyle(firstChild).display !== "none";
-                                                    membershipChildItems.forEach(function(item) {
-                                                        item.style.setProperty("display", isVisible ? "none" : "block", "important");
-                                                    });
-                                                    if (membershipChevron) {
-                                                        membershipChevron.classList.toggle("fa-chevron-up",   !isVisible);
-                                                        membershipChevron.classList.toggle("fa-chevron-down",  isVisible);
-                                                    }
-                                                }
-
-                                                if (membershipParentLink) {
-                                                    membershipParentLink.addEventListener("click", function(e) {
-                                                        e.preventDefault();
-                                                        toggleMembershipMenu();
->>>>>>> Stashed changes
                                                     });
                                                 }
                                             });
