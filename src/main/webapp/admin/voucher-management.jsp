@@ -338,7 +338,7 @@
                                                     </c:when>
                                                     <c:otherwise>
                                                         <c:choose>
-                                                            <c:when test="${v.discountType == 'PERCENT'}">
+                                                            <c:when test="${v.discountType == 'PERCENT' || v.discountType == 'PERCENTAGE'}">
                                                                 <span class="badge badge-warning">Đơn hàng (%)</span>
                                                             </c:when>
                                                             <c:otherwise>
@@ -351,7 +351,7 @@
 
                                             <td style="font-weight:700;color:var(--text-dark);">
                                                 <c:choose>
-                                                    <c:when test="${v.discountType == 'PERCENT'}">
+                                                    <c:when test="${v.discountType == 'PERCENT' || v.discountType == 'PERCENTAGE'}">
                                                         ${v.discountValue}%
                                                         <c:if test="${v.maxDiscountAmount != null}">
                                                             <br><small style="font-weight:400;color:var(--text-muted);">

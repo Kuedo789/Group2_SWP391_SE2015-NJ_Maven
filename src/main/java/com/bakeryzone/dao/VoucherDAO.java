@@ -67,9 +67,7 @@ public class VoucherDAO {
         List<Voucher> list = new ArrayList<>();
 
         String sql =
-            "SELECT VoucherID, VoucherCode, Title, DiscountType, DiscountValue, "
-            + "       MaxDiscountAmount, MinOrderValue, StartDate, EndDate, "
-            + "       IsActive, UsageLimit, RequiredTierID, VoucherScope, TargetCategory, IsStackable "
+            "SELECT * "
             + "FROM Voucher "
             + "WHERE IsActive = 1 "
             + "  AND CURDATE() BETWEEN StartDate AND EndDate "
@@ -112,9 +110,7 @@ public class VoucherDAO {
     public Voucher getActiveVoucherById(int voucherId) {
 
         String sql =
-            "SELECT VoucherID, VoucherCode, Title, DiscountType, DiscountValue, "
-            + "       MaxDiscountAmount, MinOrderValue, StartDate, EndDate, "
-            + "       IsActive, UsageLimit, RequiredTierID "
+            "SELECT * "
             + "FROM Voucher "
             + "WHERE VoucherID = ? "
             + "  AND IsActive = 1 "
@@ -316,31 +312,46 @@ public class VoucherDAO {
      */
     private Voucher mapVoucher(ResultSet rs) throws Exception {
         Voucher v = new Voucher();
+        
+        java.sql.ResultSetMetaData meta = rs.getMetaData();
+        int colCount = meta.getColumnCount();
+        java.util.Set<String> cols = new java.util.HashSet<>();
+        for (int i = 1; i <= colCount; i++) {
+            cols.add(meta.getColumnLabel(i).toUpperCase());
+        }
+
         v.setVoucherId(rs.getInt("VoucherID"));
         v.setVoucherCode(rs.getString("VoucherCode"));
-        v.setTitle(rs.getString("Title"));
-        v.setDiscountType(rs.getString("DiscountType"));
-        v.setDiscountValue(rs.getBigDecimal("DiscountValue"));
-        v.setMaxDiscountAmount(rs.getBigDecimal("MaxDiscountAmount"));
-        v.setMinOrderValue(rs.getBigDecimal("MinOrderValue"));
+        
+        if (cols.contains("TITLE")) v.setTitle(rs.getString("Title"));
+        if (cols.contains("DISCOUNTTYPE")) v.setDiscountType(rs.getString("DiscountType"));
+        if (cols.contains("DISCOUNTVALUE")) v.setDiscountValue(rs.getBigDecimal("DiscountValue"));
+        if (cols.contains("MAXDISCOUNTAMOUNT")) v.setMaxDiscountAmount(rs.getBigDecimal("MaxDiscountAmount"));
+        if (cols.contains("MINORDERVALUE")) v.setMinOrderValue(rs.getBigDecimal("MinOrderValue"));
 
         // The schema defines StartDate/EndDate as DATETIME (not DATE).
         // rs.getDate() on a DATETIME column can return null in MySQL JDBC 8 strict mode.
         // Use getTimestamp() and convert to java.sql.Date via the millisecond value.
-        java.sql.Timestamp startTs = rs.getTimestamp("StartDate");
-        java.sql.Timestamp endTs   = rs.getTimestamp("EndDate");
-        v.setStartDate(startTs != null ? new Date(startTs.getTime()) : null);
-        v.setEndDate(endTs   != null ? new Date(endTs.getTime())   : null);
+        if (cols.contains("STARTDATE")) {
+            java.sql.Timestamp startTs = rs.getTimestamp("StartDate");
+            v.setStartDate(startTs != null ? new Date(startTs.getTime()) : null);
+        }
+        if (cols.contains("ENDDATE")) {
+            java.sql.Timestamp endTs = rs.getTimestamp("EndDate");
+            v.setEndDate(endTs != null ? new Date(endTs.getTime()) : null);
+        }
 
-        v.setActive(rs.getBoolean("IsActive"));
-        v.setUsageLimit(rs.getInt("UsageLimit"));
+        if (cols.contains("ISACTIVE")) v.setActive(rs.getBoolean("IsActive"));
+        if (cols.contains("USAGELIMIT")) v.setUsageLimit(rs.getInt("UsageLimit"));
 
-        int reqTier = rs.getInt("RequiredTierID");
-        v.setRequiredTierId(rs.wasNull() ? null : reqTier);
+        if (cols.contains("REQUIREDTIERID")) {
+            int reqTier = rs.getInt("RequiredTierID");
+            v.setRequiredTierId(rs.wasNull() ? null : reqTier);
+        }
 
-        v.setVoucherScope(rs.getString("VoucherScope"));
-        v.setTargetCategory(rs.getString("TargetCategory"));
-        v.setStackable(rs.getBoolean("IsStackable"));
+        if (cols.contains("VOUCHERSCOPE")) v.setVoucherScope(rs.getString("VoucherScope"));
+        if (cols.contains("TARGETCATEGORY")) v.setTargetCategory(rs.getString("TargetCategory"));
+        if (cols.contains("ISSTACKABLE")) v.setStackable(rs.getBoolean("IsStackable"));
 
         // Derive point cost from discount value
         if (v.getDiscountValue() != null) {
@@ -366,9 +377,7 @@ public class VoucherDAO {
      */
     public Voucher getVoucherByCodeAndUser(String voucherCode, String userId) {
         String sql =
-            "SELECT v.VoucherID, v.VoucherCode, v.Title, v.DiscountType, v.DiscountValue, "
-            + "       v.MaxDiscountAmount, v.MinOrderValue, v.StartDate, v.EndDate, "
-            + "       v.IsActive, v.UsageLimit, v.RequiredTierID, v.VoucherScope, v.TargetCategory, v.IsStackable "
+            "SELECT v.* "
             + "FROM UserVoucher uv "
             + "JOIN Voucher v ON uv.VoucherID = v.VoucherID "
             + "WHERE v.VoucherCode = ? "
@@ -408,9 +417,7 @@ public class VoucherDAO {
     public List<Voucher> getAvailableVouchersForUser(String userId) {
         List<Voucher> list = new ArrayList<>();
         String sql =
-            "SELECT v.VoucherID, v.VoucherCode, v.Title, v.DiscountType, v.DiscountValue, "
-            + "       v.MaxDiscountAmount, v.MinOrderValue, v.StartDate, v.EndDate, "
-            + "       v.IsActive, v.UsageLimit, v.RequiredTierID, v.VoucherScope, v.TargetCategory, v.IsStackable "
+            "SELECT v.* "
             + "FROM UserVoucher uv "
             + "JOIN Voucher v ON uv.VoucherID = v.VoucherID "
             + "WHERE uv.UserID = ? "
@@ -581,9 +588,7 @@ public class VoucherDAO {
         boolean hasStatus = isNonBlank(statusFilter)  && !"all".equalsIgnoreCase(statusFilter.trim());
 
         StringBuilder sql = new StringBuilder();
-        sql.append("SELECT VoucherID, VoucherCode, Title, DiscountType, DiscountValue, ")
-           .append("       MaxDiscountAmount, MinOrderValue, StartDate, EndDate, ")
-           .append("       IsActive, UsageLimit, RequiredTierID, VoucherScope, TargetCategory, IsStackable ")
+        sql.append("SELECT * ")
            .append("FROM voucher WHERE 1=1 ");
         appendStatusClause(sql, statusFilter, hasStatus);
         if (hasSearch) sql.append("AND (VoucherCode LIKE ? OR Title LIKE ?) ");
@@ -760,9 +765,7 @@ public class VoucherDAO {
      */
     public Voucher getVoucherById(int voucherId) {
         String sql =
-            "SELECT VoucherID, VoucherCode, Title, DiscountType, DiscountValue, "
-            + "       MaxDiscountAmount, MinOrderValue, StartDate, EndDate, "
-            + "       IsActive, UsageLimit, RequiredTierID, VoucherScope, TargetCategory, IsStackable "
+            "SELECT * "
             + "FROM voucher "
             + "WHERE VoucherID = ?";
 
