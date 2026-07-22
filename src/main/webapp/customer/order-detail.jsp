@@ -478,16 +478,41 @@
                         <% } %>
                     </div>
                     
-                    <div class="invoice-total-row">
-                        <span class="invoice-total-label">TỔNG CỘNG</span>
-                        <span class="invoice-total-val"><%= currencyFormat.format(totalCost) %>đ</span>
+                    <div class="invoice-row" style="font-weight: 700; border-top: 1px dashed var(--border); padding-top: 15px; margin-top: 5px;">
+                        <span>Tổng cộng đơn hàng</span>
+                        <span><%= currencyFormat.format(totalCost) %>đ</span>
                     </div>
                     
-                    <div class="payment-method-row">
-                        <span class="payment-method-label">Phương thức thanh toán</span>
-                        <span class="payment-method-val">
-                            <span class="material-symbols-outlined">credit_card</span>
-                            <%= paymentMethodStr %>
+                    <div class="invoice-row">
+                        <span>Phương thức thanh toán</span>
+                        <span>
+                            <% if ("BANK_TRANSFER_FULL".equalsIgnoreCase(method) || "Chuyển khoản".equalsIgnoreCase(method) || "Bank Transfer".equalsIgnoreCase(method)) { %>
+                                Chuyển khoản
+                            <% } else { %>
+                                COD (Nhận hàng)
+                            <% } %>
+                        </span>
+                    </div>
+                    
+                    <div class="invoice-row">
+                        <span>Tiền đặt cọc</span>
+                        <span>
+                            <% if ("BANK_TRANSFER_FULL".equalsIgnoreCase(method) || "Chuyển khoản".equalsIgnoreCase(method) || "Bank Transfer".equalsIgnoreCase(method)) { %>
+                                0đ
+                            <% } else { %>
+                                <%= currencyFormat.format(order.getDepositAmount() != null ? order.getDepositAmount().doubleValue() : 0) %>đ
+                            <% } %>
+                        </span>
+                    </div>
+                    
+                    <div class="invoice-total-row" style="background-color: #fdf2f2; border: 1px dashed #f8b4b4; padding: 16px; border-radius: 12px; margin-top: 16px;">
+                        <span class="invoice-total-label" style="color: #9b1c1c;">THÀNH TIỀN (Cần thanh toán)</span>
+                        <span class="invoice-total-val" style="color: #9b1c1c;">
+                            <% if ("BANK_TRANSFER_FULL".equalsIgnoreCase(method) || "Chuyển khoản".equalsIgnoreCase(method) || "Bank Transfer".equalsIgnoreCase(method)) { %>
+                                0đ
+                            <% } else { %>
+                                <%= currencyFormat.format(order.getRemainingCodBalance() != null ? order.getRemainingCodBalance().doubleValue() : 0) %>đ
+                            <% } %>
                         </span>
                     </div>
                     

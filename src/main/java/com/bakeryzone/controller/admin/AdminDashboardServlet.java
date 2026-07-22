@@ -30,6 +30,7 @@ public class AdminDashboardServlet extends HttpServlet {
 
         // Lấy dữ liệu thống kê từ DAO
         double totalRevenue = orderDAO.getTotalRevenue(null, null);
+        double totalProfit = orderDAO.getTotalProfit(null, null);
         int totalOrders = orderDAO.getTotalOrdersCount(null, null, null, null);
         int totalCustomers = orderDAO.getTotalCustomers(null, null);
         int totalProducts = orderDAO.getTotalProducts();
@@ -62,6 +63,7 @@ public class AdminDashboardServlet extends HttpServlet {
             
             // Cập nhật lại thông số các thẻ và danh sách theo khoảng ngày tùy chọn
             totalRevenue = orderDAO.getTotalRevenue(sDate, eDate);
+            totalProfit = orderDAO.getTotalProfit(sDate, eDate);
             totalOrders = orderDAO.getTotalOrdersCount(null, null, sDate, eDate);
             totalCustomers = orderDAO.getTotalCustomers(sDate, eDate);
             statusCounts = orderDAO.getOrderStatusCounts(sDate, eDate);
@@ -134,13 +136,21 @@ public class AdminDashboardServlet extends HttpServlet {
                 java.time.LocalDate.now().minusMonths(1).withDayOfMonth(java.time.LocalDate.now().minusMonths(1).lengthOfMonth()).toString());
         double custChangePct = custLastMonth > 0 ? Math.round(((custThisMonth - custLastMonth) / custLastMonth * 100) * 10.0) / 10.0 : (custThisMonth > 0 ? 100.0 : 0.0);
 
+        // Tính % thay đổi lợi nhuận so với tháng trước
+        java.util.List<Double> profitValues = new java.util.ArrayList<>(monthlyProfit.values());
+        double profitThisMonth  = profitValues.size() > 0 ? profitValues.get(profitValues.size() - 1) : 0;
+        double profitLastMonth  = profitValues.size() > 1 ? profitValues.get(profitValues.size() - 2) : 0;
+        double profitChangePct  = profitLastMonth > 0 ? Math.round(((profitThisMonth - profitLastMonth) / profitLastMonth * 100) * 10.0) / 10.0 : (profitThisMonth > 0 ? 100.0 : 0.0);
+
         // Gán thuộc tính % thay đổi vào request
         request.setAttribute("revChangePct", revChangePct);
         request.setAttribute("ordChangePct", ordChangePct);
         request.setAttribute("custChangePct", custChangePct);
+        request.setAttribute("profitChangePct", profitChangePct);
         // Lưu ý: Mẫu bánh (products) là dữ liệu tổng số, không có xu hướng tháng → giữ nguyên không hardcode
 
         request.setAttribute("totalRevenue", totalRevenue);
+        request.setAttribute("totalProfit", totalProfit);
         request.setAttribute("totalOrders", totalOrders);
         request.setAttribute("totalCustomers", totalCustomers);
         request.setAttribute("totalProducts", totalProducts);

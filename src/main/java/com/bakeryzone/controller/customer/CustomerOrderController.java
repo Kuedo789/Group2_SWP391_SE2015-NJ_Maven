@@ -110,6 +110,7 @@ public class CustomerOrderController extends HttpServlet {
         request.setAttribute("sort",            sort);
         request.setAttribute("status",          status);
         request.setAttribute("countAll",        statusCounts.getOrDefault("all", 0));
+        request.setAttribute("countConfirmed",  statusCounts.getOrDefault("confirmed", 0));
         request.setAttribute("countProcessing", statusCounts.getOrDefault("processing", 0));
         request.setAttribute("countShipping",   statusCounts.getOrDefault("shipping", 0));
         request.setAttribute("countCompleted",  statusCounts.getOrDefault("completed", 0));

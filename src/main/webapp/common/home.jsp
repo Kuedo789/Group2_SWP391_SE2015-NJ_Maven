@@ -67,7 +67,7 @@
 
                         <div class="hero-actions">
                             <a href="<%= request.getContextPath() %>/products" class="btn btn-primary">Đặt bánh ngay</a>
-                            <a href="#" class="btn btn-outline">Tự thiết kế bánh của bạn</a>
+                            <a href="<%= request.getContextPath() %>/custom-cake" class="btn btn-outline">Tự thiết kế bánh của bạn</a>
                         </div>
                     </div>
 
@@ -282,7 +282,7 @@
                             </div>
                         </div>
 
-                        <a href="#" class="btn btn-primary">
+                        <a href="<%= request.getContextPath() %>/custom-cake" class="btn btn-primary">
                             Bắt đầu thiết kế
                         </a>
 
@@ -320,39 +320,7 @@
 
             </section>
 
-            <!-- Bộ sưu tập nổi bật -->
-            <section class="section">
-                <div class="section-heading">
-                    <h2>Bộ sưu tập nổi bật</h2>
 
-                    <a href="#" class="view-more">
-                        Xem thêm
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </a>
-                </div>
-
-                <div class="collection-grid">
-                    <a href="#" class="collection-card">
-                        <img src="${pageContext.request.contextPath}/assets/images/products/combo.png"
-                             alt="Sweetbox quà tặng">
-                        <div class="collection-content">
-                            <span>Sweetbox 2026</span>
-                            <h3>Quà tặng ngọt ngào</h3>
-                            <p>Những chiếc bánh nhỏ xinh cho mọi dịp đặc biệt.</p>
-                        </div>
-                    </a>
-
-                    <a href="#" class="collection-card">
-                        <img src="${pageContext.request.contextPath}/assets/images/products/Combo2.png"
-                             alt="Combo bánh thủ công">
-                        <div class="collection-content">
-                            <span>Combo yêu thích</span>
-                            <h3>Hộp bánh thủ công</h3>
-                            <p>Kết hợp nhiều hương vị trong một hộp quà thanh lịch.</p>
-                        </div>
-                    </a>
-                </div>
-            </section>
 
             <!-- Vì sao chọn chúng tôi -->
             <section class="section">

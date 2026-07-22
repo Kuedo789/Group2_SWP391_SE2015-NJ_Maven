@@ -126,10 +126,6 @@
                             <span class="material-symbols-outlined">local_activity</span>
                             <span>Ví Voucher</span>
                         </a>
-                        <a href="<%= contextPath %>/my-designs" class="user-dropdown-item">
-                            <span class="material-symbols-outlined">cake</span>
-                            <span>Thiết kế của tôi</span>
-                        </a>
                         <% } else { %>
                         <a href="<%= "ADMIN".equalsIgnoreCase(currentUser.getRoleId()) ? (contextPath + "/admin/dashboard") : 
                                     ("SHIPPER".equalsIgnoreCase(currentUser.getRoleId()) ? (contextPath + "/shipper/orders?action=list") : 

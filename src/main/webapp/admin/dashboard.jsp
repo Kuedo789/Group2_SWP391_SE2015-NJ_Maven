@@ -139,15 +139,25 @@
                                 <div class="stat-value">${totalCustomers}</div>
                             </div>
                         </a>
-                        <a href="${pageContext.request.contextPath}/admin/product?action=list" class="stat-card stat-products" style="text-decoration: none; color: inherit;">
-                            <div class="stat-icon"><i class="fa-solid fa-cake-candles"></i></div>
+                        <div class="stat-card stat-products" style="text-decoration: none; color: inherit; cursor: default;">
+                            <div class="stat-icon" style="background-color: #dcfce7; color: #15803d;"><i class="fa-solid fa-sack-dollar"></i></div>
                             <div class="stat-info">
                                 <div class="stat-label">
-                                    <span>Mẫu bánh</span>
+                                    <span>Tổng lợi nhuận</span>
+                                    <c:choose>
+                                        <c:when test="${profitChangePct >= 0}">
+                                            <span class="stat-trend trend-up">+<fmt:formatNumber value="${profitChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-up"></i></span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="stat-trend trend-down"><fmt:formatNumber value="${profitChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-down"></i></span>
+                                        </c:otherwise>
+                                    </c:choose>
                                 </div>
-                                <div class="stat-value">${totalProducts}</div>
+                                <div class="stat-value">
+                                    <fmt:formatNumber value="${totalProfit != null ? totalProfit : 0}" type="number" pattern="#,##0"/>đ
+                                </div>
                             </div>
-                        </a>
+                        </div>
                     </c:otherwise>
                 </c:choose>
             </div>

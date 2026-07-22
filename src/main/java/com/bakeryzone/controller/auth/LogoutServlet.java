@@ -17,7 +17,7 @@ public class LogoutServlet extends HttpServlet {
         request.getSession().invalidate();
 
         
-        response.sendRedirect(request.getContextPath() + "/home");
+        response.sendRedirect(request.getContextPath() + "/login");
     }
 
     @Override

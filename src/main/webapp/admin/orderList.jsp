@@ -53,6 +53,12 @@
                             <option value="Cancelled" ${status eq 'Cancelled' ? 'selected' : ''}>Đã hủy</option>
                         </select>
 
+                        <select class="filter-select" name="cakeType" onchange="this.form.submit()">
+                            <option value="all" ${empty cakeType || cakeType eq 'all' ? 'selected' : ''}>Tất cả loại bánh</option>
+                            <option value="template" ${cakeType eq 'template' ? 'selected' : ''}>Bánh có sẵn</option>
+                            <option value="custom" ${cakeType eq 'custom' ? 'selected' : ''}>Bánh thiết kế</option>
+                        </select>
+
                         <select class="filter-select" name="sort" onchange="this.form.submit()">
                             <option value="date_desc" ${empty sort || sort eq 'date_desc' ? 'selected' : ''}>Mới nhất xếp trước</option>
                             <option value="date_asc" ${sort eq 'date_asc' ? 'selected' : ''}>Cũ nhất xếp trước</option>

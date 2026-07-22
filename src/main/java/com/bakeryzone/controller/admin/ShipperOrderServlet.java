@@ -189,6 +189,8 @@ public class ShipperOrderServlet extends HttpServlet {
         if (sort == null || sort.trim().isEmpty()) {
             sort = "date_desc";
         }
+        
+        String cakeType = request.getParameter("cakeType");
 
         int page = 1;
         String pageStr = request.getParameter("page");
@@ -202,12 +204,12 @@ public class ShipperOrderServlet extends HttpServlet {
         }
 
         int pageSize = 10;
-        int totalRecords = orderDAO.getTotalOrdersCountByShipper(shipperId, keyword, statusForDao, startDate, endDate);
+        int totalRecords = orderDAO.getTotalOrdersCountByShipper(shipperId, keyword, statusForDao, startDate, endDate, cakeType);
         int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
         if (totalPages == 0) totalPages = 1;
         if (page > totalPages) page = totalPages;
 
-        List<Order> orders = orderDAO.getOrdersByShipperPaged(shipperId, keyword, statusForDao, startDate, endDate, sort, page, pageSize);
+        List<Order> orders = orderDAO.getOrdersByShipperPaged(shipperId, keyword, statusForDao, startDate, endDate, sort, page, pageSize, cakeType);
 
         java.util.Map<String, Object> dailyStats = orderDAO.getShipperDailyStats(shipperId);
         List<Order> readyOrders = orderDAO.getReadyOrdersForShipper(shipperId, 5);
@@ -236,6 +238,7 @@ public class ShipperOrderServlet extends HttpServlet {
         request.setAttribute("startDate", startDate != null ? startDate : "");
         request.setAttribute("endDate", endDate != null ? endDate : "");
         request.setAttribute("sort", sort);
+        request.setAttribute("cakeType", cakeType != null ? cakeType : "all");
 
         request.getRequestDispatcher("/shipper/orderList.jsp").forward(request, response);
     }
@@ -391,6 +394,15 @@ public class ShipperOrderServlet extends HttpServlet {
             return;
         }
 
+        // Logic 1 chiều: Không cho phép quay lui trạng thái
+        int currentLevel = getStatusLevel(currentStatus);
+        int newLevel = getStatusLevel(status);
+        if (newLevel < currentLevel && newLevel != 6 && currentLevel != 6) { // 6 is cancelled
+            session.setAttribute("errorMessage", "Không thể lùi trạng thái đơn hàng (từ " + currentStatus + " về " + status + ")!");
+            response.sendRedirect(request.getContextPath() + "/shipper/orders?action=detail&orderNo=" + orderNo);
+            return;
+        }
+
         boolean success;
         if ("Cancelled".equalsIgnoreCase(status) && shipperNote != null && !shipperNote.trim().isEmpty()) {
             success = orderDAO.updateOrderStatusWithNote(orderNo, status, shipperNote.trim());
@@ -417,5 +429,34 @@ public class ShipperOrderServlet extends HttpServlet {
             }
         }
         return "";
+    }
+
+    private int getStatusLevel(String status) {
+        if (status == null) return 0;
+        switch (status) {
+            case "Pending":
+            case "Chờ xác nhận":
+                return 1;
+            case "Confirmed":
+            case "Đã xác nhận":
+            case "PAID":
+                return 2;
+            case "Processing":
+            case "Đang làm bánh":
+            case "Đang xử lý":
+                return 3;
+            case "Delivering":
+            case "Đang giao hàng":
+            case "Đang giao":
+                return 4;
+            case "Completed":
+            case "Hoàn thành":
+                return 5;
+            case "Cancelled":
+            case "Đã hủy":
+            case "Canceled":
+                return 6;
+            default: return 0;
+        }
     }
 }

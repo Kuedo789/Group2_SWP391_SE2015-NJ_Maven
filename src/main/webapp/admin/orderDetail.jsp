@@ -290,7 +290,7 @@
                         </div>
                         <div class="info-row">
                             <div class="info-label">Người nhận:</div>
-                            <div class="info-value"><strong><%= recName %></strong></div>
+                            <div class="info-value"><%= recName %></div>
                         </div>
                         <div class="info-row">
                             <div class="info-label">SĐT người nhận:</div>
@@ -314,7 +314,7 @@
                         </div>
                         <div class="info-row">
                             <div class="info-label">Ghi chú của khách:</div>
-                            <div class="info-value text-danger" style="font-weight: 600;">
+                            <div class="info-value text-danger">
                                 <c:out value="${not empty order.customerNote ? order.customerNote : 'Không có ghi chú'}" />
                             </div>
                         </div>
@@ -412,13 +412,19 @@
                                     <input type="hidden" name="action" value="update-status">
                                     <input type="hidden" name="orderNo" value="${order.orderNo}">
                                     
+                                    <c:set var="statusLevel" value="0" />
+                                    <c:if test="${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận'}"><c:set var="statusLevel" value="1" /></c:if>
+                                    <c:if test="${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận'}"><c:set var="statusLevel" value="2" /></c:if>
+                                    <c:if test="${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý' || order.orderStatus eq 'Đang làm bánh'}"><c:set var="statusLevel" value="3" /></c:if>
+                                    <c:if test="${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao'}"><c:set var="statusLevel" value="4" /></c:if>
+
                                     <select name="status" class="status-select" style="padding: 10px; width: 100%; border-radius: 6px; border: 1px solid #ccc; font-weight: 500; font-size: 14.5px;">
-                                        <option value="Pending" ${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận' ? 'selected' : ''}>Chờ xác nhận</option>
-                                        <option value="Confirmed" ${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận' ? 'selected' : ''}>Đã xác nhận</option>
-                                        <option value="Processing" ${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý' || order.orderStatus eq 'Đang làm bánh' ? 'selected' : ''}>Đang làm bánh</option>
-                                        <option value="Delivering" ${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao' ? 'selected' : ''}>Đang giao hàng</option>
-                                        <option value="Completed" ${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' ? 'selected' : ''}>Hoàn thành</option>
-                                        <option value="Cancelled" ${order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Canceled' || order.orderStatus eq 'Đã hủy' ? 'selected' : ''}>Hủy đơn</option>
+                                        <option value="Pending" ${statusLevel > 1 ? 'disabled' : ''} ${statusLevel == 1 ? 'selected' : ''}>Chờ xác nhận</option>
+                                        <option value="Confirmed" ${statusLevel > 2 ? 'disabled' : ''} ${statusLevel == 2 ? 'selected' : ''}>Đã xác nhận</option>
+                                        <option value="Processing" ${statusLevel > 3 ? 'disabled' : ''} ${statusLevel == 3 ? 'selected' : ''}>Đang làm bánh</option>
+                                        <option value="Delivering" ${statusLevel > 4 ? 'disabled' : ''} ${statusLevel == 4 ? 'selected' : ''}>Đang giao hàng</option>
+                                        <option value="Completed">Hoàn thành</option>
+                                        <option value="Cancelled">Hủy đơn</option>
                                     </select>
                                     
                                     <button type="submit" class="btn btn-update-status mt-3 w-100" style="padding: 10px; border-radius: 8px; font-weight: bold;">

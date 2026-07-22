@@ -204,6 +204,7 @@ public class OrderDAO {
             String keyword, String startDateStr, String endDateStr) {
         java.util.Map<String, Integer> counts = new java.util.HashMap<>();
         counts.put("all", 0);
+        counts.put("confirmed", 0);
         counts.put("processing", 0);
         counts.put("shipping", 0);
         counts.put("completed", 0);
@@ -251,8 +252,9 @@ public class OrderDAO {
                     int cnt = rs.getInt("cnt");
                     counts.put("all", counts.get("all") + cnt);
                     if (dbStatus != null) {
-                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed")
-                                || dbStatus.equalsIgnoreCase("Processing") || dbStatus.equalsIgnoreCase("PAID")) {
+                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed")) {
+                            counts.put("confirmed", counts.get("confirmed") + cnt);
+                        } else if (dbStatus.equalsIgnoreCase("Processing") || dbStatus.equalsIgnoreCase("PAID")) {
                             counts.put("processing", counts.get("processing") + cnt);
                         } else if (dbStatus.equalsIgnoreCase("Delivering")) {
                             counts.put("shipping", counts.get("shipping") + cnt);
@@ -275,8 +277,11 @@ public class OrderDAO {
         if (uiStatus == null || uiStatus.equalsIgnoreCase("all"))
             return;
         switch (uiStatus.toLowerCase()) {
+            case "confirmed":
+                sql.append(" AND o.OrderStatus IN ('Pending', 'Confirmed')");
+                break;
             case "processing":
-                sql.append(" AND o.OrderStatus IN ('Pending', 'Confirmed', 'Processing', 'PAID')");
+                sql.append(" AND o.OrderStatus IN ('Processing', 'PAID')");
                 break;
             case "shipping":
                 sql.append(" AND o.OrderStatus = 'Delivering'");
@@ -814,7 +819,31 @@ public class OrderDAO {
         }
     }
 
+    private void appendCakeTypeCondition(StringBuilder sql, String cakeType) {
+        if (cakeType == null || cakeType.trim().isEmpty() || "all".equalsIgnoreCase(cakeType)) {
+            return;
+        }
+        if ("template".equalsIgnoreCase(cakeType.trim())) {
+            sql.append(" AND EXISTS (")
+               .append("  SELECT 1 FROM order_item oi ")
+               .append("  WHERE oi.Order_No = o.Order_No ")
+               .append("  AND (oi.Template_ID IS NOT NULL AND oi.Template_ID != '')")
+               .append(" )");
+        } else if ("custom".equalsIgnoreCase(cakeType.trim())) {
+            sql.append(" AND EXISTS (")
+               .append("  SELECT 1 FROM order_item oi ")
+               .append("  WHERE oi.Order_No = o.Order_No ")
+               .append("  AND (oi.Template_ID IS NULL OR oi.Template_ID = '') ")
+               .append("  AND (oi.Custom_Cake_ID IS NOT NULL AND oi.Custom_Cake_ID != '')")
+               .append(" )");
+        }
+    }
+
     public int getTotalOrdersCount(String keyword, String status, String startDateStr, String endDateStr) {
+        return getTotalOrdersCount(keyword, status, startDateStr, endDateStr, null);
+    }
+
+    public int getTotalOrdersCount(String keyword, String status, String startDateStr, String endDateStr, String cakeType) {
         int count = 0;
         StringBuilder sql = new StringBuilder(
                 "SELECT COUNT(*) FROM `orders` o LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID WHERE 1=1");
@@ -822,6 +851,7 @@ public class OrderDAO {
 
         appendKeywordCondition(sql, params, keyword);
         appendStatusCondition(sql, params, status);
+        appendCakeTypeCondition(sql, cakeType);
 
         if (startDateStr != null && !startDateStr.trim().isEmpty()) {
             sql.append(" AND o.Order_Time >= ?");
@@ -850,6 +880,11 @@ public class OrderDAO {
 
     public List<Order> getOrdersPaged(String keyword, String status, String startDateStr, String endDateStr,
             String sort, int pageIndex, int pageSize) {
+        return getOrdersPaged(keyword, status, startDateStr, endDateStr, sort, pageIndex, pageSize, null);
+    }
+
+    public List<Order> getOrdersPaged(String keyword, String status, String startDateStr, String endDateStr,
+            String sort, int pageIndex, int pageSize, String cakeType) {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT o.*, c.Full_Name AS Customer_Name FROM `orders` o LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID WHERE 1=1");
@@ -857,6 +892,7 @@ public class OrderDAO {
 
         appendKeywordCondition(sql, params, keyword);
         appendStatusCondition(sql, params, status);
+        appendCakeTypeCondition(sql, cakeType);
 
         if (startDateStr != null && !startDateStr.trim().isEmpty()) {
             sql.append(" AND o.Order_Time >= ?");
@@ -909,6 +945,11 @@ public class OrderDAO {
 
     public int getTotalOrdersCountByShipper(String shipperId, String keyword, String status, String startDateStr,
             String endDateStr) {
+        return getTotalOrdersCountByShipper(shipperId, keyword, status, startDateStr, endDateStr, null);
+    }
+
+    public int getTotalOrdersCountByShipper(String shipperId, String keyword, String status, String startDateStr,
+            String endDateStr, String cakeType) {
         int count = 0;
         StringBuilder sql = new StringBuilder(
                 "SELECT COUNT(DISTINCT o.Order_No) FROM `orders` o " +
@@ -922,9 +963,10 @@ public class OrderDAO {
         params.add(shipperId);
         params.add(shipperId);
         params.add(shipperId);
-
+ 
         appendKeywordCondition(sql, params, keyword);
         appendStatusCondition(sql, params, status);
+        appendCakeTypeCondition(sql, cakeType);
 
         if (startDateStr != null && !startDateStr.trim().isEmpty()) {
             sql.append(" AND o.Order_Time >= ?");
@@ -954,6 +996,12 @@ public class OrderDAO {
     public List<Order> getOrdersByShipperPaged(String shipperId, String keyword, String status, String startDateStr,
             String endDateStr,
             String sort, int pageIndex, int pageSize) {
+        return getOrdersByShipperPaged(shipperId, keyword, status, startDateStr, endDateStr, sort, pageIndex, pageSize, null);
+    }
+
+    public List<Order> getOrdersByShipperPaged(String shipperId, String keyword, String status, String startDateStr,
+            String endDateStr,
+            String sort, int pageIndex, int pageSize, String cakeType) {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT DISTINCT o.*, c.Full_Name AS Customer_Name, s.Managed_Zone FROM `orders` o " +
@@ -970,6 +1018,7 @@ public class OrderDAO {
 
         appendKeywordCondition(sql, params, keyword);
         appendStatusCondition(sql, params, status);
+        appendCakeTypeCondition(sql, cakeType);
 
         if (startDateStr != null && !startDateStr.trim().isEmpty()) {
             sql.append(" AND o.Order_Time >= ?");
@@ -1017,6 +1066,54 @@ public class OrderDAO {
             e.printStackTrace();
         }
         return orders;
+    }
+
+    public double getTotalProfit(String startDate, String endDate) {
+        StringBuilder sql = new StringBuilder(
+                "SELECT SUM(o.Total_Cost) - SUM(COALESCE(" +
+                "             (SELECT SUM(oi.Quantity * (" +
+                "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
+                "                 FROM template_ingredient_detail d" +
+                "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
+                "                 WHERE d.Template_ID = (CASE" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0001' THEN 'TPL_0001'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0002' THEN 'TPL_0005'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0003' THEN 'TPL_0009'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0004' THEN 'TPL_0011'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0005' THEN 'TPL_0013'" +
+                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0006' THEN 'TPL_0017'" +
+                "                     ELSE cc.Cake_Hash_Structure END)" +
+                "             ))" +
+                "              FROM order_item oi" +
+                "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
+                "              WHERE oi.Order_No = o.Order_No)," +
+                "             0" +
+                "         )) AS total_profit " +
+                "FROM `orders` o " +
+                "WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
+        List<String> params = new ArrayList<>();
+        if (startDate != null && !startDate.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time >= ?");
+            params.add(startDate.trim() + " 00:00:00");
+        }
+        if (endDate != null && !endDate.trim().isEmpty()) {
+            sql.append(" AND o.Order_Time <= ?");
+            params.add(endDate.trim() + " 23:59:59");
+        }
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setString(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("total_profit");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
     }
 
     public double getTotalRevenue(String startDate, String endDate) {
