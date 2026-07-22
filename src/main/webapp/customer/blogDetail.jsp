@@ -114,7 +114,8 @@
 
                     <c:if test="${not empty blog.imageUrl}">
                         <div class="blog-detail-image-wrapper">
-                            <img src="${blog.imageUrl}" alt="${blog.title}" style="width:100%; height:auto; display:block;">
+                            <c:set var="resolvedBlogImg" value="${blog.imageUrl.startsWith('http') ? blog.imageUrl : pageContext.request.contextPath.concat('/').concat(blog.imageUrl.startsWith('/') ? blog.imageUrl.substring(1) : blog.imageUrl)}" />
+                            <img src="${resolvedBlogImg}" alt="${blog.title}" style="width:100%; height:auto; display:block;">
                         </div>
                     </c:if>
 

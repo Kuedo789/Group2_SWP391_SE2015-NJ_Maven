@@ -13,22 +13,26 @@
     <style>
         .image-preview-box {
             width: 100%;
-            height: 180px;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
+            height: 220px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            background-color: #fafafa;
+            background-color: #f8fafc;
             overflow: hidden;
             margin-top: 10px;
             position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
         }
         .image-preview-box img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
+            object-position: center;
+            border-radius: 8px;
+            display: block;
         }
         /* Quill custom styling */
         .ql-toolbar.ql-snow {
@@ -165,11 +169,12 @@
                                     <div class="image-preview-box" id="previewContainer">
                                         <c:choose>
                                             <c:when test="${not empty post.imageUrl}">
-                                                <img src="${pageContext.request.contextPath}/${post.imageUrl}" alt="Current" />
+                                                <c:set var="resolvedBlogImg" value="${post.imageUrl.startsWith('http') ? post.imageUrl : pageContext.request.contextPath.concat('/').concat(post.imageUrl.startsWith('/') ? post.imageUrl.substring(1) : post.imageUrl)}" />
+                                                <img src="${resolvedBlogImg}" alt="Preview" />
                                             </c:when>
                                             <c:otherwise>
-                                                <i class="fa-regular fa-image" style="font-size: 32px; color: #ccc; margin-bottom: 8px;"></i>
-                                                <span style="font-size: 12.5px; color: #aaa;">Chưa có ảnh đại diện.</span>
+                                                <i class="fa-regular fa-image" style="font-size: 36px; color: #cbd5e1; margin-bottom: 8px;"></i>
+                                                <span style="font-size: 13px; color: #94a3b8; font-weight: 500;">Chưa có ảnh đại diện.</span>
                                             </c:otherwise>
                                         </c:choose>
                                     </div>
@@ -198,24 +203,40 @@
 
         window.addEventListener('load', function() {
             const editorEl = document.getElementById('editor-container');
-            const contentInput = document.getElementById('content');
-            if (editorEl && contentInput) {
-                quill = new Quill(editorEl, {
+            if (editorEl) {
+                quill = new Quill('#editor-container', {
                     theme: 'snow',
-                    placeholder: 'Nhập nội dung chi tiết bài viết tại đây...',
+                    placeholder: 'Soạn thảo nội dung bài viết chi tiết tại đây...',
                     modules: {
                         toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
                             ['bold', 'italic', 'underline', 'strike'],
                             [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            [{ 'color': [] }, { 'background': [] }],
                             [{ 'align': [] }],
                             ['link', 'image'],
                             ['clean']
                         ]
                     }
                 });
-                
-                // Load existing content into Quill editor
-                quill.root.innerHTML = contentInput.value;
+
+                const initialContent = document.getElementById('content').value;
+                if (initialContent) {
+                    quill.clipboard.dangerouslyPasteHTML(initialContent);
+                }
+
+                quill.on('text-change', function() {
+                    const html = quill.getSemanticHTML();
+                    document.getElementById('content').value = html;
+                    
+                    const text = quill.getText().trim();
+                    const errorEl = document.getElementById('error-content');
+                    const containerEl = document.querySelector('.ql-container');
+                    if (text.length >= 10) {
+                        errorEl.style.display = 'none';
+                        containerEl.classList.remove('is-invalid');
+                    }
+                });
             }
         });
 
@@ -250,32 +271,20 @@
                     input.classList.add('is-invalid');
                     input.value = '';
                     previewContainer.innerHTML = `
-                        <i class="fa-regular fa-image" style="font-size: 32px; color: #ccc; margin-bottom: 8px;"></i>
-                        <span style="font-size: 12.5px; color: #aaa;">Chưa có ảnh đại diện.</span>
+                        <i class="fa-regular fa-image" style="font-size: 36px; color: #cbd5e1; margin-bottom: 8px;"></i>
+                        <span style="font-size: 13px; color: #94a3b8; font-weight: 500;">Chưa có ảnh đại diện.</span>
                     `;
                     return;
                 }
 
                 const objectUrl = URL.createObjectURL(file);
                 previewContainer.innerHTML = 
-                    '<img src="' + objectUrl + '" alt="Preview" onerror="this.style.display=\'none\'; document.getElementById(\'preview-error-text\').style.display=\'block\'; document.getElementById(\'file-details\').textContent = \'Tên: \' + file.name.replace(/\'/g, \'\\\\\'\') + \' | Dung lượng: \' + (file.size / 1024).toFixed(2) + \' KB | Định dạng: \' + (file.type || \'Không xác định\');" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;" />' +
+                    '<img src="' + objectUrl + '" alt="Preview" onerror="this.style.display=\'none\'; document.getElementById(\'preview-error-text\').style.display=\'block\'; document.getElementById(\'file-details\').textContent = \'Tên: \' + file.name.replace(/\'/g, \'\\\\\'\') + \' | Dung lượng: \' + (file.size / 1024).toFixed(2) + \' KB\';" style="max-width: 100%; max-height: 100%; object-fit: contain; object-position: center; border-radius: 8px; display: block;" />' +
                     '<div id="preview-error-text" style="display:none; text-align: center; padding: 10px;">' +
                         '<i class="fa-solid fa-triangle-exclamation" style="font-size: 28px; color: var(--cz-danger); margin-bottom: 6px;"></i>' +
                         '<span style="font-size: 12px; color: var(--cz-danger); font-weight: 600; display: block;">Tệp tin không phải hình ảnh hợp lệ hoặc bị lỗi!</span>' +
                         '<span id="file-details" style="font-size: 11.5px; color: #888; display: block; margin-top: 6px; font-weight: 500;"></span>' +
                     '</div>';
-            } else {
-                previewContainer.innerHTML = `
-                    <c:choose>
-                        <c:when test="${not empty post.imageUrl}">
-                            <img src="${pageContext.request.contextPath}/${post.imageUrl}" alt="Current" style="max-width: 100%; max-height: 100%; object-fit: contain; display: block;" />
-                        </c:when>
-                        <c:otherwise>
-                            <i class="fa-regular fa-image" style="font-size: 32px; color: #ccc; margin-bottom: 8px;"></i>
-                            <span style="font-size: 12.5px; color: #aaa;">Chưa có ảnh đại diện.</span>
-                        </c:otherwise>
-                    </c:choose>
-                `;
             }
         }
 

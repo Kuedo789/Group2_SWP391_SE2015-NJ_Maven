@@ -386,10 +386,11 @@
                                     <tr>
                                         <td style="text-align: center;">${((currentPage - 1) * pageSize) + status.index + 1}</td>
                                         <td>
-                                            <c:choose>
-                                                <c:when test="${not empty b.imageUrl}">
-                                                    <img src="${pageContext.request.contextPath}/${b.imageUrl}" alt="Thumbnail" style="width: 70px; height: 45px; object-fit: cover; border-radius: 4px; border: 1px solid #eee;">
-                                                </c:when>
+                                             <c:choose>
+                                                 <c:when test="${not empty b.imageUrl}">
+                                                     <c:set var="resolvedBlogImg" value="${b.imageUrl.startsWith('http') ? b.imageUrl : pageContext.request.contextPath.concat('/').concat(b.imageUrl.startsWith('/') ? b.imageUrl.substring(1) : b.imageUrl)}" />
+                                                     <img src="${resolvedBlogImg}" alt="Thumbnail" style="width: 75px; height: 50px; object-fit: cover; object-position: center; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                                 </c:when>
                                                 <c:otherwise>
                                                     <div style="width: 70px; height: 45px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
                                                         <i class="fa-regular fa-image text-muted" style="font-size: 16px;"></i>

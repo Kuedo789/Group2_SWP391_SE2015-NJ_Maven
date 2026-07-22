@@ -219,7 +219,8 @@
                                     <a href="blog?action=detail&id=${blog.postId}">
                                         <c:choose>
                                             <c:when test="${not empty blog.imageUrl}">
-                                                <img src="${blog.imageUrl}" alt="${blog.title}" class="blog-image">
+                                                <c:set var="resolvedBlogImg" value="${blog.imageUrl.startsWith('http') ? blog.imageUrl : pageContext.request.contextPath.concat('/').concat(blog.imageUrl.startsWith('/') ? blog.imageUrl.substring(1) : blog.imageUrl)}" />
+                                                <img src="${resolvedBlogImg}" alt="${blog.title}" class="blog-image">
                                             </c:when>
                                             <c:otherwise>
                                                 <!-- Dynamic styling banner matching image placeholder in user request -->

@@ -365,10 +365,10 @@ public class AdminBlogController extends HttpServlet {
     }
 
     private String saveBlogImage(Part filePart, HttpServletRequest request) throws IOException {
-        String uploadPathTarget = request.getServletContext().getRealPath("/assets/images/blog");
-        File uploadDirTarget = new File(uploadPathTarget);
-        if (!uploadDirTarget.exists()) {
-            uploadDirTarget.mkdirs();
+        String baseUploadPath = com.bakeryzone.controller.ImageServlet.EXTERNAL_UPLOAD_DIR + File.separator + "blog";
+        File uploadDir = new File(baseUploadPath);
+        if (!uploadDir.exists()) {
+            uploadDir.mkdirs();
         }
 
         String fileExtension = ".jpg";
@@ -377,41 +377,27 @@ public class AdminBlogController extends HttpServlet {
             fileExtension = submittedFileName.substring(submittedFileName.lastIndexOf("."));
         }
         String fileName = "blog_" + System.currentTimeMillis() + fileExtension;
-        String targetFilePath = uploadPathTarget + File.separator + fileName;
-        filePart.write(targetFilePath);
+        String filePath = baseUploadPath + File.separator + fileName;
+        filePart.write(filePath);
 
-        // Copy to source folder so Clean and Build won't delete the image
-        try {
-            String uploadPathSource = uploadPathTarget.replace("target" + File.separator + "Bakery_SWP-1.0-SNAPSHOT", "src" + File.separator + "main" + File.separator + "webapp");
-            File uploadDirSource = new File(uploadPathSource);
-            if (!uploadDirSource.exists()) {
-                uploadDirSource.mkdirs();
-            }
-            String sourceFilePath = uploadPathSource + File.separator + fileName;
-            java.nio.file.Files.copy(new File(targetFilePath).toPath(), new File(sourceFilePath).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            System.out.println("--> Synced uploaded image to source directory: " + sourceFilePath);
-        } catch (Exception e) {
-            System.err.println("--> [WARNING] Failed to sync uploaded image to source directory: " + e.getMessage());
-        }
+        System.out.println("--> [BlogUpload] Saved blog thumbnail image to external persistent directory: " + filePath);
 
-        return "assets/images/blog/" + fileName;
+        return "uploads/blog/" + fileName;
     }
 
     private void deletePhysicalImage(String imageUrl, HttpServletRequest request) {
         if (imageUrl != null && !imageUrl.trim().isEmpty()) {
-            String targetPath = request.getServletContext().getRealPath("/") + imageUrl;
-            File targetFile = new File(targetPath);
-            if (targetFile.exists()) {
-                targetFile.delete();
-            }
             try {
-                String srcPath = targetPath.replace("target" + File.separator + "Bakery_SWP-1.0-SNAPSHOT", "src" + File.separator + "main" + File.separator + "webapp");
-                File srcFile = new File(srcPath);
-                if (srcFile.exists()) {
-                    srcFile.delete();
+                String cleanPath = imageUrl.startsWith("/") ? imageUrl.substring(1) : imageUrl;
+                String fileName = cleanPath.contains("/") ? cleanPath.substring(cleanPath.lastIndexOf("/") + 1) : cleanPath;
+                String baseUploadPath = com.bakeryzone.controller.ImageServlet.EXTERNAL_UPLOAD_DIR + File.separator + "blog";
+                File targetFile = new File(baseUploadPath, fileName);
+                if (targetFile.exists()) {
+                    targetFile.delete();
+                    System.out.println("--> [BlogUpload] Deleted physical blog image: " + targetFile.getAbsolutePath());
                 }
             } catch (Exception e) {
-                System.err.println("--> Failed to delete physical image from src: " + e.getMessage());
+                System.err.println("--> [BlogUpload] Failed to delete physical blog image: " + e.getMessage());
             }
         }
     }
