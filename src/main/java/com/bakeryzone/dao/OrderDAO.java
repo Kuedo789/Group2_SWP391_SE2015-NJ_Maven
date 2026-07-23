@@ -2043,4 +2043,64 @@ public class OrderDAO {
             e.printStackTrace();
         }
     }
+
+    public String ensureTripIdForOrder(String orderNo, String shipperUserId) {
+        if (orderNo == null || orderNo.trim().isEmpty()) {
+            return null;
+        }
+        try (Connection conn = DBContext.getJDBCConnection()) {
+            if (conn == null) return null;
+
+            String checkSql = "SELECT Trip_ID FROM `orders` WHERE Order_No = ?";
+            String currentTripId = null;
+            try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                ps.setString(1, orderNo);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        currentTripId = rs.getString("Trip_ID");
+                    }
+                }
+            }
+
+            if (currentTripId != null && !currentTripId.trim().isEmpty()) {
+                return currentTripId;
+            }
+
+            conn.setAutoCommit(false);
+            String staffId = shipperUserId;
+            if (shipperUserId != null && !shipperUserId.trim().isEmpty()) {
+                String getStaffSql = "SELECT Staff_ID FROM `staff` WHERE User_ID = ? OR Staff_ID = ?";
+                try (PreparedStatement ps = conn.prepareStatement(getStaffSql)) {
+                    ps.setString(1, shipperUserId);
+                    ps.setString(2, shipperUserId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            staffId = rs.getString("Staff_ID");
+                        }
+                    }
+                }
+            }
+
+            String newTripId = generateTripId(conn);
+            String insertTripSql = "INSERT INTO `delivery_trip` (Trip_ID, Shipper_ID, OSRM_Distance_Km, OSRM_Duration_Min) VALUES (?, ?, 0.0, 0)";
+            try (PreparedStatement ps = conn.prepareStatement(insertTripSql)) {
+                ps.setString(1, newTripId);
+                ps.setString(2, staffId);
+                ps.executeUpdate();
+            }
+
+            String updateOrderSql = "UPDATE `orders` SET Trip_ID = ? WHERE Order_No = ?";
+            try (PreparedStatement ps = conn.prepareStatement(updateOrderSql)) {
+                ps.setString(1, newTripId);
+                ps.setString(2, orderNo);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
+            return newTripId;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

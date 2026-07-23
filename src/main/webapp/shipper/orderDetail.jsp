@@ -13,6 +13,7 @@
     </jsp:include>
     <!-- Order Specific Style Link -->
     <link href="${pageContext.request.contextPath}/assets/css/all/order.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <style>
         .page-title-area .status-badge {
             font-size: 14px;
@@ -386,7 +387,7 @@
                                     </c:choose>
                                 </div>
                                 <input type="file" id="delivery-file-input" accept="image/*" capture="camera" style="display: none;" onchange="uploadEvidence(this, 'delivery')" ${empty pickupPhoto ? 'disabled' : ''}>
-                                <button type="button" class="btn" id="btn-delivery-upload" style="background-color: ${empty pickupPhoto ? '#aaa' : 'var(--cz-primary)'}; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="${empty pickupPhoto ? "alert('Bạn cần chụp ảnh lấy bánh tại tiệm trước!')" : "openWebRTCCamera('delivery')"}" ${empty pickupPhoto ? 'disabled' : ''}>
+                                <button type="button" class="btn" id="btn-delivery-upload" style="background-color: ${empty pickupPhoto ? '#aaa' : 'var(--cz-primary)'}; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="${empty pickupPhoto ? "showToast('Bạn cần chụp ảnh lấy bánh tại tiệm trước!', 'error')" : "openWebRTCCamera('delivery')"}" ${empty pickupPhoto ? 'disabled' : ''}>
                                     <i class="fa-solid fa-camera"></i> Chụp ảnh giao bánh
                                 </button>
                             </div>
@@ -535,15 +536,38 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
     <script>
+        function showToast(message, type = 'success') {
+            const isSuccess = (type === 'success');
+            Toastify({
+                text: message,
+                duration: 3500,
+                close: true,
+                gravity: "top",
+                position: "right",
+                style: {
+                    background: isSuccess 
+                        ? "linear-gradient(to right, #00b09b, #96c93d)" 
+                        : "linear-gradient(to right, #ff5f6d, #ffc371)",
+                    color: "#ffffff",
+                    borderRadius: "8px",
+                    fontWeight: "600",
+                    fontSize: "14px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
+                },
+                stopOnFocus: true
+            }).showToast();
+        }
+
         function uploadEvidence(inputElement, type) {
             const file = inputElement.files[0];
             if (!file) return;
 
             // Kiểm tra kích thước file (giới hạn 10MB)
             if (file.size > 10 * 1024 * 1024) {
-                alert("⚠️ Kích thước ảnh quá lớn, vui lòng chụp/chọn ảnh dưới 10MB!");
+                showToast("⚠️ Kích thước ảnh quá lớn, vui lòng chọn ảnh dưới 10MB!", "error");
                 return;
             }
 
@@ -572,17 +596,19 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("🎉 " + data.message);
+                    showToast("🎉 " + data.message, "success");
                     // Tải lại trang để đồng bộ hoàn toàn trạng thái mới từ database
-                    window.location.reload();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
-                    alert("❌ Lỗi: " + data.message);
+                    showToast("❌ Lỗi: " + data.message, "error");
                     previewContainer.innerHTML = originalHTML;
                 }
             })
             .catch(error => {
                 console.error("Lỗi upload minh chứng:", error);
-                alert("❌ Đã xảy ra lỗi kết nối khi tải ảnh lên!");
+                showToast("❌ Đã xảy ra lỗi kết nối khi tải ảnh lên!", "error");
                 previewContainer.innerHTML = originalHTML;
             });
         }
@@ -595,7 +621,7 @@
             if (selectedStatus === 'Delivering') {
                 const hasPickupPhoto = "${not empty pickupPhoto}" === "true";
                 if (!hasPickupPhoto) {
-                    alert('⚠️ LỖI: Bạn phải chụp ảnh lấy bánh thành công tại tiệm trước khi cập nhật đơn hàng thành "Đang giao hàng"!');
+                    showToast('⚠️ Bạn phải chụp ảnh lấy bánh thành công tại tiệm trước khi cập nhật đơn hàng thành "Đang giao hàng"!', 'error');
                     return false;
                 }
             }
@@ -603,7 +629,7 @@
             if (selectedStatus === 'Completed') {
                 const hasDeliveryPhoto = "${not empty deliveryPhoto}" === "true";
                 if (!hasDeliveryPhoto) {
-                    alert('⚠️ LỖI: Bạn phải chụp ảnh giao bánh thành công cho khách trước khi cập nhật đơn hàng thành "Hoàn thành"!');
+                    showToast('⚠️ Bạn phải chụp ảnh giao bánh thành công cho khách trước khi cập nhật đơn hàng thành "Hoàn thành"!', 'error');
                     return false;
                 }
             }
@@ -611,7 +637,7 @@
             if (selectedStatus === 'Cancelled') {
                 const reasonInput = document.getElementById('shipper-note-input');
                 if (!reasonInput || !reasonInput.value.trim()) {
-                    alert('⚠️ LỖI: Bạn phải nhập lý do hủy / giao hàng thất bại!');
+                    showToast('⚠️ Bạn phải nhập lý do hủy / giao hàng thất bại!', 'error');
                     if (reasonInput) reasonInput.focus();
                     return false;
                 }
@@ -621,6 +647,15 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            <c:if test="${not empty sessionScope.successMessage}">
+                showToast("${sessionScope.successMessage}", "success");
+                <c:remove var="successMessage" scope="session" />
+            </c:if>
+            <c:if test="${not empty sessionScope.errorMessage}">
+                showToast("${sessionScope.errorMessage}", "error");
+                <c:remove var="errorMessage" scope="session" />
+            </c:if>
+
             // Toggle hiển thị lý do hủy đơn
             const statusSelect = document.getElementById('shipper-status-select');
             const cancelReasonContainer = document.getElementById('cancel-reason-container');
@@ -694,7 +729,7 @@
                 })
                 .catch(function(err) {
                     console.error("Camera access failed:", err);
-                    alert("⚠️ Lỗi khởi động camera hoặc chưa cấp quyền truy cập. Hệ thống sẽ mở bộ chọn tệp.");
+                    showToast("⚠️ Lỗi khởi động camera hoặc chưa cấp quyền truy cập. Hệ thống sẽ mở bộ chọn tệp.", "error");
                     
                     // Close Modal
                     const modalEl = document.getElementById('cameraModal');
@@ -742,7 +777,7 @@
             const canvas = document.getElementById('camera-canvas');
             canvas.toBlob(function(blob) {
                 if (!blob) {
-                    alert("Lỗi tạo ảnh từ Camera, vui lòng chụp lại!");
+                    showToast("Lỗi tạo ảnh từ Camera, vui lòng chụp lại!", "error");
                     return;
                 }
                 
@@ -780,16 +815,18 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("🎉 " + data.message);
-                    window.location.reload();
+                    showToast("🎉 " + data.message, "success");
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 } else {
-                    alert("❌ Lỗi: " + data.message);
+                    showToast("❌ Lỗi: " + data.message, "error");
                     previewContainer.innerHTML = originalHTML;
                 }
             })
             .catch(error => {
                 console.error("Lỗi upload minh chứng:", error);
-                alert("❌ Đã xảy ra lỗi kết nối khi tải ảnh lên!");
+                showToast("❌ Đã xảy ra lỗi kết nối khi tải ảnh lên!", "error");
                 previewContainer.innerHTML = originalHTML;
             });
         }

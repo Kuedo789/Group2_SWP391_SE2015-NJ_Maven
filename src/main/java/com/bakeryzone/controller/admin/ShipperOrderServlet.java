@@ -90,8 +90,21 @@ public class ShipperOrderServlet extends HttpServlet {
             String orderNo = request.getParameter("orderNo");
             String type = request.getParameter("type"); // "pickup" or "delivery"
 
-            if (filePart == null || filePart.getSize() == 0 || tripId == null || tripId.trim().isEmpty() || type == null || type.trim().isEmpty()) {
+            if (filePart == null || filePart.getSize() == 0 || orderNo == null || orderNo.trim().isEmpty() || type == null || type.trim().isEmpty()) {
                 out.print("{\"success\":false,\"message\":\"Dữ liệu gửi lên thiếu hoặc không hợp lệ!\"}");
+                return;
+            }
+
+            HttpSession session = request.getSession(false);
+            User user = (session != null) ? (User) session.getAttribute("user") : null;
+            String shipperUserId = (user != null) ? user.getUserId() : null;
+
+            if (tripId == null || tripId.trim().isEmpty()) {
+                tripId = orderDAO.ensureTripIdForOrder(orderNo, shipperUserId);
+            }
+
+            if (tripId == null || tripId.trim().isEmpty()) {
+                out.print("{\"success\":false,\"message\":\"Không thể xác định chuyến giao hàng (Trip) cho đơn hàng này!\"}");
                 return;
             }
 
