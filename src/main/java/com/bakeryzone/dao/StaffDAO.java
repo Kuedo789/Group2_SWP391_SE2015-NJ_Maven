@@ -75,8 +75,8 @@ public class StaffDAO {
             // 2. Insert vào bảng Staff
             String sqlStaff = "INSERT INTO `staff` (Staff_ID, User_ID, Full_Name, Phone, Position, Managed_Zone, Is_Active_Staff) VALUES (?, ?, ?, ?, ?, ?, 1)";
             psStaff = conn.prepareStatement(sqlStaff);
-            psStaff.setString(1, generatedStaffId);
-            psStaff.setString(2, userId);
+            psStaff.setString(1, s.getStaffId());
+            psStaff.setString(2, s.getUser().getUserId());
             psStaff.setString(3, s.getFullName());
             psStaff.setString(4, s.getPhone());
             psStaff.setString(5, s.getPosition());
