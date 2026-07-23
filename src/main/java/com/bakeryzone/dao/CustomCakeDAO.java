@@ -150,4 +150,26 @@ public class CustomCakeDAO {
             ps.executeUpdate();
         }
     }
+
+    public CustomCake getCustomCakeById(String customCakeId) {
+        String sql = "SELECT * FROM `custom_cake` WHERE Custom_Cake_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, customCakeId);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    CustomCake cc = new CustomCake();
+                    cc.setCustomCakeId(rs.getString("Custom_Cake_ID"));
+                    cc.setCanvasImageUrl(rs.getString("Canvas_Image_URL"));
+                    cc.setGreetingText(rs.getString("Greeting_Text"));
+                    cc.setCakeHashStructure(rs.getString("Cake_Hash_Structure"));
+                    cc.setCalculatedPrice(rs.getDouble("Calculated_Price"));
+                    return cc;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Lỗi khi lấy CustomCake", e);
+        }
+        return null;
+    }
 }

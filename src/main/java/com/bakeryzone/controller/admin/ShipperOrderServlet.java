@@ -394,10 +394,20 @@ public class ShipperOrderServlet extends HttpServlet {
             return;
         }
 
+        // Phân quyền Shipper: chỉ được cập nhật Waiting_Delivery→Delivering và Delivering→Completed/Cancelled
+        java.util.Set<String> shipperAllowed = java.util.Set.of(
+            Order.STATUS_DELIVERING, Order.STATUS_COMPLETED, Order.STATUS_CANCELLED
+        );
+        if (!shipperAllowed.contains(status)) {
+            session.setAttribute("errorMessage", "Shipper chỉ được chuyển sang: Đang giao / Hoàn thành / Hủy!");
+            response.sendRedirect(request.getContextPath() + "/shipper/orders?action=detail&orderNo=" + orderNo);
+            return;
+        }
+
         // Logic 1 chiều: Không cho phép quay lui trạng thái
         int currentLevel = getStatusLevel(currentStatus);
         int newLevel = getStatusLevel(status);
-        if (newLevel < currentLevel && newLevel != 6 && currentLevel != 6) { // 6 is cancelled
+        if (newLevel < currentLevel && !Order.STATUS_CANCELLED.equals(status)) {
             session.setAttribute("errorMessage", "Không thể lùi trạng thái đơn hàng (từ " + currentStatus + " về " + status + ")!");
             response.sendRedirect(request.getContextPath() + "/shipper/orders?action=detail&orderNo=" + orderNo);
             return;
@@ -434,29 +444,13 @@ public class ShipperOrderServlet extends HttpServlet {
     private int getStatusLevel(String status) {
         if (status == null) return 0;
         switch (status) {
-            case "Pending":
-            case "Chờ xác nhận":
-                return 1;
-            case "Confirmed":
-            case "Đã xác nhận":
-            case "PAID":
-                return 2;
-            case "Processing":
-            case "Đang làm bánh":
-            case "Đang xử lý":
-                return 3;
-            case "Delivering":
-            case "Đang giao hàng":
-            case "Đang giao":
-                return 4;
-            case "Completed":
-            case "Hoàn thành":
-                return 5;
-            case "Cancelled":
-            case "Đã hủy":
-            case "Canceled":
-                return 6;
-            default: return 0;
+            case "PAID":             return 1;
+            case "Processing":       return 2;
+            case "Waiting_Delivery": return 3;
+            case "Delivering":       return 4;
+            case "Completed":        return 5;
+            case "Cancelled":        return 99; // Terminal
+            default:                 return 0;
         }
     }
 }

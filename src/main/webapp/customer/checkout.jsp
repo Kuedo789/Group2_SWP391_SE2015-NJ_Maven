@@ -782,7 +782,22 @@
 
             currentCart.forEach(item => {
                 if (!item) return;
-                const imgUrl = (item.image && typeof item.image === "string" && (item.image.startsWith("http") || item.image.startsWith("data:"))) ? item.image : "${pageContext.request.contextPath}/" + (item.image || "assets/images/products/basic.png");
+                let imgUrl = "${pageContext.request.contextPath}/assets/images/default-cake.png";
+                if (item.image && typeof item.image === "string" && item.image.trim() !== "") {
+                    if (item.image.startsWith("http") || item.image.startsWith("data:")) {
+                        imgUrl = item.image;
+                    } else {
+                        let cleanPath = item.image;
+                        const ctx = "${pageContext.request.contextPath}";
+                        if (ctx && cleanPath.startsWith(ctx)) {
+                            cleanPath = cleanPath.substring(ctx.length);
+                        }
+                        if (cleanPath.startsWith("/")) {
+                            cleanPath = cleanPath.substring(1);
+                        }
+                        imgUrl = ctx + "/" + cleanPath;
+                    }
+                }
                 const priceFormatted = (parseFloat(item.price) || 0).toLocaleString("vi-VN") + "đ";
 
                 let cleanName = item.name || '';

@@ -2631,3 +2631,23 @@ html.dark-theme .proof-placeholder-text {
 html.dark-theme .proof-placeholder-icon {
     color: #475569 !important;
 }
+
+/* ==============================================================
+   PRINT STYLES FOR ORDER INVOICE
+   ============================================================== */
+@media print {
+    /* Ẩn các thành phần không cần thiết khi in hóa đơn */
+    .navbar, header, footer, .breadcrumbs, .order-header-actions, 
+    .timeline-card, .cancelled-banner, .btn-pdf, .order-meta-info {
+        display: none !important;
+    }
+    body { background: white !important; }
+    .order-detail-page { padding: 0 !important; margin: 0 !important; }
+    .order-header-wrap { border: none !important; padding: 0 !important; margin-bottom: 20px !important; }
+    .invoice-card, .items-card, .customer-card {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        break-inside: avoid;
+    }
+    .grid-layout { display: block !important; } /* Nếu có chia cột thì chuyển thành dọc */
+}

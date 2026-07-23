@@ -21,17 +21,27 @@ public class AdminOrderController extends HttpServlet {
     private final OrderDAO orderDAO = new OrderDAO();
     private final CustomerDAO customerDAO = new CustomerDAO();
 
-    // Whitelist trạng thái hợp lệ – ngăn giá trị rác ghi vào DB
+    // Whitelist trạng thái hợp lệ theo chuẩn 1 chiều
     private static final java.util.Set<String> ALLOWED_STATUSES = java.util.Set.of(
-        "Pending", "Confirmed", "Processing", "Delivering", "Completed", "Cancelled", "PAID"
+        Order.STATUS_PAID,
+        Order.STATUS_PROCESSING,
+        Order.STATUS_WAITING_DELIVERY,
+        Order.STATUS_DELIVERING,
+        Order.STATUS_COMPLETED,
+        Order.STATUS_CANCELLED
     );
 
+    // Trạng thái tối đa Staff được phép chuyển đến (không vượt qua Waiting_Delivery)
+    private static final int STAFF_MAX_LEVEL = 3; // Waiting_Delivery
+
     @Override
+    // Chức năng: Xử lý các request GET để hiển thị danh sách đơn hàng hoặc chi tiết đơn hàng cho Admin/Staff
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         
-        
+        // Lazy-cleanup: Tự động dọn các đơn "Chờ thanh toán" quá 15 phút
+        orderDAO.cancelExpiredWaitingPaymentOrders();
 
         String action = request.getParameter("action");
         if (action == null || action.trim().isEmpty()) {
@@ -213,10 +223,38 @@ public class AdminOrderController extends HttpServlet {
             return;
         }
 
+        // Không cho phép bất kỳ ai tự đổi trạng thái khi đơn đang Chờ thanh toán (trừ việc Hủy đơn)
+        if (Order.STATUS_WAITING_PAYMENT.equals(currentStatus) && !Order.STATUS_CANCELLED.equals(status)) {
+            session.setAttribute("errorMessage", "Đơn hàng đang chờ thanh toán. Hệ thống sẽ tự cập nhật khi thanh toán thành công, bạn không thể tự sửa!");
+            response.sendRedirect(request.getContextPath() + "/admin/orders?action=detail&orderNo=" + orderNo);
+            return;
+        }
+
+        // Phân quyền Staff: chỉ được cập nhật tối đa đến Waiting_Delivery
+        HttpSession httpSession = request.getSession();
+        com.bakeryzone.model.User currentUser = (com.bakeryzone.model.User) httpSession.getAttribute("user");
+        boolean isStaff = currentUser != null && "STAFF".equalsIgnoreCase(currentUser.getRoleId());
+        if (isStaff) {
+            int currentLevel = getStatusLevel(currentStatus);
+            int newLevel = getStatusLevel(status);
+            // Staff không được sửa khi đơn đã >= Waiting_Delivery (trừ Cancelled từ PAID/Processing)
+            if (currentLevel >= STAFF_MAX_LEVEL && !Order.STATUS_CANCELLED.equals(status)) {
+                session.setAttribute("errorMessage", "Staff không được thay đổi trạng thái sau khi đơn đã ở Chờ giao hàng!");
+                response.sendRedirect(request.getContextPath() + "/staff/orders?action=detail&orderNo=" + orderNo);
+                return;
+            }
+            // Staff không được đặt trạng thái vượt quá Waiting_Delivery (không được đặt Delivering/Completed)
+            if (newLevel > STAFF_MAX_LEVEL && !Order.STATUS_CANCELLED.equals(status)) {
+                session.setAttribute("errorMessage", "Staff chỉ được cập nhật tới trạng thái 'Chờ giao hàng'!");
+                response.sendRedirect(request.getContextPath() + "/staff/orders?action=detail&orderNo=" + orderNo);
+                return;
+            }
+        }
+
         // Logic 1 chiều: Không cho phép quay lui trạng thái
         int currentLevel = getStatusLevel(currentStatus);
         int newLevel = getStatusLevel(status);
-        if (newLevel < currentLevel && newLevel != 6 && currentLevel != 6) { // 6 is cancelled
+        if (newLevel < currentLevel && !Order.STATUS_CANCELLED.equals(status)) {
             session.setAttribute("errorMessage", "Không thể lùi trạng thái đơn hàng (từ " + currentStatus + " về " + status + ")!");
             response.sendRedirect(request.getContextPath() + "/admin/orders?action=detail&orderNo=" + orderNo);
             return;
@@ -224,8 +262,8 @@ public class AdminOrderController extends HttpServlet {
 
         boolean success = orderDAO.updateOrderStatus(orderNo, status);
         if (success) {
-            // Tự động phân công Shipper & Gom đơn khi xác nhận/bắt đầu làm/sẵn sàng giao
-            if ("Confirmed".equalsIgnoreCase(status) || "Processing".equalsIgnoreCase(status) || "Ready".equalsIgnoreCase(status) || "PAID".equalsIgnoreCase(status)) {
+            // Trigger AutoAssign chỉ khi chuyển sang Waiting_Delivery
+            if (Order.STATUS_WAITING_DELIVERY.equals(status)) {
                 orderDAO.autoAssignShipperAndTrip(orderNo);
             }
             session.setAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + orderNo + " thành công!");
@@ -236,32 +274,20 @@ public class AdminOrderController extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/admin/orders?action=detail&orderNo=" + orderNo);
     }
 
+    /**
+     * Định nghĩa thứ tự trạng thái để đảm bảo 1 chiều.
+     * Cancelled nhận level riêng (99) để luôn có thể chuyển từ PAID/Processing.
+     */
     private int getStatusLevel(String status) {
         if (status == null) return 0;
         switch (status) {
-            case "Pending":
-            case "Chờ xác nhận":
-                return 1;
-            case "Confirmed":
-            case "Đã xác nhận":
-            case "PAID":
-                return 2;
-            case "Processing":
-            case "Đang làm bánh":
-            case "Đang xử lý":
-                return 3;
-            case "Delivering":
-            case "Đang giao hàng":
-            case "Đang giao":
-                return 4;
-            case "Completed":
-            case "Hoàn thành":
-                return 5;
-            case "Cancelled":
-            case "Đã hủy":
-            case "Canceled":
-                return 6;
-            default: return 0;
+            case "PAID":             return 1;
+            case "Processing":       return 2;
+            case "Waiting_Delivery": return 3;
+            case "Delivering":       return 4;
+            case "Completed":        return 5;
+            case "Cancelled":        return 99; // Terminal, được phép từ PAID/Processing
+            default:                 return 0;
         }
     }
 }

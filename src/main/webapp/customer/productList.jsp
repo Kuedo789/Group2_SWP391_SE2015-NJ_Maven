@@ -203,11 +203,34 @@
                 })
                 .then(data => {
                     if (data && data.success) {
-                        // Update the navbar count if the server returned it
+                        // Cập nhật số lượng trên navbar
                         const countEl = document.getElementById("navCartCount");
                         if (countEl && data.cartCount !== undefined) {
                             countEl.innerText = data.cartCount;
                         }
+
+                        // Đồng bộ vào localStorage để checkout.jsp có thể đọc
+                        try {
+                            let localCart = [];
+                            try { localCart = JSON.parse(localStorage.getItem("cart") || "[]"); } catch(e) { localCart = []; }
+                            if (!Array.isArray(localCart)) localCart = [];
+                            const cartId = product.id + "_0"; // default size 16cm = index 0
+                            const existing = localCart.find(c => c.id === cartId);
+                            if (existing) {
+                                existing.qty = parseInt(existing.qty || 1) + 1;
+                            } else {
+                                localCart.push({
+                                    id: cartId,
+                                    templateId: product.id,
+                                    name: name,
+                                    desc: "Size bánh dành cho 4 - 6 người dùng.",
+                                    price: price,
+                                    qty: 1,
+                                    image: image
+                                });
+                            }
+                            localStorage.setItem("cart", JSON.stringify(localCart));
+                        } catch(e) { console.warn("localStorage sync failed:", e); }
 
                         if (typeof showFloatingAlert === 'function') {
                             showFloatingAlert("Đã thêm 1 sản phẩm \"" + name + "\" vào giỏ hàng!", "success");

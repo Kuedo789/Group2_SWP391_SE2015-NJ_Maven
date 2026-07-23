@@ -110,9 +110,9 @@ public class AdminDashboardServlet extends HttpServlet {
             totalIngredients = 0;
         }
 
-        int pendingCount = statusCounts.getOrDefault("Chờ xác nhận", 0) + statusCounts.getOrDefault("Đã xác nhận", 0);
-        int processingCount = statusCounts.getOrDefault("Đang xử lý", 0);
-        int deliveringCount = statusCounts.getOrDefault("Đang giao", 0);
+        int pendingCount = statusCounts.getOrDefault("Đã thanh toán", 0);
+        int processingCount = statusCounts.getOrDefault("Đang làm bánh", 0);
+        int deliveringCount = statusCounts.getOrDefault("Đang giao hàng", 0);
         int completedCount = statusCounts.getOrDefault("Hoàn thành", 0);
 
         // Tính % thay đổi doanh thu so với tháng trước (lấy 2 giá trị cuối của map xu hướng 6 tháng)
@@ -168,8 +168,8 @@ public class AdminDashboardServlet extends HttpServlet {
         List<Order> allRecentOrders = orderDAO.getOrdersPaged(null, null, null, null, null, 1, 15);
         List<Order> staffOrders = new java.util.ArrayList<>(allRecentOrders);
         staffOrders.sort((o1, o2) -> {
-            int p1 = getStaffStatusPriority(o1.getOrderStatus());
-            int p2 = getStaffStatusPriority(o2.getOrderStatus());
+            int p1 = getStaffOrderPriority(o1);
+            int p2 = getStaffOrderPriority(o2);
             if (p1 != p2) {
                 return Integer.compare(p1, p2);
             }
@@ -277,16 +277,33 @@ public class AdminDashboardServlet extends HttpServlet {
         request.getRequestDispatcher("/admin/dashboard.jsp").forward(request, response);
     }
 
-    private int getStaffStatusPriority(String status) {
-        if (status == null) return 99;
-        String s = status.trim().toLowerCase();
-        if (s.equals("pending") || s.contains("chờ xác nhận") || s.contains("chờ duyệt")) return 1;
-        if (s.equals("confirmed") || s.equals("paid") || s.contains("đã xác nhận") || s.contains("đã thanh toán")) return 2;
-        if (s.equals("processing") || s.contains("đang xử lý") || s.contains("đang làm bánh")) return 3;
-        if (s.equals("delivering") || s.contains("đang giao")) return 4;
-        if (s.equals("completed") || s.contains("hoàn thành")) return 5;
-        if (s.equals("cancelled") || s.contains("đã hủy")) return 6;
-        return 7;
+    private int getStaffOrderPriority(Order o) {
+        if (o == null || o.getOrderStatus() == null) return 99;
+        String s = o.getOrderStatus().trim().toLowerCase();
+        
+        boolean isPaid = s.equals("confirmed") || s.equals("paid") || s.contains("đã xác nhận") || s.contains("đã thanh toán") || s.equals("waiting_payment") || s.contains("chờ thanh toán");
+        boolean isProcessing = s.equals("processing") || s.contains("đang xử lý") || s.contains("đang làm bánh");
+        
+        if (isPaid) {
+            // Đã thanh toán - check xem có phải giao trong hôm nay không
+            if (o.getDeliveryWindowStart() != null) {
+                java.time.LocalDate deliveryDate = o.getDeliveryWindowStart().toLocalDateTime().toLocalDate();
+                java.time.LocalDate today = java.time.LocalDate.now();
+                if (deliveryDate.equals(today) || deliveryDate.isBefore(today)) {
+                    return 1; // Giao hôm nay (hoặc trễ) -> Ưu tiên 1
+                }
+            }
+            return 3; // Đã thanh toán nhưng giao sau -> Ưu tiên 3
+        }
+        
+        if (isProcessing) return 2; // Đang làm bánh -> Ưu tiên 2 (sau PAID hôm nay)
+        
+        if (s.equals("pending") || s.contains("chờ xác nhận") || s.contains("chờ duyệt")) return 4;
+        if (s.equals("waiting_delivery") || s.contains("chờ giao hàng")) return 5;
+        if (s.equals("delivering") || s.contains("đang giao")) return 6;
+        if (s.equals("completed") || s.contains("hoàn thành")) return 7;
+        if (s.equals("cancelled") || s.contains("đã hủy")) return 8;
+        return 9;
     }
 
     private String mapKeysToString(Map<String, ? extends Object> map) {

@@ -95,7 +95,7 @@
                             <option value="all" ${empty status || status eq 'all' ? 'selected' : ''}>Tất cả trạng thái</option>
                             <option value="Delivering" ${status eq 'Delivering' ? 'selected' : ''}>Đang giao hàng</option>
                             <option value="Completed" ${status eq 'Completed' ? 'selected' : ''}>Hoàn thành</option>
-                            <option value="Cancelled" ${status eq 'Cancelled' ? 'selected' : ''}>Đã hủy / Thất bại</option>
+                            <option value="Cancelled" ${status eq 'Cancelled' ? 'selected' : ''}>Đã hủy</option>
                         </select>
 
                         <select class="filter-select" name="cakeType" onchange="this.form.submit()">
@@ -187,26 +187,26 @@
 
                                         <td style="text-align: center;">
                                             <c:choose>
-                                                <c:when test="${o.orderStatus eq 'Pending' || o.orderStatus eq 'Chờ xác nhận'}">
-                                                    <span class="status-badge status-pending">Chờ xác nhận</span>
+                                                <c:when test="${o.orderStatus eq 'PAID'}">
+                                                    <span class="status-badge status-paid" style="background-color: #d1fae5; color: #065f46;">Đã thanh toán</span>
                                                 </c:when>
-                                                <c:when test="${o.orderStatus eq 'Confirmed' || o.orderStatus eq 'Đã xác nhận'}">
+                                                <c:when test="${o.orderStatus eq 'Processing'}">
                                                     <span class="status-badge status-processing">Đang làm bánh</span>
                                                 </c:when>
-                                                <c:when test="${o.orderStatus eq 'PAID' || o.orderStatus eq 'Đã chuyển khoản'}">
-                                                    <span class="status-badge status-confirmed" style="background-color: #d1fae5; color: #065f46;">Đã thanh toán (Duyệt gấp)</span>
+                                                <c:when test="${o.orderStatus eq 'Waiting_Delivery'}">
+                                                    <span class="status-badge status-delivering">Chờ giao hàng</span>
                                                 </c:when>
-                                                <c:when test="${o.orderStatus eq 'Processing' || o.orderStatus eq 'Đang xử lý'}">
-                                                    <span class="status-badge status-processing">Đang làm bánh</span>
-                                                </c:when>
-                                                <c:when test="${o.orderStatus eq 'Delivering' || o.orderStatus eq 'Đang giao hàng' || o.orderStatus eq 'Đang giao'}">
+                                                <c:when test="${o.orderStatus eq 'Delivering'}">
                                                     <span class="status-badge status-delivering">Đang giao hàng</span>
                                                 </c:when>
-                                                <c:when test="${o.orderStatus eq 'Completed' || o.orderStatus eq 'Hoàn thành' || o.orderStatus eq 'Đã giao'}">
+                                                <c:when test="${o.orderStatus eq 'Completed'}">
                                                     <span class="status-badge status-completed">Hoàn thành</span>
                                                 </c:when>
+                                                <c:when test="${o.orderStatus eq 'Cancelled'}">
+                                                    <span class="status-badge status-cancelled">Đã hủy</span>
+                                                </c:when>
                                                 <c:otherwise>
-                                                    <span class="status-badge status-cancelled">Đã hủy / Thất bại</span>
+                                                    <span class="status-badge status-pending">${o.orderStatus}</span>
                                                 </c:otherwise>
                                             </c:choose>
                                         </td>

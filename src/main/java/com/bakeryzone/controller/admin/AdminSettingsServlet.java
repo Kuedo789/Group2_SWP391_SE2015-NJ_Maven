@@ -147,6 +147,36 @@ public class AdminSettingsServlet extends HttpServlet {
         jakarta.servlet.http.Part banner3Part = request.getPart("banner3");
         jakarta.servlet.http.Part banner4Part = request.getPart("banner4");
 
+        String imgError1 = com.bakeryzone.utils.ValidationUtils.validateImageUpload(banner1Part);
+        String imgError2 = com.bakeryzone.utils.ValidationUtils.validateImageUpload(banner2Part);
+        String imgError3 = com.bakeryzone.utils.ValidationUtils.validateImageUpload(banner3Part);
+        String imgError4 = com.bakeryzone.utils.ValidationUtils.validateImageUpload(banner4Part);
+
+        String imageErrorMsg = imgError1 != null ? imgError1 : 
+                               (imgError2 != null ? imgError2 : 
+                               (imgError3 != null ? imgError3 : imgError4));
+
+        if (imageErrorMsg != null) {
+            request.setAttribute("errorMessage", imageErrorMsg);
+            Map<String, Object> settings = new HashMap<>(currentSettings);
+            settings.put("bakeryName", bakeryName);
+            settings.put("hotline", hotline);
+            settings.put("email", email);
+            settings.put("address", address);
+            settings.put("depositPercent", depositPercent);
+            settings.put("shippingRate", shippingRate);
+            settings.put("systemEmail", systemEmail);
+            settings.put("appPassword", appPassword);
+            settings.put("otpExpiry", otpExpiry);
+            settings.put("banner1Align", banner1Align);
+            settings.put("banner2Align", banner2Align);
+            settings.put("banner3Align", banner3Align);
+            settings.put("banner4Align", banner4Align);
+            request.setAttribute(SETTINGS_ATTR, settings);
+            request.getRequestDispatcher("/admin/setting.jsp").forward(request, response);
+            return;
+        }
+
         String banner1 = uploadFile(banner1Part, request);
         String banner2 = uploadFile(banner2Part, request);
         String banner3 = uploadFile(banner3Part, request);

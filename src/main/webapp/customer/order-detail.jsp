@@ -57,50 +57,38 @@
     String displayStatus = dbStatus != null ? dbStatus : "Đang xử lý";
 
     if (dbStatus != null) {
-        if (dbStatus.equalsIgnoreCase("Pending")) {
+        displayStatus = order.getOrderStatusForCustomer();
+        if (dbStatus.equals("PAID")) {
+            dataStatus = "paid";
+            badgeClass = "status-pending";
+        } else if (dbStatus.equals("Processing") || dbStatus.equals("Waiting_Delivery")) {
             dataStatus = "processing";
             badgeClass = "status-processing";
-            displayStatus = "Chờ thanh toán";
-        } else if (dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("PAID")) {
-            dataStatus = "processing";
-            badgeClass = "status-processing";
-            displayStatus = "Chờ xác nhận";
-        } else if (dbStatus.equalsIgnoreCase("Processing") || dbStatus.equals("Đang làm bánh")) {
-            dataStatus = "processing";
-            badgeClass = "status-processing";
-            displayStatus = "Đang làm bánh";
-        } else if (dbStatus.equalsIgnoreCase("Ready") || dbStatus.equals("Chờ vận chuyển") || dbStatus.equals("Sẵn sàng giao")) {
+        } else if (dbStatus.equals("Delivering")) {
             dataStatus = "shipping";
             badgeClass = "status-shipping";
-            displayStatus = "Chờ vận chuyển";
-        } else if (dbStatus.equalsIgnoreCase("Delivering") || dbStatus.equals("Đang vận chuyển") || dbStatus.equals("Đang giao hàng")) {
-            dataStatus = "shipping";
-            badgeClass = "status-shipping";
-            displayStatus = "Đang giao hàng";
-        } else if (dbStatus.equalsIgnoreCase("Completed") || dbStatus.equals("Hoàn thành")) {
+        } else if (dbStatus.equals("Completed")) {
             dataStatus = "completed";
             badgeClass = "status-completed";
-            displayStatus = "Hoàn thành";
-        } else if (dbStatus.equalsIgnoreCase("Cancelled") || dbStatus.equalsIgnoreCase("Canceled") || dbStatus.equals("Đã hủy")) {
+        } else if (dbStatus.equals("Cancelled")) {
             dataStatus = "cancelled";
             badgeClass = "status-cancelled";
-            displayStatus = "Đã hủy";
         }
     }
 
     // Timeline steps activation logic
     boolean step1Active = true; // Đã nhận đơn
-    boolean step2Active = false; // Đang làm bánh
+    boolean step2Active = false; // Đang làm bánh (Bao gồm Waiting_Delivery)
     boolean step3Active = false; // Đang giao
     boolean step4Active = false; // Hoàn thành
 
     if (dbStatus != null) {
-        if (dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equalsIgnoreCase("Processing")) {
+        if (dbStatus.equals("Processing") || dbStatus.equals("Waiting_Delivery")) {
             step2Active = true;
-        } else if (dbStatus.equalsIgnoreCase("Delivering")) {
+        } else if (dbStatus.equals("Delivering")) {
             step2Active = true;
             step3Active = true;
-        } else if (dbStatus.equalsIgnoreCase("Completed")) {
+        } else if (dbStatus.equals("Completed")) {
             step2Active = true;
             step3Active = true;
             step4Active = true;
@@ -177,6 +165,24 @@
 <head>
     <jsp:include page="../common/header.jsp" />
     <title>Chi tiết đơn hàng #<%= order.getOrderNo().replace("ORD_", "") %> - ${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}</title>
+    <style>
+        @media print {
+            /* Ẩn các thành phần không cần thiết khi in hóa đơn */
+            .navbar, header, footer, .breadcrumbs, .order-header-actions, 
+            .timeline-card, .cancelled-banner, .btn-pdf, .order-meta-info {
+                display: none !important;
+            }
+            body { background: white !important; }
+            .order-detail-page { padding: 0 !important; margin: 0 !important; }
+            .order-header-wrap { border: none !important; padding: 0 !important; margin-bottom: 20px !important; }
+            .invoice-card, .items-card, .customer-card {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                break-inside: avoid;
+            }
+            .grid-layout { display: block !important; } /* Nếu có chia cột thì chuyển thành dọc */
+        }
+    </style>
 </head>
 <body>
     <!-- Navigation Bar -->
@@ -256,7 +262,7 @@
                         <div class="step-circle">
                             <span class="material-symbols-outlined">shopping_bag</span>
                         </div>
-                        <span class="step-text">Đã nhận đơn</span>
+                        <span class="step-text">Đã thanh toán</span>
                     </div>
                     
                     <div class="timeline-step <%= step2Active ? "active" : "" %>">
@@ -505,9 +511,9 @@
                         </span>
                     </div>
                     
-                    <div class="invoice-total-row" style="background-color: #fdf2f2; border: 1px dashed #f8b4b4; padding: 16px; border-radius: 12px; margin-top: 16px;">
-                        <span class="invoice-total-label" style="color: #9b1c1c;">THÀNH TIỀN (Cần thanh toán)</span>
-                        <span class="invoice-total-val" style="color: #9b1c1c;">
+                    <div class="invoice-total-row" style="border-top: 1px dashed var(--border); padding-top: 16px; margin-top: 16px; font-size: 1.1rem; font-weight: 700;">
+                        <span class="invoice-total-label">THÀNH TIỀN: </span>
+                        <span class="invoice-total-val">
                             <% if ("BANK_TRANSFER_FULL".equalsIgnoreCase(method) || "Chuyển khoản".equalsIgnoreCase(method) || "Bank Transfer".equalsIgnoreCase(method)) { %>
                                 0đ
                             <% } else { %>
@@ -527,7 +533,7 @@
                                 
                                 String tplId = item.getTemplateId() != null ? item.getTemplateId() : "";
                                 String varName = item.getVariationName() != null ? item.getVariationName() : "Tiêu chuẩn";
-                                double price = item.getPriceAtPurchase() != null ? item.getPriceAtPurchase().doubleValue() : 0.0;
+                                double price = item.getCurrentPrice() != null ? item.getCurrentPrice().doubleValue() : 0.0;
                                 int qty = item.getQuantity();
                                 String name = item.getItemName() != null ? item.getItemName().replace("\"", "\\\"") : "";
                                 String image = item.getItemImage() != null ? item.getItemImage().replace("\\", "/") : "assets/images/default-cake.png";
@@ -605,7 +611,9 @@
                 let finalName = item.name;
                 let finalDesc = "Bánh ngọt thủ công cao cấp";
                 
-                let resolvedImg = item.image;
+                let resolvedImg = (item.image && item.image.trim() !== "")
+                    ? item.image
+                    : "assets/images/default-cake.png";
                 const ctx = '<%= request.getContextPath() %>';
                 if (ctx && resolvedImg.startsWith(ctx)) {
                     resolvedImg = resolvedImg.substring(ctx.length);

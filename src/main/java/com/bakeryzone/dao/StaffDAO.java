@@ -61,15 +61,10 @@ public class StaffDAO {
             conn = DBContext.getJDBCConnection();
             conn.setAutoCommit(false); // Transaction
 
-            String userId = "USR_" + System.currentTimeMillis();
-            String generatedStaffId = (s.getStaffId() == null || s.getStaffId().trim().isEmpty())
-                    ? "STF_" + System.currentTimeMillis()
-                    : s.getStaffId();
-
             // 1. Insert vào bảng User
             String sqlUser = "INSERT INTO `user` (User_ID, Email, Password, Role_ID, Account_Status, Is_Verified) VALUES (?, ?, ?, ?, ?, ?)";
             psUser = conn.prepareStatement(sqlUser);
-            psUser.setString(1, userId);
+            psUser.setString(1, s.getUser().getUserId());
             psUser.setString(2, s.getUser().getEmail());
             psUser.setString(3, s.getUser().getPassword());
             psUser.setString(4, s.getUser().getRoleId()); // Lấy Role từ object User

@@ -128,20 +128,6 @@ public class UserDAO {
 
             conn.setAutoCommit(false);
 
-            if (user.getRoleId() == null || user.getRoleId().trim().isEmpty()) {
-                user.setRoleId("CUSTOMER");
-            }
-
-            if (user.getUserId() == null || user.getUserId().trim().isEmpty()) {
-                user.setUserId(generateUserId(user.getRoleId()));
-            }
-
-            if (user.getAccountStatus() == null || user.getAccountStatus().trim().isEmpty()) {
-                user.setAccountStatus("Active");
-            }
-
-            user.setVerified(true);
-
             String sqlUser = "INSERT INTO `user` "
                     + "(User_ID, Email, Password, Role_ID, Is_Verified, OTP_Code, OTP_Expiry, Account_Status) "
                     + "VALUES (?, ?, ?, ?, ?, NULL, NULL, ?)";
@@ -219,7 +205,6 @@ public class UserDAO {
         }
     }
 
-    // Hàm xóa tài khoản theo User_ID
     public void deleteUser(String id) {
         String sql = "DELETE FROM `user` WHERE User_ID = ?";
 
@@ -239,7 +224,6 @@ public class UserDAO {
         }
     }
 
-    // Hàm tìm user theo User_ID
     public User getUserById(String id) {
         String sql = getBaseSelectSql()
                 + "WHERE u.User_ID = ?";
@@ -267,7 +251,6 @@ public class UserDAO {
         return null;
     }
 
-    // Hàm update thông tin user
     public void updateUser(User user) {
         Connection conn = null;
         PreparedStatement psUser = null;
@@ -281,10 +264,6 @@ public class UserDAO {
             }
 
             conn.setAutoCommit(false);
-
-            if (user.getAccountStatus() == null || user.getAccountStatus().trim().isEmpty()) {
-                user.setAccountStatus("Active");
-            }
 
             String sqlUser = "UPDATE `user` SET "
                     + "Email = ?, "

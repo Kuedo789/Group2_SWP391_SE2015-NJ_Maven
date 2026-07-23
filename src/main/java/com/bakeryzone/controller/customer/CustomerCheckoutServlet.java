@@ -229,12 +229,17 @@ public class CustomerCheckoutServlet extends HttpServlet {
             String orderNo = "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             order.setOrderNo(orderNo);
             String customerId = orderDAO.getCustomerIdByUserId(currentUser.getUserId());
+            if (customerId == null) {
+                System.err.println("[ERROR] Cannot find Customer_ID for userId: " + currentUser.getUserId());
+                response.sendRedirect(request.getContextPath() + "/checkout?error=customer_not_found");
+                return;
+            }
             order.setCustomerId(customerId);
             order.setOrderTime(orderTime);
             order.setDeliveryWindowStart(deliveryWindowStart);
             order.setDeliveryWindowEnd(deliveryWindowEnd);
             order.setDeliveryAddress(deliveryAddressStr);
-            order.setOrderStatus("Pending");
+
 
             BigDecimal productTotal = BigDecimal.ZERO;
 
@@ -250,7 +255,38 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     String itemImage    = getStr(cartItem, "image");
                     String templateId   = getStr(cartItem, "templateId");
                     String customCakeId = getStr(cartItem, "customCakeId");
-                    double price        = cartItem.has("price") ? cartItem.get("price").getAsDouble() : 0;
+                    
+                    double price = 0.0;
+                    String finalCcId = (itemId != null && itemId.startsWith("CC-")) ? itemId : customCakeId;
+                    String finalTplId = (templateId != null && !templateId.isEmpty()) ? templateId : itemId;
+                    
+                    if (finalCcId != null && finalCcId.startsWith("CC-")) {
+                        com.bakeryzone.dao.CustomCakeDAO ccDao = new com.bakeryzone.dao.CustomCakeDAO();
+                        com.bakeryzone.model.CustomCake cc = ccDao.getCustomCakeById(finalCcId);
+                        if (cc != null) {
+                            price = cc.getCalculatedPrice();
+                        } else {
+                            price = cartItem.has("price") ? cartItem.get("price").getAsDouble() : 0;
+                        }
+                    } else if (finalTplId != null && finalTplId.startsWith("TPL_")) {
+                        com.bakeryzone.dao.ProductDAO pDao = new com.bakeryzone.dao.ProductDAO();
+                        com.bakeryzone.model.Product p = pDao.getProductById(finalTplId);
+                        if (p != null) {
+                            price = p.getBasePrice();
+                            if (itemName != null) {
+                                if (itemName.contains("20cm")) {
+                                    price += 80000;
+                                } else if (itemName.contains("24cm")) {
+                                    price += 160000;
+                                }
+                            }
+                        } else {
+                            price = cartItem.has("price") ? cartItem.get("price").getAsDouble() : 0;
+                        }
+                    } else {
+                        price = cartItem.has("price") ? cartItem.get("price").getAsDouble() : 0;
+                    }
+
                     int qty             = cartItem.has("qty")   ? cartItem.get("qty").getAsInt()   : 1;
 
                     BigDecimal itemPrice = BigDecimal.valueOf(price);
@@ -262,17 +298,14 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     oi.setItemName(itemName);
                     oi.setItemImage(itemImage);
 
-                    // Phân loại mã bánh từ giỏ hàng (Không sinh mã mới tại Checkout)
                     if ((itemId != null && itemId.startsWith("CC-")) || (customCakeId != null && customCakeId.startsWith("CC-"))) {
                         // 1. Bánh tự thiết kế từ Studio Custom
-                        String finalCcId = (itemId != null && itemId.startsWith("CC-")) ? itemId : customCakeId;
                         oi.setCustomCakeId(finalCcId);
                         oi.setTemplateId(null);
                     } else {
                         // 2. Bánh mẫu có sẵn từ Menu Admin (TPL_XXXX)
-                        String finalTplId = (templateId != null && !templateId.isEmpty()) ? templateId : itemId;
                         oi.setTemplateId(finalTplId);
-                        String cakeId = "CC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                        String cakeId = "TPL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
                         oi.setCustomCakeId(cakeId);
                     }
 
@@ -377,6 +410,12 @@ if (order.getItems().isEmpty()) {
             order.setShippingFee(shippingFee);
             order.setPaymentMethod(paymentMethod);
             order.setCustomerNote(note);
+
+            if (deposit.compareTo(BigDecimal.ZERO) > 0) {
+                order.setOrderStatus(com.bakeryzone.model.Order.STATUS_WAITING_PAYMENT);
+            } else {
+                order.setOrderStatus(com.bakeryzone.model.Order.STATUS_PROCESSING);
+            }
 
             // ── 5. Persist order ───────────────────────────────────────────────────
             System.out.println("[INFO] Attempting to place order: " + orderNo 
