@@ -107,7 +107,9 @@
                                             <div class="address-item-right">
                                                 <div class="address-actions">
                                                     <a href="${pageContext.request.contextPath}/delivery-address?action=edit&id=${addr.addressId}${sourceParam}" class="action-link">Cập nhật</a>
-                                                    <a href="${pageContext.request.contextPath}/delivery-address?action=delete&id=${addr.addressId}${sourceParam}" class="action-link delete-link" onclick="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')">Xóa</a>
+                                                    <c:if test="${not addr.isDefault()}">
+                                                        <a href="${pageContext.request.contextPath}/delivery-address?action=delete&id=${addr.addressId}${sourceParam}" class="action-link delete-link" onclick="return confirm('Bạn có chắc chắn muốn xóa địa chỉ này?')">Xóa</a>
+                                                    </c:if>
                                                 </div>
                                                 <c:if test="${not addr.isDefault() and param.source != 'checkout'}">
                                                     <a href="${pageContext.request.contextPath}/delivery-address?action=set-default&id=${addr.addressId}${sourceParam}" class="btn-set-default">Thiết lập mặc định</a>
@@ -190,7 +192,10 @@
                                            class="address-input"
                                            value="${sessionScope.user.fullName}"
                                            readonly style="background-color: #f5f5f5; cursor: not-allowed; color: #666;">
-                                    <small style="color: var(--primary-dark); font-size: 12px; margin-top: 4px; display: block;">* Tên mặc định đồng bộ theo hồ sơ cá nhân</small>
+                                    <small style="color: var(--primary-dark); font-size: 12px; margin-top: 4px; display: block;">
+                                        * Tên mặc định đồng bộ theo hồ sơ cá nhân. 
+                                        <a href="${pageContext.request.contextPath}/profile" style="color: var(--primary); text-decoration: underline;">Đổi tại đây</a>
+                                    </small>
                                 </div>
 
                                 <div class="form-field-group">
@@ -200,7 +205,10 @@
                                            class="address-input"
                                            value="${sessionScope.user.phone}"
                                            readonly style="background-color: #f5f5f5; cursor: not-allowed; color: #666;">
-                                    <small style="color: var(--primary-dark); font-size: 12px; margin-top: 4px; display: block;">* Số điện thoại mặc định đồng bộ theo hồ sơ cá nhân</small>
+                                    <small style="color: var(--primary-dark); font-size: 12px; margin-top: 4px; display: block;">
+                                        * Số điện thoại mặc định đồng bộ theo hồ sơ cá nhân. 
+                                        <a href="${pageContext.request.contextPath}/profile" style="color: var(--primary); text-decoration: underline;">Đổi tại đây</a>
+                                    </small>
                                 </div>
                             </c:when>
                             <c:otherwise>
@@ -336,7 +344,7 @@
         <script>
             <c:set var="escapedAddress" value="${isEditMode ? addressToEdit.addressDetail : ''}" />
             const isEditMode = ${isEditMode};
-            const lockNamePhoneJs = ${lockNamePhone};
+            const lockNamePhoneJs = ${not empty lockNamePhone ? lockNamePhone : 'false'};
             const editLat = ${isEditMode ? addressToEdit.latitude : 'null'};
             const editLng = ${isEditMode ? addressToEdit.longitude : 'null'};
             const editAddress = "${escapedAddress}";
@@ -664,9 +672,18 @@
                     if (latVal === "" || lngVal === "") {
                         return showError("Vui lòng tìm địa chỉ trên bản đồ trước khi lưu.", addressInput);
                     }
+
+                    // Append addressNote to addressDetail before submit
+                    const noteInput = document.getElementById("addressNote");
+                    const noteVal = noteInput ? noteInput.value.trim() : "";
+                    const detailInput = document.getElementById("addressDetail");
+                    if (detailInput) {
+                        detailInput.value = noteVal === "" ? addrVal : noteVal + ", " + addrVal;
+                    }
                 });
             }
         </script>
 
+        <jsp:include page="../common/scripts.jsp" />
     </body>
 </html>

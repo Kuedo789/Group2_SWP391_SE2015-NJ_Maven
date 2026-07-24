@@ -180,7 +180,10 @@
                             <input type="date" id="deliveryDate" name="deliveryDate" style="width: 100%; height: 48px; padding: 0 16px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-family: var(--font-body); font-size: 15px; outline: none; box-sizing: border-box;" required>
                         </div>
 
-                        <div style="font-weight: 700; font-size: 14px; color: var(--text-dark); margin-bottom: 12px;">Chọn khung giờ: <span style="color:#d62828;">*</span></div>
+                        <div style="font-weight: 700; font-size: 14px; color: var(--text-dark); margin-bottom: 8px;">Chọn khung giờ: <span style="color:#d62828;">*</span></div>
+                        <div style="font-size: 13px; font-style: italic; color: #888; margin-bottom: 16px;">
+                            (Thời gian làm bánh: bánh thường 2 tiếng, bánh thiết kế 3 tiếng)
+                        </div>
 
                         <div class="time-slots-grid" id="timeSlotsGrid">
                             <!-- Populated by JavaScript based on deliveryDate -->
@@ -250,7 +253,7 @@
                                 <input type="radio" name="paymentMethod" value="COD" checked>
                                 <div class="pm-radio-circle"></div>
                                 <i class="fa fa-truck pm-icon"></i>
-                                <span class="pm-title">Thanh toán khi nhận hàng <span style="font-size: 13px; color: #d9534f; font-weight: 600;">(Cọc 30%)</span></span>
+                                <span class="pm-title">Thanh toán khi nhận hàng <span style="font-size: 13px; color: #d9534f; font-weight: 600;">(Cọc ${not empty settings.depositPercent ? settings.depositPercent : '30'}%)</span></span>
                             </label>
                             
                             <label class="pm-card" onclick="document.querySelectorAll('.pm-card').forEach(c => c.classList.remove('active')); this.classList.add('active');">
@@ -700,12 +703,18 @@
             const isPastDate = selectedDate < pastDateLimit;
             const currentHour = today.getHours();
 
+            let hasCustomCake = false;
+            if (typeof currentCart !== 'undefined' && Array.isArray(currentCart)) {
+                hasCustomCake = currentCart.some(item => (item.name && item.name.startsWith("SIZE_")) || item.templateId);
+            }
+            const leadTime = hasCustomCake ? 3 : 2;
+
             let hasAvailableSlot = false;
             let previouslySelectedValid = false;
 
             standardSlots.forEach(slot => {
                 const slotHour = parseInt(slot.substring(0, 2), 10);
-                const isDisabled = isPastDate || (isToday && slotHour <= currentHour);
+                const isDisabled = isPastDate || (isToday && slotHour < currentHour + leadTime);
 
                 const pillClass = isDisabled ? "time-slot-pill disabled" : "time-slot-pill";
                 const statusTxt = isDisabled ? "Hết chỗ/Quá hạn" : "Còn chỗ";

@@ -89,10 +89,6 @@
                         <button type="button" class="favorite-btn" onclick="addToCartIconOnly()" title="Thêm vào giỏ hàng" style="color: var(--primary); display: flex; align-items: center; justify-content: center;">
                             <i class="fa fa-shopping-cart"></i>
                         </button>
-
-                        <button type="button" class="favorite-btn" id="favoriteBtn" onclick="toggleFavorite()">
-                            <span id="favoriteIcon">♡</span>
-                        </button>
                     </div>
                 </div>
 
@@ -132,7 +128,6 @@
             let selectedImage = 0;
             let quantity = 1;
             let selectedRating = 5;
-            let isFavorite = false;
 
             const variants = [
                 {
@@ -375,21 +370,6 @@
 
             function buyNow() {
                 addItemToCart(true);
-            }
-
-            function toggleFavorite() {
-                isFavorite = !isFavorite;
-
-                const favoriteBtn = document.getElementById("favoriteBtn");
-                const favoriteIcon = document.getElementById("favoriteIcon");
-
-                if (isFavorite) {
-                    favoriteBtn.classList.add("active");
-                    favoriteIcon.innerText = "♥";
-                } else {
-                    favoriteBtn.classList.remove("active");
-                    favoriteIcon.innerText = "♡";
-                }
             }
 
             function showTab(tabName, button) {

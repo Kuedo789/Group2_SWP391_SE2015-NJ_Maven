@@ -110,7 +110,7 @@
                     if (allProductCount) {
                         allProductCount.innerText = products.length;
                     }
-<<<<<<< HEAD
+
                     function formatPrice(price) {
                         return price.toLocaleString("vi-VN") + " đ";
                     }
@@ -206,6 +206,29 @@
                                         countEl.innerText = data.cartCount;
                                     }
 
+                                    // Sync to localStorage for checkout
+                                    try {
+                                        let localCart = [];
+                                        try { localCart = JSON.parse(localStorage.getItem("cart") || "[]"); } catch(e) { localCart = []; }
+                                        if (!Array.isArray(localCart)) localCart = [];
+                                        const cartId = product.id + "_0"; 
+                                        const existing = localCart.find(c => c.id === cartId);
+                                        if (existing) {
+                                            existing.qty = parseInt(existing.qty || 1) + 1;
+                                        } else {
+                                            localCart.push({
+                                                id: cartId,
+                                                templateId: product.id,
+                                                name: name,
+                                                desc: "Size bánh dành cho 4 - 6 người dùng.",
+                                                price: price,
+                                                qty: 1,
+                                                image: image
+                                            });
+                                        }
+                                        localStorage.setItem("cart", JSON.stringify(localCart));
+                                    } catch(e) { console.warn("localStorage sync failed:", e); }
+
                                     if (typeof showFloatingAlert === 'function') {
                                         showFloatingAlert("Đã thêm 1 sản phẩm \"" + name + "\" vào giỏ hàng!", "success");
                                     } else {
@@ -221,6 +244,46 @@
                                     alert("Có lỗi xảy ra khi thêm vào giỏ hàng.");
                                 }
                             });
+                    }
+
+                    function toggleWishlist(event, btn, productId) {
+                        event.stopPropagation();
+                        const isActive = btn.classList.contains("active");
+                        const action = isActive ? "remove" : "add";
+
+                        const params = new URLSearchParams();
+                        params.append("action", action);
+                        params.append("productId", productId);
+
+                        fetch(contextPath + "/toggle-wishlist", {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: params.toString()
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data && data.success) {
+                                if (action === "add") {
+                                    btn.classList.add("active");
+                                    if (typeof showFloatingAlert === 'function') {
+                                        showFloatingAlert("Đã thêm vào danh sách yêu thích!", "success");
+                                    }
+                                } else {
+                                    btn.classList.remove("active");
+                                    if (typeof showFloatingAlert === 'function') {
+                                        showFloatingAlert("Đã xóa khỏi danh sách yêu thích!", "success");
+                                    }
+                                }
+                            } else if (data && data.message === "login_required") {
+                                window.location.href = contextPath + "/auth/login.jsp";
+                            } else {
+                                alert("Có lỗi xảy ra, vui lòng thử lại.");
+                            }
+                        })
+                        .catch(err => {
+                            console.error("Error toggling wishlist:", err);
+                            alert("Có lỗi xảy ra khi cập nhật yêu thích.");
+                        });
                     }
 
                     function getSortedProducts(list) {
@@ -308,43 +371,6 @@
 
                         if (totalMatched === 0) {
                             noDataMessage.classList.add("show");
-=======
-                    return response.json();
-                })
-                .then(data => {
-                    if (data && data.success) {
-                        // Cập nhật số lượng trên navbar
-                        const countEl = document.getElementById("navCartCount");
-                        if (countEl && data.cartCount !== undefined) {
-                            countEl.innerText = data.cartCount;
-                        }
-
-                        // Đồng bộ vào localStorage để checkout.jsp có thể đọc
-                        try {
-                            let localCart = [];
-                            try { localCart = JSON.parse(localStorage.getItem("cart") || "[]"); } catch(e) { localCart = []; }
-                            if (!Array.isArray(localCart)) localCart = [];
-                            const cartId = product.id + "_0"; // default size 16cm = index 0
-                            const existing = localCart.find(c => c.id === cartId);
-                            if (existing) {
-                                existing.qty = parseInt(existing.qty || 1) + 1;
-                            } else {
-                                localCart.push({
-                                    id: cartId,
-                                    templateId: product.id,
-                                    name: name,
-                                    desc: "Size bánh dành cho 4 - 6 người dùng.",
-                                    price: price,
-                                    qty: 1,
-                                    image: image
-                                });
-                            }
-                            localStorage.setItem("cart", JSON.stringify(localCart));
-                        } catch(e) { console.warn("localStorage sync failed:", e); }
-
-                        if (typeof showFloatingAlert === 'function') {
-                            showFloatingAlert("Đã thêm 1 sản phẩm \"" + name + "\" vào giỏ hàng!", "success");
->>>>>>> 17e9f72c7f7c6c445b970f7452f69fec3b5cbe3d
                         } else {
                             noDataMessage.classList.remove("show");
                         }
