@@ -2048,7 +2048,7 @@ public class OrderDAO {
 
     // Tự động dọn các đơn "Chờ thanh toán" quá 15 phút
     public void cancelExpiredWaitingPaymentOrders() {
-        String sql = "UPDATE `orders` SET OrderStatus = 'Cancelled', Cancel_Reason = 'Hệ thống tự động hủy do quá hạn thanh toán' WHERE OrderStatus = 'Waiting_Payment' AND TIMESTAMPDIFF(MINUTE, Order_Date, NOW()) >= 15";
+        String sql = "UPDATE `orders` SET OrderStatus = 'Cancelled', Cancel_Reason = 'Hệ thống tự động hủy do quá hạn thanh toán' WHERE OrderStatus = 'Waiting_Payment' AND TIMESTAMPDIFF(MINUTE, Order_Time, NOW()) >= 15";
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.executeUpdate();
