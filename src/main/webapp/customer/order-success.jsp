@@ -341,6 +341,8 @@
         // Clear cart and checkout state after successful checkout
         localStorage.removeItem("cart");
         localStorage.removeItem("checkout_state");
+        sessionStorage.removeItem("selectedCartItems");
+        window.dispatchEvent(new Event("storage"));
         
         function copyOrderNo() {
             var textToCopy = "<%= order.getOrderNo() %>";

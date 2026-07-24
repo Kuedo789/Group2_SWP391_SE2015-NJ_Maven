@@ -119,6 +119,57 @@
                 animation: wallet-spin 0.7s linear infinite;
             }
             @keyframes wallet-spin { to { transform: rotate(360deg); } }
+
+            /* Pagination styling reused from /admin/reviews. */
+            .pagination-area {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                margin-top: 20px;
+                padding: 20px 0 0;
+                border-top: 1px solid var(--border, #eee5dc);
+                background-color: #fff;
+            }
+            .pagination-text {
+                color: var(--text-muted, #756b64);
+                font-size: 13px;
+            }
+            .pagination-nav {
+                display: flex;
+                gap: 5px;
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+            .page-num-item a {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 32px;
+                height: 32px;
+                border-radius: 6px;
+                border: 1px solid var(--border, #eee5dc);
+                font-size: 13px;
+                font-weight: 600;
+                color: #555;
+                text-decoration: none;
+            }
+            .page-num-item a:hover {
+                border-color: var(--primary, #345f3d);
+                color: var(--primary, #345f3d);
+            }
+            .page-num-item.active a {
+                background-color: var(--primary, #345f3d);
+                border-color: var(--primary, #345f3d);
+                color: #fff;
+            }
+            @media (max-width: 600px) {
+                .pagination-area {
+                    align-items: flex-start;
+                    flex-direction: column;
+                }
+            }
         </style>
     </head>
 
@@ -588,6 +639,7 @@
                             </div>
                         </c:otherwise>
                     </c:choose>
+                    <jsp:include page="walletPagination.jsp" />
                     </div><%-- /wallet-list-area --%>
 
                 </div><%-- /ms-wallet-card --%>
@@ -616,9 +668,10 @@
              * @param {string} scope   - 'all' | 'ORDER' | 'SHIPPING'
              * @param {string} keyword - current search term (may be empty)
              */
-            function fetchWallet(scope, keyword) {
+            function fetchWallet(scope, keyword, page) {
                 if (!scope) scope = 'all';
                 if (!keyword) keyword = '';
+                if (!page || page < 1) page = 1;
 
                 currentScope = scope;
 
@@ -643,7 +696,8 @@
                 // Build URL
                 var url = '${pageContext.request.contextPath}/membership'
                         + '?scope=' + encodeURIComponent(scope)
-                        + '&search=' + encodeURIComponent(keyword.trim());
+                        + '&search=' + encodeURIComponent(keyword.trim())
+                        + '&page=' + encodeURIComponent(page);
 
                 fetch(url, {
                     method: 'GET',
