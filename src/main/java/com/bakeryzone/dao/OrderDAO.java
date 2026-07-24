@@ -1024,8 +1024,13 @@ public class OrderDAO {
 
     // Lấy danh sách đơn hàng của một shipper có phân trang và bộ lọc
     public List<Order> getOrdersByShipperPaged(String shipperId, String keyword, String status, String startDateStr,
-            String endDateStr,
-            String sort, int pageIndex, int pageSize, String cakeType) {
+            String endDateStr, String sort, int pageIndex, int pageSize, String cakeType) {
+        return getOrdersByShipperPaged(shipperId, keyword, status, startDateStr, endDateStr, sort, pageIndex, pageSize, cakeType, "");
+    }
+
+    // HÀM CHÍNH: Nhận đủ 10 tham số (tham số cuối cùng là selectedZone)
+    public List<Order> getOrdersByShipperPaged(String shipperId, String keyword, String status, String startDateStr,
+            String endDateStr, String sort, int pageIndex, int pageSize, String cakeType, String selectedZone) {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT DISTINCT o.*, c.Full_Name AS Customer_Name, s.Managed_Zone FROM `orders` o " +
@@ -1070,7 +1075,15 @@ public class OrderDAO {
                     break;
             }
         }
-        sql.append(orderByClause).append("LIMIT ? OFFSET ?");
+        // --- YÊU CẦU 3: Logic ưu tiên hiển thị đơn hàng theo Khu vực ---
+        if (selectedZone != null && !selectedZone.trim().isEmpty() && !"Toàn thành phố".equalsIgnoreCase(selectedZone)) {
+            sql.append(" ORDER BY CASE WHEN LOWER(o.Delivery_Address) LIKE LOWER(?) THEN 0 ELSE 1 END ASC, o.Order_Time DESC ");
+            params.add("%" + selectedZone.trim() + "%");
+        } else {
+            sql.append(orderByClause);
+        }
+        
+        sql.append(" LIMIT ? OFFSET ?");
         params.add(pageSize);
         params.add((pageIndex - 1) * pageSize);
 
@@ -2102,5 +2115,71 @@ public class OrderDAO {
             e.printStackTrace();
         }
         return null;
+    }
+
+    // --- TỰ ĐỘNG GÁN ĐƠN (AUTO-DISPATCH) ---
+    // 1. Hàm tìm Shipper phù hợp
+    public int findAvailableShipperForOrder(String deliveryAddress) {
+        if (deliveryAddress == null || deliveryAddress.trim().isEmpty()) {
+            return -1;
+        }
+
+        // Truy vấn Shipper (IsActiveStaff = 1, Role = 'SHIPPER')
+        // So khớp khu vực: Managed_Zone = Toàn thành phố HOẶC chuỗi địa chỉ giao hàng có chứa Managed_Zone
+        // Sắp xếp: Ưu tiên Shipper có ít đơn 'Delivering' hoặc 'Waiting_Delivery' nhất (Cân bằng tải)
+        String sql = "SELECT s.Staff_ID, " +
+                "  (SELECT COUNT(*) FROM delivery_trip t JOIN orders o ON t.Trip_ID = o.Trip_ID " +
+                "   WHERE t.Shipper_ID = s.Staff_ID AND o.OrderStatus IN ('Delivering', 'Waiting_Delivery', 'Chờ giao hàng')) AS active_orders " +
+                "FROM staff s " +
+                "WHERE s.IsActiveStaff = 1 AND LOWER(s.Role) = 'shipper' " +
+                "  AND (s.Managed_Zone IS NULL OR s.Managed_Zone = '' OR s.Managed_Zone LIKE '%Toàn thành phố%' " +
+                "       OR LOCATE(LOWER(s.Managed_Zone), LOWER(?)) > 0) " +
+                "ORDER BY active_orders ASC, RAND() " +
+                "LIMIT 1";
+
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            ps.setString(1, deliveryAddress);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String staffIdStr = rs.getString("Staff_ID");
+                    try {
+                        return Integer.parseInt(staffIdStr);
+                    } catch (NumberFormatException e) {
+                        return -1;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("=== [LỖI SQL] findAvailableShipperForOrder ===");
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    // 2. Hàm phân công Shipper
+    public boolean assignShipperToOrder(int orderId, int shipperId) {
+        String formattedOrderNo = String.format("ORD_%04d", orderId);
+        String sql = "UPDATE `orders` SET shipper_id = ?, OrderStatus = 'Delivering' WHERE Order_No = ?";
+        
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+             
+            ps.setInt(1, shipperId);
+            ps.setString(2, formattedOrderNo);
+            
+            return ps.executeUpdate() > 0;
+            
+        } catch (Exception e) {
+            System.err.println("=== [LỖI SQL] assignShipperToOrder ===");
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // --- YÊU CẦU 4: Hàm phân công Shipper bởi Staff/Admin (tương thích code cũ) ---
+    public boolean assignShipper(int orderId, int shipperId) {
+        return assignShipperToOrder(orderId, shipperId);
     }
 }

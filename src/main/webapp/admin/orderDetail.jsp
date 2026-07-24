@@ -318,18 +318,7 @@
                                 <c:out value="${not empty order.customerNote ? order.customerNote : 'Không có ghi chú'}" />
                             </div>
                         </div>
-                        <c:if test="${not empty order.tripId && order.orderStatus ne 'Pending' && order.orderStatus ne 'Chờ xác nhận'}">
-                            <div class="info-row" style="background-color: #f0fdf4; border-radius: 6px; padding: 10px; margin-top: 15px; border-left: 4px solid #16a34a; display: flex; flex-direction: column; gap: 4px;">
-                                <div style="display: flex; justify-content: space-between; font-size: 13.5px;">
-                                    <span style="color: #15803d; font-weight: 700;"><i class="fa-solid fa-route"></i> Chuyến giao hàng:</span>
-                                    <span style="font-family: monospace; font-weight: 700; color: #166534;"><c:out value="${order.tripId}" /></span>
-                                </div>
-                                <div style="display: flex; justify-content: space-between; font-size: 13.5px; margin-top: 2px;">
-                                    <span style="color: #15803d; font-weight: 700;"><i class="fa-solid fa-user-ninja"></i> Shipper phụ trách:</span>
-                                    <span style="font-weight: 700; color: #166534;"><c:out value="${not empty order.shipperName ? order.shipperName : 'Chưa gán'}" /></span>
-                                </div>
-                            </div>
-                        </c:if>
+                        <!-- Đã xóa phần hiển thị Chuyến giao hàng và Shipper phụ trách theo yêu cầu -->
                         <c:if test="${not empty order.shipperNote}">
                             <div style="background-color: #fff5f5; border: 1px solid #feb2b2; border-radius: 8px; padding: 15px; margin-top: 15px; display: flex; flex-direction: column; gap: 6px;">
                                 <div style="color: #c53030; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">

@@ -67,12 +67,11 @@
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <span style="font-weight: 600; font-size: 14px;">Khu vực:</span>
                             <select id="shipper-zone-select" class="filter-select" style="padding: 6px 12px; border-radius: 6px; font-size: 13.5px; width: 180px; border: 1px solid #ccc;" ${not isActiveStaff ? 'disabled' : ''}>
-                                <option value="Zone 1" ${managedZone eq 'Zone 1' ? 'selected' : ''}>Zone 1</option>
-                                <option value="Zone 2" ${managedZone eq 'Zone 2' ? 'selected' : ''}>Zone 2</option>
-                                <option value="Zone 3" ${managedZone eq 'Zone 3' ? 'selected' : ''}>Zone 3</option>
-                                <option value="Zone 4" ${managedZone eq 'Zone 4' ? 'selected' : ''}>Zone 4</option>
-                                <option value="Zone 5" ${managedZone eq 'Zone 5' ? 'selected' : ''}>Zone 5</option>
-                                <option value="Zone 6" ${managedZone eq 'Zone 6' ? 'selected' : ''}>Zone 6</option>
+                                <option value="Cầu Giấy" ${managedZone eq 'Cầu Giấy' ? 'selected' : ''}>Cầu Giấy</option>
+                                <option value="Đống Đa" ${managedZone eq 'Đống Đa' ? 'selected' : ''}>Đống Đa</option>
+                                <option value="Ba Đình" ${managedZone eq 'Ba Đình' ? 'selected' : ''}>Ba Đình</option>
+                                <option value="Thanh Xuân" ${managedZone eq 'Thanh Xuân' ? 'selected' : ''}>Thanh Xuân</option>
+                                <option value="Hai Bà Trưng" ${managedZone eq 'Hai Bà Trưng' ? 'selected' : ''}>Hai Bà Trưng</option>
                                 <option value="Toàn thành phố" ${managedZone eq 'Toàn thành phố' ? 'selected' : ''}>Toàn thành phố</option>
                             </select>
                         </div>

@@ -217,17 +217,6 @@ public class ShipperOrderServlet extends HttpServlet {
         }
 
         int pageSize = 10;
-        int totalRecords = orderDAO.getTotalOrdersCountByShipper(shipperId, keyword, statusForDao, startDate, endDate, cakeType);
-        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
-        if (totalPages == 0) totalPages = 1;
-        if (page > totalPages) page = totalPages;
-
-        List<Order> orders = orderDAO.getOrdersByShipperPaged(shipperId, keyword, statusForDao, startDate, endDate, sort, page, pageSize, cakeType);
-
-        java.util.Map<String, Object> dailyStats = orderDAO.getShipperDailyStats(shipperId);
-        List<Order> readyOrders = orderDAO.getReadyOrdersForShipper(shipperId, 5);
-        List<Order> deliveredOrders = orderDAO.getDeliveredOrdersForShipper(shipperId, 5);
-
         com.bakeryzone.dao.StaffDAO staffDAO = new com.bakeryzone.dao.StaffDAO();
         com.bakeryzone.model.Staff staffInfo = staffDAO.getStaffByUserId(shipperId);
         String managedZone = "";
@@ -238,6 +227,17 @@ public class ShipperOrderServlet extends HttpServlet {
         }
         request.setAttribute("managedZone", managedZone);
         request.setAttribute("isActiveStaff", isActiveStaff);
+
+        int totalRecords = orderDAO.getTotalOrdersCountByShipper(shipperId, keyword, statusForDao, startDate, endDate, cakeType);
+        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+        if (totalPages == 0) totalPages = 1;
+        if (page > totalPages) page = totalPages;
+
+        List<Order> orders = orderDAO.getOrdersByShipperPaged(shipperId, keyword, statusForDao, startDate, endDate, sort, page, pageSize, cakeType, managedZone);
+
+        java.util.Map<String, Object> dailyStats = orderDAO.getShipperDailyStats(shipperId);
+        List<Order> readyOrders = orderDAO.getReadyOrdersForShipper(shipperId, 5);
+        List<Order> deliveredOrders = orderDAO.getDeliveredOrdersForShipper(shipperId, 5);
 
         request.setAttribute("orders", orders);
         request.setAttribute("dailyStats", dailyStats);

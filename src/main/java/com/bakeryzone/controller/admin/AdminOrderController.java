@@ -64,14 +64,60 @@ public class AdminOrderController extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         
-        
-
         String action = request.getParameter("action");
         if ("update-status".equals(action)) {
             handleUpdateStatus(request, response);
+        } else if ("assign-shipper".equals(action)) {
+            handleAssignShipper(request, response);
         } else {
             response.sendRedirect(request.getContextPath() + "/admin/orders");
         }
+    }
+
+    // --- YÊU CẦU 4: Hàm phân công Shipper bởi Staff/Admin ---
+    private void handleAssignShipper(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        String orderIdStr = request.getParameter("orderId");
+        String shipperIdStr = request.getParameter("shipperId");
+
+        if (orderIdStr == null || orderIdStr.trim().isEmpty() || shipperIdStr == null || shipperIdStr.trim().isEmpty()) {
+            session.setAttribute("errorMessage", "Dữ liệu phân công không hợp lệ!");
+            response.sendRedirect(request.getContextPath() + "/admin/orders");
+            return;
+        }
+
+        try {
+            int orderId = -1;
+            if (orderIdStr.startsWith("ORD_")) {
+                orderId = Integer.parseInt(orderIdStr.substring(4));
+            } else {
+                orderId = Integer.parseInt(orderIdStr);
+            }
+            int shipperId = Integer.parseInt(shipperIdStr);
+
+            boolean success = orderDAO.assignShipper(orderId, shipperId);
+            
+            if (success) {
+                session.setAttribute("successMessage", "Phân công Shipper thành công!");
+            } else {
+                session.setAttribute("errorMessage", "Phân công thất bại! Vui lòng kiểm tra lại dữ liệu.");
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("=== [AdminOrderController] Lỗi ép kiểu phân công Shipper ===");
+            e.printStackTrace();
+            session.setAttribute("errorMessage", "ID không hợp lệ!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.setAttribute("errorMessage", "Đã xảy ra lỗi hệ thống khi phân công.");
+        }
+        
+        // Quay lại trang chi tiết đơn hoặc danh sách
+        String redirectUrl = request.getContextPath() + "/admin/orders";
+        if (orderIdStr != null && !orderIdStr.trim().isEmpty()) {
+            redirectUrl += "?action=detail&orderNo=" + orderIdStr;
+        }
+        response.sendRedirect(redirectUrl);
     }
 
     private void showOrderList(HttpServletRequest request, HttpServletResponse response)
@@ -262,11 +308,40 @@ public class AdminOrderController extends HttpServlet {
 
         boolean success = orderDAO.updateOrderStatus(orderNo, status);
         if (success) {
-            // Trigger AutoAssign chỉ khi chuyển sang Waiting_Delivery
+            // --- TỰ ĐỘNG GÁN ĐƠN (AUTO-DISPATCH) ---
             if (Order.STATUS_WAITING_DELIVERY.equals(status)) {
-                orderDAO.autoAssignShipperAndTrip(orderNo);
+                // B1: Lấy deliveryAddress của đơn hàng
+                String deliveryAddress = order.getDeliveryAddress();
+                
+                // B2: Tìm Shipper phù hợp
+                int foundShipperId = orderDAO.findAvailableShipperForOrder(deliveryAddress);
+                
+                // B3: Gán Shipper nếu tìm thấy
+                if (foundShipperId > 0) {
+                    try {
+                        int orderIdInt = -1;
+                        if (orderNo.startsWith("ORD_")) {
+                            orderIdInt = Integer.parseInt(orderNo.substring(4));
+                        } else {
+                            orderIdInt = Integer.parseInt(orderNo);
+                        }
+                        
+                        boolean assignSuccess = orderDAO.assignShipperToOrder(orderIdInt, foundShipperId);
+                        if (assignSuccess) {
+                            System.out.println("=> AUTO-DISPATCH: Đã gán đơn " + orderNo + " cho Shipper ID " + foundShipperId);
+                            session.setAttribute("successMessage", "Cập nhật trạng thái thành công! Đã tự động gán Shipper (ID: " + foundShipperId + ").");
+                        }
+                    } catch (Exception e) {
+                        System.err.println("=== Lỗi ép kiểu/gán Shipper tự động ===");
+                        e.printStackTrace();
+                    }
+                } else {
+                    System.out.println("=> AUTO-DISPATCH: Không tìm thấy Shipper phù hợp cho đơn " + orderNo);
+                    session.setAttribute("successMessage", "Cập nhật trạng thái thành công! (Không có Shipper trực tuyến ở khu vực này, đang chờ gán thủ công).");
+                }
+            } else {
+                session.setAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + orderNo + " thành công!");
             }
-            session.setAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + orderNo + " thành công!");
         } else {
             session.setAttribute("errorMessage", "Không thể cập nhật trạng thái đơn hàng.");
         }
