@@ -56,8 +56,17 @@ public class CustomerCheckoutServlet extends HttpServlet {
 
         @SuppressWarnings("unchecked")
         List<String> checkoutSelectedItems = (List<String>) session.getAttribute("checkoutSelectedItems");
+        @SuppressWarnings("unchecked")
+        List<com.bakeryzone.model.CartItemDTO> directCheckoutItems = (List<com.bakeryzone.model.CartItemDTO>) session.getAttribute("directCheckoutItems");
         
-        if (checkoutSelectedItems != null && allCartItems != null) {
+        if (directCheckoutItems != null && !directCheckoutItems.isEmpty()) {
+            checkoutCartItems = directCheckoutItems;
+            for (com.bakeryzone.model.CartItemDTO item : checkoutCartItems) {
+                if (item.getUnitPrice() != null) {
+                    productTotalSum = productTotalSum.add(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                }
+            }
+        } else if (checkoutSelectedItems != null && allCartItems != null) {
             for (com.bakeryzone.model.CartItemDTO item : allCartItems) {
                 if (item.isActive() && checkoutSelectedItems.contains(item.getCartItemId())) {
                     checkoutCartItems.add(item);
@@ -260,6 +269,18 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     String itemName     = getStr(cartItem, "name");
                     String itemImage    = getStr(cartItem, "image");
                     String templateId   = getStr(cartItem, "templateId");
+                    
+                    String ctxPath = request.getContextPath();
+                    if (itemImage != null) {
+                        if (itemImage.startsWith(ctxPath + "/")) {
+                            itemImage = itemImage.substring(ctxPath.length() + 1);
+                        } else if (itemImage.startsWith(ctxPath)) {
+                            itemImage = itemImage.substring(ctxPath.length());
+                        }
+                        if (itemImage.startsWith("/")) {
+                            itemImage = itemImage.substring(1);
+                        }
+                    }
                     String customCakeId = getStr(cartItem, "customCakeId");
                     
                     double price = 0.0;
@@ -429,6 +450,12 @@ if (order.getItems().isEmpty()) {
                     + " | deliveryWindow: " + order.getDeliveryWindowStart()
                     + " | cart items size: " + order.getItems().size());
             
+            int waitingCount = orderDAO.countWaitingPaymentByCustomer(order.getCustomerId());
+            if (waitingCount >= 3 && deposit.compareTo(BigDecimal.ZERO) > 0) {
+                response.sendRedirect(request.getContextPath() + "/checkout?error=" + java.net.URLEncoder.encode("Bạn đang có quá 3 đơn hàng chờ thanh toán. Vui lòng thanh toán hoặc hủy bớt trước khi đặt thêm.", "UTF-8"));
+                return;
+            }
+
             boolean success = orderDAO.insertOrder(order);
 
             System.out.println("[INFO] Order placed: " + orderNo + " by user " + currentUser.getUserId()

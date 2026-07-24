@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="com.bakeryzone.utils.ValidationUtils" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -75,7 +76,9 @@
                                         name="email"
                                         placeholder="Nhập email của bạn"
                                         value="${accountInput != null ? accountInput : ''}"
-                                        maxlength="100"
+                                        maxlength="<%= ValidationUtils.EMAIL_MAX_LENGTH %>"
+                                        pattern="^[A-Za-z0-9+_.-]+@[A-Za-z]+\.[A-Za-z.]+$"
+                                        title="Email không đúng định dạng (tên miền sau dấu @ chỉ chứa chữ cái)"
                                         required>
                                 </div>
                             </div>
@@ -89,7 +92,10 @@
                                         id="password"
                                         name="password"
                                         placeholder="Nhập mật khẩu"
-                                        maxlength="20"
+                                        minlength="<%= ValidationUtils.PASSWORD_MIN_LENGTH %>"
+                                        maxlength="<%= ValidationUtils.PASSWORD_MAX_LENGTH %>"
+                                        pattern="^\S+$"
+                                        title="Mật khẩu không được chứa khoảng trắng"
                                         required>
                                     <span
                                         class="material-symbols-outlined toggle-password"

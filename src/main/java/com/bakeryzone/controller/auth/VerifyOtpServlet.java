@@ -60,9 +60,28 @@ public class VerifyOtpServlet extends HttpServlet {
 
         UserDAO dao = new UserDAO();
 
+        Integer attempts = (Integer) request.getSession().getAttribute("otpAttempts");
+        if (attempts == null) {
+            attempts = 0;
+        }
+
         boolean validOtp = dao.verifyRegisterOtp(email, otp);
 
         if (!validOtp) {
+            attempts++;
+            request.getSession().setAttribute("otpAttempts", attempts);
+
+            if (attempts >= 5) {
+                dao.clearOtp(email);
+                request.getSession().removeAttribute("otpEmail");
+                request.getSession().removeAttribute("otpExpireAtMillis");
+                request.getSession().removeAttribute("otpAttempts");
+                
+                request.setAttribute("error", "Bạn đã nhập sai OTP quá 5 lần. Mã OTP đã bị hủy, vui lòng đăng ký lại.");
+                request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
+                return;
+            }
+
             User user = dao.findByEmail(email);
 
             if (user == null) {
@@ -70,12 +89,14 @@ public class VerifyOtpServlet extends HttpServlet {
             } else if (user.getOtpExpiry() == null || user.getOtpExpiry().before(new Timestamp(System.currentTimeMillis()))) {
                 request.setAttribute("error", "Mã OTP đã hết hạn. Vui lòng bấm gửi lại mã.");
             } else {
-                request.setAttribute("error", "Mã OTP không đúng. Vui lòng kiểm tra lại.");
+                request.setAttribute("error", "Mã OTP không đúng. Bạn còn " + (5 - attempts) + " lần thử.");
             }
 
             request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
             return;
         }
+
+        request.getSession().removeAttribute("otpAttempts");
 
         boolean verified = dao.markUserVerifiedAndClearOtp(email);
 
@@ -154,6 +175,7 @@ public class VerifyOtpServlet extends HttpServlet {
         }
 
         request.getSession().setAttribute("otpExpireAtMillis", newExpiry.getTime());
+        request.getSession().removeAttribute("otpAttempts"); // Reset đếm số lần sai
         request.setAttribute("message", "Mã OTP mới đã được gửi đến email của bạn.");
 
         request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);

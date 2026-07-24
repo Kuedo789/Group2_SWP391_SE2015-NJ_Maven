@@ -437,20 +437,23 @@ public class ProductDAO {
     public List<Product> getHomepageBestSellerProducts(int limit) {
         List<Product> products = new ArrayList<>();
 
-        // Sales are counted per cake_template by joining order_item -> cart_item -> custom_cake_layer_ingredient.
-        // custom_cake has no Template_ID column; best-sellers are ranked by total completed order quantities
-        // matched back to the base cake_template through template_ingredient_detail.
+        // Sales are counted per cake_template by joining order_item -> custom_cake -> cake_template
         String sql = "SELECT p.*, COALESCE(sales.total_qty, 0) as total_sold "
                 + "FROM (" + getBaseUnionQuery() + ") AS p "
                 + "LEFT JOIN ("
-                + "    SELECT tid.Template_ID, SUM(oi.Quantity) as total_qty "
+                + "    SELECT t.Template_ID, SUM(oi.Quantity) as total_qty "
                 + "    FROM order_item oi "
                 + "    JOIN orders o ON oi.Order_No = o.Order_No "
                 + "    JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID "
-                + "    JOIN custom_cake_layer_ingredient ccli ON cc.Custom_Cake_ID = ccli.Custom_Cake_ID "
-                + "    JOIN template_ingredient_detail tid ON ccli.Ingredient_ID = tid.Ingredient_ID "
+                + "    JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR "
+                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR "
+                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR "
+                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR "
+                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR "
+                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR "
+                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')) "
                 + "    WHERE o.OrderStatus = 'Completed' "
-                + "    GROUP BY tid.Template_ID"
+                + "    GROUP BY t.Template_ID"
                 + ") AS sales ON p.Product_ID = sales.Template_ID "
                 + "WHERE p.Status = ? "
                 + "ORDER BY total_sold DESC, p.Is_Featured DESC, p.Product_ID DESC "

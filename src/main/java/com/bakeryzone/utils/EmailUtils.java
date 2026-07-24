@@ -33,7 +33,7 @@ public class EmailUtils {
                         "Xác thực tài khoản BakeryZone",
                         "Cảm ơn bạn đã đăng ký tài khoản tại BakeryZone. Mã OTP của bạn là:",
                         otpCode,
-                        "Mã này có hiệu lực trong "+OtpUtil.getOtpExpireText()+" phút. Vui lòng không chia sẻ mã này cho người khác."
+                        "Mã này có hiệu lực trong "+OtpUtil.getOtpExpireText()+". Vui lòng không chia sẻ mã này cho người khác."
                 )
         );
     }
@@ -46,7 +46,7 @@ public class EmailUtils {
                         "Đặt lại mật khẩu BakeryZone",
                         "Bạn đã yêu cầu đặt lại mật khẩu. Mã OTP của bạn là:",
                         otpCode,
-                        "Mã này có hiệu lực trong  "+OtpUtil.getOtpExpireText()+"  phút. Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này."
+                        "Mã này có hiệu lực trong  "+OtpUtil.getOtpExpireText()+". Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này."
                 )
         );
     }

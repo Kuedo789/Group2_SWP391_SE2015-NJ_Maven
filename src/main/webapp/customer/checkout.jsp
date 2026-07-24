@@ -103,6 +103,24 @@
                 Vui lòng kiểm tra lại đơn hàng trước khi đặt.
             </div>
         </c:if>
+        <c:if test="${not empty param.error && param.error != 'empty_cart' && param.error != 'empty_address' && param.error != 'server_error' && param.error != 'save_failed' && param.error != 'note_too_long' && param.error != 'voucher_invalid'}">
+            <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    Toastify({
+                        text: "${param.error}",
+                        duration: 5000,
+                        close: true,
+                        gravity: "top",
+                        position: "right",
+                        style: {
+                            background: "linear-gradient(to right, #ff5f6d, #ffc371)"
+                        },
+                        stopOnFocus: true
+                    }).showToast();
+                });
+            </script>
+        </c:if>
 
         <form id="checkoutForm" action="${pageContext.request.contextPath}/checkout" method="POST">
             <input type="hidden" name="cartData" id="cartDataInput">
@@ -757,14 +775,34 @@
 
         function loadCartItems() {
             try {
-                const localCartStr = localStorage.getItem("cart");
-                const localCart = localCartStr ? JSON.parse(localCartStr) : [];
-                currentCart = Array.isArray(localCart) ? localCart.filter(item => item && item.id && item.name && item.price != null && !String(item.id).startsWith("MOCK-")) : [];
-            } catch(e) {
+                let hasServerItems = false;
                 currentCart = [];
+                <c:if test="${not empty checkoutCartItems}">
+                    hasServerItems = true;
+                    <c:forEach var="item" items="${checkoutCartItems}">
+                        currentCart.push({
+                            id: "${item.customCakeId != null ? item.customCakeId : item.cartItemId}",
+                            templateId: "${item.customCakeId != null ? '' : 'TPL'}",
+                            customCakeId: "${item.customCakeId != null ? item.customCakeId : ''}",
+                            name: "${item.name}",
+                            price: ${item.unitPrice != null ? item.unitPrice : 0},
+                            qty: ${item.quantity},
+                            image: "${item.imageUrl}"
+                        });
+                    </c:forEach>
+                </c:if>
+
+                if (!hasServerItems) {
+                    const localCartStr = localStorage.getItem("cart");
+                    const localCart = localCartStr ? JSON.parse(localCartStr) : [];
+                    currentCart = Array.isArray(localCart) ? localCart.filter(item => item && item.id && item.name && item.price != null && !String(item.id).startsWith("MOCK-")) : [];
+                }
+            } catch(e) {
+                console.error(e);
             }
 
-            localStorage.setItem("cart", JSON.stringify(currentCart));
+            // Only overwrite localStorage if we loaded from it, otherwise we leave it alone (for direct reorder).
+            // But we must populate cartDataInput for the POST request.
             document.getElementById("cartDataInput").value = JSON.stringify(currentCart);
             renderCartList();
         }

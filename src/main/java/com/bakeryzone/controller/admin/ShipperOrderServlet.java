@@ -2,6 +2,8 @@ package com.bakeryzone.controller.admin;
 
 import com.bakeryzone.dao.CustomerDAO;
 import com.bakeryzone.dao.OrderDAO;
+import com.bakeryzone.dao.ShipperTripDAO;
+import com.bakeryzone.dao.ReportDAO;
 import com.bakeryzone.model.Customer;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.model.User;
@@ -24,6 +26,8 @@ import java.util.List;
 public class ShipperOrderServlet extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
+    private final ShipperTripDAO shipperTripDAO = new ShipperTripDAO();
+    private final ReportDAO reportDAO = new ReportDAO();
     private final CustomerDAO customerDAO = new CustomerDAO();
 
     @Override
@@ -100,7 +104,7 @@ public class ShipperOrderServlet extends HttpServlet {
             String shipperUserId = (user != null) ? user.getUserId() : null;
 
             if (tripId == null || tripId.trim().isEmpty()) {
-                tripId = orderDAO.ensureTripIdForOrder(orderNo, shipperUserId);
+                tripId = shipperTripDAO.ensureTripIdForOrder(orderNo, shipperUserId);
             }
 
             if (tripId == null || tripId.trim().isEmpty()) {
@@ -137,7 +141,7 @@ public class ShipperOrderServlet extends HttpServlet {
             filePart.write(absoluteFilePath);
 
             // 3. Cập nhật cơ sở dữ liệu
-            boolean dbSuccess = orderDAO.saveDeliveryEvidence(tripId, relativePath, type);
+            boolean dbSuccess = shipperTripDAO.saveDeliveryEvidence(tripId, relativePath, type);
             if (!dbSuccess) {
                 out.print("{\"success\":false,\"message\":\"Không thể lưu thông tin ảnh vào cơ sở dữ liệu!\"}");
                 return;
@@ -217,6 +221,17 @@ public class ShipperOrderServlet extends HttpServlet {
         }
 
         int pageSize = 10;
+        int totalRecords = shipperTripDAO.getTotalOrdersCountByShipper(shipperId, keyword, statusForDao, startDate, endDate, cakeType);
+        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
+        if (totalPages == 0) totalPages = 1;
+        if (page > totalPages) page = totalPages;
+
+        List<Order> orders = shipperTripDAO.getOrdersByShipperPaged(shipperId, keyword, statusForDao, startDate, endDate, sort, page, pageSize, cakeType);
+
+        java.util.Map<String, Object> dailyStats = shipperTripDAO.getShipperDailyStats(shipperId);
+        List<Order> readyOrders = shipperTripDAO.getReadyOrdersForShipper(shipperId, 5);
+        List<Order> deliveredOrders = shipperTripDAO.getDeliveredOrdersForShipper(shipperId, 5);
+
         com.bakeryzone.dao.StaffDAO staffDAO = new com.bakeryzone.dao.StaffDAO();
         com.bakeryzone.model.Staff staffInfo = staffDAO.getStaffByUserId(shipperId);
         String managedZone = "";
@@ -227,17 +242,6 @@ public class ShipperOrderServlet extends HttpServlet {
         }
         request.setAttribute("managedZone", managedZone);
         request.setAttribute("isActiveStaff", isActiveStaff);
-
-        int totalRecords = orderDAO.getTotalOrdersCountByShipper(shipperId, keyword, statusForDao, startDate, endDate, cakeType);
-        int totalPages = (int) Math.ceil((double) totalRecords / pageSize);
-        if (totalPages == 0) totalPages = 1;
-        if (page > totalPages) page = totalPages;
-
-        List<Order> orders = orderDAO.getOrdersByShipperPaged(shipperId, keyword, statusForDao, startDate, endDate, sort, page, pageSize, cakeType, managedZone);
-
-        java.util.Map<String, Object> dailyStats = orderDAO.getShipperDailyStats(shipperId);
-        List<Order> readyOrders = orderDAO.getReadyOrdersForShipper(shipperId, 5);
-        List<Order> deliveredOrders = orderDAO.getDeliveredOrdersForShipper(shipperId, 5);
 
         request.setAttribute("orders", orders);
         request.setAttribute("dailyStats", dailyStats);
@@ -253,7 +257,7 @@ public class ShipperOrderServlet extends HttpServlet {
         request.setAttribute("sort", sort);
         request.setAttribute("cakeType", cakeType != null ? cakeType : "all");
 
-        request.getRequestDispatcher("/shipper/orderList.jsp").forward(request, response);
+        request.getRequestDispatcher("/order-management/orderList.jsp").forward(request, response);
     }
 
     private void handleAcceptOrder(HttpServletRequest request, HttpServletResponse response)
@@ -267,7 +271,7 @@ public class ShipperOrderServlet extends HttpServlet {
 
         String orderNo = request.getParameter("orderNo");
         if (orderNo != null && !orderNo.trim().isEmpty()) {
-            boolean success = orderDAO.acceptOrderForShipper(user.getUserId(), orderNo);
+            boolean success = shipperTripDAO.acceptOrderForShipper(user.getUserId(), orderNo);
             if (success) {
                 session.setAttribute("successMessage", "Đã tiếp nhận đơn hàng #" + orderNo.replace("ORD_", "") + " thành công!");
             } else {
@@ -371,7 +375,7 @@ public class ShipperOrderServlet extends HttpServlet {
         request.setAttribute("pickupPhoto", pickupPhoto);
         request.setAttribute("deliveryPhoto", deliveryPhoto);
 
-        request.getRequestDispatcher("/shipper/orderDetail.jsp").forward(request, response);
+        request.getRequestDispatcher("/order-management/orderDetail.jsp").forward(request, response);
     }
 
     private void handleUpdateStatus(HttpServletRequest request, HttpServletResponse response)

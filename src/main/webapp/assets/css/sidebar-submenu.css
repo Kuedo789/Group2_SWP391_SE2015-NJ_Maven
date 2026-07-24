@@ -258,3 +258,14 @@ html.dark-theme .breadcrumbs a, html.dark-theme .breadcrumbs span, html.dark-the
     color: var(--primary-green, #315038) !important;
     text-decoration: none !important;
 }
+
+/* ── PRINT: reset sidebar offset so content fills the full page ── */
+@media print {
+    .sidebar {
+        display: none !important;
+    }
+    .main-wrapper, .main-panel {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}

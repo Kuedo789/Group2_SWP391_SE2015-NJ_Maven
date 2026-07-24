@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="com.bakeryzone.utils.ValidationUtils" %>
 
 <%
     String error = (String) request.getAttribute("error");
@@ -93,8 +94,8 @@
                                    id="newPassword"
                                    name="newPassword"
                                    placeholder="Nhập mật khẩu mới"
-                                   minlength="6"
-                                   maxlength="20"
+                                   minlength="<%= ValidationUtils.PASSWORD_MIN_LENGTH %>"
+                                   maxlength="<%= ValidationUtils.PASSWORD_MAX_LENGTH %>"
                                    pattern="^\S+$"
                                    title="Mật khẩu phải từ 6 đến 20 ký tự và không được chứa khoảng trắng"
                                    required>
@@ -116,8 +117,8 @@
                                    id="confirmPassword"
                                    name="confirmPassword"
                                    placeholder="Nhập lại mật khẩu mới"
-                                   minlength="6"
-                                   maxlength="20"
+                                   minlength="<%= ValidationUtils.PASSWORD_MIN_LENGTH %>"
+                                   maxlength="<%= ValidationUtils.PASSWORD_MAX_LENGTH %>"
                                    pattern="^\S+$"
                                    title="Mật khẩu xác nhận không được chứa khoảng trắng"
                                    required>

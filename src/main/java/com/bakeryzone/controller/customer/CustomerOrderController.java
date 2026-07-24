@@ -27,9 +27,6 @@ public class CustomerOrderController extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         
-        // Lazy-cleanup: Tự động dọn các đơn "Chờ thanh toán" quá 15 phút
-        orderDAO.cancelExpiredWaitingPaymentOrders();
-
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
 
@@ -120,7 +117,7 @@ public class CustomerOrderController extends HttpServlet {
         request.setAttribute("countShipping",   statusCounts.getOrDefault("shipping", 0));
         request.setAttribute("countCompleted",  statusCounts.getOrDefault("completed", 0));
         request.setAttribute("countCancelled",  statusCounts.getOrDefault("cancelled", 0));
-        request.getRequestDispatcher("/customer/my-orders.jsp").forward(request, response);
+        request.getRequestDispatcher("/order-management/orderList.jsp").forward(request, response);
     }
 
     private void handleSuccess(HttpServletRequest request, HttpServletResponse response, User currentUser)
@@ -173,7 +170,7 @@ public class CustomerOrderController extends HttpServlet {
         request.setAttribute("order", order);
         request.setAttribute("customer", customer);
         
-        request.getRequestDispatcher("/customer/order-detail.jsp").forward(request, response);
+        request.getRequestDispatcher("/order-management/orderDetail.jsp").forward(request, response);
     }
 
     @Override

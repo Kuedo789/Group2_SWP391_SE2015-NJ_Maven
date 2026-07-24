@@ -2636,18 +2636,86 @@ html.dark-theme .proof-placeholder-icon {
    PRINT STYLES FOR ORDER INVOICE
    ============================================================== */
 @media print {
-    /* Ẩn các thành phần không cần thiết khi in hóa đơn */
-    .navbar, header, footer, .breadcrumbs, .order-header-actions, 
-    .timeline-card, .cancelled-banner, .btn-pdf, .order-meta-info {
+    /* ── 1. Hide everything that is not invoice content ── */
+    .navbar, .sidebar, .top-header, header, footer,
+    .breadcrumbs, .order-header-actions, .timeline-card,
+    .cancelled-banner, .btn-pdf, .order-meta-info, .btn-back,
+    .no-print {
         display: none !important;
     }
-    body { background: white !important; }
-    .order-detail-page { padding: 0 !important; margin: 0 !important; }
-    .order-header-wrap { border: none !important; padding: 0 !important; margin-bottom: 20px !important; }
-    .invoice-card, .items-card, .customer-card {
+
+    /* ── 2. White background, no shadow ── */
+    *, *::before, *::after {
         box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    body {
+        background: white !important;
+        color: #111 !important;
+        font-size: 12pt;
+    }
+
+    /* ── 3. Layout – full paper width ── */
+    @page { margin: 12mm; }
+    html, body {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    body > *                { margin-left: 0 !important; }
+    .order-detail-page      { padding: 0 !important; margin: 0 !important; width: 100% !important; }
+    .main-panel             { padding: 0 !important; margin: 0 !important; margin-left: 0 !important; width: 100% !important; min-height: unset !important; }
+    .content-container      { padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+    .grid-layout            { display: block !important; width: 100% !important; }
+    .grid-layout > *        { width: 100% !important; }
+    .order-header-wrap      { border: none !important; padding: 0 !important; margin-bottom: 16px !important; width: 100% !important; }
+    .items-card, .customer-card, .invoice-card, .cz-card { width: 100% !important; }
+
+    /* ── 4. Cards ── */
+    .invoice-card, .items-card, .customer-card, .cz-card {
+        background: white !important;
         border: 1px solid #ccc !important;
         break-inside: avoid;
+        margin-bottom: 16px !important;
     }
-    .grid-layout { display: block !important; } /* Nếu có chia cột thì chuyển thành dọc */
+
+    /* ── 5. Customer invoice summary – make text clearly readable when printed ── */
+    .invoice-card {
+        color: #111 !important;
+    }
+    .invoice-row {
+        color: #111 !important;
+        font-weight: 500 !important;
+    }
+    .invoice-row.discount {
+        color: #b91c1c !important;
+    }
+    .invoice-total-row {
+        border-color: #999 !important;
+    }
+    .invoice-total-label, .invoice-total-val {
+        color: #111 !important;
+    }
+    .invoice-title {
+        color: #111 !important;
+        border-color: #aaa !important;
+    }
+
+    /* ── 6. Admin/Staff summary cards ── */
+    .cost-row, .info-row, .info-label, .info-value,
+    .cz-card-title, .delivery-label, .delivery-value,
+    .cost-row span, .cost-row .font-mono,
+    .cost-row.total, .cost-row.total span {
+        color: #111 !important;
+    }
+    /* Keep flex layout so values show on the right side */
+    .cost-row {
+        display: flex !important;
+        justify-content: space-between !important;
+    }
+
+    /* ── 7. Page title ── */
+    .page-title-area { margin-bottom: 12px !important; }
+    .page-title { color: #111 !important; }
 }
+

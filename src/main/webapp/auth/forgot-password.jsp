@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="com.bakeryzone.utils.ValidationUtils" %>
 
 <%
     request.setAttribute("pageTitle", "Quên mật khẩu");
@@ -101,7 +102,9 @@
                                            name="email"
                                            value="<%= email %>"
                                            placeholder="Nhập email đã đăng ký"
-                                           maxlength="100"
+                                           maxlength="<%= ValidationUtils.EMAIL_MAX_LENGTH %>"
+                                           pattern="^[A-Za-z0-9+_.-]+@[A-Za-z]+\.[A-Za-z.]+$"
+                                           title="Email không đúng định dạng (tên miền sau dấu @ chỉ chứa chữ cái)"
                                            required>
                                 </div>
                             </div>
