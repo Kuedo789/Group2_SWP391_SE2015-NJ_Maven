@@ -12,7 +12,9 @@ import com.bakeryzone.model.CartItemDTO;
 import com.bakeryzone.utils.DBContext;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CartDAO {
 
@@ -110,6 +112,46 @@ public class CartDAO {
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Removes only the specified cart rows owned by the user.
+     *
+     * @return the number of cart rows removed
+     */
+    public int removeItemsFromCart(String userId, List<String> cartItemIds) {
+        if (userId == null || userId.trim().isEmpty()
+                || cartItemIds == null || cartItemIds.isEmpty()) {
+            return 0;
+        }
+
+        List<String> validIds = cartItemIds.stream()
+                .filter(id -> id != null && !id.trim().isEmpty())
+                .map(String::trim)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (validIds.isEmpty()) {
+            return 0;
+        }
+
+        String placeholders = String.join(",", Collections.nCopies(validIds.size(), "?"));
+        String sql = "DELETE FROM cart_item WHERE User_ID = ? AND Cart_Item_ID IN ("
+                + placeholders + ")";
+
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, userId);
+            for (int i = 0; i < validIds.size(); i++) {
+                ps.setString(i + 2, validIds.get(i));
+            }
+            return ps.executeUpdate();
+        } catch (SQLException e) {
+            java.util.logging.Logger.getLogger(CartDAO.class.getName())
+                    .log(java.util.logging.Level.SEVERE,
+                            "Failed to remove checked-out cart items for user: " + userId, e);
+            return 0;
         }
     }
 

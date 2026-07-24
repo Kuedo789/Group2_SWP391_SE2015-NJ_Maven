@@ -114,13 +114,14 @@ public class MembershipDAO {
      * @return int array: [totalMembers, standardCount, bronzeCount, silverCount, goldCount]
      */
     public int[] getMemberStats() {
-        int[] stats = new int[5];
+        int[] stats = new int[6];
         String sql = "SELECT " +
                      "  COUNT(*) AS total, " +
                      "  SUM(CASE WHEN t.TierName = 'MEMBER' THEN 1 ELSE 0 END) AS standardCount, " +
                      "  SUM(CASE WHEN t.TierName = 'BRONZE' THEN 1 ELSE 0 END) AS bronzeCount, " +
                      "  SUM(CASE WHEN t.TierName = 'SILVER' THEN 1 ELSE 0 END) AS silverCount, " +
-                     "  SUM(CASE WHEN t.TierName = 'GOLD' THEN 1 ELSE 0 END) AS goldCount " +
+                     "  SUM(CASE WHEN t.TierName = 'GOLD' THEN 1 ELSE 0 END) AS goldCount, " +
+                     "  SUM(CASE WHEN t.TierName = 'DIAMOND' THEN 1 ELSE 0 END) AS diamondCount " +
                      "FROM UserMembership um " +
                      "LEFT JOIN MembershipTier t ON um.CurrentTierID = t.TierID";
         Connection conn = null;
@@ -137,6 +138,7 @@ public class MembershipDAO {
                     stats[2] = rs.getInt("bronzeCount");
                     stats[3] = rs.getInt("silverCount");
                     stats[4] = rs.getInt("goldCount");
+                    stats[5] = rs.getInt("diamondCount");
                 }
             }
         } catch (Exception e) {
@@ -429,6 +431,14 @@ public class MembershipDAO {
      */
     public List<com.bakeryzone.model.Voucher> getUserOwnedVouchers(
             String userId, String scope, String search) {
+        return getUserOwnedVouchers(userId, scope, search, 1, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Retrieves one page of the user's valid, unused vouchers.
+     */
+    public List<com.bakeryzone.model.Voucher> getUserOwnedVouchers(
+            String userId, String scope, String search, int page, int pageSize) {
 
         List<com.bakeryzone.model.Voucher> list = new ArrayList<>();
 
@@ -460,7 +470,7 @@ public class MembershipDAO {
             sql.append("  AND (v.VoucherCode LIKE ? OR v.Title LIKE ?) ");
         }
 
-        sql.append("ORDER BY uv.AssignedAt DESC");
+        sql.append("ORDER BY uv.AssignedAt DESC LIMIT ? OFFSET ?");
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -478,8 +488,12 @@ public class MembershipDAO {
             if (hasSearch) {
                 String pattern = "%" + search.trim() + "%";
                 ps.setString(idx++, pattern);
-                ps.setString(idx, pattern);
+                ps.setString(idx++, pattern);
             }
+            int safePage = Math.max(page, 1);
+            int safePageSize = Math.max(pageSize, 1);
+            ps.setInt(idx++, safePageSize);
+            ps.setLong(idx, (long) (safePage - 1) * safePageSize);
             rs = ps.executeQuery();
 
             while (rs.next()) {
@@ -493,6 +507,51 @@ public class MembershipDAO {
         }
 
         return list;
+    }
+
+    /**
+     * Counts the user's valid, unused vouchers using the same filters as the
+     * paginated wallet query.
+     */
+    public int countUserOwnedVouchers(String userId, String scope, String search) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT COUNT(*) "
+            + "FROM UserVoucher uv "
+            + "JOIN Voucher v ON uv.VoucherID = v.VoucherID "
+            + "WHERE uv.UserID = ? "
+            + "  AND uv.IsUsed = 0 "
+            + "  AND v.IsActive = 1 "
+            + "  AND CURDATE() <= v.EndDate ");
+
+        boolean scopeIsOrder = "ORDER".equalsIgnoreCase(scope);
+        boolean scopeIsShipping = "SHIPPING".equalsIgnoreCase(scope);
+        if (scopeIsOrder) {
+            sql.append(" AND v.VoucherScope = 'ORDER' ");
+        } else if (scopeIsShipping) {
+            sql.append(" AND v.VoucherScope = 'SHIPPING' ");
+        }
+
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        if (hasSearch) {
+            sql.append(" AND (v.VoucherCode LIKE ? OR v.Title LIKE ?) ");
+        }
+
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString())) {
+            int idx = 1;
+            ps.setString(idx++, userId);
+            if (hasSearch) {
+                String pattern = "%" + search.trim() + "%";
+                ps.setString(idx++, pattern);
+                ps.setString(idx, pattern);
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     /**

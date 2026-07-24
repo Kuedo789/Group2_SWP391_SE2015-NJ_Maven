@@ -18,7 +18,7 @@
             /* ── Metric cards ───────────────────────────────────────────── */
             .stat-cards {
                 display: grid;
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(5, 1fr);
                 gap: 20px;
                 margin-bottom: 28px;
             }
@@ -461,6 +461,14 @@
                             <div class="stat-value"><fmt:formatNumber value="${goldCount != null ? goldCount : 0}" /></div>
                         </div>
                     </div>
+                    <!-- Diamond -->
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#f3e8ff;color:#a855f7;"><i class="fa-solid fa-gem"></i></div>
+                        <div>
+                            <div class="stat-label">Hạng Kim Cương</div>
+                            <div class="stat-value"><fmt:formatNumber value="${diamondCount != null ? diamondCount : 0}" /></div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ── Table Card ─────────────────────────────────────────── -->
@@ -490,6 +498,11 @@
                            class="pill-tab ${tierFilter == 'GOLD' ? 'active' : ''}">
                             <i class="fa-solid fa-circle" style="font-size:8px;vertical-align:middle;margin-right:4px;color:#f59e0b;"></i>
                             Hạng Vàng
+                        </a>
+                        <a href="${pageContext.request.contextPath}/admin/membership?tier=DIAMOND&search=${searchQuery}"
+                           class="pill-tab ${tierFilter == 'DIAMOND' ? 'active' : ''}">
+                            <i class="fa-solid fa-circle" style="font-size:8px;vertical-align:middle;margin-right:4px;color:#a855f7;"></i>
+                            Hạng Kim Cương
                         </a>
                     </div>
 
@@ -523,7 +536,7 @@
                                 <th>Hạng thành viên</th>
                                 <th>Điểm tích lũy</th>
                                 <th>Tổng chi tiêu</th>
-                                <th>Thao tác</th>
+                                <th style="text-align: center;">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -543,14 +556,16 @@
                                 <c:set var="tierIcon" value="fa-user" />
                                 <c:set var="tierLabel" value="Thành viên" />
                                 <c:choose>
-                                    <c:when test="${tierCode == 'gold' || tierCode == 'diamond'}"><c:set var="tierIcon" value="fa-crown" /><c:set var="tierLabel" value="Hạng Vàng" /></c:when>
+                                    <c:when test="${tierCode == 'diamond'}"><c:set var="tierIcon" value="fa-gem" /><c:set var="tierLabel" value="Hạng Kim Cương" /></c:when>
+                                    <c:when test="${tierCode == 'gold'}"><c:set var="tierIcon" value="fa-crown" /><c:set var="tierLabel" value="Hạng Vàng" /></c:when>
                                     <c:when test="${tierCode == 'silver'}"><c:set var="tierIcon" value="fa-medal" /><c:set var="tierLabel" value="Hạng Bạc" /></c:when>
                                     <c:when test="${tierCode == 'bronze'}"><c:set var="tierIcon" value="fa-medal" /><c:set var="tierLabel" value="Hạng Đồng" /></c:when>
                                 </c:choose>
                                 
                                 <c:set var="avatarGrad" value="linear-gradient(135deg,#bfdbfe,#3b82f6)" />
                                 <c:choose>
-                                    <c:when test="${tierCode == 'gold' || tierCode == 'diamond'}"><c:set var="avatarGrad" value="linear-gradient(135deg,#f59e0b,#d97706)" /></c:when>
+                                    <c:when test="${tierCode == 'diamond'}"><c:set var="avatarGrad" value="linear-gradient(135deg,#c4b5fd,#8b5cf6)" /></c:when>
+                                    <c:when test="${tierCode == 'gold'}"><c:set var="avatarGrad" value="linear-gradient(135deg,#f59e0b,#d97706)" /></c:when>
                                     <c:when test="${tierCode == 'silver'}"><c:set var="avatarGrad" value="linear-gradient(135deg,#94a3b8,#64748b)" /></c:when>
                                     <c:when test="${tierCode == 'bronze'}"><c:set var="avatarGrad" value="linear-gradient(135deg,#fde68a,#d97706)" /></c:when>
                                 </c:choose>
@@ -574,12 +589,14 @@
                                         </div>
                                     </td>
                                     <td style="font-weight:700;"><fmt:formatNumber value="${m.totalSpending}" />₫</td>
-                                    <td class="action-btns">
-                                        <button class="btn-icon" title="Xem chi tiết thành viên"
-                                            onclick="fetchMemberDetail('${m.userId}')"
-                                            style="border:none;background:none;color:#3b82f6;cursor:pointer;">
-                                            <i class="fa-regular fa-eye"></i>
-                                        </button>
+                                    <td style="text-align: center;">
+                                        <div class="action-btns" style="justify-content: center;">
+                                            <button class="btn-icon" title="Xem chi tiết thành viên"
+                                                onclick="fetchMemberDetail('${m.userId}')"
+                                                style="border:none;background:none;color:#3b82f6;cursor:pointer;">
+                                                <i class="fa-regular fa-eye"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </c:forEach>
@@ -794,7 +811,8 @@
                 standard: { label: 'Thành viên', icon: 'fa-user',  gradient: 'linear-gradient(135deg,#94a3b8,#64748b)', color: '#475569' },
                 bronze:   { label: 'Hạng Đồng',  icon: 'fa-medal', gradient: 'linear-gradient(135deg,#fde68a,#d97706)', color: '#92400e' },
                 silver:   { label: 'Hạng Bạc',   icon: 'fa-medal', gradient: 'linear-gradient(135deg,#e2e8f0,#94a3b8)', color: '#334155' },
-                gold:     { label: 'Hạng Vàng',  icon: 'fa-crown', gradient: 'linear-gradient(135deg,#fef08a,#f59e0b)', color: '#78350f' }
+                gold:     { label: 'Hạng Vàng',  icon: 'fa-crown', gradient: 'linear-gradient(135deg,#fef08a,#f59e0b)', color: '#78350f' },
+                diamond:  { label: 'Hạng Kim Cương', icon: 'fa-gem', gradient: 'linear-gradient(135deg,#c4b5fd,#8b5cf6)', color: '#4c1d95' }
             };
 
             // ── AJAX fetch member detail ────────────────────────────────────
@@ -867,7 +885,8 @@
                     standard: 'linear-gradient(90deg,#94a3b8,#64748b)',
                     bronze:   'linear-gradient(90deg,#fde68a,#d97706)',
                     silver:   'linear-gradient(90deg,#cbd5e1,#94a3b8)',
-                    gold:     'linear-gradient(90deg,#fef08a,#f59e0b)'
+                    gold:     'linear-gradient(90deg,#fef08a,#f59e0b)',
+                    diamond:  'linear-gradient(90deg,#c4b5fd,#8b5cf6)'
                 };
                 fill.style.background = barColors[m.tier] || barColors.standard;
                 document.getElementById('drawerProgressLabel').textContent = m.progressLabel;

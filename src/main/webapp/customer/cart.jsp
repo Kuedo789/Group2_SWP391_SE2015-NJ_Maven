@@ -763,5 +763,6 @@
                 }
             });
         </script>
+        <jsp:include page="../common/scripts.jsp" />
     </body>
 </html>

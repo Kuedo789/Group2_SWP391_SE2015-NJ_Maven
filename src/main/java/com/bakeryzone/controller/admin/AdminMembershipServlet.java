@@ -160,6 +160,7 @@ public class AdminMembershipServlet extends HttpServlet {
         request.setAttribute("bronzeCount", stats[2]);
         request.setAttribute("silverCount", stats[3]);
         request.setAttribute("goldCount", stats[4]);
+        request.setAttribute("diamondCount", stats[5]);
         
         List<MembershipTier> allTiers = dao.getAllTiers();
         request.setAttribute("allTiers", allTiers);
@@ -261,8 +262,9 @@ public class AdminMembershipServlet extends HttpServlet {
 
     private String getAvatarGrad(String tierCode) {
         switch (tierCode) {
-            case "gold":
             case "diamond":
+                return "linear-gradient(135deg,#c4b5fd,#8b5cf6)";
+            case "gold":
                 return "linear-gradient(135deg,#f59e0b,#d97706)";
             case "silver":
                 return "linear-gradient(135deg,#94a3b8,#64748b)";
