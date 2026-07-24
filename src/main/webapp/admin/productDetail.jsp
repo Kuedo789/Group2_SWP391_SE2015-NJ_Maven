@@ -438,7 +438,7 @@
 
         <!-- Dashboard Container -->
         <div class="content-container">
-            
+            <c:set var="isReadOnly" value="${sessionScope.user.roleId ne 'ADMIN'}" />
             <form action="${pageContext.request.contextPath}/admin/product?action=${formAction}" method="post" enctype="multipart/form-data">
                 <!-- Keep track of the product ID -->
                 <input type="hidden" name="id" value="${product.id}">
@@ -458,9 +458,11 @@
                         <p class="page-subtitle">Xem và quản lý thông tin chi tiết, cấu trúc tài chính và quy trình chế biến của bánh kem.</p>
                     </div>
                     <div class="action-button-group">
-                        <button type="submit" class="btn-cz-primary"><i class="fa-regular fa-floppy-disk me-1"></i> Lưu Lại</button>
-                        <c:if test="${product.id ne 'new' and not empty product.id}">
-                            <button type="button" class="btn-cz-danger" onclick="if(confirm('Bạn có chắc chắn muốn xóa bánh kem này không?')) { deleteProduct('${product.id}'); }">Xóa bánh kem</button>
+                        <c:if test="${not isReadOnly}">
+                            <button type="submit" class="btn-cz-primary"><i class="fa-regular fa-floppy-disk me-1"></i> Lưu Lại</button>
+                            <c:if test="${product.id ne 'new' and not empty product.id}">
+                                <button type="button" class="btn-cz-danger" onclick="if(confirm('Bạn có chắc chắn muốn xóa bánh kem này không?')) { deleteProduct('${product.id}'); }">Xóa bánh kem</button>
+                            </c:if>
                         </c:if>
                     </div>
                 </div>
@@ -501,14 +503,16 @@
                                     <div class="cover-image-wrapper" title="Nhấp để xem ảnh lớn hơn">
                                         <img id="mainCoverImage" src="${resolvedImageUrl}" alt="Ảnh Bìa Bánh" onclick="openLightbox(this.src)" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587';">
                                         <div class="cover-badge">Ảnh Bìa</div>
-                                        <div class="cover-actions">
-                                            <button type="button" class="action-btn edit-cover-btn" onclick="event.stopPropagation(); document.getElementById('imageFileInput').click()" title="Thay đổi ảnh bìa">
-                                                <i class="fa-solid fa-pencil"></i>
-                                            </button>
-                                            <button type="button" class="action-btn delete-cover-btn" onclick="event.stopPropagation(); resetCoverImage()" title="Xóa ảnh bìa">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </div>
+                                        <c:if test="${not isReadOnly}">
+                                            <div class="cover-actions">
+                                                <button type="button" class="action-btn edit-cover-btn" onclick="event.stopPropagation(); document.getElementById('imageFileInput').click()" title="Thay đổi ảnh bìa">
+                                                    <i class="fa-solid fa-pencil"></i>
+                                                </button>
+                                                <button type="button" class="action-btn delete-cover-btn" onclick="event.stopPropagation(); resetCoverImage()" title="Xóa ảnh bìa">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </div>
+                                        </c:if>
                                     </div>
                                     <input type="file" name="imageFile" id="imageFileInput" accept=".jpg,.jpeg,.png" style="display: none;">
                                     <input type="hidden" name="imageUrl" id="imageUrlHidden" value="${product.imageUrl}">
@@ -526,18 +530,22 @@
                                                 </c:if>
                                                 <img src="${resolvedAddImg}" onclick="openLightbox(this.src)" onerror="this.src='https://images.unsplash.com/photo-1578985545062-69928b1d9587';">
                                                 <input type="hidden" name="existingAdditionalImages" value="${addImg}">
-                                                <button type="button" class="delete-gallery-btn" onclick="event.stopPropagation(); this.parentElement.remove()" title="Xóa ảnh này">
-                                                    <i class="fa-solid fa-xmark"></i>
-                                                </button>
+                                                <c:if test="${not isReadOnly}">
+                                                    <button type="button" class="delete-gallery-btn" onclick="event.stopPropagation(); this.parentElement.remove()" title="Xóa ảnh này">
+                                                        <i class="fa-solid fa-xmark"></i>
+                                                    </button>
+                                                </c:if>
                                             </div>
                                         </c:forEach>
                                         
                                         <!-- Upload Box -->
-                                        <div class="upload-trigger-card" onclick="document.getElementById('additionalImageFilesInput').click()" title="Tải thêm ảnh phụ">
-                                            <i class="fa-solid fa-plus upload-icon"></i>
-                                            <span class="upload-text">Thêm Ảnh</span>
-                                            <span class="upload-hint">JPG, PNG (Tối đa 5MB)</span>
-                                        </div>
+                                        <c:if test="${not isReadOnly}">
+                                            <div class="upload-trigger-card" onclick="document.getElementById('additionalImageFilesInput').click()" title="Tải thêm ảnh phụ">
+                                                <i class="fa-solid fa-plus upload-icon"></i>
+                                                <span class="upload-text">Thêm Ảnh</span>
+                                                <span class="upload-hint">JPG, PNG (Tối đa 5MB)</span>
+                                            </div>
+                                        </c:if>
                                     </div>
                                     <input type="file" id="additionalImageFilesInput" accept=".jpg,.jpeg,.png" multiple style="display: none;">
                                     <input type="file" name="additionalImageFiles" id="additionalImageFilesHidden" multiple style="display: none;">
@@ -631,13 +639,13 @@
                                 <div class="row g-3">
                                      <div class="col-md-12">
                                          <label class="form-label-cz">Tên Bánh Kem <span>*</span></label>
-                                         <input type="text" class="form-control-cz" id="productName" name="name" value="${product.name}" required>
+                                         <input type="text" class="form-control-cz" id="productName" name="name" value="${product.name}" required ${isReadOnly ? 'disabled' : ''}>
                                          <div id="error-name" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                      </div>
 
                                      <div class="col-md-6">
                                          <label class="form-label-cz">Danh mục <span>*</span></label>
-                                         <select class="form-select-cz" name="categoryId">
+                                         <select class="form-select-cz" name="categoryId" ${isReadOnly ? 'disabled' : ''}>
                                              <c:forEach var="cat" items="${productCategories}">
                                                  <option value="${cat.id}" ${product.categoryId eq cat.id ? 'selected' : ''}>${cat.name}</option>
                                              </c:forEach>
@@ -645,7 +653,7 @@
                                      </div>
                                      <div class="col-md-6">
                                          <label class="form-label-cz">Thời Gian Làm Việc Ước Tính (giờ) <span>*</span></label>
-                                         <input type="number" step="0.01" class="form-control-cz" id="productEstimatedLaborHours" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required>
+                                         <input type="number" step="0.01" class="form-control-cz" id="productEstimatedLaborHours" name="estimatedLaborHours" value="${product.estimatedLaborHours}" required ${isReadOnly ? 'disabled' : ''}>
                                          <div id="error-estimatedLaborHours" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                      </div>
 
@@ -653,7 +661,7 @@
                                          <label class="form-label-cz">Cho Phép Ghi Chú</label>
                                          <div class="switch-container">
                                              <span class="switch-label-text">Cho phép khách ghi chú chúc mừng lên mặt bánh</span>
-                                             <input type="checkbox" class="switch-input" name="allowsGreeting" value="true" ${product.allowsGreeting ? 'checked' : ''}>
+                                             <input type="checkbox" class="switch-input" name="allowsGreeting" value="true" ${product.allowsGreeting ? 'checked' : ''} ${isReadOnly ? 'disabled' : ''}>
                                          </div>
                                          <input type="hidden" name="status" value="${not empty product.status ? product.status : 'Active'}">
                                      </div>
@@ -698,7 +706,7 @@
                                             <c:forEach var="item" items="${productIngredients}">
                                                 <tr data-price="${item.pricePerUnit}">
                                                     <td>
-                                                        <select class="form-select-cz bom-select" name="bomIngredientId" onchange="updateBomRowPrice(this)" style="padding: 6px 12px; height: 38px;">
+                                                        <select class="form-select-cz bom-select" name="bomIngredientId" onchange="updateBomRowPrice(this)" style="padding: 6px 12px; height: 38px;" ${isReadOnly ? 'disabled' : ''}>
                                                             <c:forEach var="ing" items="${allIngredients}">
                                                                 <option value="${ing.ingredientId}" data-price="${ing.pricePerUnit}" data-unit="${ing.unitName}" ${item.ingredientId eq ing.ingredientId ? 'selected' : ''}>
                                                                     ${fn:escapeXml(ing.ingredientName)} (đ/${ing.unitName})
@@ -708,7 +716,7 @@
                                                     </td>
                                                     <td>
                                                         <div class="d-flex align-items-center gap-2">
-                                                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px; width: 90px; min-width: 90px;" required>
+                                                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px; width: 90px; min-width: 90px;" required ${isReadOnly ? 'disabled' : ''}>
                                                             <span class="bom-unit-label text-muted small" style="min-width: 45px; text-align: left; font-weight: 500;">${item.unitMeasure}</span>
                                                         </div>
                                                     </td>
@@ -719,9 +727,11 @@
                                                         <fmt:formatNumber value="${item.standardGram * item.pricePerUnit}" type="number" pattern="#,##0"/> đ
                                                     </td>
                                                     <td style="text-align: center;">
-                                                        <button type="button" class="btn-delete-bom-row" onclick="removeBomRow(this)" title="Xóa nguyên liệu">
-                                                            <i class="fa-regular fa-trash-can"></i>
-                                                        </button>
+                                                        <c:if test="${not isReadOnly}">
+                                                            <button type="button" class="btn-delete-bom-row" onclick="removeBomRow(this)" title="Xóa nguyên liệu">
+                                                                <i class="fa-regular fa-trash-can"></i>
+                                                            </button>
+                                                        </c:if>
                                                     </td>
                                                 </tr>
                                             </c:forEach>
@@ -729,7 +739,14 @@
                                     </table>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-3 pt-3" style="border-top: 1px dashed #e5e7eb; margin-bottom: 25px;">
-                                    <button type="button" class="btn btn-sm btn-cz-primary" onclick="addBomRow()" style="font-size: 13px; padding: 8px 18px; font-weight: 600;"><i class="fa-solid fa-plus me-1"></i> Thêm Nguyên Liệu</button>
+                                    <c:choose>
+                                        <c:when test="${not isReadOnly}">
+                                            <button type="button" class="btn btn-sm btn-cz-primary" onclick="addBomRow()" style="font-size: 13px; padding: 8px 18px; font-weight: 600;"><i class="fa-solid fa-plus me-1"></i> Thêm Nguyên Liệu</button>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <div></div>
+                                        </c:otherwise>
+                                    </c:choose>
                                     <div>
                                         <span style="color: #4b5563; font-weight: 500;">Tổng chi phí nguyên liệu:</span> 
                                         <span id="bomCostTotal" style="font-size: 18px; font-weight: 700; color: var(--cz-primary); margin-left: 10px;">0 đ</span>
@@ -1028,6 +1045,10 @@
         // Sync Quill HTML contents on form submit
         const form = document.querySelector('form');
         form.addEventListener('submit', function(e) {
+            if (${isReadOnly}) {
+                e.preventDefault();
+                return false;
+            }
             let hasError = false;
             
             const errorName = document.getElementById('error-name');
@@ -1321,9 +1342,10 @@
                 if (editorEl) {
                     quill = new Quill(editorEl, {
                         theme: 'snow',
+                        readOnly: ${isReadOnly},
                         placeholder: 'Nhập mô tả chi tiết bánh kem...',
                         modules: {
-                            toolbar: [
+                            toolbar: ${isReadOnly} ? false : [
                                 ['bold', 'italic', 'underline', 'strike'],
                                 [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                                 [{ 'align': [] }],
@@ -1339,9 +1361,10 @@
                 if (recipeEditorEl) {
                     recipeQuill = new Quill(recipeEditorEl, {
                         theme: 'snow',
+                        readOnly: ${isReadOnly},
                         placeholder: 'Nhập các bước thực hiện chế biến cụ thể...',
                         modules: {
-                            toolbar: [
+                            toolbar: ${isReadOnly} ? false : [
                                 ['bold', 'italic', 'underline', 'strike'],
                                 [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                                 [{ 'align': [] }],

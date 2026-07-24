@@ -11,6 +11,35 @@ import java.util.List;
 
 public class PermissionDAO {
 
+    static {
+        try (Connection conn = DBContext.getJDBCConnection()) {
+            if (conn != null) {
+                // 1. Insert FEAT_PROD_BOM_VIEW screen permission
+                String sqlScreen = "INSERT IGNORE INTO screen_permission (Screen_ID, Screen_Name, Endpoint_URL) VALUES (?, ?, ?)";
+                try (PreparedStatement ps = conn.prepareStatement(sqlScreen)) {
+                    ps.setString(1, "FEAT_PROD_BOM_VIEW");
+                    ps.setString(2, "Xem định lượng nguyên liệu bánh");
+                    ps.setString(3, "/admin/product?action=bom");
+                    ps.executeUpdate();
+                }
+                
+                // 2. Grant to ADMIN and STAFF
+                String sqlRole = "INSERT IGNORE INTO role_permission (Role_ID, Screen_ID) VALUES (?, ?)";
+                try (PreparedStatement ps = conn.prepareStatement(sqlRole)) {
+                    ps.setString(1, "ADMIN");
+                    ps.setString(2, "FEAT_PROD_BOM_VIEW");
+                    ps.executeUpdate();
+                    
+                    ps.setString(1, "STAFF");
+                    ps.setString(2, "FEAT_PROD_BOM_VIEW");
+                    ps.executeUpdate();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public List<Role> getAllRoles() {
         List<Role> list = new ArrayList<>();
         String sql = "SELECT Role_ID, Role_Name FROM role";
