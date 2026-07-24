@@ -8,6 +8,7 @@ public class OrderItem {
     private String customCakeId;
     private int quantity;
     private BigDecimal priceAtPurchase;
+    private BigDecimal currentPrice;
     private String itemName;
     private String itemImage;
     private String greetingText;
@@ -56,6 +57,14 @@ public class OrderItem {
 
     public void setPriceAtPurchase(BigDecimal priceAtPurchase) {
         this.priceAtPurchase = priceAtPurchase;
+    }
+
+    public BigDecimal getCurrentPrice() {
+        return currentPrice;
+    }
+
+    public void setCurrentPrice(BigDecimal currentPrice) {
+        this.currentPrice = currentPrice;
     }
 
     public String getItemName() {

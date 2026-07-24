@@ -22,10 +22,14 @@ public class CustomerOrderController extends HttpServlet {
     private final CustomerDAO customerDAO = new CustomerDAO();
 
     @Override
+    // Chức năng: Xử lý các request GET hiển thị danh sách đơn hàng, xem chi tiết, và xử lý yêu cầu Hủy đơn của Khách hàng
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         
+        // Lazy-cleanup: Tự động dọn các đơn "Chờ thanh toán" quá 15 phút
+        orderDAO.cancelExpiredWaitingPaymentOrders();
+
         HttpSession session = request.getSession();
         User currentUser = (User) session.getAttribute("user");
 
@@ -112,6 +116,7 @@ public class CustomerOrderController extends HttpServlet {
         request.setAttribute("countAll",        statusCounts.getOrDefault("all", 0));
         request.setAttribute("countConfirmed",  statusCounts.getOrDefault("confirmed", 0));
         request.setAttribute("countProcessing", statusCounts.getOrDefault("processing", 0));
+        request.setAttribute("countWaiting",    statusCounts.getOrDefault("waiting", 0));
         request.setAttribute("countShipping",   statusCounts.getOrDefault("shipping", 0));
         request.setAttribute("countCompleted",  statusCounts.getOrDefault("completed", 0));
         request.setAttribute("countCancelled",  statusCounts.getOrDefault("cancelled", 0));

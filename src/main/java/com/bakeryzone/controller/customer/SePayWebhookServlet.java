@@ -91,14 +91,7 @@ public class SePayWebhookServlet extends HttpServlet {
                     boolean success = orderDAO.updateOrderStatus(orderNo, "PAID");
                     if (success) {
                         System.out.println("[SePay] Order " + orderNo + " successfully marked as PAID via webhook.");
-                        
-                        // Tự động phân công shipper và gom chuyến
-                        try {
-                            orderDAO.autoAssignShipperAndTrip(orderNo);
-                        } catch (Exception e) {
-                            System.err.println("[SePay] Lỗi tự động gán shipper: " + e.getMessage());
-                        }
-                        
+                        // AutoAssign sẽ được trigger khi Staff chuyển sang Waiting_Delivery.
                         response.setContentType("application/json");
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().write("{\"success\":true,\"message\":\"Order status updated\"}");

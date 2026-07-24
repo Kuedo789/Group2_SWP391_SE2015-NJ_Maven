@@ -1389,7 +1389,6 @@ html.dark-theme .kitchen-btn-finish:hover {
     text-decoration: underline;
 }
 
-/* Các thành phần giao diện bổ sung cho Shipper và Doanh thu Dashboard (Phần do Minh Quân phát triển) */
 .shipper-section-card {
     background: #ffffff;
     border-radius: 12px;

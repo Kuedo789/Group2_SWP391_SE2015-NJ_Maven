@@ -97,26 +97,26 @@
                 </div>
                 <div>
                     <c:choose>
-                        <c:when test="${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận'}">
-                            <span class="status-badge status-pending">Chờ xác nhận</span>
+                        <c:when test="${order.orderStatus eq 'PAID'}">
+                            <span class="status-badge status-paid">Đã thanh toán</span>
                         </c:when>
-                        <c:when test="${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận'}">
-                            <span class="status-badge status-confirmed">Đã xác nhận</span>
+                        <c:when test="${order.orderStatus eq 'Processing'}">
+                            <span class="status-badge status-processing">Đang làm bánh</span>
                         </c:when>
-                        <c:when test="${order.orderStatus eq 'PAID' || order.orderStatus eq 'Đã chuyển khoản'}">
-                            <span class="status-badge status-paid">Đã chuyển khoản</span>
+                        <c:when test="${order.orderStatus eq 'Waiting_Delivery'}">
+                            <span class="status-badge status-delivering">Chờ giao hàng</span>
                         </c:when>
-                        <c:when test="${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý'}">
-                            <span class="status-badge status-processing">Đang xử lý</span>
-                        </c:when>
-                        <c:when test="${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao'}">
+                        <c:when test="${order.orderStatus eq 'Delivering'}">
                             <span class="status-badge status-delivering">Đang giao hàng</span>
                         </c:when>
-                        <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao'}">
+                        <c:when test="${order.orderStatus eq 'Completed'}">
                             <span class="status-badge status-completed">Hoàn thành</span>
                         </c:when>
-                        <c:otherwise>
+                        <c:when test="${order.orderStatus eq 'Cancelled'}">
                             <span class="status-badge status-cancelled">Đã hủy</span>
+                        </c:when>
+                        <c:otherwise>
+                            <span class="status-badge status-pending">${order.orderStatus}</span>
                         </c:otherwise>
                     </c:choose>
                 </div>
@@ -401,7 +401,13 @@
                             <input type="hidden" name="orderNo" value="${order.orderNo}">
                             
                         <c:choose>
-                            <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' || order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Canceled' || order.orderStatus eq 'Đã hủy'}">
+                            <c:when test="${order.orderStatus eq 'Waiting_Payment'}">
+                                <div style="padding: 20px; text-align: center; color: #856404; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 6px; font-weight: bold;">
+                                    <i class="fa-solid fa-hourglass-half" style="font-size: 24px; margin-bottom: 8px; display: block; color: #856404;"></i>
+                                    Đơn hàng đang chờ thanh toán.<br>Hệ thống sẽ tự động cập nhật khi khách thanh toán xong.
+                                </div>
+                            </c:when>
+                            <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Cancelled'}">
                                 <div style="padding: 20px; text-align: center; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px; font-weight: bold;">
                                     <i class="fa-solid fa-lock" style="font-size: 24px; margin-bottom: 8px; display: block; color: #721c24;"></i>
                                     Đơn hàng đã hoàn thành hoặc đã hủy.<br>Không thể thay đổi trạng thái nữa.
@@ -411,22 +417,48 @@
                                 <form action="${pageContext.request.contextPath}/admin/orders" method="POST" class="status-form">
                                     <input type="hidden" name="action" value="update-status">
                                     <input type="hidden" name="orderNo" value="${order.orderNo}">
-                                    
+
+                                    <%-- Xác định level hiện tại --%>
                                     <c:set var="statusLevel" value="0" />
-                                    <c:if test="${order.orderStatus eq 'Pending' || order.orderStatus eq 'Chờ xác nhận'}"><c:set var="statusLevel" value="1" /></c:if>
-                                    <c:if test="${order.orderStatus eq 'Confirmed' || order.orderStatus eq 'Đã xác nhận'}"><c:set var="statusLevel" value="2" /></c:if>
-                                    <c:if test="${order.orderStatus eq 'Processing' || order.orderStatus eq 'Đang xử lý' || order.orderStatus eq 'Đang làm bánh'}"><c:set var="statusLevel" value="3" /></c:if>
-                                    <c:if test="${order.orderStatus eq 'Delivering' || order.orderStatus eq 'Đang giao hàng' || order.orderStatus eq 'Đang giao'}"><c:set var="statusLevel" value="4" /></c:if>
+                                    <c:if test="${order.orderStatus eq 'PAID'}"><c:set var="statusLevel" value="1" /></c:if>
+                                    <c:if test="${order.orderStatus eq 'Processing'}"><c:set var="statusLevel" value="2" /></c:if>
+                                    <c:if test="${order.orderStatus eq 'Waiting_Delivery'}"><c:set var="statusLevel" value="3" /></c:if>
+                                    <c:if test="${order.orderStatus eq 'Delivering'}"><c:set var="statusLevel" value="4" /></c:if>
+
+                                    <%-- Xác định role hiện tại --%>
+                                    <c:set var="isStaff" value="${sessionScope.user.roleId eq 'STAFF'}" />
 
                                     <select name="status" class="status-select" style="padding: 10px; width: 100%; border-radius: 6px; border: 1px solid #ccc; font-weight: 500; font-size: 14.5px;">
-                                        <option value="Pending" ${statusLevel > 1 ? 'disabled' : ''} ${statusLevel == 1 ? 'selected' : ''}>Chờ xác nhận</option>
-                                        <option value="Confirmed" ${statusLevel > 2 ? 'disabled' : ''} ${statusLevel == 2 ? 'selected' : ''}>Đã xác nhận</option>
-                                        <option value="Processing" ${statusLevel > 3 ? 'disabled' : ''} ${statusLevel == 3 ? 'selected' : ''}>Đang làm bánh</option>
-                                        <option value="Delivering" ${statusLevel > 4 ? 'disabled' : ''} ${statusLevel == 4 ? 'selected' : ''}>Đang giao hàng</option>
-                                        <option value="Completed">Hoàn thành</option>
-                                        <option value="Cancelled">Hủy đơn</option>
+                                        <%-- PAID: chỉ chọn nếu đang ở PAID --%>
+                                        <option value="PAID"
+                                            ${statusLevel == 1 ? 'selected' : ''}
+                                            ${statusLevel > 1 ? 'disabled' : ''}>Đã thanh toán</option>
+
+                                        <%-- Processing: PAID → Processing --%>
+                                        <option value="Processing"
+                                            ${statusLevel == 2 ? 'selected' : ''}
+                                            ${statusLevel > 2 ? 'disabled' : ''}>Đang làm bánh</option>
+
+                                        <%-- Waiting_Delivery: Processing → Waiting_Delivery --%>
+                                        <option value="Waiting_Delivery"
+                                            ${statusLevel == 3 ? 'selected' : ''}
+                                            ${statusLevel > 3 ? 'disabled' : ''}>Chờ giao hàng</option>
+
+                                        <%-- Delivering: chỉ Admin được phép từ Waiting_Delivery trở lên --%>
+                                        <c:if test="${!isStaff}">
+                                            <option value="Delivering"
+                                                ${statusLevel == 4 ? 'selected' : ''}
+                                                ${statusLevel > 4 ? 'disabled' : ''}>Đang giao hàng</option>
+
+                                            <option value="Completed">Hoàn thành</option>
+                                        </c:if>
+
+                                        <%-- Cancelled: luôn hiển thị (Admin & Staff đều hủy được từ PAID/Processing) --%>
+                                        <c:if test="${statusLevel <= 2}">
+                                            <option value="Cancelled">Hủy đơn</option>
+                                        </c:if>
                                     </select>
-                                    
+
                                     <button type="submit" class="btn btn-update-status mt-3 w-100" style="padding: 10px; border-radius: 8px; font-weight: bold;">
                                         <i class="fa-solid fa-floppy-disk me-1"></i> Cập nhật trạng thái
                                     </button>

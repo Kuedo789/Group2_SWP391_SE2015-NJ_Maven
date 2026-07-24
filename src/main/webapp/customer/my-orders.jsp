@@ -101,9 +101,9 @@
         <!-- Filters Section -->
         <section class="orders-filter" style="display: flex; gap: 12px; justify-content: flex-start; margin-bottom: 25px; flex-wrap: wrap;">
             <a href="<%= request.getContextPath() %>/OrderList?status=all<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "all".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Tất cả (<%= request.getAttribute("countAll") != null ? request.getAttribute("countAll") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=confirmed<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "confirmed".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Chờ xác nhận (<%= request.getAttribute("countConfirmed") != null ? request.getAttribute("countConfirmed") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=processing<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "processing".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang xử lý (<%= request.getAttribute("countProcessing") != null ? request.getAttribute("countProcessing") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=shipping<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "shipping".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang giao (<%= request.getAttribute("countShipping") != null ? request.getAttribute("countShipping") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=paid<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "paid".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đã thanh toán (<%= request.getAttribute("countPaid") != null ? request.getAttribute("countPaid") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=processing<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "processing".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang làm bánh (<%= request.getAttribute("countProcessing") != null ? request.getAttribute("countProcessing") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=shipping<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "shipping".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đang giao hàng (<%= request.getAttribute("countShipping") != null ? request.getAttribute("countShipping") : 0 %>)</a>
             <a href="<%= request.getContextPath() %>/OrderList?status=completed<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "completed".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Hoàn thành (<%= request.getAttribute("countCompleted") != null ? request.getAttribute("countCompleted") : 0 %>)</a>
             <a href="<%= request.getContextPath() %>/OrderList?status=cancelled<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "cancelled".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Đã hủy (<%= request.getAttribute("countCancelled") != null ? request.getAttribute("countCancelled") : 0 %>)</a>
         </section>
@@ -186,41 +186,22 @@
                     String displayStatus = dbStatus != null ? dbStatus : "Đang xử lý";
 
                     if (dbStatus != null) {
-                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equals("Chờ thanh toán")) {
+                        displayStatus = order.getOrderStatusForCustomer(); // Lấy tên tiếng việt (ẩn Waiting_Delivery)
+                        if (dbStatus.equals("PAID")) {
+                            dataStatus = "paid";
+                            badgeClass = "status-confirmed\" style=\"background-color: #d1fae5; color: #065f46;";
+                        } else if (dbStatus.equals("Processing") || dbStatus.equals("Waiting_Delivery")) {
                             dataStatus = "processing";
                             badgeClass = "status-processing";
-                            displayStatus = "Chờ thanh toán";
-                        } else if (dbStatus.equalsIgnoreCase("Confirmed") || dbStatus.equals("Chờ xác nhận") || dbStatus.equalsIgnoreCase("PAID")) {
-                            dataStatus = "processing";
-                            badgeClass = "status-processing";
-                            displayStatus = "Chờ xác nhận";
-                        } else if (dbStatus.equalsIgnoreCase("Processing") || dbStatus.equals("Đang làm bánh") || dbStatus.equals("Đang xử lý")) {
-                            dataStatus = "processing";
-                            badgeClass = "status-processing";
-                            displayStatus = "Đang làm bánh";
-                        } else if (dbStatus.equalsIgnoreCase("Ready") || dbStatus.equals("Chờ vận chuyển") || dbStatus.equals("Sẵn sàng giao")) {
+                        } else if (dbStatus.equals("Delivering")) {
                             dataStatus = "shipping";
                             badgeClass = "status-shipping";
-                            displayStatus = "Chờ vận chuyển";
-                        } else if (dbStatus.equalsIgnoreCase("Delivering")
-                                || dbStatus.equals("Đang vận chuyển")
-                                || dbStatus.equals("Đang giao hàng")
-                                || dbStatus.equals("Đang giao")) {
-                            dataStatus = "shipping";
-                            badgeClass = "status-shipping";
-                            displayStatus = "Đang giao hàng";
-                        } else if (dbStatus.equalsIgnoreCase("Completed")
-                                || dbStatus.equals("Hoàn thành")
-                                || dbStatus.equals("Đã giao")) {
+                        } else if (dbStatus.equals("Completed")) {
                             dataStatus = "completed";
                             badgeClass = "status-completed";
-                            displayStatus = "Hoàn thành";
-                        } else if (dbStatus.equalsIgnoreCase("Cancelled")
-                                || dbStatus.equalsIgnoreCase("Canceled")
-                                || dbStatus.equals("Đã hủy")) {
+                        } else if (dbStatus.equals("Cancelled")) {
                             dataStatus = "cancelled";
                             badgeClass = "status-cancelled";
-                            displayStatus = "Đã hủy";
                         }
                     }
 
@@ -368,13 +349,10 @@
                     %>
                 </div>
                 <div class="order-card-footer">
-                    <div class="order-total" style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
-                        <div style="font-size: 12px; color: var(--muted); margin-bottom: 2px;">
-                            Phí vận chuyển: <%= currencyFormat.format(order.getShippingFee() != null ? order.getShippingFee().doubleValue() : 0) %>đ
-                        </div>
+                    <div class="order-total" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; flex: 1;">
                         <div style="display: flex; align-items: baseline; gap: 8px;">
-                            <span>Tổng thanh toán:</span>
-                            <strong><%= formattedTotal %></strong>
+                            <span style="font-size: 14px; font-weight: 500;">Thành tiền:</span>
+                            <strong style="color: #9b1c1c; font-size: 18px;"><%= currencyFormat.format(order.getRemainingCodBalance() != null ? order.getRemainingCodBalance().doubleValue() : (order.getTotalCost() != null ? order.getTotalCost().doubleValue() : 0)) %>đ</strong>
                         </div>
                     </div>
                     <%
@@ -388,10 +366,14 @@
                                 
                                 String tplId = item.getTemplateId() != null ? item.getTemplateId() : "";
                                 String varName = item.getVariationName() != null ? item.getVariationName() : "Tiêu chuẩn";
-                                double price = item.getPriceAtPurchase() != null ? item.getPriceAtPurchase().doubleValue() : 0.0;
+                                double price = item.getCurrentPrice() != null ? item.getCurrentPrice().doubleValue() : 0.0;
                                 int qty = item.getQuantity();
                                 String name = item.getItemName() != null ? item.getItemName().replace("\"", "\\\"") : "";
-                                String image = item.getItemImage() != null ? item.getItemImage().replace("\\", "/") : "assets/images/default-cake.png";
+                                String image = (item.getItemImage() != null && !item.getItemImage().isEmpty())
+                                         ? item.getItemImage().replace("\\", "/")
+                                         : (item.getTemplateImage() != null && !item.getTemplateImage().isEmpty()
+                                             ? item.getTemplateImage().replace("\\", "/")
+                                             : "assets/images/default-cake.png");
                                 
                                 jsonBuilder.append("\"templateId\":\"").append(tplId).append("\",");
                                 jsonBuilder.append("\"variationName\":\"").append(varName).append("\",");
@@ -609,7 +591,9 @@
                 let finalName = item.name;
                 let finalDesc = "Bánh ngọt thủ công cao cấp";
                 
-                let resolvedImg = item.image;
+                let resolvedImg = (item.image && item.image.trim() !== "")
+                    ? item.image
+                    : "assets/images/default-cake.png";
                 const ctx = '<%= request.getContextPath() %>';
                 if (ctx && resolvedImg.startsWith(ctx)) {
                     resolvedImg = resolvedImg.substring(ctx.length);
@@ -695,7 +679,9 @@
                     finalDesc = "Phụ kiện đi kèm";
                 }
                 
-                let resolvedImg = item.image;
+                let resolvedImg = (item.image && item.image.trim() !== "") 
+                    ? item.image 
+                    : "assets/images/default-cake.png";
                 const ctx = '<%= request.getContextPath() %>';
                 if (ctx && resolvedImg.startsWith(ctx)) {
                     resolvedImg = resolvedImg.substring(ctx.length);

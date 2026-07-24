@@ -138,6 +138,13 @@ public class StaffServlet extends HttpServlet {
         StaffDAO dao = new StaffDAO();
         HttpSession session = request.getSession();
 
+        if (s.getUser().getUserId() == null || s.getUser().getUserId().trim().isEmpty()) {
+            s.getUser().setUserId(com.bakeryzone.utils.IDGenerator.generateUserId(s.getUser().getRoleId()));
+        }
+        if (s.getStaffId() == null || s.getStaffId().trim().isEmpty()) {
+            s.setStaffId(com.bakeryzone.utils.IDGenerator.generateStaffId());
+        }
+
         if (dao.insertStaff(s)) {
             session.setAttribute("successMessage", "Thêm mới tài khoản " + s.getFullName() + " thành công!");
         } else {

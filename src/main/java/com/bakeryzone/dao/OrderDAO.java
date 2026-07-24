@@ -27,6 +27,8 @@ public class OrderDAO {
                       .replace("_", "\\_");
     }
 
+    //chức năng
+    // Lấy Customer ID dựa trên User ID của tài khoản đang đăng nhập
     public String getCustomerIdByUserId(String userId) {
         String sql = "SELECT Customer_ID FROM customer WHERE User_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
@@ -43,6 +45,7 @@ public class OrderDAO {
         return userId;
     }
 
+    // Lấy danh sách toàn bộ đơn hàng của một khách hàng cụ thể
     public List<Order> getOrdersByCustomerId(String customerId) {
         List<Order> orders = new ArrayList<>();
         String sql = "SELECT * FROM `orders` WHERE Customer_ID = ? ORDER BY Order_Time DESC";
@@ -70,6 +73,7 @@ public class OrderDAO {
      * @param uiStatus "processing" | "shipping" | "completed" | "cancelled" | "all"
      *                 | null
      */
+    // Đếm số lượng đơn hàng của khách hàng theo các bộ lọc (từ khóa, trạng thái, thời gian)
     public int getOrdersCountByCustomer(String customerId, String keyword, String uiStatus,
             String startDateStr, String endDateStr) {
         StringBuilder sql = new StringBuilder(
@@ -123,6 +127,7 @@ public class OrderDAO {
      * Filter, sort, LIMIT/OFFSET thực hiện hoàn toàn ở DB.
      * Items chỉ được load cho đúng pageSize bản ghi (giải quyết N+1).
      */
+    // Lấy danh sách đơn hàng của khách hàng có phân trang và bộ lọc
     public List<Order> getOrdersByCustomerPaged(String customerId, String keyword, String uiStatus,
             String startDateStr, String endDateStr, String sort, int page, int pageSize) {
         List<Order> orders = new ArrayList<>();
@@ -200,6 +205,7 @@ public class OrderDAO {
      * Đếm số đơn hàng theo từng trạng thái UI cho customer tab counts.
      * Trả về Map: "all", "processing", "shipping", "completed", "cancelled".
      */
+    // Thống kê số lượng đơn hàng theo từng trạng thái của một khách hàng
     public java.util.Map<String, Integer> getOrderStatusCountsByCustomer(String customerId,
             String keyword, String startDateStr, String endDateStr) {
         java.util.Map<String, Integer> counts = new java.util.HashMap<>();
@@ -295,6 +301,8 @@ public class OrderDAO {
         }
     }
 
+    //chức năng
+    // Truy xuất toàn bộ thông tin của một đơn hàng cụ thể dựa vào mã đơn hàng (Order_No)
     public Order getOrderByNo(String orderNo) {
         String sql = "SELECT * FROM `orders` WHERE Order_No = ?";
 
@@ -318,6 +326,7 @@ public class OrderDAO {
         return null;
     }
 
+    // Lấy tên của nhân viên giao hàng (Shipper) phụ trách chuyến đi cụ thể
     public String getShipperNameByTripId(String tripId) {
         String sql = "SELECT s.Full_Name FROM `staff` s JOIN `delivery_trip` dt ON s.Staff_ID = dt.Shipper_ID WHERE dt.Trip_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
@@ -334,6 +343,7 @@ public class OrderDAO {
         return "";
     }
 
+    // Lấy khu vực quản lý của một nhân viên
     public String getManagedZoneByStaffId(String staffId) {
         String sql = "SELECT Managed_Zone FROM `staff` WHERE Staff_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
@@ -609,6 +619,7 @@ public class OrderDAO {
         return order;
     }
 
+    // Kiểm tra xem khách hàng có quyền hủy đơn hàng với trạng thái hiện tại hay không
     public static boolean canCustomerCancel(String status) {
         if (status == null) return false;
         String s = status.trim().toLowerCase();
@@ -619,12 +630,14 @@ public class OrderDAO {
         return true; // Allowed for Pending, Confirmed, PAID, Processing, Chờ xác nhận, Đang làm bánh
     }
 
+    // Kiểm tra xem trạng thái đơn hàng đã là trạng thái cuối cùng (không thể thay đổi) chưa
     public static boolean isTerminalState(String status) {
-        if (status == null) return false;
         String s = status.trim().toLowerCase();
         return s.equals("completed") || s.contains("hoàn thành") || s.equals("cancelled") || s.equals("canceled") || s.contains("hủy");
     }
 
+    //chức năng
+    // Cập nhật trạng thái của đơn hàng trong cơ sở dữ liệu
     public boolean updateOrderStatus(String orderNo, String status) {
         String sql = "UPDATE `orders` SET OrderStatus = ? WHERE Order_No = ?";
         try (Connection conn = DBContext.getJDBCConnection();
@@ -638,6 +651,7 @@ public class OrderDAO {
         return false;
     }
 
+    // Cập nhật trạng thái đơn hàng kèm theo ghi chú của shipper
     public boolean updateOrderStatusWithNote(String orderNo, String status, String shipperNote) {
         String sql = "UPDATE `orders` SET OrderStatus = ?, Shipper_Note = ? WHERE Order_No = ?";
         try (Connection conn = DBContext.getJDBCConnection();
@@ -652,6 +666,8 @@ public class OrderDAO {
         return false;
     }
 
+    //chức năng
+    // Lưu đơn hàng mới, bao gồm thông tin giao hàng, thông tin bánh và chi tiết nguyên liệu vào Database
     public boolean insertOrder(Order order) {
         String sqlOrder = "INSERT INTO `orders` (Order_No, Customer_ID, Trip_ID, Order_Time, Delivery_Window_Start, Delivery_Window_End, Delivery_Address, Deposit_Amount, Remaining_COD_Balance, Total_Cost, OrderStatus, Shipping_Fee, Discount_Amount, Payment_Method, Receiver_Name, Receiver_Phone, Customer_Note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         String sqlCake = "INSERT INTO `custom_cake` (Custom_Cake_ID, Canvas_Image_URL, Greeting_Text, Cake_Hash_Structure, Calculated_Price) VALUES (?, ?, ?, ?, ?)";
@@ -839,10 +855,12 @@ public class OrderDAO {
         }
     }
 
+    // Đếm tổng số lượng đơn hàng trên toàn hệ thống dựa theo các bộ lọc
     public int getTotalOrdersCount(String keyword, String status, String startDateStr, String endDateStr) {
         return getTotalOrdersCount(keyword, status, startDateStr, endDateStr, null);
     }
 
+    // Đếm tổng số lượng đơn hàng trên toàn hệ thống dựa theo các bộ lọc
     public int getTotalOrdersCount(String keyword, String status, String startDateStr, String endDateStr, String cakeType) {
         int count = 0;
         StringBuilder sql = new StringBuilder(
@@ -878,11 +896,13 @@ public class OrderDAO {
         return count;
     }
 
+    // Lấy danh sách đơn hàng trên hệ thống có phân trang và bộ lọc
     public List<Order> getOrdersPaged(String keyword, String status, String startDateStr, String endDateStr,
             String sort, int pageIndex, int pageSize) {
         return getOrdersPaged(keyword, status, startDateStr, endDateStr, sort, pageIndex, pageSize, null);
     }
 
+    // Lấy danh sách đơn hàng trên hệ thống có phân trang và bộ lọc
     public List<Order> getOrdersPaged(String keyword, String status, String startDateStr, String endDateStr,
             String sort, int pageIndex, int pageSize, String cakeType) {
         List<Order> orders = new ArrayList<>();
@@ -943,11 +963,13 @@ public class OrderDAO {
         return orders;
     }
 
+    // Đếm tổng số đơn hàng được giao bởi một shipper cụ thể
     public int getTotalOrdersCountByShipper(String shipperId, String keyword, String status, String startDateStr,
             String endDateStr) {
         return getTotalOrdersCountByShipper(shipperId, keyword, status, startDateStr, endDateStr, null);
     }
 
+    // Đếm tổng số đơn hàng được giao bởi một shipper cụ thể
     public int getTotalOrdersCountByShipper(String shipperId, String keyword, String status, String startDateStr,
             String endDateStr, String cakeType) {
         int count = 0;
@@ -993,12 +1015,14 @@ public class OrderDAO {
         return count;
     }
 
+    // Lấy danh sách đơn hàng của một shipper có phân trang và bộ lọc
     public List<Order> getOrdersByShipperPaged(String shipperId, String keyword, String status, String startDateStr,
             String endDateStr,
             String sort, int pageIndex, int pageSize) {
         return getOrdersByShipperPaged(shipperId, keyword, status, startDateStr, endDateStr, sort, pageIndex, pageSize, null);
     }
 
+    // Lấy danh sách đơn hàng của một shipper có phân trang và bộ lọc
     public List<Order> getOrdersByShipperPaged(String shipperId, String keyword, String status, String startDateStr,
             String endDateStr,
             String sort, int pageIndex, int pageSize, String cakeType) {
@@ -1068,6 +1092,8 @@ public class OrderDAO {
         return orders;
     }
 
+    //chức năng
+    // Tính tổng lợi nhuận thực tế (Đã trừ đi chi phí nguyên vật liệu cấu thành bánh) trong khoảng thời gian
     public double getTotalProfit(String startDate, String endDate) {
         StringBuilder sql = new StringBuilder(
                 "SELECT SUM(o.Total_Cost) - SUM(COALESCE(" +
@@ -1116,6 +1142,8 @@ public class OrderDAO {
         return 0;
     }
 
+    //chức năng
+    // Tính tổng doanh thu gộp (Bao gồm tiền sản phẩm + phí ship) của các đơn hàng đã hoàn thành
     public double getTotalRevenue(String startDate, String endDate) {
         StringBuilder sql = new StringBuilder(
                 "SELECT SUM(Total_Cost) FROM `orders` WHERE OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
@@ -1144,6 +1172,7 @@ public class OrderDAO {
         return 0.0;
     }
 
+    // Lấy tổng số lượng khách hàng đã đặt hàng trong khoảng thời gian
     public int getTotalCustomers(String startDate, String endDate) {
         if (startDate == null || startDate.trim().isEmpty() || endDate == null || endDate.trim().isEmpty()) {
             String sql = "SELECT COUNT(*) FROM `customer`";
@@ -1175,6 +1204,7 @@ public class OrderDAO {
         }
     }
 
+    // Đếm tổng số lượng mẫu bánh (sản phẩm) đang có trên hệ thống
     public int getTotalProducts() {
         String sql = "SELECT COUNT(*) FROM `cake_template`";
         try (Connection conn = DBContext.getJDBCConnection();
@@ -1189,6 +1219,7 @@ public class OrderDAO {
         return 0;
     }
 
+    // Thống kê số lượng đơn hàng theo từng trạng thái trên toàn hệ thống
     public Map<String, Integer> getOrderStatusCounts(String startDate, String endDate) {
         Map<String, Integer> counts = new LinkedHashMap<>();
         counts.put("Chờ xác nhận", 0);
@@ -1247,6 +1278,8 @@ public class OrderDAO {
         return counts;
     }
 
+    //chức năng
+    // Lấy dữ liệu xu hướng doanh thu theo từng tháng để vẽ biểu đồ tổng quan
     public Map<String, Double> getMonthlyRevenueTrend(int monthsLimit) {
         Map<String, Double> trend = new LinkedHashMap<>();
         String sql = "SELECT DATE_FORMAT(Order_Time, '%m/%Y') AS month_year, SUM(Total_Cost) AS monthly_revenue " +
@@ -1268,6 +1301,7 @@ public class OrderDAO {
         return trend;
     }
 
+    // Lấy xu hướng doanh thu theo ngày/tháng để vẽ biểu đồ
     public Map<String, Double> getRevenueTrend(String period, int limit) {
         Map<String, Double> trend = new LinkedHashMap<>();
         String dateFormat = "month".equalsIgnoreCase(period) ? "%m/%Y" : "%d/%m";
@@ -1293,6 +1327,7 @@ public class OrderDAO {
         return trend;
     }
 
+    // Lấy xu hướng số lượng đơn hàng theo ngày/tháng để vẽ biểu đồ
     public Map<String, Integer> getOrdersTrend(String period, int limit) {
         Map<String, Integer> trend = new LinkedHashMap<>();
         String dateFormat = "month".equalsIgnoreCase(period) ? "%m/%Y" : "%d/%m";
@@ -1317,6 +1352,7 @@ public class OrderDAO {
         return trend;
     }
 
+    // Lấy xu hướng lợi nhuận theo ngày/tháng để vẽ biểu đồ
     public Map<String, Double> getProfitTrend(String period, int limit) {
         Map<String, Double> trend = new LinkedHashMap<>();
         String dateFormat = "month".equalsIgnoreCase(period) ? "%m/%Y" : "%d/%m";
@@ -1361,6 +1397,7 @@ public class OrderDAO {
         return trend;
     }
 
+    // Lấy xu hướng doanh thu theo khoảng thời gian tùy chỉnh
     public Map<String, Double> getRevenueTrendCustom(String startDate, String endDate) {
         Map<String, Double> trend = new LinkedHashMap<>();
         String sql = "SELECT time_label, revenue FROM (" +
@@ -1387,6 +1424,7 @@ public class OrderDAO {
         return trend;
     }
 
+    // Lấy xu hướng số lượng đơn hàng theo khoảng thời gian tùy chỉnh
     public Map<String, Integer> getOrdersTrendCustom(String startDate, String endDate) {
         Map<String, Integer> trend = new LinkedHashMap<>();
         String sql = "SELECT time_label, order_count FROM (" +
@@ -1412,6 +1450,7 @@ public class OrderDAO {
         return trend;
     }
 
+    // Lấy xu hướng lợi nhuận theo khoảng thời gian tùy chỉnh
     public Map<String, Double> getProfitTrendCustom(String startDate, String endDate) {
         Map<String, Double> trend = new LinkedHashMap<>();
         String sql = "SELECT time_label, profit FROM (" +
@@ -1457,6 +1496,8 @@ public class OrderDAO {
         return trend;
     }
 
+    //chức năng
+    // Lấy danh sách các sản phẩm bán chạy nhất kèm theo số lượng bán và tổng doanh thu mang lại
     public List<Map<String, Object>> getBestSellingProducts(String startDate, String endDate, int limit) {
         List<Map<String, Object>> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder("SELECT t.Template_ID, t.Template_Name, t.Image_URL, cat.Category_Name, "
@@ -1510,6 +1551,7 @@ public class OrderDAO {
         return list;
     }
 
+    // Lấy danh sách các khách hàng mua nhiều nhất (Top khách hàng)
     public List<Map<String, Object>> getTopCustomers(String startDate, String endDate, int limit) {
         List<Map<String, Object>> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
@@ -1552,6 +1594,7 @@ public class OrderDAO {
         return list;
     }
 
+    // Lấy link ảnh bằng chứng nhận hàng và giao hàng của một chuyến đi
     public String[] getEvidencePhotosByTripId(String tripId) {
         String sql = "SELECT Pickup_Photo_URL, Delivery_Photo_URL FROM `delivery_evidence` WHERE Trip_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection();
@@ -1568,6 +1611,7 @@ public class OrderDAO {
         return new String[] { "", "" };
     }
 
+    // Lưu hình ảnh bằng chứng giao hàng (lấy hàng/giao hàng) vào DB
     public boolean saveDeliveryEvidence(String tripId, String photoUrl, String type) {
         String checkSql = "SELECT Evidence_ID FROM `delivery_evidence` WHERE Trip_ID = ?";
         try (Connection conn = DBContext.getJDBCConnection()) {
@@ -1642,6 +1686,8 @@ public class OrderDAO {
         return "EVI_" + System.currentTimeMillis();
     }
 
+    //chức năng
+    // Tự động tìm kiếm và phân công shipper phù hợp nhất (theo tuyến đường/tình trạng) cho đơn hàng
     public boolean autoAssignShipperAndTrip(String orderNo) {
         Order order = getOrderByNo(orderNo);
         if (order == null) {
@@ -1666,6 +1712,7 @@ public class OrderDAO {
         return "TRIP_" + System.currentTimeMillis();
     }
 
+    // Tạo một chuyến giao hàng (Delivery Trip) mới cho shipper
     public String createNewDeliveryTrip(String shipperId) {
         try (Connection conn = DBContext.getJDBCConnection()) {
             if (conn == null) return null;
@@ -1684,6 +1731,7 @@ public class OrderDAO {
         return null;
     }
 
+    // Cập nhật (gắn) một đơn hàng vào một chuyến giao hàng cụ thể
     public boolean updateOrderTrip(String orderNo, String tripId) {
         String sql = "UPDATE `orders` SET Trip_ID = ? WHERE Order_No = ?";
         try (Connection conn = DBContext.getJDBCConnection();
@@ -1697,6 +1745,7 @@ public class OrderDAO {
         return false;
     }
 
+    // Lấy danh sách các đơn hàng thuộc một chuyến giao hàng
     public List<Order> getOrdersByTripId(String tripId) {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT * FROM `orders` WHERE Trip_ID = ?";
@@ -1714,6 +1763,7 @@ public class OrderDAO {
         return list;
     }
 
+    // Lấy ID chuyến giao hàng đang hoạt động (chưa hoàn thành) của shipper
     public String getActiveTripIdByShipper(String shipperId) {
         String sql = "SELECT DISTINCT dt.Trip_ID FROM `delivery_trip` dt " +
                      "JOIN `orders` o ON dt.Trip_ID = o.Trip_ID " +
@@ -1733,6 +1783,7 @@ public class OrderDAO {
         return null;
     }
 
+    // Lấy tọa độ (hoặc địa chỉ) giao hàng của một đơn hàng để tính toán lộ trình
     public double[] getOrderCoordinates(String orderNo) {
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT Delivery_Address, Customer_ID FROM `orders` WHERE Order_No = ?")) {
@@ -1771,6 +1822,7 @@ public class OrderDAO {
         return null;
     }
 
+    // Lấy thông số thống kê trong ngày của shipper (số đơn, doanh thu, v.v.)
     public java.util.Map<String, Object> getShipperDailyStats(String shipperId) {
         java.util.Map<String, Object> stats = new java.util.HashMap<>();
         double todayRevenue = 0.0;
@@ -1841,6 +1893,7 @@ public class OrderDAO {
         return stats;
     }
 
+    // Lấy danh sách các đơn hàng đã sẵn sàng giao cho shipper
     public List<Order> getReadyOrdersForShipper(String shipperId, int limit) {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
@@ -1876,6 +1929,7 @@ public class OrderDAO {
         return orders;
     }
 
+    // Lấy danh sách các đơn hàng đã được giao thành công bởi shipper
     public List<Order> getDeliveredOrdersForShipper(String shipperId, int limit) {
         List<Order> orders = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
@@ -1911,8 +1965,8 @@ public class OrderDAO {
         return orders;
     }
 
+    // Shipper xác nhận nhận đơn hàng để đi giao
     public boolean acceptOrderForShipper(String shipperId, String orderNo) {
-        if (shipperId == null || orderNo == null) return false;
         try (Connection conn = DBContext.getJDBCConnection()) {
             conn.setAutoCommit(false);
             
@@ -1977,5 +2031,76 @@ public class OrderDAO {
             e.printStackTrace();
         }
         return false;
+    }
+
+    // Tự động dọn các đơn "Chờ thanh toán" quá 15 phút
+    public void cancelExpiredWaitingPaymentOrders() {
+        String sql = "UPDATE `orders` SET OrderStatus = 'Cancelled', Cancel_Reason = 'Hệ thống tự động hủy do quá hạn thanh toán' WHERE OrderStatus = 'Waiting_Payment' AND TIMESTAMPDIFF(MINUTE, Order_Date, NOW()) >= 15";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String ensureTripIdForOrder(String orderNo, String shipperUserId) {
+        if (orderNo == null || orderNo.trim().isEmpty()) {
+            return null;
+        }
+        try (Connection conn = DBContext.getJDBCConnection()) {
+            if (conn == null) return null;
+
+            String checkSql = "SELECT Trip_ID FROM `orders` WHERE Order_No = ?";
+            String currentTripId = null;
+            try (PreparedStatement ps = conn.prepareStatement(checkSql)) {
+                ps.setString(1, orderNo);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        currentTripId = rs.getString("Trip_ID");
+                    }
+                }
+            }
+
+            if (currentTripId != null && !currentTripId.trim().isEmpty()) {
+                return currentTripId;
+            }
+
+            conn.setAutoCommit(false);
+            String staffId = shipperUserId;
+            if (shipperUserId != null && !shipperUserId.trim().isEmpty()) {
+                String getStaffSql = "SELECT Staff_ID FROM `staff` WHERE User_ID = ? OR Staff_ID = ?";
+                try (PreparedStatement ps = conn.prepareStatement(getStaffSql)) {
+                    ps.setString(1, shipperUserId);
+                    ps.setString(2, shipperUserId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            staffId = rs.getString("Staff_ID");
+                        }
+                    }
+                }
+            }
+
+            String newTripId = generateTripId(conn);
+            String insertTripSql = "INSERT INTO `delivery_trip` (Trip_ID, Shipper_ID, OSRM_Distance_Km, OSRM_Duration_Min) VALUES (?, ?, 0.0, 0)";
+            try (PreparedStatement ps = conn.prepareStatement(insertTripSql)) {
+                ps.setString(1, newTripId);
+                ps.setString(2, staffId);
+                ps.executeUpdate();
+            }
+
+            String updateOrderSql = "UPDATE `orders` SET Trip_ID = ? WHERE Order_No = ?";
+            try (PreparedStatement ps = conn.prepareStatement(updateOrderSql)) {
+                ps.setString(1, newTripId);
+                ps.setString(2, orderNo);
+                ps.executeUpdate();
+            }
+
+            conn.commit();
+            return newTripId;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

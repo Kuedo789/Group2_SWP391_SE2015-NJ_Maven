@@ -46,8 +46,7 @@ public class AutoAssignService {
         // 1. Fetch all online/active shippers
         List<Map<String, String>> activeShippers = getActiveShippers();
         if (activeShippers.isEmpty()) {
-            System.err.println("[ALERT] No active shippers online! Order " + orderNo + " set to PENDING_MANUAL_ASSIGNMENT.");
-            orderDAO.updateOrderStatus(orderNo, "PENDING_MANUAL_ASSIGNMENT");
+            System.err.println("[ALERT] No active shippers online! Order " + orderNo + " remains in Waiting_Delivery for manual assignment.");
             return false;
         }
 
@@ -133,8 +132,7 @@ public class AutoAssignService {
         }
 
         // No shipper online at all or database error
-        System.err.println("[ALERT] Workload fallback failed. Order " + orderNo + " set to PENDING_MANUAL_ASSIGNMENT.");
-        orderDAO.updateOrderStatus(orderNo, "PENDING_MANUAL_ASSIGNMENT");
+        System.err.println("[ALERT] Workload fallback failed. Order " + orderNo + " remains in Waiting_Delivery for manual assignment.");
         return false;
     }
 

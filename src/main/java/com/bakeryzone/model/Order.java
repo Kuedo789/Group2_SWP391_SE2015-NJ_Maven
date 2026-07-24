@@ -7,6 +7,19 @@ import java.util.List;
 
 public class Order {
 
+    // =====================================================
+    // HẰNG SỐ TRẠNG THÁI CHUẨN 1 CHIỀU
+    // Luồng: PAID → Processing → Waiting_Delivery → Delivering → Completed
+    // Ngoại lệ: PAID / Processing → Cancelled
+    // =====================================================
+    public static final String STATUS_WAITING_PAYMENT  = "Waiting_Payment";
+    public static final String STATUS_PAID             = "PAID";
+    public static final String STATUS_PROCESSING       = "Processing";
+    public static final String STATUS_WAITING_DELIVERY = "Waiting_Delivery";
+    public static final String STATUS_DELIVERING       = "Delivering";
+    public static final String STATUS_COMPLETED        = "Completed";
+    public static final String STATUS_CANCELLED        = "Cancelled";
+
     private String orderNo;
     private String customerId;
     private String customerName;
@@ -32,6 +45,31 @@ public class Order {
     private final List<OrderItem> items = new ArrayList<>();
 
     public Order() {
+    }
+
+    /**
+     * Trả về tên trạng thái tiếng Việt để hiển thị trên UI.
+     * Mapping chuẩn từ DB value → Label hiển thị.
+     */
+    public String getOrderStatusVietnamese() {
+        if (orderStatus == null) return "Không xác định";
+        switch (orderStatus) {
+            case STATUS_WAITING_PAYMENT:  return "Chờ thanh toán";
+            case STATUS_PAID:             return "Đã thanh toán";
+            case STATUS_PROCESSING:       return "Đang làm bánh";
+            case STATUS_WAITING_DELIVERY: return "Chờ giao hàng";
+            case STATUS_DELIVERING:       return "Đang giao hàng";
+            case STATUS_COMPLETED:        return "Hoàn thành";
+            case STATUS_CANCELLED:        return "Đã hủy";
+            default:                      return orderStatus;
+        }
+    }
+
+    /**
+     * Trả về tên hiển thị cho Customer (giờ giống với tất cả role).
+     */
+    public String getOrderStatusForCustomer() {
+        return getOrderStatusVietnamese();
     }
 
     public String getAppliedVoucherCode() {

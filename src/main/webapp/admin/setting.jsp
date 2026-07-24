@@ -142,7 +142,7 @@
                                     <div class="file-upload-wrapper">
                                         <label class="btn-file-upload">
                                             Choose File
-                                            <input type="file" name="banner1" onchange="updateFileName(this)" />
+                                            <input type="file" name="banner1" accept="image/png, image/jpeg, image/jpg" onchange="updateFileName(this)" />
                                         </label>
                                         <span class="file-name-display">
                                             <c:choose>
@@ -174,7 +174,7 @@
                                     <div class="file-upload-wrapper">
                                         <label class="btn-file-upload">
                                             Choose File
-                                            <input type="file" name="banner2" onchange="updateFileName(this)" />
+                                            <input type="file" name="banner2" accept="image/png, image/jpeg, image/jpg" onchange="updateFileName(this)" />
                                         </label>
                                         <span class="file-name-display">
                                             <c:choose>
@@ -206,7 +206,7 @@
                                     <div class="file-upload-wrapper">
                                         <label class="btn-file-upload">
                                             Choose File
-                                            <input type="file" name="banner3" onchange="updateFileName(this)" />
+                                            <input type="file" name="banner3" accept="image/png, image/jpeg, image/jpg" onchange="updateFileName(this)" />
                                         </label>
                                         <span class="file-name-display">
                                             <c:choose>
@@ -238,7 +238,7 @@
                                     <div class="file-upload-wrapper">
                                         <label class="btn-file-upload">
                                             Choose File
-                                            <input type="file" name="banner4" onchange="updateFileName(this)" />
+                                            <input type="file" name="banner4" accept="image/png, image/jpeg, image/jpg" onchange="updateFileName(this)" />
                                         </label>
                                         <span class="file-name-display">
                                             <c:choose>

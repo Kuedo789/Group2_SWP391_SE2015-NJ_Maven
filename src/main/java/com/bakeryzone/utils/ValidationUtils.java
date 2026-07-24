@@ -192,4 +192,28 @@ public class ValidationUtils {
         }
         return null;
     }
+
+    public static String validateImageUpload(jakarta.servlet.http.Part part) {
+        if (part == null || part.getSize() <= 0) {
+            return null; // Không bắt buộc upload
+        }
+        
+        String contentType = part.getContentType();
+        if (contentType == null || (!contentType.equals("image/jpeg") && !contentType.equals("image/png") && !contentType.equals("image/jpg"))) {
+            return "File tải lên không đúng định dạng ảnh (chỉ cho phép JPG, JPEG, PNG).";
+        }
+        
+        try {
+            java.awt.image.BufferedImage image = javax.imageio.ImageIO.read(part.getInputStream());
+            if (image == null) {
+                return "File không phải là một bức ảnh hợp lệ.";
+            }
+            // Có thể thêm code kiểm tra kích thước cụ thể ở đây nếu cần, ví dụ:
+            // if (image.getWidth() < 800 || image.getHeight() < 400) return "Ảnh banner phải lớn hơn 800x400.";
+        } catch (java.io.IOException e) {
+            return "Lỗi khi đọc file ảnh.";
+        }
+        
+        return null;
+    }
 }

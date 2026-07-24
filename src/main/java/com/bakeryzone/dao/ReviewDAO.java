@@ -11,25 +11,13 @@ import java.util.List;
 public class ReviewDAO {
 
     private String getHashForTemplate(String templateId) {
-        if (templateId == null) {
-            return "";
-        }
-        switch (templateId) {
-            case "TPL_0001":
-                return "HASH_CC_0001";
-            case "TPL_0005":
-                return "HASH_CC_0002";
-            case "TPL_0009":
-                return "HASH_CC_0003";
-            case "TPL_0011":
-                return "HASH_CC_0004";
-            case "TPL_0013":
-                return "HASH_CC_0005";
-            case "TPL_0017":
-                return "HASH_CC_0006";
-            default:
-                return templateId;
-        }
+        if ("TPL_0001".equals(templateId)) return "HASH_CC_0001";
+        if ("TPL_0005".equals(templateId)) return "HASH_CC_0002";
+        if ("TPL_0009".equals(templateId)) return "HASH_CC_0003";
+        if ("TPL_0011".equals(templateId)) return "HASH_CC_0004";
+        if ("TPL_0013".equals(templateId)) return "HASH_CC_0005";
+        if ("TPL_0017".equals(templateId)) return "HASH_CC_0006";
+        return templateId;
     }
 
     public List<Review> getReviewsByProductId(String productId) {
@@ -115,7 +103,7 @@ public class ReviewDAO {
             JOIN orders o ON oi.Order_No = o.Order_No
             JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
             WHERE o.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) 
-              AND (o.OrderStatus = 'Completed' OR o.OrderStatus = 'Hoàn thành' OR o.OrderStatus = 'Đã giao')
+              AND (o.OrderStatus = 'Completed')
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customerId);
@@ -139,7 +127,7 @@ public class ReviewDAO {
             JOIN orders o ON oi.Order_No = o.Order_No
             JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
             WHERE o.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) 
-              AND (o.OrderStatus = 'Completed' OR o.OrderStatus = 'Hoàn thành' OR o.OrderStatus = 'Đã giao')
+              AND (o.OrderStatus = 'Completed')
             ORDER BY o.Order_Time DESC LIMIT 1
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {

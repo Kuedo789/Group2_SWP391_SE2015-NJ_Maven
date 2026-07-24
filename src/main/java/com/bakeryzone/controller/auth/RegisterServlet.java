@@ -96,6 +96,7 @@ public class RegisterServlet extends HttpServlet {
 
         } else {
             User user = new User();
+            user.setUserId(com.bakeryzone.utils.IDGenerator.generateUserId("CUSTOMER"));
             user.setFullName(fullName);
             user.setEmail(email);
             user.setPassword(hashedPassword);

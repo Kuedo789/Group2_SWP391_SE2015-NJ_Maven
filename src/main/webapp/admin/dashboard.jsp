@@ -53,10 +53,10 @@
             <div class="stats-grid">
                 <c:choose>
                     <c:when test="${sessionScope.user.roleId eq 'STAFF'}">
-                        <a href="${pageContext.request.contextPath}/admin/orders?action=list&status=Pending" class="stat-card stat-orders" style="text-decoration: none; color: inherit;">
+                        <a href="${pageContext.request.contextPath}/admin/orders?action=list&status=PAID" class="stat-card stat-orders" style="text-decoration: none; color: inherit;">
                             <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
                             <div class="stat-info">
-                                <div class="stat-label"><span>Đơn chờ duyệt</span></div>
+                                <div class="stat-label"><span>Đơn đã thanh toán</span></div>
                                 <div class="stat-value">${pendingCount}</div>
                             </div>
                         </a>
@@ -581,7 +581,7 @@
                         <!-- STAFF Bento: 1. Recent Orders (Sorted by priority) & 2. Best Sellers -->
                         <div class="bento-card">
                             <div class="bento-card-title">
-                                <div>Đơn hàng vừa đặt <span class="d-block" style="font-size: 12px; font-weight: 500; color: var(--cz-text-muted);">Sắp xếp: Đang chờ duyệt &rarr; Đã thanh toán &rarr; Đang làm bánh</span></div>
+                                <div>Đơn hàng vừa đặt <span class="d-block" style="font-size: 12px; font-weight: 500; color: var(--cz-text-muted);">Sắp xếp: Đã thanh toán &rarr; Đang làm bánh</span></div>
                                 <a href="${pageContext.request.contextPath}/admin/orders?action=list">Quản lý đơn hàng</a>
                             </div>
                             <div class="table-responsive">
@@ -607,7 +607,7 @@
                                                     <c:choose>
                                                         <c:when test="${stLow eq 'pending' || fn:contains(stLow, 'chờ')}">
                                                             <c:set var="badgeClass" value="badge-pending" />
-                                                            <c:set var="statusDisplay" value="Đang chờ duyệt" />
+                                                            <c:set var="statusDisplay" value="Đã thanh toán" />
                                                         </c:when>
                                                         <c:when test="${stLow eq 'confirmed' || stLow eq 'paid' || fn:contains(stLow, 'xác nhận') || fn:contains(stLow, 'thanh toán')}">
                                                             <c:set var="badgeClass" value="badge-confirmed" />
