@@ -738,6 +738,13 @@
         }
 
         // ── Auto-polling for payment confirmation via SePay Webhook ──
+        // The order already exists in Pending status, so its items no longer
+        // belong in the browser-side checkout cart while payment is awaited.
+        localStorage.removeItem("cart");
+        localStorage.removeItem("checkout_state");
+        sessionStorage.removeItem("selectedCartItems");
+        window.dispatchEvent(new Event("storage"));
+
         let pollingInterval = setInterval(checkOrderStatus, 3000); // Check every 3 seconds
 
         function checkOrderStatus() {

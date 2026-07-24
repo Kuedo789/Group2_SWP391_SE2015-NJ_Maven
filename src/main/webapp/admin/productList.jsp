@@ -68,9 +68,11 @@
                     <h1 class="page-title">Danh sách bánh kem</h1>
                     <p class="page-subtitle">Quản lý tất cả sản phẩm bánh kem, nguyên liệu và trạng thái kinh doanh.</p>
                 </div>
-                <a href="${pageContext.request.contextPath}/admin/product?action=create&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="btn btn-cz-primary">
-                    <i class="fa-solid fa-circle-plus"></i> Thêm bánh mới
-                </a>
+                <c:if test="${sessionScope.user.roleId eq 'ADMIN'}">
+                    <a href="${pageContext.request.contextPath}/admin/product?action=create&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="btn btn-cz-primary">
+                        <i class="fa-solid fa-circle-plus"></i> Thêm bánh mới
+                    </a>
+                </c:if>
             </div>
 
             <!-- Filters -->
@@ -144,7 +146,14 @@
                                                         </c:otherwise>
                                                     </c:choose>
                                                     <div class="product-meta">
-                                                        <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="product-name-link">${p.name}</a>
+                                                        <c:choose>
+                                                            <c:when test="${sessionScope.user.roleId eq 'ADMIN'}">
+                                                                <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="product-name-link">${p.name}</a>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <span class="product-name-text" style="font-weight: 600; color: #1e293b;">${p.name}</span>
+                                                            </c:otherwise>
+                                                        </c:choose>
                                                         <span class="product-sku">Mã: ${p.id}</span>
                                                     </div>
                                                 </div>
@@ -183,25 +192,29 @@
                                                  </c:choose>
                                              </td>
                                             <td class="text-center" style="text-align: center;">
-                                                <div class="actions-cell" style="justify-content: center; display: inline-flex; gap: 8px;">
-                                                    <a href="${pageContext.request.contextPath}/admin/product?action=detail&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="btn-action-view" title="Xem chi tiết">
-                                                        <i class="fa-regular fa-eye"></i>
+                                                    <a href="${pageContext.request.contextPath}/admin/product?action=bom&id=${p.id}" class="btn-action-view" title="Xem định lượng nguyên liệu" style="background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; border-radius: 4px; padding: 6px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
+                                                        <i class="fa-solid fa-kitchen-set"></i>
                                                     </a>
-                                                    <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="btn-action-edit" title="Chỉnh sửa">
-                                                        <i class="fa-regular fa-pen-to-square"></i>
-                                                    </a>
-                                                    <c:choose>
-                                                        <c:when test="${p.status eq 'Active'}">
-                                                            <button class="btn-action-delete" title="Vô hiệu hóa" onclick="if(confirm('Bạn có chắc chắn muốn vô hiệu hóa bánh kem ${p.name} không?')) { deleteProduct('${p.id}'); }">
-                                                                <i class="fa-regular fa-trash-can"></i>
-                                                            </button>
-                                                        </c:when>
-                                                        <c:otherwise>
-                                                            <button class="btn-action-restore" title="Khôi phục" onclick="if(confirm('Bạn có chắc chắn muốn khôi phục bánh kem ${p.name} không?')) { restoreProduct('${p.id}'); }" style="border: none; background: none; color: #10b981; cursor: pointer; padding: 6px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; transition: color 0.2s;">
-                                                                <i class="fa-solid fa-rotate-left"></i>
-                                                            </button>
-                                                        </c:otherwise>
-                                                    </c:choose>
+                                                    <c:if test="${sessionScope.user.roleId eq 'ADMIN'}">
+                                                        <a href="${pageContext.request.contextPath}/admin/product?action=detail&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="btn-action-view" title="Xem chi tiết">
+                                                            <i class="fa-regular fa-eye"></i>
+                                                        </a>
+                                                        <a href="${pageContext.request.contextPath}/admin/product?action=edit&id=${p.id}&page=${currentPage}&pageSize=${pageSize}&category=${category}&status=${requestScope.status}&search=${search}&sortBy=${sortBy}" class="btn-action-edit" title="Chỉnh sửa">
+                                                            <i class="fa-regular fa-pen-to-square"></i>
+                                                        </a>
+                                                        <c:choose>
+                                                            <c:when test="${p.status eq 'Active'}">
+                                                                <button class="btn-action-delete" title="Vô hiệu hóa" onclick="if(confirm('Bạn có chắc chắn muốn vô hiệu hóa bánh kem ${p.name} không?')) { deleteProduct('${p.id}'); }">
+                                                                    <i class="fa-regular fa-trash-can"></i>
+                                                                </button>
+                                                            </c:when>
+                                                            <c:otherwise>
+                                                                <button class="btn-action-restore" title="Khôi phục" onclick="if(confirm('Bạn có chắc chắn muốn khôi phục bánh kem ${p.name} không?')) { restoreProduct('${p.id}'); }" style="border: none; background: none; color: #10b981; cursor: pointer; padding: 6px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; transition: color 0.2s;">
+                                                                    <i class="fa-solid fa-rotate-left"></i>
+                                                                </button>
+                                                            </c:otherwise>
+                                                        </c:choose>
+                                                    </c:if>
                                                 </div>
                                             </td>
                                         </tr>

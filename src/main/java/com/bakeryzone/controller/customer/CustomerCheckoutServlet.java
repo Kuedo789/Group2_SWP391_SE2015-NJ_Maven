@@ -1,5 +1,6 @@
 package com.bakeryzone.controller.customer;
 
+import com.bakeryzone.dao.CartDAO;
 import com.bakeryzone.dao.DeliveryAddressDAO;
 import com.bakeryzone.dao.OrderDAO;
 import com.bakeryzone.dao.VoucherDAO;
@@ -31,6 +32,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
     private final DeliveryAddressDAO addressDAO = new DeliveryAddressDAO();
     private final OrderDAO orderDAO = new OrderDAO();
     private final VoucherDAO voucherDAO = new VoucherDAO();
+    private final CartDAO cartDAO = new CartDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -158,6 +160,10 @@ public class CustomerCheckoutServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/checkout?error=admin_cannot_order");
             return;
         }
+
+        @SuppressWarnings("unchecked")
+        List<String> checkedOutCartItemIds =
+                (List<String>) session.getAttribute("checkoutSelectedItems");
 
         String action = request.getParameter("action");
         if ("applyVoucherAjax".equals(action)) {
@@ -456,6 +462,15 @@ if (order.getItems().isEmpty()) {
                     + " | success=" + success + " | total=" + totalCost);
 
             if (success) {
+                // The order now owns these items. Remove only the rows selected for this
+                // checkout, then refresh the session-backed navbar count immediately.
+                if (checkedOutCartItemIds != null && !checkedOutCartItemIds.isEmpty()) {
+                    cartDAO.removeItemsFromCart(currentUser.getUserId(), checkedOutCartItemIds);
+                }
+                session.setAttribute("cartCount",
+                        cartDAO.getCartCountForUser(currentUser.getUserId()));
+                session.removeAttribute("checkoutSelectedItems");
+
                 // Mark voucher as used if applicable and clear session attributes
                 if (orderVoucher != null) {
                     voucherDAO.markVoucherUsed(orderVoucher.getVoucherId(), currentUser.getUserId());

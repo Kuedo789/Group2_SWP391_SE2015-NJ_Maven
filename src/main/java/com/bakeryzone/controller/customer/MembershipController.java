@@ -38,6 +38,7 @@ public class MembershipController extends HttpServlet {
 
     /** Max point-history rows shown on the dashboard. */
     private static final int POINT_HISTORY_LIMIT = 20;
+    private static final int VOUCHER_PAGE_SIZE = 10;
 
     private final MembershipDAO membershipDAO = new MembershipDAO();
 
@@ -100,14 +101,34 @@ public class MembershipController extends HttpServlet {
         if (walletSearch == null) {
             walletSearch = "";
         }
+
+        int walletPage = 1;
+        try {
+            walletPage = Math.max(1, Integer.parseInt(request.getParameter("page")));
+        } catch (NumberFormatException ignored) {
+            // Keep the first page for missing or invalid values.
+        }
+
+        String scopeFilter = "all".equalsIgnoreCase(walletScope) ? null : walletScope;
+        int totalVouchers = membershipDAO.countUserOwnedVouchers(
+                userId, scopeFilter, walletSearch);
+        int totalPages = Math.max(1,
+                (int) Math.ceil((double) totalVouchers / VOUCHER_PAGE_SIZE));
+        walletPage = Math.min(walletPage, totalPages);
+
         List<Voucher> ownedVouchers = membershipDAO.getUserOwnedVouchers(
                 userId,
-                "all".equalsIgnoreCase(walletScope) ? null : walletScope,
-                walletSearch);
+                scopeFilter,
+                walletSearch,
+                walletPage,
+                VOUCHER_PAGE_SIZE);
 
         request.setAttribute("ownedVouchers", ownedVouchers);
         request.setAttribute("walletScope",   walletScope);
         request.setAttribute("walletSearch",  walletSearch);
+        request.setAttribute("walletCurrentPage", walletPage);
+        request.setAttribute("walletTotalPages", totalPages);
+        request.setAttribute("walletTotalVouchers", totalVouchers);
 
         // ── AJAX path: return only the voucher list fragment ──────────────────
         if (isAjax) {

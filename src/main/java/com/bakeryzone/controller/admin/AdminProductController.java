@@ -53,6 +53,9 @@ public class AdminProductController extends HttpServlet {
             case "list":
                 handleList(request, response);
                 break;
+            case "bom":
+                handleBomView(request, response);
+                break;
             case "detail":
                 handleDetail(request, response);
                 break;
@@ -680,6 +683,42 @@ public class AdminProductController extends HttpServlet {
         }
         
         return false;
+    }
+
+    private void handleBomView(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String id = request.getParameter("id");
+        Product product = null;
+        if (id != null && !id.trim().isEmpty()) {
+            product = productDAO.getProductById(id);
+        }
+        
+        if (product == null) {
+            response.sendRedirect(request.getContextPath() + "/admin/product?action=list");
+            return;
+        }
+        
+        List<Map<String, Object>> productIngredients = productDAO.getProductIngredients(id);
+        
+        // Calculate total BOM cost
+        double bomCostTotal = 0.0;
+        if (productIngredients != null) {
+            for (Map<String, Object> item : productIngredients) {
+                double gram = 0.0;
+                double price = 0.0;
+                try {
+                    gram = Double.parseDouble(item.get("standardGram").toString());
+                    price = Double.parseDouble(item.get("pricePerUnit").toString());
+                } catch (Exception e) {}
+                bomCostTotal += gram * price;
+            }
+        }
+
+        request.setAttribute("product", product);
+        request.setAttribute("productIngredients", productIngredients);
+        request.setAttribute("bomCostTotal", bomCostTotal);
+        
+        request.getRequestDispatcher("/admin/productBomView.jsp").forward(request, response);
     }
 
     private String escapeJson(String s) {

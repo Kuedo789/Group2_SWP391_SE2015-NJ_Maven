@@ -74,6 +74,38 @@
                 </div><%-- /ms-ticket --%>
             </c:forEach>
         </div><%-- /ms-wallet-grid --%>
+
+        <%-- Pagination for Wallet (Ajax) --%>
+        <c:if test="${walletTotalPages != null && walletTotalPages > 1}">
+            <div class="pagination-area" style="margin-top: 20px;">
+                <span class="pagination-text">
+                    Trang số <b>${walletCurrentPage}</b> trên tổng số <b>${walletTotalPages}</b> trang
+                </span>
+                <ul class="pagination-nav">
+                    <c:if test="${walletCurrentPage > 1}">
+                        <li class="page-num-item">
+                            <a href="#" onclick="fetchWallet(currentScope, document.getElementById('wallet-search-input').value, ${walletCurrentPage - 1}); return false;" aria-label="Trang trước">
+                                <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
+                            </a>
+                        </li>
+                    </c:if>
+
+                    <c:forEach begin="1" end="${walletTotalPages}" var="i">
+                        <li class="page-num-item ${walletCurrentPage == i ? 'active' : ''}">
+                            <a href="#" onclick="fetchWallet(currentScope, document.getElementById('wallet-search-input').value, ${i}); return false;">${i}</a>
+                        </li>
+                    </c:forEach>
+
+                    <c:if test="${walletCurrentPage < walletTotalPages}">
+                        <li class="page-num-item">
+                            <a href="#" onclick="fetchWallet(currentScope, document.getElementById('wallet-search-input').value, ${walletCurrentPage + 1}); return false;" aria-label="Trang sau">
+                                <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
+                            </a>
+                        </li>
+                    </c:if>
+                </ul>
+            </div>
+        </c:if>
     </c:when>
 
     <c:otherwise>
