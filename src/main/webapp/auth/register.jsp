@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="com.bakeryzone.utils.ValidationUtils" %>
 
 <%
     request.setAttribute("pageTitle", "Đăng ký tài khoản");
@@ -113,7 +114,7 @@
                                    name="fullName"
                                    value="<%= fullName %>"
                                    placeholder="Nhập họ và tên"
-                                   maxlength="30"
+                                   maxlength="<%= ValidationUtils.NAME_MAX_LENGTH %>"
                                    pattern="^[A-Za-zÀ-ỹ]+( [A-Za-zÀ-ỹ]+)*$"
                                    title="Họ tên chỉ được chứa chữ cái và không được có nhiều hơn 1 khoảng trắng liên tiếp"
                                    required>
@@ -131,7 +132,9 @@
                                    name="email"
                                    value="<%= email %>"
                                    placeholder="Nhập email của bạn"
-                                   maxlength="100"
+                                   maxlength="<%= ValidationUtils.EMAIL_MAX_LENGTH %>"
+                                   pattern="^[A-Za-z0-9+_.-]+@[A-Za-z]+\.[A-Za-z.]+$"
+                                   title="Email không đúng định dạng (tên miền sau dấu @ chỉ chứa chữ cái)"
                                    required>
                         </div>
                     </div>
@@ -164,8 +167,8 @@
                                    id="password"
                                    name="password"
                                    placeholder="Nhập mật khẩu"
-                                   minlength="6"
-                                   maxlength="20"
+                                   minlength="<%= ValidationUtils.PASSWORD_MIN_LENGTH %>"
+                                   maxlength="<%= ValidationUtils.PASSWORD_MAX_LENGTH %>"
                                    pattern="^\S+$"
                                    title="Mật khẩu phải từ 6 đến 20 ký tự và không được chứa khoảng trắng"
                                    required>
@@ -187,8 +190,8 @@
                                    id="confirmPassword"
                                    name="confirmPassword"
                                    placeholder="Nhập lại mật khẩu"
-                                   minlength="6"
-                                   maxlength="20"
+                                   minlength="<%= ValidationUtils.PASSWORD_MIN_LENGTH %>"
+                                   maxlength="<%= ValidationUtils.PASSWORD_MAX_LENGTH %>"
                                    pattern="^\S+$"
                                    title="Mật khẩu xác nhận không được chứa khoảng trắng"
                                    required>

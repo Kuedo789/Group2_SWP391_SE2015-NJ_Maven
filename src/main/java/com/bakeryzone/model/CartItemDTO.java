@@ -20,8 +20,11 @@ public class CartItemDTO {
     private BigDecimal unitPrice;
     private String imageUrl;
     
+    private String customCakeId;
+
     // Soft-Delete Flag for UI rendering
     private boolean isActive; 
+
 
     public CartItemDTO() {}
 
@@ -101,5 +104,13 @@ public class CartItemDTO {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public String getCustomCakeId() {
+        return customCakeId;
+    }
+
+    public void setCustomCakeId(String customCakeId) {
+        this.customCakeId = customCakeId;
     }
 }

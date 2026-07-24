@@ -2,6 +2,8 @@ package com.bakeryzone.controller.admin;
 
 import com.bakeryzone.dao.CustomerDAO;
 import com.bakeryzone.dao.OrderDAO;
+import com.bakeryzone.dao.ShipperTripDAO;
+import com.bakeryzone.dao.ReportDAO;
 import com.bakeryzone.model.Customer;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.model.User;
@@ -19,6 +21,8 @@ import java.util.List;
 public class AdminOrderController extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
+    private final ShipperTripDAO shipperTripDAO = new ShipperTripDAO();
+    private final ReportDAO reportDAO = new ReportDAO();
     private final CustomerDAO customerDAO = new CustomerDAO();
 
     // Whitelist trạng thái hợp lệ theo chuẩn 1 chiều
@@ -144,7 +148,7 @@ public class AdminOrderController extends HttpServlet {
         request.setAttribute("sort", sort);
         request.setAttribute("cakeType", cakeType != null ? cakeType : "all");
 
-        request.getRequestDispatcher("/admin/orderList.jsp").forward(request, response);
+        request.getRequestDispatcher("/order-management/orderList.jsp").forward(request, response);
     }
 
     private void showOrderDetail(HttpServletRequest request, HttpServletResponse response)
@@ -173,7 +177,7 @@ public class AdminOrderController extends HttpServlet {
         request.setAttribute("pickupPhoto", pickupPhoto);
         request.setAttribute("deliveryPhoto", deliveryPhoto);
 
-        request.getRequestDispatcher("/admin/orderDetail.jsp").forward(request, response);
+        request.getRequestDispatcher("/order-management/orderDetail.jsp").forward(request, response);
     }
 
     private String findEvidenceFile(String realPath, String orderNo, String type) {
@@ -264,7 +268,7 @@ public class AdminOrderController extends HttpServlet {
         if (success) {
             // Trigger AutoAssign chỉ khi chuyển sang Waiting_Delivery
             if (Order.STATUS_WAITING_DELIVERY.equals(status)) {
-                orderDAO.autoAssignShipperAndTrip(orderNo);
+                shipperTripDAO.autoAssignShipperAndTrip(orderNo);
             }
             session.setAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + orderNo + " thành công!");
         } else {

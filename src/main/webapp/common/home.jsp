@@ -428,8 +428,8 @@
                     <h2>Sẵn sàng chọn chiếc bánh cho hôm nay?</h2>
 
                     <div class="cta-actions">
-                        <a href="#" class="btn btn-primary">Đặt bánh ngay</a>
-                        <a href="#" class="btn btn-outline">Tự thiết kế bánh</a>
+                        <a href="<%= request.getContextPath() %>/products" class="btn btn-primary">Đặt bánh ngay</a>
+                        <a href="<%= request.getContextPath() %>/custom-cake" class="btn btn-outline">Tự thiết kế bánh</a>
                     </div>
                 </div>
             </section>
