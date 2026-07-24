@@ -31,7 +31,7 @@
                                             <div class="sidebar-brand">
                                                 <i class="fa-solid fa-cake-candles"></i>
                                                 <span>${not empty settings.bakeryName ? settings.bakeryName :
-                                                    'BakeryZone'} Admin</span>
+                                                    'BakeryZone'} </span>
                                             </div>
 
                                             <div class="nav-section-title">Hệ thống chính</div>

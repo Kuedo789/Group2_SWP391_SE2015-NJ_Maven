@@ -35,9 +35,13 @@ public class SePayWebhookServlet extends HttpServlet {
         }
         
         String jsonStr = sb.toString();
+        System.out.println("\n[SePay Webhook] NHẬN ĐƯỢC REQUEST:");
+        System.out.println("[SePay Webhook] Payload: " + jsonStr);
+        
         if (jsonStr.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("Empty request body");
+            response.setContentType("application/json");
+            response.getWriter().write("{\"success\":false,\"message\":\"Empty request body\"}");
             return;
         }
 
@@ -51,7 +55,8 @@ public class SePayWebhookServlet extends HttpServlet {
             // Only process incoming transfers
             if (!"in".equalsIgnoreCase(transferType)) {
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("Not an incoming transfer. Ignored.");
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":true,\"message\":\"Not an incoming transfer. Ignored.\"}");
                 return;
             }
 
@@ -67,7 +72,8 @@ public class SePayWebhookServlet extends HttpServlet {
             
             if (orderNo == null || orderNo.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("No order number found in content.");
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":true,\"message\":\"No order number found in content.\"}");
                 return;
             }
             
@@ -106,7 +112,8 @@ public class SePayWebhookServlet extends HttpServlet {
             }
             
             response.setStatus(HttpServletResponse.SC_OK);
-            response.getWriter().write("Processed.");
+            response.setContentType("application/json");
+            response.getWriter().write("{\"success\":true,\"message\":\"Processed but order not updated (not found or insufficient amount).\"}");
             
         } catch (Exception e) {
             e.printStackTrace();
