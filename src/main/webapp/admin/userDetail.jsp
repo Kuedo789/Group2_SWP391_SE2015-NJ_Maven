@@ -344,15 +344,21 @@
                                 <label class="form-label">Khu vực quản lý (Giao hàng) <span class="text-muted">(Dành cho Shipper)</span></label>
                                 <c:set var="mZone" value="${empty USER_DATA.managedZone ? 'Toàn thành phố' : USER_DATA.managedZone}" />
                                 <select name="managedZone" class="form-select">
-                                    <option value="Toàn thành phố" ${mZone == 'Toàn thành phố' ? 'selected' : ''}>Toàn thành phố (Tất cả khu vực)</option>
-                                    <option value="Đống Đa" ${mZone == 'Đống Đa' ? 'selected' : ''}>Đống Đa</option>
-                                    <option value="Cầu Giấy" ${mZone == 'Cầu Giấy' ? 'selected' : ''}>Cầu Giấy</option>
-                                    <option value="Thanh Xuân" ${mZone == 'Thanh Xuân' ? 'selected' : ''}>Thanh Xuân</option>
-                                    <option value="Hoàn Kiếm" ${mZone == 'Hoàn Kiếm' ? 'selected' : ''}>Hoàn Kiếm</option>
-                                    <option value="Hai Bà Trưng" ${mZone == 'Hai Bà Trưng' ? 'selected' : ''}>Hai Bà Trưng</option>
-                                    <option value="Ba Đình" ${mZone == 'Ba Đình' ? 'selected' : ''}>Ba Đình</option>
-                                    <option value="Nam Từ Liêm" ${mZone == 'Nam Từ Liêm' ? 'selected' : ''}>Nam Từ Liêm</option>
-                                    <option value="Bắc Từ Liêm" ${mZone == 'Bắc Từ Liêm' ? 'selected' : ''}>Bắc Từ Liêm</option>
+                                    <option value="Toàn thành phố" ${mZone == 'Toàn thành phố' ? 'selected' : ''}>Toàn thành phố (Tất cả khu vực nội thành)</option>
+                                    <optgroup label="12 Quận Nội Thành Hà Nội">
+                                        <option value="Hoàn Kiếm" ${mZone == 'Hoàn Kiếm' ? 'selected' : ''}>Hoàn Kiếm</option>
+                                        <option value="Ba Đình" ${mZone == 'Ba Đình' ? 'selected' : ''}>Ba Đình</option>
+                                        <option value="Đống Đa" ${mZone == 'Đống Đa' ? 'selected' : ''}>Đống Đa</option>
+                                        <option value="Hai Bà Trưng" ${mZone == 'Hai Bà Trưng' ? 'selected' : ''}>Hai Bà Trưng</option>
+                                        <option value="Cầu Giấy" ${mZone == 'Cầu Giấy' ? 'selected' : ''}>Cầu Giấy</option>
+                                        <option value="Thanh Xuân" ${mZone == 'Thanh Xuân' ? 'selected' : ''}>Thanh Xuân</option>
+                                        <option value="Tây Hồ" ${mZone == 'Tây Hồ' ? 'selected' : ''}>Tây Hồ</option>
+                                        <option value="Hoàng Mai" ${mZone == 'Hoàng Mai' ? 'selected' : ''}>Hoàng Mai</option>
+                                        <option value="Long Biên" ${mZone == 'Long Biên' ? 'selected' : ''}>Long Biên</option>
+                                        <option value="Nam Từ Liêm" ${mZone == 'Nam Từ Liêm' ? 'selected' : ''}>Nam Từ Liêm</option>
+                                        <option value="Bắc Từ Liêm" ${mZone == 'Bắc Từ Liêm' ? 'selected' : ''}>Bắc Từ Liêm</option>
+                                        <option value="Hà Đông" ${mZone == 'Hà Đông' ? 'selected' : ''}>Hà Đông</option>
+                                    </optgroup>
                                 </select>
                             </div>
 

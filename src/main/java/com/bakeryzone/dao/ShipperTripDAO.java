@@ -63,9 +63,7 @@ public class ShipperTripDAO {
                         "LEFT JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
                         "LEFT JOIN `staff` s ON (s.Staff_ID = ? OR s.User_ID = ?) " +
                         "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
-                        "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID " +
-                        "OR s.Managed_Zone IS NULL OR s.Managed_Zone = '' OR s.Managed_Zone LIKE '%Toàn thành phố%' " +
-                        "OR LOCATE(LOWER(s.Managed_Zone), LOWER(o.Delivery_Address)) > 0)");
+                        "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID OR 1=1)");
         List<Object> params = new ArrayList<>();
         params.add(shipperId);
         params.add(shipperId);
@@ -117,9 +115,7 @@ public class ShipperTripDAO {
                         "LEFT JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
                         "LEFT JOIN `staff` s ON (s.Staff_ID = ? OR s.User_ID = ?) " +
                         "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
-                        "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID " +
-                        "OR s.Managed_Zone IS NULL OR s.Managed_Zone = '' OR s.Managed_Zone LIKE '%Toàn thành phố%' " +
-                        "OR LOCATE(LOWER(s.Managed_Zone), LOWER(o.Delivery_Address)) > 0)");
+                        "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID OR 1=1)");
         List<Object> params = new ArrayList<>();
         params.add(shipperId);
         params.add(shipperId);
@@ -138,20 +134,21 @@ public class ShipperTripDAO {
             params.add(endDateStr + " 23:59:59");
         }
 
-        String orderByClause = " ORDER BY o.Order_Time DESC ";
+        String zonePriority = " (CASE WHEN s.Managed_Zone IS NOT NULL AND s.Managed_Zone <> '' AND s.Managed_Zone NOT LIKE '%Toàn thành phố%' AND LOCATE(LOWER(s.Managed_Zone), LOWER(o.Delivery_Address)) > 0 THEN 0 ELSE 1 END) ASC, ";
+        String orderByClause = " ORDER BY " + zonePriority + " o.Order_Time DESC ";
         if (sort != null && !sort.trim().isEmpty()) {
             switch (sort.trim().toLowerCase()) {
                 case "date_asc":
-                    orderByClause = " ORDER BY o.Order_Time ASC ";
+                    orderByClause = " ORDER BY " + zonePriority + " o.Order_Time ASC ";
                     break;
                 case "price_desc":
-                    orderByClause = " ORDER BY o.Total_Cost DESC ";
+                    orderByClause = " ORDER BY " + zonePriority + " o.Total_Cost DESC ";
                     break;
                 case "price_asc":
-                    orderByClause = " ORDER BY o.Total_Cost ASC ";
+                    orderByClause = " ORDER BY " + zonePriority + " o.Total_Cost ASC ";
                     break;
                 default:
-                    orderByClause = " ORDER BY o.Order_Time DESC ";
+                    orderByClause = " ORDER BY " + zonePriority + " o.Order_Time DESC ";
                     break;
             }
         }
