@@ -55,7 +55,8 @@ public class OrderMapper {
                      JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID
                      WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost,
                     t.Default_Margin_Percent,
-                    t.Default_Service_Percent
+                    t.Default_Service_Percent,
+                    cc.Cake_Hash_Structure
                 FROM order_item oi
                 LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
                 LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR
@@ -90,7 +91,20 @@ public class OrderMapper {
                     item.setTemplateImage(rs.getString("Template_Image"));
 
                     if (item.getCustomCakeId() != null && !item.getCustomCakeId().trim().isEmpty()) {
-                        double ingredientCost = rs.getDouble("Ingredient_Cost");
+                        String cakeHash = rs.getString("Cake_Hash_Structure");
+                        if (item.getTemplateId() == null && cakeHash != null && (cakeHash.startsWith("SIZE_") || cakeHash.equals("STANDARD_CAKE_HASH"))) {
+                            item.setItemName("Bánh thiết kế");
+                            item.setCategoryName("Bánh thiết kế");
+                            String sizeStr = "Tùy chỉnh";
+                            if (cakeHash.startsWith("SIZE_")) {
+                                String[] parts = cakeHash.split("_");
+                                if (parts.length >= 2 && "SIZE".equals(parts[0])) {
+                                    sizeStr = "Size " + parts[1] + "cm";
+                                }
+                            }
+                            item.setVariationName(sizeStr);
+                        } else {
+                            double ingredientCost = rs.getDouble("Ingredient_Cost");
                         double margin = rs.getDouble("Default_Margin_Percent");
                         double service = rs.getDouble("Default_Service_Percent");
                         double divisor = 1.0 - ((margin + service) / 100.0);
@@ -112,6 +126,7 @@ public class OrderMapper {
                             item.setVariationName("Size 20cm");
                         } else {
                             item.setVariationName("Size 24cm");
+                        }
                         }
                     } else {
                         item.setVariationName("Tiêu chuẩn");
@@ -146,7 +161,8 @@ public class OrderMapper {
                      JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID
                      WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost,
                     t.Default_Margin_Percent,
-                    t.Default_Service_Percent
+                    t.Default_Service_Percent,
+                    cc.Cake_Hash_Structure
                 FROM order_item oi
                 LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
                 LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR
@@ -178,7 +194,20 @@ public class OrderMapper {
                     item.setTemplateImage(rs.getString("Template_Image"));
 
                     if (item.getCustomCakeId() != null && !item.getCustomCakeId().trim().isEmpty()) {
-                        double ingredientCost = rs.getDouble("Ingredient_Cost");
+                        String cakeHash = rs.getString("Cake_Hash_Structure");
+                        if (item.getTemplateId() == null && cakeHash != null && (cakeHash.startsWith("SIZE_") || cakeHash.equals("STANDARD_CAKE_HASH"))) {
+                            item.setItemName("Bánh thiết kế");
+                            item.setCategoryName("Bánh thiết kế");
+                            String sizeStr = "Tùy chỉnh";
+                            if (cakeHash.startsWith("SIZE_")) {
+                                String[] parts = cakeHash.split("_");
+                                if (parts.length >= 2 && "SIZE".equals(parts[0])) {
+                                    sizeStr = "Size " + parts[1] + "cm";
+                                }
+                            }
+                            item.setVariationName(sizeStr);
+                        } else {
+                            double ingredientCost = rs.getDouble("Ingredient_Cost");
                         double margin = rs.getDouble("Default_Margin_Percent");
                         double service = rs.getDouble("Default_Service_Percent");
                         double divisor = 1.0 - ((margin + service) / 100.0);
@@ -200,6 +229,7 @@ public class OrderMapper {
                             item.setVariationName("Size 20cm");
                         } else {
                             item.setVariationName("Size 24cm");
+                        }
                         }
                     } else {
                         item.setVariationName("Tiêu chuẩn");

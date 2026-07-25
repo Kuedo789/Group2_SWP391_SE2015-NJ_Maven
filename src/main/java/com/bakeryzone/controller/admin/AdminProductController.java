@@ -527,7 +527,8 @@ public class AdminProductController extends HttpServlet {
         boolean isDuplicateName = false;
         if (nameValid) {
             String checkId = (isNew || id == null || id.trim().isEmpty() || "new".equalsIgnoreCase(id.trim())) ? "new" : id;
-            if (productDAO.isProductNameExists(name, checkId)) {
+            String ignoreId = isNewProductForced ? oldId : checkId;
+            if (productDAO.isProductNameExists(name, ignoreId)) {
                 isDuplicateName = true;
             }
         }

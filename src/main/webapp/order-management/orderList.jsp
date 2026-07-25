@@ -790,21 +790,21 @@
                                             <c:choose>
                                                 <c:when test="${o.cakeTypeLabel eq 'Hỗn hợp'}">
                                                     <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                                                        <span class="badge" style="background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 700; padding: 3px 8px; border-radius: 8px; font-size: 11px; width: fit-content;">
+                                                        <span class="badge badge-available">
                                                             <i class="fa-solid fa-store me-1"></i>Có sẵn
                                                         </span>
-                                                        <span class="badge" style="background-color: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; font-weight: 700; padding: 3px 8px; border-radius: 8px; font-size: 11px; width: fit-content;">
+                                                        <span class="badge badge-custom">
                                                             <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Thiết kế
                                                         </span>
                                                     </div>
                                                 </c:when>
                                                 <c:when test="${o.cakeTypeLabel eq 'Thiết kế' || o.customCake}">
-                                                    <span class="badge" style="background-color: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; font-weight: 700; padding: 4px 10px; border-radius: 8px; font-size: 11.5px;">
+                                                    <span class="badge badge-custom badge-lg">
                                                         <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Thiết kế
                                                     </span>
                                                 </c:when>
                                                 <c:otherwise>
-                                                    <span class="badge" style="background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; font-weight: 700; padding: 4px 10px; border-radius: 8px; font-size: 11.5px;">
+                                                    <span class="badge badge-available badge-lg">
                                                         <i class="fa-solid fa-store me-1"></i>Có sẵn
                                                     </span>
                                                 </c:otherwise>
@@ -830,16 +830,16 @@
                                         <td style="text-align: center;">
                                             <c:choose>
                                                 <c:when test="${o.orderStatus eq 'Waiting_Payment' || o.orderStatus eq 'WAITING_PAYMENT'}">
-                                                    <span class="status-badge status-pending" style="background-color: #fef08a; color: #854d0e;">${o.orderStatusVietnamese}</span>
+                                                    <span class="status-badge status-pending">${o.orderStatusVietnamese}</span>
                                                 </c:when>
                                                 <c:when test="${o.orderStatus eq 'PAID'}">
-                                                    <span class="status-badge status-confirmed" style="background-color: #d1fae5; color: #065f46;">${o.orderStatusVietnamese}</span>
+                                                    <span class="status-badge status-confirmed">${o.orderStatusVietnamese}</span>
                                                 </c:when>
                                                 <c:when test="${o.orderStatus eq 'Processing'}">
                                                     <span class="status-badge status-processing">${o.orderStatusVietnamese}</span>
                                                 </c:when>
                                                 <c:when test="${o.orderStatus eq 'Waiting_Delivery'}">
-                                                    <span class="status-badge status-pending" style="background-color: #fef08a; color: #854d0e;">${o.orderStatusVietnamese}</span>
+                                                    <span class="status-badge status-pending">${o.orderStatusVietnamese}</span>
                                                 </c:when>
                                                 <c:when test="${o.orderStatus eq 'Delivering'}">
                                                     <span class="status-badge status-delivering">${o.orderStatusVietnamese}</span>
