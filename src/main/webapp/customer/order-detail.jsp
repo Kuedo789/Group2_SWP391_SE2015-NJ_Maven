@@ -77,23 +77,30 @@
     }
 
     // Timeline steps activation logic
-    boolean step1Active = true; // Đã nhận đơn
+    boolean step1Active = false; // Đã thanh toán
     boolean step2Active = false; // Đang làm bánh (Bao gồm Waiting_Delivery)
     boolean step3Active = false; // Đang giao
     boolean step4Active = false; // Hoàn thành
 
     if (dbStatus != null) {
-        if (dbStatus.equals("Processing") || dbStatus.equals("Waiting_Delivery")) {
+        if (dbStatus.equals("PAID")) {
+            step1Active = true;
+        } else if (dbStatus.equals("Processing") || dbStatus.equals("Waiting_Delivery")) {
+            step1Active = true;
             step2Active = true;
         } else if (dbStatus.equals("Delivering")) {
+            step1Active = true;
             step2Active = true;
             step3Active = true;
         } else if (dbStatus.equals("Completed")) {
+            step1Active = true;
             step2Active = true;
             step3Active = true;
             step4Active = true;
         }
+        // Waiting_Payment → tất cả đều tắt (false)
     }
+
 
     // Formatting date and numbers
     SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
