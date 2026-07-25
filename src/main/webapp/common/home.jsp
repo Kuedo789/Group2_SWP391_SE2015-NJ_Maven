@@ -112,7 +112,8 @@
                                    iconPath = request.getContextPath() + "/assets/images/categories/icons/default.png";
                                } else if (!iconPath.startsWith("http://") && !iconPath.startsWith("https://")) {
                                    if (!iconPath.startsWith("/")) {
-                                       if (iconPath.contains("assets/")) {
+                                       if (iconPath.startsWith("assets/")
+                                               || iconPath.startsWith("uploads/")) {
                                            iconPath = request.getContextPath() + "/" + iconPath;
                                        } else {
                                            iconPath = request.getContextPath() + "/assets/images/categories/icons/" + iconPath;

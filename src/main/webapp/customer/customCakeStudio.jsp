@@ -85,6 +85,15 @@
                                     <div class="stand-plate"></div>
                                     <div class="stand-base"></div>
                                 </div>
+                                
+                                <!-- Size Ruler -->
+                                <div style="display: flex; align-items: center; justify-content: center; width: 240px; margin: 15px auto 0;">
+                                    <div style="border-left: 1px solid var(--cake-brand-green); height: 10px;"></div>
+                                    <div style="flex-grow: 1; border-top: 1px solid var(--cake-brand-green); margin: 0 -1px;"></div>
+                                    <div id="rulerLabel" style="background: var(--cake-card-white, #FFFFFF); padding: 0 10px; font-weight: 600; color: var(--cake-brand-green); font-size: 13px; transform: translateY(-1px);">20cm</div>
+                                    <div style="flex-grow: 1; border-top: 1px solid var(--cake-brand-green); margin: 0 -1px;"></div>
+                                    <div style="border-right: 1px solid var(--cake-brand-green); height: 10px;"></div>
+                                </div>
                             </div>
 
                             <!-- Top View Card -->
@@ -153,17 +162,11 @@
                                 </div>
 
                                 <!-- Flavor Matrix -->
-                                <div class="control-group">
+                                <div class="control-group" style="margin-bottom: 0;">
                                     <label class="control-label">Hương vị từng tầng</label>
                                     <div class="flavor-matrix" id="flavorMatrix">
                                         <!-- Matrix rows injected via JS -->
                                     </div>
-                                </div>
-
-                                <!-- Greeting -->
-                                <div class="control-group" style="margin-bottom: 0;">
-                                    <label class="control-label">Thông điệp trang trí (Tối đa 30 ký tự)</label>
-                                    <input type="text" class="premium-input" id="greetingText" maxlength="30" placeholder="Ví dụ: Chúc mừng sinh nhật...">
                                 </div>
                             </div>
 
@@ -303,6 +306,11 @@
             function updatePrice() {
                 const sizeInput = document.getElementById('sizeSelect');
                 state.size = sizeInput ? parseInt(sizeInput.value) : 16;
+                
+                const rulerLabel = document.getElementById('rulerLabel');
+                if (rulerLabel) {
+                    rulerLabel.innerText = state.size + 'cm';
+                }
 
                 // Base price logic based on size
                 let base = 0;
@@ -361,7 +369,7 @@
             tempCtx.drawImage(canvas, 0, 0);
             
             const canvasImageData = tempCanvas.toDataURL('image/png');
-            const greetingText = document.getElementById('greetingText').value.trim();
+            const greetingText = '';
             const sizeSelect = document.getElementById('sizeSelect');
             const cakeSize = sizeSelect ? sizeSelect.value : '16';
 

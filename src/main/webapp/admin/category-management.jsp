@@ -6,6 +6,7 @@
 
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -115,6 +116,9 @@
                             <c:when test="${error == 'not_found'}">
                                 Không tìm thấy danh mục bạn yêu cầu.
                             </c:when>
+                            <c:when test="${error == 'icon_too_large'}">
+                                Ảnh icon vượt quá dung lượng cho phép. Vui lòng chọn ảnh không quá 2 MB.
+                            </c:when>
                             <c:otherwise>
                                 Đã xảy ra lỗi cơ sở dữ liệu. Vui lòng thử lại sau.
                             </c:otherwise>
@@ -165,7 +169,15 @@
                                     <td class="cat-icon">
                                         <c:choose>
                                             <c:when test="${not empty cat.iconUrl}">
-                                                <img src="${pageContext.request.contextPath}/${cat.iconUrl}" alt="${cat.categoryName}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px; background-color: #f1f5f9; padding: 2px;">
+                                                <c:choose>
+                                                    <c:when test="${fn:startsWith(cat.iconUrl, 'http://') || fn:startsWith(cat.iconUrl, 'https://')}">
+                                                        <c:set var="categoryIconSrc" value="${cat.iconUrl}" />
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <c:url var="categoryIconSrc" value="/${cat.iconUrl}" />
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                <img src="${categoryIconSrc}" alt="${cat.categoryName}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px; background-color: #f1f5f9; padding: 2px;">
                                             </c:when>
                                             <c:otherwise>
                                                 <span style="color: #94a3b8; font-size: 11px;">Mặc định</span>

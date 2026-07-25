@@ -46,7 +46,8 @@
                 </div>
 
                 <div class="form-card">
-                    <form action="${pageContext.request.contextPath}/admin/categories" method="POST">
+                    <form action="${pageContext.request.contextPath}/admin/categories"
+                          method="POST" enctype="multipart/form-data">
                         <input type="hidden" name="formAction" value="update">
                         
                         <div class="form-group">
@@ -57,7 +58,16 @@
 
                         <div class="form-group">
                             <label class="form-label">Tên Danh Mục (Category Name) *</label>
-                            <input type="text" name="categoryName" class="form-control" value="${category.categoryName}" required maxlength="100">
+                            <input type="text" name="categoryName" class="form-control"
+                                   value="${category.categoryName}" required maxlength="49">
+                            <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">
+                                Tên danh mục phải ít hơn 50 ký tự.
+                            </small>
+                            <c:if test="${param.error == 'name_too_long'}">
+                                <small style="color: #dc2626; font-size: 12px; margin-top: 5px; display: block;">
+                                    Tên danh mục phải ít hơn 50 ký tự.
+                                </small>
+                            </c:if>
                         </div>
 
                         <div class="form-group">
@@ -74,10 +84,7 @@
                             <textarea name="description" class="form-control" ${category.categoryType == 'Nguyên liệu' ? 'disabled' : ''} maxlength="255">${category.description}</textarea>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Đường dẫn Icon (Icon URL)</label>
-                            <input type="text" name="iconUrl" class="form-control" value="${category.iconUrl}" ${category.categoryType == 'Nguyên liệu' ? 'disabled' : ''} placeholder="Ví dụ: assets/images/categories/icons/default.png" maxlength="255">
-                        </div>
+                        <jsp:include page="category-icon-input.jsp" />
 
                         <div class="form-actions">
                             <button type="submit" class="btn-primary">
@@ -86,6 +93,9 @@
                             <a href="${pageContext.request.contextPath}/admin/categories" class="btn-secondary">Hủy Bỏ</a>
                         </div>
                     </form>
+                    <c:if test="${category.categoryType == 'Nguyên liệu'}">
+                        <script>setCategoryIconEnabled(false);</script>
+                    </c:if>
                 </div>
             </div>
         </div>

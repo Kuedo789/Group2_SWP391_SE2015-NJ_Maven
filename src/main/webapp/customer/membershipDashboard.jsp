@@ -752,7 +752,7 @@
              *  Copy-to-clipboard helper (unchanged behaviour)
              * ================================================================ */
             function copyCode(code, elementId) {
-                navigator.clipboard.writeText(code).then(function () {
+                var showFeedback = function() {
                     var el = document.getElementById(elementId);
                     if (!el) return;
                     var original = el.innerHTML;
@@ -764,16 +764,29 @@
                         el.style.background = '';
                         el.style.color = '';
                     }, 1800);
-                }).catch(function () {
-                    var ta = document.createElement('textarea');
-                    ta.value = code;
-                    ta.style.position = 'fixed';
-                    ta.style.opacity = '0';
-                    document.body.appendChild(ta);
-                    ta.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(ta);
-                });
+                };
+
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(code).then(showFeedback).catch(fallbackCopy);
+                } else {
+                    fallbackCopy();
+                }
+
+                function fallbackCopy() {
+                    try {
+                        var ta = document.createElement('textarea');
+                        ta.value = code;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        showFeedback();
+                    } catch (err) {
+                        console.error('Không thể copy:', err);
+                    }
+                }
             }
         </script>
 
