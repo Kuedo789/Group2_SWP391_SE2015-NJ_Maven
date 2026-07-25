@@ -6,6 +6,7 @@ import com.bakeryzone.model.PointHistory;
 import com.bakeryzone.model.UserMembership;
 import com.bakeryzone.utils.DBContext;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -899,9 +900,51 @@ public class MembershipDAO {
         return "Không xóa được hạng này.";
     }
 
-    // -----------------------------------------------------------------------
-    // Resource cleanup
-    // -----------------------------------------------------------------------
+    public boolean checkDuplicateTierName(String tierName, int tierId) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+            String sql = "SELECT COUNT(*) FROM MembershipTier WHERE LOWER(TierName) = LOWER(?) AND TierID <> ?";
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, tierName.trim());
+            ps.setInt(2, tierId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return false;
+    }
+
+    public boolean checkDuplicateMinSpending(BigDecimal minSpending, int tierId) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+            String sql = "SELECT COUNT(*) FROM MembershipTier WHERE MinSpending = ? AND TierID <> ?";
+            ps = conn.prepareStatement(sql);
+            ps.setBigDecimal(1, minSpending);
+            ps.setInt(2, tierId);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return false;
+    }
 
     private void close(Connection conn, PreparedStatement ps, ResultSet rs) {
         try {
@@ -919,3 +962,5 @@ public class MembershipDAO {
         }
     }
 }
+
+

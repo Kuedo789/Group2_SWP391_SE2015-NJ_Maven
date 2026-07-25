@@ -439,29 +439,26 @@
                 <form id="tierForm" action="javascript:void(0);" onsubmit="submitTierForm()">
                     <input type="hidden" name="action" value="saveTier">
                     <input type="hidden" name="tierId" id="modal-tier-id" value="0">
-
                     <div class="modal-field">
                         <label>Tên Hạng</label>
-                        <input type="text" name="tierName" id="modal-tier-name-input" placeholder="VD: Hạng Vàng" required>
+                        <input type="text" name="tierName" id="modal-tier-name-input" placeholder="VD: Hạng Vàng" maxlength="50" required>
                     </div>
                     <div class="modal-field">
                         <label>Chi tiêu tích lũy tối thiểu (₫)</label>
-                        <input type="number" name="minSpending" id="modal-min-spend" placeholder="0" min="0" required>
+                        <input type="number" name="minSpending" id="modal-min-spend" placeholder="0" min="0" max="9999999999" required>
                     </div>
                     <div class="modal-field">
                         <label>Hệ số tích điểm (x)</label>
-                        <input type="number" name="pointMultiplier" id="modal-point-mult" placeholder="1.0" min="0" step="0.1" required>
+                        <input type="number" name="pointMultiplier" id="modal-point-mult" placeholder="1.0" min="1.0" max="99.9" step="0.1" required>
                     </div>
                     <div class="modal-field">
                         <label>Số voucher/tháng</label>
-                        <input type="number" name="monthlyVouchers" id="modal-monthly-vouchers" placeholder="0" min="0" required>
+                        <input type="number" name="monthlyVouchers" id="modal-monthly-vouchers" placeholder="0" min="0" max="1000" required>
                     </div>
                     <div class="modal-field">
                         <label>Mô tả ưu đãi</label>
-                        <input type="text" name="description" id="modal-desc" placeholder="VD: Miễn phí vận chuyển">
-                    </div>
-
-                    <div class="form-footer" style="border-top:none;padding-top:8px;">
+                        <input type="text" name="description" id="modal-desc" placeholder="VD: Miễn phí vận chuyển" maxlength="500">
+                    </div>                    <div class="form-footer" style="border-top:none;padding-top:8px;">
                         <button type="button" onclick="closeEditModal()"
                                 class="btn-primary" style="background:#f1f5f9;color:var(--text-dark);border:1px solid var(--border-soft);">
                             Hủy
