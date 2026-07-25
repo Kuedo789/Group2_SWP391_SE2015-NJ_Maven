@@ -70,7 +70,7 @@ public class VoucherDAO {
             "SELECT * "
             + "FROM Voucher "
             + "WHERE IsActive = 1 "
-            + "  AND CURDATE() BETWEEN StartDate AND EndDate "
+            + "  AND CURDATE() >= StartDate AND (EndDate IS NULL OR CURDATE() <= EndDate) "
             + "ORDER BY DiscountValue DESC";
 
         Connection conn = null;
@@ -114,7 +114,7 @@ public class VoucherDAO {
             + "FROM Voucher "
             + "WHERE VoucherID = ? "
             + "  AND IsActive = 1 "
-            + "  AND CURDATE() BETWEEN StartDate AND EndDate";
+            + "  AND CURDATE() >= StartDate AND (EndDate IS NULL OR CURDATE() <= EndDate)";
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -384,7 +384,7 @@ public class VoucherDAO {
             + "  AND uv.UserID = ? "
             + "  AND uv.IsUsed = 0 "
             + "  AND v.IsActive = 1 "
-            + "  AND CURDATE() BETWEEN v.StartDate AND v.EndDate";
+            + "  AND CURDATE() >= v.StartDate AND (v.EndDate IS NULL OR CURDATE() <= v.EndDate)";
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -423,7 +423,7 @@ public class VoucherDAO {
             + "WHERE uv.UserID = ? "
             + "  AND uv.IsUsed = 0 "
             + "  AND v.IsActive = 1 "
-            + "  AND CURDATE() BETWEEN v.StartDate AND v.EndDate "
+            + "  AND CURDATE() >= v.StartDate AND (v.EndDate IS NULL OR CURDATE() <= v.EndDate) "
             + "ORDER BY v.VoucherScope DESC, v.DiscountValue DESC";
 
         Connection conn = null;
@@ -498,8 +498,8 @@ public class VoucherDAO {
 
         String sql = "SELECT "
             + "  COUNT(*) AS TotalCount, "
-            + "  COALESCE(SUM(CASE WHEN IsActive = 1 AND EndDate >= CURDATE() THEN 1 ELSE 0 END), 0) AS ActiveCount, "
-            + "  COALESCE(SUM(CASE WHEN IsActive = 0 OR EndDate < CURDATE() THEN 1 ELSE 0 END), 0) AS ExpiredCount "
+            + "  COALESCE(SUM(CASE WHEN IsActive = 1 AND (EndDate IS NULL OR EndDate >= CURDATE()) THEN 1 ELSE 0 END), 0) AS ActiveCount, "
+            + "  COALESCE(SUM(CASE WHEN IsActive = 0 OR (EndDate IS NOT NULL AND EndDate < CURDATE()) THEN 1 ELSE 0 END), 0) AS ExpiredCount "
             + "FROM voucher";
 
         Connection conn = null;
@@ -635,9 +635,9 @@ public class VoucherDAO {
     private void appendStatusClause(StringBuilder sql, String statusFilter, boolean hasStatus) {
         if (!hasStatus) return;
         if ("ACTIVE".equalsIgnoreCase(statusFilter)) {
-            sql.append("AND IsActive = 1 AND EndDate >= CURDATE() ");
-        } else if ("EXPIRED".equalsIgnoreCase(statusFilter)) {
-            sql.append("AND (IsActive = 0 OR EndDate < CURDATE()) ");
+            sql.append("AND IsActive = 1 AND (EndDate IS NULL OR EndDate >= CURDATE()) ");
+        } else if ("EXPIRED".equalsIgnoreCase(statusFilter.trim()) || "INACTIVE".equalsIgnoreCase(statusFilter.trim())) {
+            sql.append("AND (IsActive = 0 OR (EndDate IS NOT NULL AND EndDate < CURDATE())) ");
         } else if ("INACTIVE".equalsIgnoreCase(statusFilter)) {
             sql.append("AND IsActive = 0 ");
         }

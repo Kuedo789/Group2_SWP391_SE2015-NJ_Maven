@@ -453,7 +453,7 @@ public class MembershipDAO {
             + "WHERE uv.UserID = ? "
             + "  AND uv.IsUsed  = 0 "
             + "  AND v.IsActive = 1 "
-            + "  AND CURDATE() <= v.EndDate ");
+            + "  AND (v.EndDate IS NULL OR CURDATE() <= v.EndDate) ");
 
         // --- Scope filter ---
         boolean scopeIsOrder    = "ORDER".equalsIgnoreCase(scope);
@@ -522,7 +522,7 @@ public class MembershipDAO {
             + "WHERE uv.UserID = ? "
             + "  AND uv.IsUsed = 0 "
             + "  AND v.IsActive = 1 "
-            + "  AND CURDATE() <= v.EndDate ");
+            + "  AND (v.EndDate IS NULL OR CURDATE() <= v.EndDate) ");
 
         boolean scopeIsOrder = "ORDER".equalsIgnoreCase(scope);
         boolean scopeIsShipping = "SHIPPING".equalsIgnoreCase(scope);
@@ -741,7 +741,7 @@ public class MembershipDAO {
         try {
             conn = DBContext.getJDBCConnection();
             if (conn != null) {
-                String sql = "SELECT * FROM Voucher WHERE IsActive = 1 AND EndDate >= CURDATE() ORDER BY RequiredTierID DESC, VoucherID DESC";
+                String sql = "SELECT * FROM Voucher WHERE IsActive = 1 AND (EndDate IS NULL OR EndDate >= CURDATE()) ORDER BY RequiredTierID DESC, VoucherID DESC";
                 ps = conn.prepareStatement(sql);
                 rs = ps.executeQuery();
                 while (rs.next()) {
@@ -799,7 +799,7 @@ public class MembershipDAO {
             if (conn == null) return false;
             
             // Find voucher ID by code
-            String findSql = "SELECT VoucherID FROM Voucher WHERE VoucherCode = ? AND Status = 'Active' AND EndDate >= CURDATE()";
+            String findSql = "SELECT VoucherID FROM Voucher WHERE VoucherCode = ? AND IsActive = 1 AND (EndDate IS NULL OR EndDate >= CURDATE())";
             psFind = conn.prepareStatement(findSql);
             psFind.setString(1, voucherCode);
             rsFind = psFind.executeQuery();
