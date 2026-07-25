@@ -664,7 +664,7 @@
                 <div>
                     <c:choose>
                         <c:when test="${order.orderStatus eq 'PAID'}">
-                            <span class="status-badge status-paid" style="background-color: #d1fae5; color: #065f46;">${order.orderStatusVietnamese}</span>
+                            <span class="status-badge status-confirmed">${order.orderStatusVietnamese}</span>
                         </c:when>
                         <c:when test="${order.orderStatus eq 'Processing'}">
                             <span class="status-badge status-processing">${order.orderStatusVietnamese}</span>
