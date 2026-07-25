@@ -67,7 +67,11 @@ public class AdminMembershipServlet extends HttpServlet {
             }
             
             try {
-                int delta = Integer.parseInt(amountStr.trim());
+                int desiredPoints = Integer.parseInt(amountStr.trim());
+                UserMembership um = dao.getMembershipByUserId(userId);
+                int currentPoints = um != null ? um.getAccumulatedPoints() : 0;
+                int delta = desiredPoints - currentPoints;
+                
                 String description = reasonType;
                 if (notes != null && !notes.trim().isEmpty()) {
                     description += " - " + notes.trim();
@@ -75,7 +79,7 @@ public class AdminMembershipServlet extends HttpServlet {
                 
                 boolean success = dao.adjustPoints(userId, delta, description);
                 if (success) {
-                    UserMembership um = dao.getMembershipByUserId(userId);
+                    um = dao.getMembershipByUserId(userId);
                     int newPoints = um != null ? um.getAccumulatedPoints() : 0;
                     response.getWriter().write("{\"status\":\"ok\",\"newPoints\":" + newPoints + "}");
                 } else {
