@@ -1033,10 +1033,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             const productNameInput = document.getElementById('productName');
             if (productNameInput) {
-                productNameInput.addEventListener('blur', checkDuplicateProductName);
+                // Clear validation error style as the user edits the input
                 productNameInput.addEventListener('input', function() {
-                    if (isDuplicateProductName) {
-                        checkDuplicateProductName();
+                    const errorName = document.getElementById('error-name');
+                    if (errorName && errorName.textContent.includes('đã tồn tại')) {
+                        errorName.style.display = 'none';
+                        productNameInput.classList.remove('is-invalid');
                     }
                 });
             }
@@ -1044,11 +1046,15 @@
 
         // Sync Quill HTML contents on form submit
         const form = document.querySelector('form');
-        form.addEventListener('submit', function(e) {
+        let isFormSubmitting = false;
+        form.addEventListener('submit', async function(e) {
             if (${isReadOnly}) {
                 e.preventDefault();
                 return false;
             }
+            if (isFormSubmitting) return; // Allow programmatic submit
+            e.preventDefault(); // Stop default submit to do validation first
+            
             let hasError = false;
             
             const errorName = document.getElementById('error-name');
@@ -1091,13 +1097,12 @@
                     }
                     nameInput.classList.add('is-invalid');
                     hasError = true;
-                } else if (isDuplicateProductName) {
-                    if (errorName) {
-                        errorName.textContent = 'Tên bánh kem này đã tồn tại trên hệ thống. Vui lòng nhập tên khác.';
-                        errorName.style.display = 'block';
+                } else {
+                    // Check duplicate asynchronously on form submit
+                    const isDuplicate = await checkDuplicateProductName();
+                    if (isDuplicate) {
+                        hasError = true;
                     }
-                    nameInput.classList.add('is-invalid');
-                    hasError = true;
                 }
             }
 
@@ -1135,7 +1140,6 @@
             }
 
             if (hasError) {
-                e.preventDefault();
                 return false;
             }
 
@@ -1144,7 +1148,6 @@
             if (bomRowsCount === 0) {
                 const confirmSave = confirm('Sản phẩm này chưa được thiết lập định lượng nguyên liệu. Bạn có muốn tiếp tục lưu không?');
                 if (!confirmSave) {
-                    e.preventDefault();
                     return false;
                 }
             }
@@ -1156,6 +1159,10 @@
             if (recipeQuill) {
                 document.getElementById('instructionSteps').value = recipeQuill.root.innerHTML;
             }
+
+            // Submit programmatically after passing all validation steps
+            isFormSubmitting = true;
+            form.submit();
         });
 
         // BOM Dynamism
