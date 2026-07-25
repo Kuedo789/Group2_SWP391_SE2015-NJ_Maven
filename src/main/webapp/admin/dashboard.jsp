@@ -91,14 +91,6 @@
                             <div class="stat-info">
                                 <div class="stat-label">
                                     <span>Tổng doanh thu</span>
-                                    <c:choose>
-                                        <c:when test="${revChangePct >= 0}">
-                                            <span class="stat-trend trend-up">+<fmt:formatNumber value="${revChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-up"></i></span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="stat-trend trend-down"><fmt:formatNumber value="${revChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-down"></i></span>
-                                        </c:otherwise>
-                                    </c:choose>
                                 </div>
                                 <div class="stat-value">
                                     <fmt:formatNumber value="${totalRevenue}" type="number" pattern="#,##0"/>đ
@@ -110,14 +102,6 @@
                             <div class="stat-info">
                                 <div class="stat-label">
                                     <span>Đơn hàng</span>
-                                    <c:choose>
-                                        <c:when test="${ordChangePct >= 0}">
-                                            <span class="stat-trend trend-up">+<fmt:formatNumber value="${ordChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-up"></i></span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="stat-trend trend-down"><fmt:formatNumber value="${ordChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-down"></i></span>
-                                        </c:otherwise>
-                                    </c:choose>
                                 </div>
                                 <div class="stat-value">${totalOrders}</div>
                             </div>
@@ -127,37 +111,19 @@
                             <div class="stat-info">
                                 <div class="stat-label">
                                     <span>Khách hàng</span>
-                                    <c:choose>
-                                        <c:when test="${custChangePct >= 0}">
-                                            <span class="stat-trend trend-up">+<fmt:formatNumber value="${custChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-up"></i></span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="stat-trend trend-down"><fmt:formatNumber value="${custChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-down"></i></span>
-                                        </c:otherwise>
-                                    </c:choose>
                                 </div>
                                 <div class="stat-value">${totalCustomers}</div>
                             </div>
                         </a>
-                        <div class="stat-card stat-products" style="text-decoration: none; color: inherit; cursor: default;">
-                            <div class="stat-icon" style="background-color: #dcfce7; color: #15803d;"><i class="fa-solid fa-sack-dollar"></i></div>
+                        <a href="${pageContext.request.contextPath}/admin/product?action=list" class="stat-card stat-products" style="text-decoration: none; color: inherit;">
+                            <div class="stat-icon"><i class="fa-solid fa-cake-candles"></i></div>
                             <div class="stat-info">
                                 <div class="stat-label">
-                                    <span>Tổng lợi nhuận</span>
-                                    <c:choose>
-                                        <c:when test="${profitChangePct >= 0}">
-                                            <span class="stat-trend trend-up">+<fmt:formatNumber value="${profitChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-up"></i></span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="stat-trend trend-down"><fmt:formatNumber value="${profitChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-down"></i></span>
-                                        </c:otherwise>
-                                    </c:choose>
+                                    <span>Mẫu bánh</span>
                                 </div>
-                                <div class="stat-value">
-                                    <fmt:formatNumber value="${totalProfit != null ? totalProfit : 0}" type="number" pattern="#,##0"/>đ
-                                </div>
+                                <div class="stat-value">${totalProducts}</div>
                             </div>
-                        </div>
+                        </a>
                     </c:otherwise>
                 </c:choose>
             </div>

@@ -114,9 +114,9 @@ public class AdminDashboardServlet extends HttpServlet {
             totalIngredients = 0;
         }
 
-        int pendingCount = statusCounts.getOrDefault("Đã thanh toán", 0);
-        int processingCount = statusCounts.getOrDefault("Đang làm bánh", 0);
-        int deliveringCount = statusCounts.getOrDefault("Đang giao hàng", 0);
+        int pendingCount = statusCounts.getOrDefault("Đã xác nhận", 0);
+        int processingCount = statusCounts.getOrDefault("Đang xử lý", 0);
+        int deliveringCount = statusCounts.getOrDefault("Đang giao", 0);
         int completedCount = statusCounts.getOrDefault("Hoàn thành", 0);
 
         // Tính % thay đổi doanh thu so với tháng trước (lấy 2 giá trị cuối của map xu hướng 6 tháng)
