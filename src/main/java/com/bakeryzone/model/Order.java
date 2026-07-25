@@ -53,16 +53,12 @@ public class Order {
      */
     public String getOrderStatusVietnamese() {
         if (orderStatus == null) return "Không xác định";
-        switch (orderStatus) {
-            case STATUS_WAITING_PAYMENT:  return "Chờ thanh toán";
-            case STATUS_PAID:             return "Đã thanh toán";
-            case STATUS_PROCESSING:       return "Đang làm bánh";
-            case STATUS_WAITING_DELIVERY: return "Chờ giao hàng";
-            case STATUS_DELIVERING:       return "Đang giao hàng";
-            case STATUS_COMPLETED:        return "Hoàn thành";
-            case STATUS_CANCELLED:        return "Đã hủy";
-            default:                      return orderStatus;
+        for (OrderStatus status : OrderStatus.values()) {
+            if (status.name().equalsIgnoreCase(orderStatus)) {
+                return status.getDescription();
+            }
         }
+        return orderStatus; // Fallback to original string if not in enum
     }
 
     /**

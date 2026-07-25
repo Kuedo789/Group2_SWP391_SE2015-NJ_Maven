@@ -56,6 +56,12 @@ public class CartServlet extends HttpServlet {
                 case "add":
                     handleAddSnapshot(request, response, userId);
                     return; // Method sends JSON response directly
+                case "reorderToCart":
+                    handleReorder(request, response, userId, true);
+                    return;
+                case "reorderToCheckout":
+                    handleReorder(request, response, userId, false);
+                    return;
                 case "increase":
                     handleQuantityChange(targetId, userId, 1);
                     break;
@@ -88,6 +94,109 @@ public class CartServlet extends HttpServlet {
 
         // Strict PRG Rule: Always finish POST with a redirect to prevent double submissions
         response.sendRedirect(request.getContextPath() + "/cart");
+    }
+
+    private void handleReorder(HttpServletRequest request, HttpServletResponse response, String userId, boolean addToCart) throws IOException {
+        String orderNo = request.getParameter("orderNo");
+        if (orderNo == null || orderNo.trim().isEmpty()) {
+            if (addToCart) {
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":false, \"message\":\"Mã đơn hàng không hợp lệ.\"}");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/cart");
+            }
+            return;
+        }
+
+        try (java.sql.Connection conn = com.bakeryzone.utils.DBContext.getJDBCConnection()) {
+            List<com.bakeryzone.model.OrderItem> oldItems = com.bakeryzone.utils.OrderMapper.getOrderItems(orderNo, conn);
+            com.bakeryzone.dao.ProductDAO productDAO = new com.bakeryzone.dao.ProductDAO();
+            com.bakeryzone.dao.CustomCakeDAO customCakeDAO = new com.bakeryzone.dao.CustomCakeDAO();
+            
+            List<com.bakeryzone.model.CartItemDTO> directCheckoutItems = new java.util.ArrayList<>();
+            int successCount = 0;
+
+            for (com.bakeryzone.model.OrderItem oldItem : oldItems) {
+                String templateId = oldItem.getTemplateId();
+                String customCakeId = oldItem.getCustomCakeId();
+                String variationName = oldItem.getVariationName();
+                int qty = oldItem.getQuantity();
+
+                String finalName = oldItem.getItemName();
+                java.math.BigDecimal finalPrice = oldItem.getPriceAtPurchase();
+                String finalImage = oldItem.getItemImage();
+
+                String resolvedProductId = templateId;
+
+                if (customCakeId != null && customCakeId.startsWith("CC-")) {
+                    com.bakeryzone.model.CustomCake cc = customCakeDAO.getCustomCakeById(customCakeId);
+                    if (cc != null) {
+                        finalPrice = java.math.BigDecimal.valueOf(cc.getCalculatedPrice());
+                    }
+                    resolvedProductId = customCakeId;
+                } else if (templateId != null && !templateId.isEmpty()) {
+                    com.bakeryzone.model.Product p = productDAO.getProductById(templateId);
+                    if (p != null) {
+                        finalName = p.getName();
+                        if (variationName != null && variationName.contains("20cm") && !finalName.contains("20cm")) finalName += " 20cm";
+                        else if (variationName != null && variationName.contains("24cm") && !finalName.contains("24cm")) finalName += " 24cm";
+                        else if (!finalName.contains("16cm") && !finalName.contains("20cm") && !finalName.contains("24cm")) finalName += " 16cm";
+                        
+                        double basePrice = p.getBasePrice();
+                        if (finalName.contains("20cm")) basePrice += 80000;
+                        else if (finalName.contains("24cm")) basePrice += 160000;
+                        finalPrice = java.math.BigDecimal.valueOf(basePrice);
+                        
+                        finalImage = request.getContextPath() + "/" + p.getImageUrl();
+                        
+                        String variantIndex = "0";
+                        if (variationName != null && variationName.contains("20cm")) variantIndex = "1";
+                        else if (variationName != null && variationName.contains("24cm")) variantIndex = "2";
+                        resolvedProductId = templateId + "_" + variantIndex;
+                    }
+                }
+                
+                if (finalImage == null || finalImage.isEmpty()) {
+                    finalImage = request.getContextPath() + "/assets/images/default-cake.png";
+                } else if (!finalImage.startsWith("http") && !finalImage.startsWith("data:") && !finalImage.startsWith(request.getContextPath())) {
+                    if (finalImage.startsWith("/")) finalImage = finalImage.substring(1);
+                    finalImage = request.getContextPath() + "/" + finalImage;
+                }
+                
+                if (addToCart) {
+                    boolean ok = cartDAO.addSnapshotToCart(userId, resolvedProductId, finalName, finalPrice, finalImage, qty);
+                    if (ok) successCount++;
+                } else {
+                    com.bakeryzone.model.CartItemDTO dto = new com.bakeryzone.model.CartItemDTO();
+                    dto.setCartItemId("CRT-TEMP-" + java.util.UUID.randomUUID().toString().toUpperCase());
+                    dto.setCustomCakeId(resolvedProductId);
+                    dto.setQuantity(qty);
+                    dto.setName(finalName);
+                    dto.setUnitPrice(finalPrice);
+                    dto.setImageUrl(finalImage);
+                    dto.setActive(true);
+                    directCheckoutItems.add(dto);
+                }
+            }
+            
+            if (addToCart) {
+                int totalCartCount = cartDAO.getCartCountForUser(userId);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":true, \"message\":\"Đã thêm " + successCount + " sản phẩm vào giỏ hàng!\", \"cartCount\":" + totalCartCount + "}");
+            } else {
+                request.getSession().setAttribute("directCheckoutItems", directCheckoutItems);
+                response.sendRedirect(request.getContextPath() + "/checkout");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (addToCart) {
+                response.setContentType("application/json");
+                response.getWriter().write("{\"success\":false, \"message\":\"Lỗi hệ thống: " + e.getMessage() + "\"}");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/cart?error=" + java.net.URLEncoder.encode(e.toString() + " - " + e.getStackTrace()[0].toString(), "UTF-8"));
+            }
+        }
     }
 
     private void handleAddSnapshot(HttpServletRequest request, HttpServletResponse response, String userId) throws IOException {

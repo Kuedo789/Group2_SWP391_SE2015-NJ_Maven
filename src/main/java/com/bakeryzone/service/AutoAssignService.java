@@ -1,6 +1,7 @@
 package com.bakeryzone.service;
 
 import com.bakeryzone.dao.OrderDAO;
+import com.bakeryzone.dao.ShipperTripDAO;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.utils.DBContext;
 import com.google.gson.JsonObject;
@@ -21,6 +22,7 @@ import java.util.Map;
 public class AutoAssignService {
 
     private static final OrderDAO orderDAO = new OrderDAO();
+    private static final ShipperTripDAO shipperTripDAO = new ShipperTripDAO();
     private static final double[] SHOP_COORDS = new double[]{10.7769, 106.7009}; // Shop Coordinates
     private static final int MAX_BATCH_LIMIT = 3;
     private static final double MAX_ROUTE_DIVERSION_KM = 3.0;
@@ -37,7 +39,7 @@ public class AutoAssignService {
         System.out.println("[AutoAssignService] Triggered assignment for Order: " + orderNo);
 
         // Fetch coordinates for the order delivery address
-        double[] orderCoords = orderDAO.getOrderCoordinates(orderNo);
+        double[] orderCoords = shipperTripDAO.getOrderCoordinates(orderNo);
         if (orderCoords == null) {
             System.out.println("[AutoAssignService] WARNING: Coordinates not found for Order " + orderNo + ". Using shop default coordinates.");
             orderCoords = SHOP_COORDS;
@@ -73,16 +75,16 @@ public class AutoAssignService {
             String bestTripId = findBestBatchTrip(exactMatchShippers, orderCoords);
             if (bestTripId != null) {
                 System.out.println("[AutoAssignService] Batching order " + orderNo + " to active Trip: " + bestTripId);
-                return orderDAO.updateOrderTrip(orderNo, bestTripId);
+                return shipperTripDAO.updateOrderTrip(orderNo, bestTripId);
             }
 
             // Fallback to load balancing: Pick shipper with fewest active orders
             String bestShipperId = pickLowestWorkloadShipper(exactMatchShippers);
             if (bestShipperId != null) {
-                String newTripId = orderDAO.createNewDeliveryTrip(bestShipperId);
+                String newTripId = shipperTripDAO.createNewDeliveryTrip(bestShipperId);
                 if (newTripId != null) {
                     System.out.println("[AutoAssignService] Created new Trip " + newTripId + " for exact shipper: " + bestShipperId);
-                    return orderDAO.updateOrderTrip(orderNo, newTripId);
+                    return shipperTripDAO.updateOrderTrip(orderNo, newTripId);
                 }
             }
         }
@@ -94,7 +96,7 @@ public class AutoAssignService {
         String fallbackTripId = findBestBatchTrip(activeShippers, orderCoords);
         if (fallbackTripId != null) {
             System.out.println("[AutoAssignService] Batching order " + orderNo + " to fallback active Trip: " + fallbackTripId);
-            return orderDAO.updateOrderTrip(orderNo, fallbackTripId);
+            return shipperTripDAO.updateOrderTrip(orderNo, fallbackTripId);
         }
 
         // Fallback Step 3b: Pick Central/Main Store Shippers (zone contains "Central", "Main Store", or "Toàn thành phố")
@@ -113,10 +115,10 @@ public class AutoAssignService {
         if (!centralShippers.isEmpty()) {
             String bestCentralShipperId = pickLowestWorkloadShipper(centralShippers);
             if (bestCentralShipperId != null) {
-                String newTripId = orderDAO.createNewDeliveryTrip(bestCentralShipperId);
+                String newTripId = shipperTripDAO.createNewDeliveryTrip(bestCentralShipperId);
                 if (newTripId != null) {
                     System.out.println("[AutoAssignService] Assigned to Central/Main Store Shipper: " + bestCentralShipperId);
-                    return orderDAO.updateOrderTrip(orderNo, newTripId);
+                    return shipperTripDAO.updateOrderTrip(orderNo, newTripId);
                 }
             }
         }
@@ -124,10 +126,10 @@ public class AutoAssignService {
         // Fallback Step 3c: Pick active shipper with the minimum total active workload system-wide
         String absoluteBestShipperId = pickLowestWorkloadShipper(activeShippers);
         if (absoluteBestShipperId != null) {
-            String newTripId = orderDAO.createNewDeliveryTrip(absoluteBestShipperId);
+            String newTripId = shipperTripDAO.createNewDeliveryTrip(absoluteBestShipperId);
             if (newTripId != null) {
                 System.out.println("[AutoAssignService] Absolute fallback assignment to Shipper: " + absoluteBestShipperId);
-                return orderDAO.updateOrderTrip(orderNo, newTripId);
+                return shipperTripDAO.updateOrderTrip(orderNo, newTripId);
             }
         }
 
@@ -169,12 +171,12 @@ public class AutoAssignService {
 
         for (Map<String, String> sh : shippers) {
             String shipperId = sh.get("id");
-            String tripId = orderDAO.getActiveTripIdByShipper(shipperId);
+            String tripId = shipperTripDAO.getActiveTripIdByShipper(shipperId);
             if (tripId == null) {
                 continue;
             }
 
-            List<Order> existingOrders = orderDAO.getOrdersByTripId(tripId);
+            List<Order> existingOrders = shipperTripDAO.getOrdersByTripId(tripId);
             // Check max batch limit
             if (existingOrders.size() >= MAX_BATCH_LIMIT) {
                 continue;
@@ -184,7 +186,7 @@ public class AutoAssignService {
             List<double[]> originalCoords = new ArrayList<>();
             originalCoords.add(SHOP_COORDS);
             for (Order o : existingOrders) {
-                double[] pt = orderDAO.getOrderCoordinates(o.getOrderNo());
+                double[] pt = shipperTripDAO.getOrderCoordinates(o.getOrderNo());
                 originalCoords.add(pt != null ? pt : SHOP_COORDS);
             }
             double originalDist = getRouteDistance(originalCoords);

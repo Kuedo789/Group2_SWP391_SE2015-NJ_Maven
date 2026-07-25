@@ -206,12 +206,12 @@
                                         countEl.innerText = data.cartCount;
                                     }
 
-                                    // Sync to localStorage for checkout
+                                    // Đồng bộ vào localStorage để checkout.jsp có thể đọc
                                     try {
                                         let localCart = [];
                                         try { localCart = JSON.parse(localStorage.getItem("cart") || "[]"); } catch(e) { localCart = []; }
                                         if (!Array.isArray(localCart)) localCart = [];
-                                        const cartId = product.id + "_0"; 
+                                        const cartId = product.id + "_0"; // default size 16cm = index 0
                                         const existing = localCart.find(c => c.id === cartId);
                                         if (existing) {
                                             existing.qty = parseInt(existing.qty || 1) + 1;
@@ -371,6 +371,7 @@
 
                         if (totalMatched === 0) {
                             noDataMessage.classList.add("show");
+
                         } else {
                             noDataMessage.classList.remove("show");
                         }

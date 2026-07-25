@@ -6,7 +6,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 
 <footer class="footer" style="background-color: var(--bg-soft, #f3f7f0); border-top: 1px solid var(--border, #eee5d8); color: var(--text, #241d18); padding: 60px 0 30px;">
-    <div class="footer-inner" style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; padding: 0 20px;">
+    <div class="footer-inner" style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; padding: 0 20px;">
         <div class="footer-brand" style="display: flex; flex-direction: column; gap: 16px;">
             <h3 style="font-family: 'Playfair Display', serif; font-size: 24px; color: var(--primary, #3f5f36); font-weight: 700; margin: 0;">
                 ${not empty settings.bakeryName ? settings.bakeryName : 'Tiệm Bánh Thủ Công'}
@@ -42,15 +42,7 @@
             </ul>
         </div>
 
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-            <h4 style="font-size: 18px; font-weight: 600; color: var(--primary, #3f5f36); margin: 0;">Chính sách</h4>
-            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
-                <li><a href="<%= request.getContextPath() %>/home" style="color: var(--muted, #756d64); text-decoration: none; transition: color 0.2s;">Hướng dẫn đặt hàng</a></li>
-                <li><a href="<%= request.getContextPath() %>/home" style="color: var(--muted, #756d64); text-decoration: none; transition: color 0.2s;">Chính sách vận chuyển</a></li>
-                <li><a href="<%= request.getContextPath() %>/home" style="color: var(--muted, #756d64); text-decoration: none; transition: color 0.2s;">Chính sách bảo mật (Privacy)</a></li>
-                <li><a href="<%= request.getContextPath() %>/home" style="color: var(--muted, #756d64); text-decoration: none; transition: color 0.2s;">Điều khoản (Terms)</a></li>
-            </ul>
-        </div>
+
 
         <div style="display: flex; flex-direction: column; gap: 20px;">
             <h4 style="font-size: 18px; font-weight: 600; color: var(--primary, #3f5f36); margin: 0;">Tài khoản</h4>

@@ -2,6 +2,8 @@ package com.bakeryzone.controller.admin;
 
 import com.bakeryzone.dao.IngredientDAO;
 import com.bakeryzone.dao.OrderDAO;
+import com.bakeryzone.dao.ShipperTripDAO;
+import com.bakeryzone.dao.ReportDAO;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.utils.ValidationUtils;
 import jakarta.servlet.ServletException;
@@ -19,6 +21,8 @@ import java.util.Map;
 public class AdminDashboardServlet extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
+    private final ShipperTripDAO shipperTripDAO = new ShipperTripDAO();
+    private final ReportDAO reportDAO = new ReportDAO();
     private final IngredientDAO ingredientDAO = new IngredientDAO();
 
     @Override
@@ -29,14 +33,14 @@ public class AdminDashboardServlet extends HttpServlet {
         User currentUser = (session != null) ? (User) session.getAttribute("user") : null;
 
         // Lấy dữ liệu thống kê từ DAO
-        double totalRevenue = orderDAO.getTotalRevenue(null, null);
-        double totalProfit = orderDAO.getTotalProfit(null, null);
+        double totalRevenue = reportDAO.getTotalRevenue(null, null);
+        double totalProfit = reportDAO.getTotalProfit(null, null);
         int totalOrders = orderDAO.getTotalOrdersCount(null, null, null, null);
-        int totalCustomers = orderDAO.getTotalCustomers(null, null);
-        int totalProducts = orderDAO.getTotalProducts();
+        int totalCustomers = reportDAO.getTotalCustomers(null, null);
+        int totalProducts = reportDAO.getTotalProducts();
         
         List<Order> recentOrders = orderDAO.getOrdersPaged(null, null, null, null, null, 1, 5);
-        Map<String, Integer> statusCounts = orderDAO.getOrderStatusCounts(null, null);
+        Map<String, Integer> statusCounts = reportDAO.getOrderStatusCounts(null, null);
         List<Map<String, Object>> bestSellers = null;
         List<Map<String, Object>> topCustomers = null;
 
@@ -57,18 +61,18 @@ public class AdminDashboardServlet extends HttpServlet {
         if (hasCustomDate) {
             String sDate = startDate.trim();
             String eDate = endDate.trim();
-            Map<String, Double> customRevenue = orderDAO.getRevenueTrendCustom(sDate, eDate);
-            Map<String, Integer> customOrders = orderDAO.getOrdersTrendCustom(sDate, eDate);
-            Map<String, Double> customProfit = orderDAO.getProfitTrendCustom(sDate, eDate);
+            Map<String, Double> customRevenue = reportDAO.getRevenueTrendCustom(sDate, eDate);
+            Map<String, Integer> customOrders = reportDAO.getOrdersTrendCustom(sDate, eDate);
+            Map<String, Double> customProfit = reportDAO.getProfitTrendCustom(sDate, eDate);
             
             // Cập nhật lại thông số các thẻ và danh sách theo khoảng ngày tùy chọn
-            totalRevenue = orderDAO.getTotalRevenue(sDate, eDate);
-            totalProfit = orderDAO.getTotalProfit(sDate, eDate);
+            totalRevenue = reportDAO.getTotalRevenue(sDate, eDate);
+            totalProfit = reportDAO.getTotalProfit(sDate, eDate);
             totalOrders = orderDAO.getTotalOrdersCount(null, null, sDate, eDate);
-            totalCustomers = orderDAO.getTotalCustomers(sDate, eDate);
-            statusCounts = orderDAO.getOrderStatusCounts(sDate, eDate);
-            bestSellers = orderDAO.getBestSellingProducts(sDate, eDate, 5);
-            topCustomers = orderDAO.getTopCustomers(sDate, eDate, 5);
+            totalCustomers = reportDAO.getTotalCustomers(sDate, eDate);
+            statusCounts = reportDAO.getOrderStatusCounts(sDate, eDate);
+            bestSellers = reportDAO.getBestSellingProducts(sDate, eDate, 5);
+            topCustomers = reportDAO.getTopCustomers(sDate, eDate, 5);
 
             request.setAttribute("customRevLabels", mapKeysToString(customRevenue));
             request.setAttribute("customRevData", mapValuesToString(customRevenue));
@@ -80,27 +84,27 @@ public class AdminDashboardServlet extends HttpServlet {
             request.setAttribute("startDate", startDate);
             request.setAttribute("endDate", endDate);
         } else {
-            bestSellers = orderDAO.getBestSellingProducts(null, null, 5);
-            topCustomers = orderDAO.getTopCustomers(null, null, 5);
+            bestSellers = reportDAO.getBestSellingProducts(null, null, 5);
+            topCustomers = reportDAO.getTopCustomers(null, null, 5);
             request.setAttribute("hasCustomDate", false);
             request.setAttribute("startDate", "");
             request.setAttribute("endDate", "");
         }
 
         // 1. Lấy dữ liệu xu hướng theo tháng (6 tháng gần nhất)
-        Map<String, Double> monthlyRevenue = orderDAO.getRevenueTrend("month", 6);
-        Map<String, Integer> monthlyOrders = orderDAO.getOrdersTrend("month", 6);
-        Map<String, Double> monthlyProfit = orderDAO.getProfitTrend("month", 6);
+        Map<String, Double> monthlyRevenue = reportDAO.getRevenueTrend("month", 6);
+        Map<String, Integer> monthlyOrders = reportDAO.getOrdersTrend("month", 6);
+        Map<String, Double> monthlyProfit = reportDAO.getProfitTrend("month", 6);
 
         // 2. Lấy dữ liệu xu hướng theo ngày (30 ngày gần nhất)
-        Map<String, Double> daily30Revenue = orderDAO.getRevenueTrend("day", 30);
-        Map<String, Integer> daily30Orders = orderDAO.getOrdersTrend("day", 30);
-        Map<String, Double> daily30Profit = orderDAO.getProfitTrend("day", 30);
+        Map<String, Double> daily30Revenue = reportDAO.getRevenueTrend("day", 30);
+        Map<String, Integer> daily30Orders = reportDAO.getOrdersTrend("day", 30);
+        Map<String, Double> daily30Profit = reportDAO.getProfitTrend("day", 30);
 
         // 3. Lấy dữ liệu xu hướng theo ngày (7 ngày qua)
-        Map<String, Double> daily7Revenue = orderDAO.getRevenueTrend("day", 7);
-        Map<String, Integer> daily7Orders = orderDAO.getOrdersTrend("day", 7);
-        Map<String, Double> daily7Profit = orderDAO.getProfitTrend("day", 7);
+        Map<String, Double> daily7Revenue = reportDAO.getRevenueTrend("day", 7);
+        Map<String, Integer> daily7Orders = reportDAO.getOrdersTrend("day", 7);
+        Map<String, Double> daily7Profit = reportDAO.getProfitTrend("day", 7);
 
         // Thiết lập thuộc tính request cho các thẻ thống kê và danh sách
         int totalIngredients = 0;
@@ -128,10 +132,10 @@ public class AdminDashboardServlet extends HttpServlet {
         double ordChangePct = ordLastMonth > 0 ? Math.round(((ordThisMonth - ordLastMonth) / (double) ordLastMonth * 100) * 10.0) / 10.0 : (ordThisMonth > 0 ? 100.0 : 0.0);
 
         // Tính % thay đổi số khách hàng (so sánh tháng hiện tại với tháng trước theo dữ liệu DB)
-        double custThisMonth = orderDAO.getTotalCustomers(
+        double custThisMonth = reportDAO.getTotalCustomers(
                 java.time.LocalDate.now().withDayOfMonth(1).toString(),
                 java.time.LocalDate.now().toString());
-        double custLastMonth = orderDAO.getTotalCustomers(
+        double custLastMonth = reportDAO.getTotalCustomers(
                 java.time.LocalDate.now().minusMonths(1).withDayOfMonth(1).toString(),
                 java.time.LocalDate.now().minusMonths(1).withDayOfMonth(java.time.LocalDate.now().minusMonths(1).lengthOfMonth()).toString());
         double custChangePct = custLastMonth > 0 ? Math.round(((custThisMonth - custLastMonth) / custLastMonth * 100) * 10.0) / 10.0 : (custThisMonth > 0 ? 100.0 : 0.0);
@@ -213,15 +217,15 @@ public class AdminDashboardServlet extends HttpServlet {
         // Lấy dữ liệu thống kê dành riêng cho Shipper nếu vai trò là SHIPPER
         if (currentUser != null && "SHIPPER".equalsIgnoreCase(currentUser.getRoleId())) {
             String shipperId = currentUser.getUserId();
-            String managedZone = orderDAO.getManagedZoneByStaffId(shipperId);
-            List<Order> deliveringShipperOrders = orderDAO.getOrdersByShipperPaged(shipperId, null, "Delivering", null, null, "date_desc", 1, 5);
+            String managedZone = shipperTripDAO.getManagedZoneByStaffId(shipperId);
+            List<Order> deliveringShipperOrders = shipperTripDAO.getOrdersByShipperPaged(shipperId, null, "Delivering", null, null, "date_desc", 1, 5);
             Order shipperActiveOrder = !deliveringShipperOrders.isEmpty() ? deliveringShipperOrders.get(0) : null;
-            int shipperDeliveringCount = orderDAO.getTotalOrdersCountByShipper(shipperId, null, "Delivering", null, null);
-            int shipperCompletedCount = orderDAO.getTotalOrdersCountByShipper(shipperId, null, "Completed", null, null);
+            int shipperDeliveringCount = shipperTripDAO.getTotalOrdersCountByShipper(shipperId, null, "Delivering", null, null);
+            int shipperCompletedCount = shipperTripDAO.getTotalOrdersCountByShipper(shipperId, null, "Completed", null, null);
 
-            Map<String, Object> dailyStats = orderDAO.getShipperDailyStats(shipperId);
-            List<Order> readyOrders = orderDAO.getReadyOrdersForShipper(shipperId, 5);
-            List<Order> deliveredOrders = orderDAO.getDeliveredOrdersForShipper(shipperId, 5);
+            Map<String, Object> dailyStats = shipperTripDAO.getShipperDailyStats(shipperId);
+            List<Order> readyOrders = shipperTripDAO.getReadyOrdersForShipper(shipperId, 5);
+            List<Order> deliveredOrders = shipperTripDAO.getDeliveredOrdersForShipper(shipperId, 5);
 
             request.setAttribute("shipperManagedZone", managedZone);
             request.setAttribute("shipperActiveOrder", shipperActiveOrder);
