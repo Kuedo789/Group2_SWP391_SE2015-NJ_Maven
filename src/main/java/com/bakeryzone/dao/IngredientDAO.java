@@ -24,7 +24,7 @@ public class IngredientDAO {
                      "ORDER BY i.Ingredient_ID DESC";
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Ingredient ing = new Ingredient(
                     rs.getString("Ingredient_ID"),

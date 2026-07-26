@@ -21,7 +21,7 @@
     <meta name="description"
           content="Sử dụng điểm tích lũy của bạn để đổi voucher giảm giá hấp dẫn tại BakeryZone.">
     <link rel="stylesheet"
-          href="${pageContext.request.contextPath}/assets/css/customer/rewardsExchange.css">
+          href="${pageContext.request.contextPath}/assets/css/customer/rewardsExchange.css?v=2">
 </head>
 
 <body>
@@ -182,21 +182,16 @@
                             --%>
                             <c:choose>
                                 <c:when test="${canAfford}">
-                                    <form method="post"
-                                          action="${pageContext.request.contextPath}/rewards"
-                                          id="redeemForm-${v.voucherId}"
-                                          onsubmit="return confirmRedeem(${v.voucherId}, ${v.pointCost})">
-                                        <input type="hidden" name="voucherId" value="${v.voucherId}">
-                                        <button type="submit"
-                                                class="rw-redeem-btn"
-                                                id="redeem-btn-${v.voucherId}"
-                                                title="Đổi bằng ${v.pointCost} điểm">
-                                            ✨ Đổi bằng
-                                            <fmt:formatNumber value="${v.pointCost}"
-                                                              type="number" maxFractionDigits="0" />
-                                            Điểm
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                            class="rw-redeem-btn"
+                                            id="redeem-btn-${v.voucherId}"
+                                            title="Đổi bằng ${v.pointCost} điểm"
+                                            onclick="showRedeemModal(${v.voucherId}, ${v.pointCost})">
+                                        ✨ Đổi bằng
+                                        <fmt:formatNumber value="${v.pointCost}"
+                                                          type="number" maxFractionDigits="0" />
+                                        Điểm
+                                    </button>
                                 </c:when>
 
                                 <c:otherwise>
@@ -230,23 +225,117 @@
         </c:otherwise>
     </c:choose>
 
+    <!-- Custom Modal for Redeem Confirmation -->
+    <div id="redeemModal" class="rw-modal-overlay">
+        <div class="rw-modal">
+            <div class="rw-modal-header">
+                <h3>Xác nhận đổi thưởng</h3>
+            </div>
+            <div class="rw-modal-body">
+                <p>Bạn sẽ tiêu <span id="modalPointCost" class="rw-highlight"></span> điểm để nhận voucher này.</p>
+                <p>Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="rw-modal-footer">
+                <button type="button" class="rw-btn-cancel" onclick="closeRedeemModal()">Hủy</button>
+                <button type="button" class="rw-btn-confirm" id="btnConfirmRedeem" onclick="executeRedeem()">Đổi ngay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="rw-toast-container"></div>
+
 </main>
 
 <jsp:include page="../common/footer.jsp" />
 <jsp:include page="../common/scripts.jsp" />
 
 <script>
-    /**
-     * Confirm dialog before submitting a redemption form.
-     * Returns false to cancel, true to allow form submission.
-     */
-    function confirmRedeem(voucherId, pointCost) {
+    let currentVoucherId = null;
+
+    function showRedeemModal(voucherId, pointCost) {
+        currentVoucherId = voucherId;
         const formatter = new Intl.NumberFormat('vi-VN');
-        return window.confirm(
-            'Xác nhận đổi thưởng?\n\n' +
-            'Bạn sẽ tiêu ' + formatter.format(pointCost) + ' điểm để nhận voucher này.\n' +
-            'Hành động này không thể hoàn tác.'
-        );
+        document.getElementById('modalPointCost').textContent = formatter.format(pointCost);
+        document.getElementById('redeemModal').classList.add('active');
+    }
+
+    function closeRedeemModal() {
+        currentVoucherId = null;
+        document.getElementById('redeemModal').classList.remove('active');
+    }
+
+    function executeRedeem() {
+        if (!currentVoucherId) return;
+        
+        const btn = document.getElementById('btnConfirmRedeem');
+        const originalText = btn.textContent;
+        btn.textContent = 'Đang xử lý...';
+        btn.disabled = true;
+
+        const formData = new URLSearchParams();
+        formData.append('voucherId', currentVoucherId);
+
+        fetch('${pageContext.request.contextPath}/rewards', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData.toString()
+        })
+        .then(response => {
+            if (!response.ok && response.status === 401) {
+                window.location.href = '${pageContext.request.contextPath}/login';
+                return null;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data) return; // Handled by 401 redirect
+            
+            closeRedeemModal();
+            btn.textContent = originalText;
+            btn.disabled = false;
+
+            if (data.success) {
+                showToast('success', data.message);
+                // Update point balance in the UI
+                if (data.newPoints !== undefined) {
+                    const pointDisplays = document.querySelectorAll('.rw-points-value');
+                    const formatter = new Intl.NumberFormat('vi-VN');
+                    pointDisplays.forEach(el => el.textContent = formatter.format(data.newPoints));
+                }
+            } else {
+                showToast('error', data.message);
+            }
+        })
+        .catch(err => {
+            console.error('Error redeeming voucher:', err);
+            closeRedeemModal();
+            btn.textContent = originalText;
+            btn.disabled = false;
+            showToast('error', 'Đã xảy ra lỗi hệ thống, vui lòng thử lại.');
+        });
+    }
+
+    function showToast(type, message) {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'rw-toast ' + type;
+        
+        const icon = type === 'success' ? '✅' : '⚠️';
+        toast.innerHTML = '<span>' + icon + '</span><span>' + message + '</span>';
+        
+        container.appendChild(toast);
+        
+        // Auto remove after 4 seconds
+        setTimeout(() => {
+            toast.classList.add('hide');
+            toast.addEventListener('animationend', () => {
+                toast.remove();
+            });
+        }, 4000);
     }
 </script>
 

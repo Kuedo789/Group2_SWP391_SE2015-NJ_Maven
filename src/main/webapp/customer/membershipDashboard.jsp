@@ -236,7 +236,7 @@
                                     <span class="badge-icon">🎖</span>
                                 </c:otherwise>
                             </c:choose>
-                            <span>${membership.currentTier.tierName}</span>
+                            <span>${membership.currentTier.vietnameseName}</span>
                         </div>
 
                         <div class="ms-tier-info">
@@ -247,7 +247,7 @@
                                         membership.currentTier.tierName eq 'BRONZE'  ? 'BRONZE'  :
                                         membership.currentTier.tierName eq 'SILVER'  ? 'SILVER'  :
                                         membership.currentTier.tierName eq 'GOLD'    ? 'GOLD'    : 'DIAMOND'}">
-                                 <c:out value="${membership.currentTier.tierName}" />
+                                 <c:out value="${membership.currentTier.vietnameseName}" />
                             </div>
 
                             <c:if test="${not empty membership.currentTier.description}">
@@ -309,7 +309,7 @@
                                     <span class="ms-progress-title">
                                         Tiến độ lên hạng
                                         <span class="tier-chip chip-${membership.nextTier.tierName}">
-                                            ${membership.nextTier.tierName}
+                                            ${membership.nextTier.vietnameseName}
                                         </span>
                                     </span>
                                     <span class="ms-progress-meta">
@@ -341,8 +341,8 @@
                                 </div>
 
                                 <div class="ms-progress-labels">
-                                    <span>${membership.currentTier.tierName}</span>
-                                    <span>${membership.nextTier.tierName}</span>
+                                    <span>${membership.currentTier.vietnameseName}</span>
+                                    <span>${membership.nextTier.vietnameseName}</span>
                                 </div>
                             </c:otherwise>
                         </c:choose>
@@ -382,7 +382,7 @@
                                         <tr class="${tier.tierId eq membership.currentTierId ? 'active-tier-row' : ''}">
                                             <td>
                                                 <span class="tier-chip chip-${tier.tierName}">
-                                                    ${tier.tierName}
+                                                    ${tier.vietnameseName}
                                                 </span>
                                             </td>
                                             <td>

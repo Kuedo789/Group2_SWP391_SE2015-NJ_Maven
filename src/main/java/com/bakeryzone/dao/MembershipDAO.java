@@ -41,6 +41,44 @@ public class MembershipDAO {
      *                UserMembership row exists for the given user.
      */
     public UserMembership getMembershipByUserId(String userId) {
+        UserMembership um = getMembershipByUserIdRaw(userId);
+        if (um != null && um.getTotalSpending() != null && um.getCurrentTier() != null) {
+            MembershipTier qualifyingTier = getHighestQualifyingTier(um.getTotalSpending());
+            if (qualifyingTier != null && qualifyingTier.getMinSpending().compareTo(um.getCurrentTier().getMinSpending()) > 0) {
+                // Perform JIT upgrade in database
+                setTier(userId, qualifyingTier.getTierId());
+                // Re-fetch the updated membership with proper next tier joins
+                um = getMembershipByUserIdRaw(userId);
+            }
+        }
+        return um;
+    }
+
+    public MembershipTier getHighestQualifyingTier(BigDecimal spending) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn != null) {
+                String sql = "SELECT TierID, TierName, MinSpending, PointMultiplier, MonthlyVouchers, Description "
+                           + "FROM MembershipTier WHERE MinSpending <= ? ORDER BY MinSpending DESC LIMIT 1";
+                ps = conn.prepareStatement(sql);
+                ps.setBigDecimal(1, spending);
+                rs = ps.executeQuery();
+                if (rs.next()) {
+                    return mapTier(rs, "");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, rs);
+        }
+        return null;
+    }
+
+    public UserMembership getMembershipByUserIdRaw(String userId) {
 
         /*
          * Strategy:
@@ -754,6 +792,28 @@ public class MembershipDAO {
             close(conn, ps, rs);
         }
         return list;
+    }
+
+    public boolean removeVoucherByCode(String userId, String voucherCode) {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn != null) {
+                // We use IN to delete the specific voucher ID because MySQL doesn't easily allow DELETE JOIN in all versions
+                String sql = "DELETE FROM UserVoucher WHERE UserID = ? AND IsUsed = 0 AND VoucherID IN (SELECT VoucherID FROM Voucher WHERE VoucherCode = ?)";
+                ps = conn.prepareStatement(sql);
+                ps.setString(1, userId);
+                ps.setString(2, voucherCode);
+                int rows = ps.executeUpdate();
+                return rows > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, null);
+        }
+        return false;
     }
 
     public boolean assignVoucher(String userId, int voucherId) {

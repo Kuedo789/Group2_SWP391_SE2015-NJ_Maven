@@ -120,6 +120,7 @@
                                  <th style="min-width: 200px;">Hình ảnh & Tên bánh</th>
                                  <th style="white-space: nowrap; width: 140px;">Danh mục</th>
                                  <th style="white-space: nowrap; width: 150px;">Giá & Giờ công</th>
+                             
                                  <th class="text-center" style="white-space: nowrap; width: 150px; text-align: center;">Cho phép ghi chữ</th>
                                  <th class="text-center" style="white-space: nowrap; width: 120px; text-align: center;">Trạng thái</th>
                                  <th class="text-center" style="white-space: nowrap; width: 130px; text-align: center;">Thao tác</th>
@@ -167,6 +168,7 @@
                                                      <i class="fa-regular fa-clock me-1" style="color: #aaa;"></i> Giờ công: ${p.estimatedLaborHours} giờ
                                                  </div>
                                              </td>
+                                             
                                              <td class="text-center" style="text-align: center;">
                                                  <c:choose>
                                                      <c:when test="${p.allowsGreeting}">

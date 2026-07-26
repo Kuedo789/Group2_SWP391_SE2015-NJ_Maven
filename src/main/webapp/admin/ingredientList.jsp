@@ -110,34 +110,36 @@
                                          <td class="text-center" style="text-align: center;">${((currentPage - 1) * pageSize) + status.index + 1}</td>
                                          <td class="text-center" style="text-align: center;"><strong>${i.ingredientId}</strong></td>
                                          <td class="text-center" style="text-align: center;">${i.ingredientName}</td>
-                                          <td class="text-center" style="text-align: center;">
-                                              <span class="badge" style="background-color: #f5f5f5; color: #666; border: 1px solid #ddd; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: 4px; display: inline-flex; align-items: center; letter-spacing: 0.5px; white-space: nowrap;">
-                                                  ${i.unitName}
-                                              </span>
-                                          </td>
-                                          <td class="text-center" style="text-align: center;">
-                                              <c:if test="${not empty i.imageUrl}">
-                                                  <c:choose>
-                                                      <c:when test="${i.imageUrl.startsWith('http://') or i.imageUrl.startsWith('https://')}">
-                                                          <c:set var="resolvedUrl" value="${i.imageUrl}" />
-                                                      </c:when>
-                                                      <c:otherwise>
-                                                          <c:set var="resolvedUrl" value="${pageContext.request.contextPath}/${i.imageUrl}" />
-                                                      </c:otherwise>
-                                                  </c:choose>
-                                                  <img src="${resolvedUrl}" alt="${i.ingredientName}" style="width: 64px; height: 64px; border-radius: 8px; border: 1px solid #ddd; object-fit: cover;">
-                                              </c:if>
-                                              <c:if test="${empty i.imageUrl}">
-                                                  <div style="width: 64px; height: 64px; border-radius: 8px; border: 1px dashed #ccc; background-color: #fafafa; display: inline-flex; align-items: center; justify-content: center;" title="Không có ảnh">
-                                                      <i class="fa-regular fa-image text-muted" style="font-size: 20px;"></i>
-                                                  </div>
-                                              </c:if>
-                                          </td>
-                                          <td class="text-center" style="text-align: center; white-space: nowrap;">
-                                              <span style="font-size: 14.5px; font-weight: 600; color: var(--cz-primary);">
-                                                  <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0"/>đ <span style="font-weight: 500; color: var(--cz-text-muted); font-size: 13px;">/ ${i.unitName}</span>
-                                              </span>
-                                          </td>
+                                         <td class="text-center" style="text-align: center;">
+                                             <span class="badge" style="background-color: #f5f5f5; color: #666; border: 1px solid #ddd; font-size: 11px; font-weight: 500; padding: 5px 10px; border-radius: 4px; display: inline-flex; align-items: center; letter-spacing: 0.5px; white-space: nowrap;">
+                                                 ${i.unitName}
+                                             </span>
+                                         </td>
+                                         <td class="text-center" style="text-align: center;">
+                                             <c:if test="${not empty i.imageUrl}">
+                                                 <c:choose>
+                                                     <c:when test="${i.imageUrl.startsWith('http://') or i.imageUrl.startsWith('https://')}">
+                                                         <c:set var="resolvedUrl" value="${i.imageUrl}" />
+                                                     </c:when>
+                                                     <c:otherwise>
+                                                         <c:set var="resolvedUrl" value="${pageContext.request.contextPath}/${i.imageUrl}" />
+                                                     </c:otherwise>
+                                                 </c:choose>
+                                                 <img src="${resolvedUrl}" alt="${i.ingredientName}" style="width: 64px; height: 64px; border-radius: 8px; border: 1px solid #ddd; object-fit: cover;">
+                                             </c:if>
+                                             <c:if test="${empty i.imageUrl}">
+                                                 <div style="width: 64px; height: 64px; border-radius: 8px; border: 1px dashed #ccc; background-color: #fafafa; display: inline-flex; align-items: center; justify-content: center;" title="Không có ảnh">
+                                                     <i class="fa-regular fa-image text-muted" style="font-size: 20px;"></i>
+                                                 </div>
+                                             </c:if>
+                                         </td>
+                                         <td class="text-center" style="text-align: center; white-space: nowrap;">
+                                             <span style="font-size: 14.5px; font-weight: 600; color: var(--cz-primary);">
+                                                 <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0"/>đ <span style="font-weight: 500; color: var(--cz-text-muted); font-size: 13px;">/ ${i.unitName}</span>
+                                             </span>
+                                         </td>
+
+                     
                                         <td class="text-center" style="text-align: center;">
                                             <div class="actions-cell" style="justify-content: center; display: inline-flex; gap: 8px;">
                                                 <a href="${pageContext.request.contextPath}/admin/ingredient?action=edit&id=${i.ingredientId}&page=${currentPage}&pageSize=${pageSize}&search=${search}&unitId=${unitId}&sortBy=${sortBy}" class="btn-action-edit" title="Chỉnh sửa">

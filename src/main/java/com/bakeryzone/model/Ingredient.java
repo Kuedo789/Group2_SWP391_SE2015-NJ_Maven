@@ -9,6 +9,7 @@ public class Ingredient {
     private String imageUrl;
     private boolean enable;
 
+
     public Ingredient() {
         this.unitId = "G";
         this.enable = true;
