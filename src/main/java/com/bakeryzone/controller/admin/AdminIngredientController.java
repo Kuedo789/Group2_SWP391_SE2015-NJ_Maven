@@ -164,6 +164,7 @@ public class AdminIngredientController extends HttpServlet {
 
         request.setAttribute("ingredient", ing);
         request.setAttribute("unitMeasures", unitMeasureDAO.getAllUnitMeasures());
+        request.setAttribute("isUsed", ingredientDAO.isIngredientUsedInBOM(id));
         request.setAttribute("formAction", "update");
         
         request.getRequestDispatcher("/admin/ingredientDetail.jsp").forward(request, response);
@@ -242,6 +243,17 @@ public class AdminIngredientController extends HttpServlet {
             id = "ING-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         }
 
+        boolean isUsed = false;
+        if (!isNew && id != null && !id.trim().isEmpty() && !"new".equalsIgnoreCase(id)) {
+            isUsed = ingredientDAO.isIngredientUsedInBOM(id);
+            if (isUsed) {
+                Ingredient existing = ingredientDAO.getIngredientById(id);
+                if (existing != null) {
+                    unitId = existing.getUnitId();
+                }
+            }
+        }
+
         Part filePart = null;
         String imageError = null;
         try {
@@ -289,6 +301,7 @@ public class AdminIngredientController extends HttpServlet {
             Ingredient ing = new Ingredient(id, name, price, unitId, imageUrl, true);
             request.setAttribute("ingredient", ing);
             request.setAttribute("unitMeasures", unitMeasureDAO.getAllUnitMeasures());
+            request.setAttribute("isUsed", isUsed);
             
             String errorMsg = "Dữ liệu nhập vào không hợp lệ. Tên nguyên liệu tối thiểu 2 ký tự, đơn giá phải lớn hơn hoặc bằng 0.";
             if (imageError != null) {
