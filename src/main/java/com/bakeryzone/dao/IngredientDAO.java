@@ -24,7 +24,7 @@ public class IngredientDAO {
                      "ORDER BY i.Ingredient_ID DESC";
         try (Connection conn = DBContext.getJDBCConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 Ingredient ing = new Ingredient(
                     rs.getString("Ingredient_ID"),
@@ -225,6 +225,24 @@ public class IngredientDAO {
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to delete ingredient: " + id, e);
+        }
+        return false;
+    }
+
+    public boolean isIngredientUsedInBOM(String ingredientId) {
+        if (ingredientId == null || ingredientId.trim().isEmpty())
+            return false;
+        String sql = "SELECT COUNT(*) FROM template_ingredient_detail WHERE Ingredient_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, ingredientId.trim());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to check if ingredient is used in BOM: " + ingredientId, e);
         }
         return false;
     }

@@ -57,13 +57,15 @@ public class CustomerCheckoutServlet extends HttpServlet {
         @SuppressWarnings("unchecked")
         List<String> checkoutSelectedItems = (List<String>) session.getAttribute("checkoutSelectedItems");
         @SuppressWarnings("unchecked")
-        List<com.bakeryzone.model.CartItemDTO> directCheckoutItems = (List<com.bakeryzone.model.CartItemDTO>) session.getAttribute("directCheckoutItems");
-        
+        List<com.bakeryzone.model.CartItemDTO> directCheckoutItems = (List<com.bakeryzone.model.CartItemDTO>) session
+                .getAttribute("directCheckoutItems");
+
         if (directCheckoutItems != null && !directCheckoutItems.isEmpty()) {
             checkoutCartItems = directCheckoutItems;
             for (com.bakeryzone.model.CartItemDTO item : checkoutCartItems) {
                 if (item.getUnitPrice() != null) {
-                    productTotalSum = productTotalSum.add(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                    productTotalSum = productTotalSum
+                            .add(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
                 }
             }
         } else if (checkoutSelectedItems != null && allCartItems != null) {
@@ -71,7 +73,8 @@ public class CustomerCheckoutServlet extends HttpServlet {
                 if (item.isActive() && checkoutSelectedItems.contains(item.getCartItemId())) {
                     checkoutCartItems.add(item);
                     if (item.getUnitPrice() != null) {
-                        productTotalSum = productTotalSum.add(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
+                        productTotalSum = productTotalSum
+                                .add(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
                     }
                 }
             }
@@ -88,29 +91,34 @@ public class CustomerCheckoutServlet extends HttpServlet {
         if (addressList != null && !addressList.isEmpty()) {
             String selectedParam = request.getParameter("selectedAddressId");
             selectedAddress = addressList.stream()
-                .filter(addr -> String.valueOf(addr.getAddressId()).equals(selectedParam))
-                .findFirst()
-                .orElse(addressList.stream()
-                    .filter(DeliveryAddress::isDefault)
+                    .filter(addr -> String.valueOf(addr.getAddressId()).equals(selectedParam))
                     .findFirst()
-                    .orElse(addressList.get(0)));
+                    .orElse(addressList.stream()
+                            .filter(DeliveryAddress::isDefault)
+                            .findFirst()
+                            .orElse(addressList.get(0)));
         }
         request.setAttribute("selectedAddress", selectedAddress);
 
         // Fetch voucher discount from session
         String appliedOrderVoucherCode = (String) session.getAttribute("appliedOrderVoucherCode");
         BigDecimal calculatedOrderDiscount = BigDecimal.ZERO;
-        
+
         if (appliedOrderVoucherCode != null) {
-            com.bakeryzone.model.Voucher orderVoucher = voucherDAO.getVoucherByCodeAndUser(appliedOrderVoucherCode, currentUser.getUserId());
+            com.bakeryzone.model.Voucher orderVoucher = voucherDAO.getVoucherByCodeAndUser(appliedOrderVoucherCode,
+                    currentUser.getUserId());
             if (orderVoucher != null) {
                 // Ensure order meets minimum
-                BigDecimal minOrder = orderVoucher.getMinOrderValue() != null ? orderVoucher.getMinOrderValue() : BigDecimal.ZERO;
+                BigDecimal minOrder = orderVoucher.getMinOrderValue() != null ? orderVoucher.getMinOrderValue()
+                        : BigDecimal.ZERO;
                 if (productTotalSum.compareTo(minOrder) >= 0) {
-                    boolean isPercentage = "PERCENT".equalsIgnoreCase(orderVoucher.getDiscountType()) || "PERCENTAGE".equalsIgnoreCase(orderVoucher.getDiscountType());
+                    boolean isPercentage = "PERCENT".equalsIgnoreCase(orderVoucher.getDiscountType())
+                            || "PERCENTAGE".equalsIgnoreCase(orderVoucher.getDiscountType());
                     if (isPercentage) {
-                        calculatedOrderDiscount = productTotalSum.multiply(orderVoucher.getDiscountValue()).divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
-                        if (orderVoucher.getMaxDiscountAmount() != null && orderVoucher.getMaxDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
+                        calculatedOrderDiscount = productTotalSum.multiply(orderVoucher.getDiscountValue())
+                                .divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
+                        if (orderVoucher.getMaxDiscountAmount() != null
+                                && orderVoucher.getMaxDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
                             calculatedOrderDiscount = calculatedOrderDiscount.min(orderVoucher.getMaxDiscountAmount());
                         }
                     } else {
@@ -123,19 +131,22 @@ public class CustomerCheckoutServlet extends HttpServlet {
                 }
             }
         }
-        
+
         request.setAttribute("checkoutOrderDiscount", calculatedOrderDiscount);
         request.setAttribute("checkoutOrderVoucherCode", appliedOrderVoucherCode);
 
         String appliedShippingVoucherCode = (String) session.getAttribute("appliedShippingVoucherCode");
         request.setAttribute("checkoutShippingVoucherCode", appliedShippingVoucherCode);
-        
+
         if (appliedShippingVoucherCode != null) {
-            com.bakeryzone.model.Voucher shippingVoucher = voucherDAO.getVoucherByCodeAndUser(appliedShippingVoucherCode, currentUser.getUserId());
+            com.bakeryzone.model.Voucher shippingVoucher = voucherDAO
+                    .getVoucherByCodeAndUser(appliedShippingVoucherCode, currentUser.getUserId());
             if (shippingVoucher != null) {
                 request.setAttribute("shippingVoucherType", shippingVoucher.getDiscountType());
                 request.setAttribute("shippingVoucherValue", shippingVoucher.getDiscountValue());
-                request.setAttribute("shippingVoucherMax", shippingVoucher.getMaxDiscountAmount() != null ? shippingVoucher.getMaxDiscountAmount() : BigDecimal.ZERO);
+                request.setAttribute("shippingVoucherMax",
+                        shippingVoucher.getMaxDiscountAmount() != null ? shippingVoucher.getMaxDiscountAmount()
+                                : BigDecimal.ZERO);
             }
         }
 
@@ -162,8 +173,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
         }
 
         @SuppressWarnings("unchecked")
-        List<String> checkedOutCartItemIds =
-                (List<String>) session.getAttribute("checkoutSelectedItems");
+        List<String> checkedOutCartItemIds = (List<String>) session.getAttribute("checkoutSelectedItems");
 
         String action = request.getParameter("action");
         if ("applyVoucherAjax".equals(action)) {
@@ -173,15 +183,16 @@ public class CustomerCheckoutServlet extends HttpServlet {
 
         try {
             // ── 1. Fetch parameters ────────────────────────────────────────────────
-            String addressIdRaw  = request.getParameter("addressId");
-            String timeSlot      = request.getParameter("timeSlot");   // e.g. "08:00 - 09:00"
-            String deliveryDate  = request.getParameter("deliveryDate"); // e.g. "2026-06-19"
-            String note          = request.getParameter("note");
-            String cartDataJson  = request.getParameter("cartData");    // JSON array from localStorage
-            String paymentMethod = request.getParameter("paymentMethod"); // e.g. "BANK_TRANSFER_FULL" or "DIRECT_DEPOSIT_20"
+            String addressIdRaw = request.getParameter("addressId");
+            String timeSlot = request.getParameter("timeSlot"); // e.g. "08:00 - 09:00"
+            String deliveryDate = request.getParameter("deliveryDate"); // e.g. "2026-06-19"
+            String note = request.getParameter("note");
+            String cartDataJson = request.getParameter("cartData"); // JSON array from localStorage
+            String paymentMethod = request.getParameter("paymentMethod"); // e.g. "BANK_TRANSFER_FULL" or
+                                                                          // "DIRECT_DEPOSIT_20"
             String appliedOrderVoucherCode = request.getParameter("appliedOrderVoucherCode");
             String appliedShippingVoucherCode = request.getParameter("appliedShippingVoucherCode");
-            
+
             if (note != null) {
                 note = note.trim();
                 if (note.length() > 100) {
@@ -200,7 +211,8 @@ public class CustomerCheckoutServlet extends HttpServlet {
                                 + " | " + addr.getReceiverPhone()
                                 + " | " + addr.getAddressDetail();
                     }
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {
+                }
             }
 
             if (deliveryAddressStr == null) {
@@ -211,26 +223,26 @@ public class CustomerCheckoutServlet extends HttpServlet {
             // ── 3. Build Delivery Window timestamps ────────────────────────────────
             // timeSlot format: "HH:mm - HH:mm"
             Timestamp deliveryWindowStart = null;
-            Timestamp deliveryWindowEnd   = null;
-            Timestamp orderTime           = new Timestamp(System.currentTimeMillis());
+            Timestamp deliveryWindowEnd = null;
+            Timestamp orderTime = new Timestamp(System.currentTimeMillis());
 
             if (deliveryDate != null && !deliveryDate.trim().isEmpty()
                     && timeSlot != null && !timeSlot.trim().isEmpty()) {
                 try {
                     String[] parts = timeSlot.split("-");
                     String startTime = parts[0].trim(); // e.g. "08:00"
-                    String endTime   = parts[1].trim(); // e.g. "09:00"
+                    String endTime = parts[1].trim(); // e.g. "09:00"
 
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
                     Date startDate = sdf.parse(deliveryDate + " " + startTime);
-                    Date endDate   = sdf.parse(deliveryDate + " " + endTime);
+                    Date endDate = sdf.parse(deliveryDate + " " + endTime);
                     deliveryWindowStart = new Timestamp(startDate.getTime());
-                    deliveryWindowEnd   = new Timestamp(endDate.getTime());
+                    deliveryWindowEnd = new Timestamp(endDate.getTime());
                 } catch (Exception e) {
                     System.err.println("[WARN] Failed to parse delivery date/time: " + e.getMessage());
                 }
             }
-            
+
             // Fallback for missing delivery date/time to avoid DB NOT NULL constraint error
             if (deliveryWindowStart == null || deliveryWindowEnd == null) {
                 long tomorrow = System.currentTimeMillis() + 24L * 3600 * 1000;
@@ -239,7 +251,8 @@ public class CustomerCheckoutServlet extends HttpServlet {
             }
 
             // ── 4. Parse cart JSON to OrderItem list ───────────────────────────────
-            // Cart item shape (from localStorage): { id, name, price, qty, image, desc, templateId? }
+            // Cart item shape (from localStorage): { id, name, price, qty, image, desc,
+            // templateId? }
             Order order = new Order();
             String orderNo = "ORD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             order.setOrderNo(orderNo);
@@ -255,21 +268,21 @@ public class CustomerCheckoutServlet extends HttpServlet {
             order.setDeliveryWindowEnd(deliveryWindowEnd);
             order.setDeliveryAddress(deliveryAddressStr);
 
-
             BigDecimal productTotal = BigDecimal.ZERO;
 
             if (cartDataJson != null && !cartDataJson.trim().isEmpty() && !cartDataJson.equals("[]")) {
                 JsonArray cartArray = JsonParser.parseString(cartDataJson).getAsJsonArray();
 
                 for (JsonElement el : cartArray) {
-                    if (el.isJsonNull()) continue;
+                    if (el.isJsonNull())
+                        continue;
                     JsonObject cartItem = el.getAsJsonObject();
 
-                    String itemId       = getStr(cartItem, "id");
-                    String itemName     = getStr(cartItem, "name");
-                    String itemImage    = getStr(cartItem, "image");
-                    String templateId   = getStr(cartItem, "templateId");
-                    
+                    String itemId = getStr(cartItem, "id");
+                    String itemName = getStr(cartItem, "name");
+                    String itemImage = getStr(cartItem, "image");
+                    String templateId = getStr(cartItem, "templateId");
+
                     String ctxPath = request.getContextPath();
                     if (itemImage != null) {
                         if (itemImage.startsWith(ctxPath + "/")) {
@@ -282,11 +295,11 @@ public class CustomerCheckoutServlet extends HttpServlet {
                         }
                     }
                     String customCakeId = getStr(cartItem, "customCakeId");
-                    
+
                     double price = 0.0;
                     String finalCcId = (itemId != null && itemId.startsWith("CC-")) ? itemId : customCakeId;
                     String finalTplId = (templateId != null && !templateId.isEmpty()) ? templateId : itemId;
-                    
+
                     if (finalCcId != null && finalCcId.startsWith("CC-")) {
                         com.bakeryzone.dao.CustomCakeDAO ccDao = new com.bakeryzone.dao.CustomCakeDAO();
                         com.bakeryzone.model.CustomCake cc = ccDao.getCustomCakeById(finalCcId);
@@ -314,7 +327,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
                         price = cartItem.has("price") ? cartItem.get("price").getAsDouble() : 0;
                     }
 
-                    int qty             = cartItem.has("qty")   ? cartItem.get("qty").getAsInt()   : 1;
+                    int qty = cartItem.has("qty") ? cartItem.get("qty").getAsInt() : 1;
 
                     BigDecimal itemPrice = BigDecimal.valueOf(price);
                     productTotal = productTotal.add(itemPrice.multiply(BigDecimal.valueOf(qty)));
@@ -325,7 +338,8 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     oi.setItemName(itemName);
                     oi.setItemImage(itemImage);
 
-                    if ((itemId != null && itemId.startsWith("CC-")) || (customCakeId != null && customCakeId.startsWith("CC-"))) {
+                    if ((itemId != null && itemId.startsWith("CC-"))
+                            || (customCakeId != null && customCakeId.startsWith("CC-"))) {
                         // 1. Bánh tự thiết kế từ Studio Custom
                         oi.setCustomCakeId(finalCcId);
                         oi.setTemplateId(null);
@@ -339,12 +353,13 @@ public class CustomerCheckoutServlet extends HttpServlet {
                 }
             }
 
-if (order.getItems().isEmpty()) {
+            if (order.getItems().isEmpty()) {
                 response.sendRedirect(request.getContextPath() + "/checkout?error=empty_cart");
                 return;
             }
 
-            // 1. Resolve Shipping Fee (Parse from request, fallback to 25k default if missing)
+            // 1. Resolve Shipping Fee (Parse from request, fallback to 25k default if
+            // missing)
             String shippingFeeStr = request.getParameter("shippingFee");
             BigDecimal shippingFee = BigDecimal.valueOf(25000); // Default fallback
             if (shippingFeeStr != null && !shippingFeeStr.trim().isEmpty()) {
@@ -361,14 +376,16 @@ if (order.getItems().isEmpty()) {
             if (appliedOrderVoucherCode != null && !appliedOrderVoucherCode.trim().isEmpty()) {
                 orderVoucher = voucherDAO.getVoucherByCodeAndUser(appliedOrderVoucherCode, currentUser.getUserId());
                 if (orderVoucher != null && "ORDER".equalsIgnoreCase(orderVoucher.getVoucherScope())) {
-                    BigDecimal minOrder = orderVoucher.getMinOrderValue() != null ? orderVoucher.getMinOrderValue() : BigDecimal.ZERO;
+                    BigDecimal minOrder = orderVoucher.getMinOrderValue() != null ? orderVoucher.getMinOrderValue()
+                            : BigDecimal.ZERO;
                     if (productTotal.compareTo(minOrder) >= 0) {
-                        boolean isPercentage = "PERCENT".equalsIgnoreCase(orderVoucher.getDiscountType()) 
-                                            || "PERCENTAGE".equalsIgnoreCase(orderVoucher.getDiscountType());
+                        boolean isPercentage = "PERCENT".equalsIgnoreCase(orderVoucher.getDiscountType())
+                                || "PERCENTAGE".equalsIgnoreCase(orderVoucher.getDiscountType());
                         if (isPercentage) {
                             appliedOrderDiscount = productTotal.multiply(orderVoucher.getDiscountValue())
-                                                    .divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
-                            if (orderVoucher.getMaxDiscountAmount() != null && orderVoucher.getMaxDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
+                                    .divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
+                            if (orderVoucher.getMaxDiscountAmount() != null
+                                    && orderVoucher.getMaxDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
                                 appliedOrderDiscount = appliedOrderDiscount.min(orderVoucher.getMaxDiscountAmount());
                             }
                         } else {
@@ -382,17 +399,22 @@ if (order.getItems().isEmpty()) {
             BigDecimal appliedShippingDiscount = BigDecimal.ZERO;
             com.bakeryzone.model.Voucher shippingVoucher = null;
             if (appliedShippingVoucherCode != null && !appliedShippingVoucherCode.trim().isEmpty()) {
-                shippingVoucher = voucherDAO.getVoucherByCodeAndUser(appliedShippingVoucherCode, currentUser.getUserId());
+                shippingVoucher = voucherDAO.getVoucherByCodeAndUser(appliedShippingVoucherCode,
+                        currentUser.getUserId());
                 if (shippingVoucher != null && "SHIPPING".equalsIgnoreCase(shippingVoucher.getVoucherScope())) {
-                    BigDecimal minOrder = shippingVoucher.getMinOrderValue() != null ? shippingVoucher.getMinOrderValue() : BigDecimal.ZERO;
+                    BigDecimal minOrder = shippingVoucher.getMinOrderValue() != null
+                            ? shippingVoucher.getMinOrderValue()
+                            : BigDecimal.ZERO;
                     if (productTotal.compareTo(minOrder) >= 0) {
-                        boolean isPercentage = "PERCENT".equalsIgnoreCase(shippingVoucher.getDiscountType()) 
-                                            || "PERCENTAGE".equalsIgnoreCase(shippingVoucher.getDiscountType());
+                        boolean isPercentage = "PERCENT".equalsIgnoreCase(shippingVoucher.getDiscountType())
+                                || "PERCENTAGE".equalsIgnoreCase(shippingVoucher.getDiscountType());
                         if (isPercentage) {
                             appliedShippingDiscount = shippingFee.multiply(shippingVoucher.getDiscountValue())
-                                                    .divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
-                            if (shippingVoucher.getMaxDiscountAmount() != null && shippingVoucher.getMaxDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
-                                appliedShippingDiscount = appliedShippingDiscount.min(shippingVoucher.getMaxDiscountAmount());
+                                    .divide(BigDecimal.valueOf(100), 0, java.math.RoundingMode.HALF_UP);
+                            if (shippingVoucher.getMaxDiscountAmount() != null
+                                    && shippingVoucher.getMaxDiscountAmount().compareTo(BigDecimal.ZERO) > 0) {
+                                appliedShippingDiscount = appliedShippingDiscount
+                                        .min(shippingVoucher.getMaxDiscountAmount());
                             }
                         } else {
                             appliedShippingDiscount = shippingVoucher.getDiscountValue();
@@ -401,14 +423,14 @@ if (order.getItems().isEmpty()) {
                     }
                 }
             }
-            
+
             // 3. Compute Final Total Cost
             BigDecimal finalShippingFee = shippingFee.subtract(appliedShippingDiscount);
             BigDecimal totalCost = productTotal.add(finalShippingFee).subtract(appliedOrderDiscount);
             if (totalCost.compareTo(BigDecimal.ZERO) < 0) {
                 totalCost = BigDecimal.ZERO;
             }
-            
+
             // 4. Determine Deposit and COD Splits based on Payment Method
             BigDecimal deposit = BigDecimal.ZERO;
             BigDecimal remainingCod = totalCost;
@@ -417,16 +439,19 @@ if (order.getItems().isEmpty()) {
                 deposit = totalCost; // Full upfront bank transfer
                 remainingCod = BigDecimal.ZERO;
             } else {
-                // Calculate upfront deposit based on system settings (depositPercent, default 30%)
+                // Calculate upfront deposit based on system settings (depositPercent, default
+                // 30%)
                 com.bakeryzone.dao.SettingDAO settingDAO = new com.bakeryzone.dao.SettingDAO();
                 java.util.Map<String, Object> settingsMap = settingDAO.getSettings();
                 double depPctVal = 30.0;
                 if (settingsMap != null && settingsMap.containsKey("depositPercent")) {
                     try {
                         depPctVal = Double.parseDouble(settingsMap.get("depositPercent").toString());
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                    }
                 }
-                deposit = totalCost.multiply(BigDecimal.valueOf(depPctVal / 100.0)).setScale(0, java.math.RoundingMode.HALF_UP);
+                deposit = totalCost.multiply(BigDecimal.valueOf(depPctVal / 100.0)).setScale(0,
+                        java.math.RoundingMode.HALF_UP);
                 remainingCod = totalCost.subtract(deposit);
             }
 
@@ -444,14 +469,16 @@ if (order.getItems().isEmpty()) {
             }
 
             // ── 5. Persist order ───────────────────────────────────────────────────
-            System.out.println("[INFO] Attempting to place order: " + orderNo 
-                    + " for customerId: " + order.getCustomerId() 
+            System.out.println("[INFO] Attempting to place order: " + orderNo
+                    + " for customerId: " + order.getCustomerId()
                     + " | deliveryWindow: " + order.getDeliveryWindowStart()
                     + " | cart items size: " + order.getItems().size());
-            
+
             int waitingCount = orderDAO.countWaitingPaymentByCustomer(order.getCustomerId());
             if (waitingCount >= 3 && deposit.compareTo(BigDecimal.ZERO) > 0) {
-                response.sendRedirect(request.getContextPath() + "/checkout?error=" + java.net.URLEncoder.encode("Bạn đang có quá 3 đơn hàng chờ thanh toán. Vui lòng thanh toán hoặc hủy bớt trước khi đặt thêm.", "UTF-8"));
+                response.sendRedirect(request.getContextPath() + "/checkout?error=" + java.net.URLEncoder.encode(
+                        "Bạn đang có quá 3 đơn hàng chờ thanh toán. Vui lòng thanh toán hoặc hủy bớt trước khi đặt thêm.",
+                        "UTF-8"));
                 return;
             }
 
@@ -484,10 +511,12 @@ if (order.getItems().isEmpty()) {
                 session.removeAttribute("appliedShippingVoucherId");
                 session.removeAttribute("appliedShippingVoucherCode");
 
-                // Redirect to bank transfer if there is any deposit required (Full transfer or 30% COD deposit)
+                // Redirect to bank transfer if there is any deposit required (Full transfer or
+                // 30% COD deposit)
                 if (deposit.compareTo(BigDecimal.ZERO) > 0) {
                     String depositEncoded = java.net.URLEncoder.encode(deposit.toPlainString(), "UTF-8");
-                    response.sendRedirect(request.getContextPath() + "/bank-transfer?orderNo=" + orderNo + "&total=" + depositEncoded);
+                    response.sendRedirect(request.getContextPath() + "/bank-transfer?orderNo=" + orderNo + "&total="
+                            + depositEncoded);
                 } else {
                     response.sendRedirect(request.getContextPath() + "/order-success?orderNo=" + orderNo);
                 }
@@ -501,10 +530,11 @@ if (order.getItems().isEmpty()) {
         }
     }
 
-    private void handleApplyVoucherAjax(HttpServletRequest request, HttpServletResponse response, String userId) throws IOException {
+    private void handleApplyVoucherAjax(HttpServletRequest request, HttpServletResponse response, String userId)
+            throws IOException {
         String voucherCode = request.getParameter("voucherCode");
         String subtotalStr = request.getParameter("subtotal");
-        
+
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
@@ -512,26 +542,29 @@ if (order.getItems().isEmpty()) {
             response.getWriter().write("{\"success\": false, \"error\": \"Vui lòng nhập mã voucher.\"}");
             return;
         }
-        
+
         BigDecimal subtotal = BigDecimal.ZERO;
         if (subtotalStr != null && !subtotalStr.trim().isEmpty()) {
             try {
                 subtotal = new BigDecimal(subtotalStr.trim());
-            } catch (Exception e) {}
+            } catch (Exception e) {
+            }
         }
-        
+
         com.bakeryzone.model.Voucher v = voucherDAO.getVoucherByCodeAndUser(voucherCode.trim(), userId);
         if (v == null) {
-            response.getWriter().write("{\"success\": false, \"error\": \"Mã giảm giá không hợp lệ hoặc đã hết hạn.\"}");
+            response.getWriter()
+                    .write("{\"success\": false, \"error\": \"Mã giảm giá không hợp lệ hoặc đã hết hạn.\"}");
             return;
         }
-        
+
         BigDecimal minOrder = v.getMinOrderValue() != null ? v.getMinOrderValue() : BigDecimal.ZERO;
         if (subtotal.compareTo(minOrder) < 0) {
-            response.getWriter().write("{\"success\": false, \"error\": \"Chưa đạt giá trị đơn tối thiểu: " + minOrder.longValue() + "đ\"}");
+            response.getWriter().write("{\"success\": false, \"error\": \"Chưa đạt giá trị đơn tối thiểu: "
+                    + minOrder.longValue() + "đ\"}");
             return;
         }
-        
+
         JsonObject json = new JsonObject();
         json.addProperty("success", true);
         json.addProperty("code", v.getVoucherCode());
@@ -539,13 +572,14 @@ if (order.getItems().isEmpty()) {
         json.addProperty("discountType", v.getDiscountType());
         json.addProperty("discountValue", v.getDiscountValue().doubleValue());
         json.addProperty("maxDiscount", v.getMaxDiscountAmount() != null ? v.getMaxDiscountAmount().doubleValue() : 0);
-        
+
         response.getWriter().write(json.toString());
     }
 
     /** Safely get a String field from a JsonObject, returns null if missing/null */
     private String getStr(JsonObject obj, String key) {
-        if (obj == null || !obj.has(key) || obj.get(key).isJsonNull()) return null;
+        if (obj == null || !obj.has(key) || obj.get(key).isJsonNull())
+            return null;
         return obj.get(key).getAsString();
     }
 }

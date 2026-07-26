@@ -289,13 +289,19 @@
 
                                  <div class="col-md-6">
                                      <label class="form-label-cz">Đơn vị đo <span>*</span></label>
-                                     <select class="form-select-cz" id="unitMeasure" name="unitMeasure" required style="height: 48px; border-radius: 8px;">
+                                     <select class="form-select-cz" id="unitMeasure" name="unitMeasure" required style="height: 48px; border-radius: 8px;" ${isUsed ? 'disabled' : ''}>
                                          <c:forEach var="u" items="${unitMeasures}">
                                              <option value="${u.unitId}" ${ingredient.unitMeasure eq u.unitId ? 'selected' : ''}>
                                                  ${u.unitName} (${u.unitId})
                                              </option>
                                          </c:forEach>
                                      </select>
+                                     <c:if test="${isUsed}">
+                                         <input type="hidden" name="unitMeasure" value="${ingredient.unitMeasure}">
+                                         <div class="text-muted mt-1" style="font-size: 11.5px; font-weight: 500; color: #6b7280;">
+                                             <i class="fa-solid fa-lock me-1" style="color: #6b7280;"></i>Đã khóa (Đang sử dụng trong định lượng bánh).
+                                         </div>
+                                     </c:if>
                                  </div>
 
                                  <div class="col-md-6">
