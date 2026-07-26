@@ -207,6 +207,12 @@
                 const showError = (msg) => {
                     errorBox.innerHTML = msg;
                     errorBox.style.display = 'block';
+                    
+                    const successBox = document.querySelector('.profile-success');
+                    if (successBox) {
+                        successBox.style.display = 'none';
+                    }
+                    
                     e.preventDefault();
                     errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 };

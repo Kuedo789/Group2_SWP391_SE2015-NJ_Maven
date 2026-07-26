@@ -648,6 +648,28 @@
             }
             
             updateSummary();
+
+            function saveCheckoutState() {
+                const checkoutState = {
+                    deliveryDate: document.getElementById("deliveryDate")?.value || "",
+                    timeSlot: document.getElementById("selectedTimeSlotInput")?.value || "",
+                    note: document.getElementById("note")?.value || "",
+                    paymentMethod: document.querySelector('input[name="paymentMethod"]:checked')?.value || "COD"
+                };
+                localStorage.setItem("checkout_state", JSON.stringify(checkoutState));
+            }
+
+            document.getElementById("deliveryDate")?.addEventListener("change", saveCheckoutState);
+            document.getElementById("note")?.addEventListener("input", saveCheckoutState);
+            document.querySelectorAll('input[name="paymentMethod"]').forEach(el => el.addEventListener("change", saveCheckoutState));
+            
+            window.addEventListener("beforeunload", saveCheckoutState);
+            window.addEventListener("visibilitychange", function() {
+                if (document.visibilityState === "hidden") {
+                    saveCheckoutState();
+                }
+            });
+            window.saveCheckoutStateGlobal = saveCheckoutState;
         });
 
         function updateAvailableTimeSlots() {
@@ -902,8 +924,7 @@
 
             item.qty = (parseInt(item.qty) || 1) + change;
             if (item.qty <= 0) {
-                deleteItem(itemId);
-                return;
+                item.qty = 1;
             }
 
             localStorage.setItem("cart", JSON.stringify(currentCart));
@@ -981,6 +1002,10 @@
 
                 const btn = document.getElementById("btnPlaceOrder");
                 if (btn) btn.disabled = false;
+                
+                if (typeof window.saveCheckoutStateGlobal === 'function') {
+                    window.saveCheckoutStateGlobal();
+                }
             } catch (e) {
                 alert("Đã xảy ra lỗi JS khi chọn giờ: " + e.message);
                 console.error(e);
