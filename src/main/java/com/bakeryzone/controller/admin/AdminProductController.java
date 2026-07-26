@@ -368,11 +368,12 @@ public class AdminProductController extends HttpServlet {
         
         boolean isNewProductForced = false;
         String oldId = id;
+        boolean hasOrders = !isNew && id != null && !id.trim().isEmpty() && !"new".equalsIgnoreCase(id) && productDAO.hasOrders(id);
         if (!isNew && id != null && !id.trim().isEmpty() && !"new".equalsIgnoreCase(id)) {
             String[] bomIngredientIds = request.getParameterValues("bomIngredientId");
             String[] bomStandardGrams = request.getParameterValues("bomStandardGram");
             
-            if (productDAO.hasOrders(id) && isBomChanged(id, bomIngredientIds, bomStandardGrams)) {
+            if (hasOrders && isBomChanged(id, bomIngredientIds, bomStandardGrams)) {
                 isNew = true;
                 isNewProductForced = true;
             }
@@ -533,7 +534,7 @@ public class AdminProductController extends HttpServlet {
             }
         }
 
-        if (!nameValid || isDuplicateName || !laborValid || !marginValid || !serviceValid || imageError != null) {
+        if (hasOrders || !nameValid || isDuplicateName || !laborValid || !marginValid || !serviceValid || imageError != null) {
             Product product = new Product();
             product.setId(id);
             product.setName(name);
@@ -548,7 +549,12 @@ public class AdminProductController extends HttpServlet {
             product.setInstructionSteps(request.getParameter("instructionSteps"));
             product.setAdditionalImages(additionalImageUrls);
             
-            StringBuilder errorMsg = new StringBuilder("Dữ liệu nhập vào không hợp lệ: ");
+            StringBuilder errorMsg = new StringBuilder();
+            if (hasOrders) {
+                errorMsg.append("Không thể cập nhật sản phẩm này vì đã phát sinh đơn hàng/giao dịch trong hệ thống. ");
+            } else {
+                errorMsg.append("Dữ liệu nhập vào không hợp lệ: ");
+            }
             if (!nameValid) {
                 errorMsg.append("Tên bánh phải từ 3 đến 100 ký tự. ");
             } else if (isDuplicateName) {
@@ -568,7 +574,7 @@ public class AdminProductController extends HttpServlet {
             request.setAttribute("productCategories", productDAO.getAllProductCategories());
             request.setAttribute("allIngredients", ingredientDAO.getAllIngredients());
             request.setAttribute("error", errorMsg.toString().trim());
-            request.setAttribute("formAction", isNew ? "create" : "update");
+            request.setAttribute("formAction", (isNew && !hasOrders) ? "create" : "update");
             
             request.getRequestDispatcher("/admin/productDetail.jsp").forward(request, response);
             return;
