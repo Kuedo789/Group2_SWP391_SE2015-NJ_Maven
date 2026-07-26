@@ -139,16 +139,16 @@
                                                   <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0"/>đ <span style="font-weight: 500; color: var(--cz-text-muted); font-size: 13px;">/ ${i.unitName}</span>
                                               </span>
                                           </td>
-                                        <td class="text-center" style="text-align: center;">
-                                            <div class="actions-cell" style="justify-content: center; display: inline-flex; gap: 8px;">
-                                                <a href="${pageContext.request.contextPath}/admin/ingredient?action=edit&id=${i.ingredientId}&page=${currentPage}&pageSize=${pageSize}&search=${search}&unitId=${unitId}&sortBy=${sortBy}" class="btn-action-edit" title="Chỉnh sửa">
-                                                    <i class="fa-regular fa-pen-to-square"></i>
-                                                </a>
-                                                <button class="btn-action-delete" title="Xóa nguyên liệu" onclick="if(confirm('Bạn có chắc chắn muốn xóa nguyên liệu ${i.ingredientName} không?')) { deleteIngredient('${i.ingredientId}'); }">
-                                                    <i class="fa-regular fa-trash-can"></i>
-                                                </button>
-                                            </div>
-                                        </td>
+                                         <td class="text-center" style="text-align: center;">
+                                             <div class="actions-cell" style="justify-content: center; align-items: center; gap: 6px; display: flex;">
+                                                 <a href="${pageContext.request.contextPath}/admin/ingredient?action=edit&id=${i.ingredientId}&page=${currentPage}&pageSize=${pageSize}&search=${search}&unitId=${unitId}&sortBy=${sortBy}" class="btn-action-edit" title="Chỉnh sửa">
+                                                     <i class="fa-regular fa-pen-to-square"></i>
+                                                 </a>
+                                                 <button class="btn-action-delete" title="Xóa nguyên liệu" onclick="if(confirm('Bạn có chắc chắn muốn xóa nguyên liệu ${i.ingredientName} không?')) { deleteIngredient('${i.ingredientId}'); }" style="border: 1px solid var(--cz-border-color); background-color: #fff; border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
+                                                     <i class="fa-regular fa-trash-can"></i>
+                                                 </button>
+                                             </div>
+                                         </td>
                                     </tr>
                                 </c:forEach>
                             </c:when>
