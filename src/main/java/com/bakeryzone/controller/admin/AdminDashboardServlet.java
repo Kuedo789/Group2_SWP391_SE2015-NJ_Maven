@@ -222,7 +222,8 @@ public class AdminDashboardServlet extends HttpServlet {
             String managedZone = shipperTripDAO.getManagedZoneByStaffId(shipperId);
             List<Order> deliveringShipperOrders = shipperTripDAO.getOrdersByShipperPaged(shipperId, null, "Delivering", null, null, "date_desc", 1, 5);
             Order shipperActiveOrder = !deliveringShipperOrders.isEmpty() ? deliveringShipperOrders.get(0) : null;
-            int shipperDeliveringCount = shipperTripDAO.getTotalOrdersCountByShipper(shipperId, null, "Delivering", null, null);
+            int shipperDeliveringCount = shipperTripDAO.getTotalOrdersCountByShipper(shipperId, null, "Waiting_Delivery", null, null)
+                                       + shipperTripDAO.getTotalOrdersCountByShipper(shipperId, null, "Delivering", null, null);
             int shipperCompletedCount = shipperTripDAO.getTotalOrdersCountByShipper(shipperId, null, "Completed", null, null);
 
             Map<String, Object> dailyStats = shipperTripDAO.getShipperDailyStats(shipperId);

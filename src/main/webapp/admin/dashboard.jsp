@@ -218,7 +218,7 @@
                                     <!-- Hàng 2 Thẻ thống kê (Độ rộng 8 cột) -->
                                     <div class="row g-3">
                                         <div class="col-md-6 col-sm-6 col-12">
-                                            <a href="${pageContext.request.contextPath}/shipper/orders?action=list&status=Delivering" class="text-decoration-none">
+                                            <a href="${pageContext.request.contextPath}/shipper/orders?action=list&status=all" class="text-decoration-none">
                                                 <div class="card border-0 shadow-sm p-4 h-100" style="border-radius: 20px; background-color: #ffffff; transition: transform 0.2s ease, box-shadow 0.2s ease;">
                                                     <div class="d-flex align-items-center gap-3">
                                                         <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 64px; height: 64px; border-radius: 18px; background-color: #fff1e6; color: #c88636;">
