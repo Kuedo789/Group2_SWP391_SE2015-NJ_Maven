@@ -186,7 +186,8 @@ public class AdminUnitController extends HttpServlet {
         if (unitName != null) unitName = unitName.trim();
         if (description != null) description = description.trim();
 
-        boolean idValid = unitId != null && !unitId.isEmpty() && unitId.length() <= 10;
+        boolean idFormatValid = unitId != null && unitId.matches("^[A-Z0-9]+$");
+        boolean idValid = unitId != null && !unitId.isEmpty() && unitId.length() <= 10 && idFormatValid;
         boolean nameValid = unitName != null && !unitName.isEmpty() && unitName.length() >= 2 && unitName.length() <= 50;
         boolean descValid = description == null || description.length() <= 255;
 
@@ -194,7 +195,11 @@ public class AdminUnitController extends HttpServlet {
             UnitMeasure unit = new UnitMeasure(unitId, unitName, description);
             request.setAttribute("unit", unit);
             if (!idValid) {
-                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mã đơn vị tối đa 10 ký tự và không được để trống.");
+                if (unitId == null || unitId.isEmpty() || unitId.length() > 10) {
+                    request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mã đơn vị tối đa 10 ký tự và không được để trống.");
+                } else {
+                    request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mã đơn vị chỉ được phép chứa chữ cái không dấu và chữ số (không khoảng cách).");
+                }
             } else if (!nameValid) {
                 request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Tên đơn vị phải từ 2 đến 50 ký tự.");
             } else {
@@ -218,6 +223,18 @@ public class AdminUnitController extends HttpServlet {
                 request.getRequestDispatcher("/admin/unitDetail.jsp").forward(request, response);
                 return;
             }
+        }
+
+        // Check Name uniqueness
+        String excludeId = isNew ? null : unitId;
+        if (unitMeasureDAO.isUnitNameExists(unitName, excludeId)) {
+            UnitMeasure unit = new UnitMeasure(unitId, unitName, description);
+            request.setAttribute("unit", unit);
+            request.setAttribute("error", "Tên đơn vị tính này đã tồn tại trong hệ thống.");
+            request.setAttribute("formAction", isNew ? "create" : "update");
+            request.setAttribute("isEdit", !isNew);
+            request.getRequestDispatcher("/admin/unitDetail.jsp").forward(request, response);
+            return;
         }
 
         UnitMeasure unit = new UnitMeasure(unitId, unitName, description);

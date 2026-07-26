@@ -106,4 +106,25 @@ public class UnitMeasureDAO {
         }
         return false;
     }
+
+    public boolean isUnitNameExists(String unitName, String excludeId) {
+        if (unitName == null || unitName.trim().isEmpty())
+            return false;
+        String sql = "SELECT COUNT(*) FROM unit_measure WHERE Unit_Name = ?" + (excludeId != null ? " AND Unit_ID != ?" : "");
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, unitName.trim());
+            if (excludeId != null) {
+                ps.setString(2, excludeId.trim());
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to check unit name exists: " + unitName, e);
+        }
+        return false;
+    }
 }
