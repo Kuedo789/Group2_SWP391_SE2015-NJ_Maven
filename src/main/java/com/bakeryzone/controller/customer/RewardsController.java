@@ -107,7 +107,14 @@ public class RewardsController extends HttpServlet {
         HttpSession session = request.getSession(false);
 
         // Guard: require authenticated session
+        boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+
         if (session == null || session.getAttribute("user") == null) {
+            if (isAjax) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"success\":false, \"message\":\"Vui lòng đăng nhập để đổi thưởng.\"}");
+                return;
+            }
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
@@ -123,12 +130,24 @@ public class RewardsController extends HttpServlet {
                 voucherId = Integer.parseInt(raw.trim());
             }
         } catch (NumberFormatException e) {
+            if (isAjax) {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"success\":false, \"message\":\"Yêu cầu không hợp lệ.\"}");
+                return;
+            }
             session.setAttribute("rewardError", "Yêu cầu không hợp lệ.");
             response.sendRedirect(request.getContextPath() + "/rewards");
             return;
         }
 
         if (voucherId <= 0) {
+            if (isAjax) {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"success\":false, \"message\":\"Không tìm thấy voucher.\"}");
+                return;
+            }
             session.setAttribute("rewardError", "Không tìm thấy voucher.");
             response.sendRedirect(request.getContextPath() + "/rewards");
             return;
@@ -137,6 +156,12 @@ public class RewardsController extends HttpServlet {
         // -- Resolve the voucher and its point cost --
         Voucher voucher = voucherDAO.getActiveVoucherById(voucherId);
         if (voucher == null) {
+            if (isAjax) {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+                response.getWriter().write("{\"success\":false, \"message\":\"Voucher không còn khả dụng hoặc đã hết hạn.\"}");
+                return;
+            }
             session.setAttribute("rewardError",
                     "Voucher không còn khả dụng hoặc đã hết hạn.");
             response.sendRedirect(request.getContextPath() + "/rewards");
@@ -148,13 +173,37 @@ public class RewardsController extends HttpServlet {
         // -- Execute the atomic transaction --
         RedeemResult result = voucherDAO.redeemVoucher(userId, voucherId, pointCost);
 
+        if (isAjax) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            switch (result) {
+                case SUCCESS:
+                    // Fetch updated points from database
+                    int updatedPoints = membershipDAO.getMembershipByUserId(userId).getAccumulatedPoints();
+                    
+                    String safeTitle = voucher.getTitle() != null ? voucher.getTitle().replace("\"", "\\\"") : "";
+                    response.getWriter().write("{\"success\":true, \"message\":\"🎉 Đổi thưởng thành công! Voucher \\\"" + safeTitle + "\\\" đã được thêm vào kho của bạn.\", \"newPoints\":" + updatedPoints + "}");
+                    break;
+                case INSUFFICIENT_POINTS:
+                    response.getWriter().write("{\"success\":false, \"message\":\"Bạn không đủ điểm để đổi voucher này. Cần " + pointCost + " điểm.\"}");
+                    break;
+                case ALREADY_OWNED:
+                    response.getWriter().write("{\"success\":false, \"message\":\"Bạn đã sở hữu voucher này rồi. Hãy sử dụng trước khi đổi thêm.\"}");
+                    break;
+                default:
+                    response.getWriter().write("{\"success\":false, \"message\":\"Đã xảy ra lỗi trong quá trình đổi thưởng. Vui lòng thử lại.\"}");
+                    break;
+            }
+            return;
+        }
+
         switch (result) {
             case SUCCESS:
                 session.setAttribute("rewardSuccess",
                         "🎉 Đổi thưởng thành công! Voucher \"" + voucher.getTitle()
                         + "\" đã được thêm vào tài khoản của bạn.");
                 // Redirect to /membership so the updated point balance is visible
-                response.sendRedirect(request.getContextPath() + "/membership");
+                response.sendRedirect(request.getContextPath() + "/rewards");
                 break;
 
             case INSUFFICIENT_POINTS:

@@ -757,9 +757,10 @@
                                 style="display:block;width:100%;box-sizing:border-box;padding:10px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:14px;color:#1e293b;background:#fff;outline:none;-webkit-appearance:auto;appearance:auto;">
                             <option value="">-- Chọn hạng mới --</option>
                             <c:forEach var="t" items="${allTiers}">
-                                <option value="${t.tierId}"><c:out value="${t.tierName}" /></option>
+                                <option value="${t.tierId}" data-minspending="${t.minSpending}"><c:out value="${t.tierName}" /></option>
                             </c:forEach>
                         </select>
+                        <div id="tierDowngradeNotice" style="display:none; font-size:12px; color:#ef4444; margin-top:8px;">* Các hạng thấp hơn mức chi tiêu thực tế của khách hàng này đã bị ẩn.</div>
                     </div>
                     <div style="display:flex;gap:10px;">
                         <button class="btn-drawer-outline" onclick="hideTierForm()">Hủy</button>
@@ -872,6 +873,38 @@
                     }
                 }
                 
+                // Hide invalid downgrade options based on raw spending
+                let maxQualifyingSpending = 0;
+                const opts = document.getElementById('upgradeTierSelect').options;
+                
+                // Find highest minSpending that user qualifies for
+                for (let i = 0; i < opts.length; i++) {
+                    if (opts[i].value === "") continue;
+                    let tierMin = parseFloat(opts[i].dataset.minspending);
+                    if (tierMin <= m.rawSpending && tierMin > maxQualifyingSpending) {
+                        maxQualifyingSpending = tierMin;
+                    }
+                }
+                
+                // Hide/disable options below maxQualifyingSpending
+                let hasHiddenTiers = false;
+                for (let i = 0; i < opts.length; i++) {
+                    if (opts[i].value === "") continue;
+                    let tierMin = parseFloat(opts[i].dataset.minspending);
+                    if (tierMin < maxQualifyingSpending) {
+                        opts[i].style.display = 'none';
+                        opts[i].disabled = true;
+                        hasHiddenTiers = true;
+                    } else {
+                        opts[i].style.display = 'block';
+                        opts[i].disabled = false;
+                    }
+                }
+                
+                document.getElementById('tierDowngradeNotice').style.display = hasHiddenTiers ? 'block' : 'none';
+                
+                // Reset select value to default
+                document.getElementById('upgradeTierSelect').value = "";
                 document.getElementById('drawerName').textContent = m.name;
                 document.getElementById('drawerMeta').textContent = m.id + '  ·  ' + m.email;
 
@@ -908,7 +941,9 @@
                 if (m.ownedVouchers && m.ownedVouchers.length > 0) {
                     section.style.display = 'block';
                     chipsEl.innerHTML = m.ownedVouchers.map(function(v) {
-                        return '<span class="voucher-chip active-chip"><i class="fa-solid fa-ticket" style="font-size:10px;"></i>' + v + '</span>';
+                        return '<span class="voucher-chip active-chip" style="display:inline-flex;align-items:center;gap:6px;">' + 
+                               '<i class="fa-solid fa-ticket" style="font-size:10px;"></i>' + v + 
+                               '<i class="fa-solid fa-xmark" onclick="removeVoucher(\'' + v + '\')" style="cursor:pointer;color:#ef4444;font-size:11px;" title="Xóa voucher này"></i></span>';
                     }).join('');
                 } else {
                     section.style.display = 'block';
@@ -945,6 +980,31 @@
 
             // ── Points Adjustment ───────────────────────────────────────────
             let currentMemberId = null;
+
+
+            function removeVoucher(voucherCode) {
+                if (!confirm('Bạn có chắc chắn muốn xóa voucher ' + voucherCode + ' của khách hàng này?')) return;
+                
+                fetch('${pageContext.request.contextPath}/admin/membership?action=removeVoucher', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                    body: 'userId=' + encodeURIComponent(currentMemberId) + '&voucherCode=' + encodeURIComponent(voucherCode)
+                })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.status === 'ok') {
+                        showToast('Đã xóa voucher thành công!', 'success');
+                        showDetails(currentMemberId);
+                    } else {
+                        alert(d.message || 'Lỗi hệ thống');
+                    }
+                })
+                .catch(e => {
+                    console.error(e);
+                    alert('Lỗi hệ thống');
+                });
+            }
+
             function showPointsForm() {
                 document.getElementById('drawerFooterButtons').style.display = 'none';
                 document.getElementById('drawerPointsForm').style.display = 'block';

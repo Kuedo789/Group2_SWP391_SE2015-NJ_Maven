@@ -205,7 +205,7 @@ public class CartDAO {
         }
 
         // 2. If it does not exist, create a new custom_cake snapshot and cart_item link
-        String customCakeId = "CAKE-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        String customCakeId = "TPL-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         String cartItemId = "CRT-" + java.util.UUID.randomUUID().toString().toUpperCase();
 
         String sqlCake = "INSERT INTO custom_cake (Custom_Cake_ID, Canvas_Image_URL, Greeting_Text, Cake_Hash_Structure, Calculated_Price) VALUES (?, ?, ?, ?, ?)";

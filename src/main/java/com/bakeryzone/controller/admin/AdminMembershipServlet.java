@@ -102,6 +102,24 @@ public class AdminMembershipServlet extends HttpServlet {
             
             try {
                 int tierId = Integer.parseInt(tierIdStr.trim());
+                
+                // Validate if admin is trying to downgrade below user's actual spending
+                com.bakeryzone.model.UserMembership um = dao.getMembershipByUserIdRaw(userId);
+                if (um != null) {
+                    com.bakeryzone.model.MembershipTier minAllowedTier = dao.getHighestQualifyingTier(um.getTotalSpending());
+                    com.bakeryzone.model.MembershipTier requestedTier = null;
+                    for (com.bakeryzone.model.MembershipTier t : dao.getAllTiers()) {
+                        if (t.getTierId() == tierId) {
+                            requestedTier = t;
+                            break;
+                        }
+                    }
+                    if (minAllowedTier != null && requestedTier != null && requestedTier.getMinSpending().compareTo(minAllowedTier.getMinSpending()) < 0) {
+                        response.getWriter().write("{\"status\":\"error\",\"message\":\"Không thể hạ hạng thấp hơn mức chi tiêu thực tế.\"}");
+                        return;
+                    }
+                }
+                
                 boolean success = dao.setTier(userId, tierId);
                 
                 if (success) {
@@ -111,6 +129,24 @@ public class AdminMembershipServlet extends HttpServlet {
                 }
             } catch (NumberFormatException e) {
                 response.getWriter().write("{\"status\":\"error\",\"message\":\"Hạng không hợp lệ.\"}");
+            }
+        } else if ("removeVoucher".equals(action)) {
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            
+            String userId = request.getParameter("userId");
+            String voucherCode = request.getParameter("voucherCode");
+            
+            if (userId == null || voucherCode == null || voucherCode.trim().isEmpty()) {
+                response.getWriter().write("{\"status\":\"error\",\"message\":\"Thiếu thông tin.\"}");
+                return;
+            }
+            
+            boolean success = dao.removeVoucherByCode(userId, voucherCode.trim());
+            if (success) {
+                response.getWriter().write("{\"status\":\"ok\"}");
+            } else {
+                response.getWriter().write("{\"status\":\"error\",\"message\":\"Lỗi hệ thống hoặc voucher không tồn tại.\"}");
             }
         } else if ("assignVoucher".equals(action)) {
             response.setContentType("application/json");
@@ -233,6 +269,7 @@ public class AdminMembershipServlet extends HttpServlet {
         sb.append("\"tier\":\"").append(tierCode).append("\",");
         sb.append("\"points\":\"").append(numFormat.format(um.getAccumulatedPoints())).append("\",");
         sb.append("\"spending\":\"").append(moneyFormat.format(um.getTotalSpending())).append("\",");
+        sb.append("\"rawSpending\":").append(um.getTotalSpending().longValue()).append(",");
         sb.append("\"vouchers\":").append(ownedVouchers.size()).append(",");
         sb.append("\"progressPct\":").append((int) um.getProgressPercent()).append(",");
         sb.append("\"progressLabel\":\"").append(escapeJson(progressLabel)).append("\",");
