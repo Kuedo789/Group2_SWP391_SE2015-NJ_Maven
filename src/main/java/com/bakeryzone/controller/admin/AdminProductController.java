@@ -365,6 +365,8 @@ public class AdminProductController extends HttpServlet {
             name = name.trim();
         }
         String categoryId = request.getParameter("categoryId");
+        String fullDescription = request.getParameter("fullDescription");
+        String instructionSteps = request.getParameter("instructionSteps");
         
         boolean isNewProductForced = false;
         String oldId = id;
@@ -429,6 +431,12 @@ public class AdminProductController extends HttpServlet {
         
         // Validate name
         boolean nameValid = name != null && !name.trim().isEmpty() && name.trim().length() >= 3 && name.trim().length() <= 100;
+        
+        String plainDesc = getPlainText(fullDescription);
+        boolean descValid = !plainDesc.isEmpty() && plainDesc.length() >= 3 && plainDesc.length() <= 300;
+
+        String plainInstruct = getPlainText(instructionSteps);
+        boolean instructValid = !plainInstruct.isEmpty() && plainInstruct.length() >= 3 && plainInstruct.length() <= 300;
         
         // File Upload Processing & Validation
         if (isNew || id == null || id.trim().isEmpty() || "new".equalsIgnoreCase(id)) {
@@ -551,7 +559,7 @@ public class AdminProductController extends HttpServlet {
             }
         }
 
-        if (hasOrders || !nameValid || isDuplicateName || !laborValid || !marginValid || !serviceValid || imageError != null || !bomGramsValid) {
+        if (hasOrders || !nameValid || isDuplicateName || !laborValid || !marginValid || !serviceValid || imageError != null || !bomGramsValid || !descValid || !instructValid) {
             Product product = new Product();
             product.setId(id);
             product.setName(name);
@@ -560,10 +568,10 @@ public class AdminProductController extends HttpServlet {
             product.setAllowsGreeting(request.getParameter("allowsGreeting") != null && "true".equalsIgnoreCase(request.getParameter("allowsGreeting")));
             product.setImageUrl(imageUrl);
             product.setStatus(request.getParameter("status"));
-            product.setFullDescription(request.getParameter("fullDescription"));
+            product.setFullDescription(fullDescription);
             product.setDefaultMarginPercent(defaultMarginPercent);
             product.setDefaultServicePercent(defaultServicePercent);
-            product.setInstructionSteps(request.getParameter("instructionSteps"));
+            product.setInstructionSteps(instructionSteps);
             product.setAdditionalImages(additionalImageUrls);
             
             StringBuilder errorMsg = new StringBuilder();
@@ -586,6 +594,12 @@ public class AdminProductController extends HttpServlet {
             if (!bomGramsValid) {
                 errorMsg.append("Số lượng của tất cả nguyên liệu trong bảng định lượng phải là số nguyên dương lớn hơn 0. ");
             }
+            if (!descValid) {
+                errorMsg.append("Mô tả chi tiết phải từ 3 đến 300 ký tự và không được để trống. ");
+            }
+            if (!instructValid) {
+                errorMsg.append("Quy trình & Hướng dẫn làm bếp phải từ 3 đến 300 ký tự và không được để trống. ");
+            }
             if (imageError != null) {
                 errorMsg.append(imageError);
             }
@@ -603,8 +617,6 @@ public class AdminProductController extends HttpServlet {
         boolean allowsGreeting = request.getParameter("allowsGreeting") != null && "true".equalsIgnoreCase(request.getParameter("allowsGreeting"));
         String status = request.getParameter("status");
         boolean isFeatured = request.getParameter("isFeatured") != null && "true".equalsIgnoreCase(request.getParameter("isFeatured"));
-        String fullDescription = request.getParameter("fullDescription");
-        String instructionSteps = request.getParameter("instructionSteps");
         
         String productType = "Cake";
         if (imageUrl == null || imageUrl.trim().isEmpty()) {
@@ -759,6 +771,16 @@ public class AdminProductController extends HttpServlet {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
+    }
+
+    private String getPlainText(String html) {
+        if (html == null) return "";
+        String plainText = html.replaceAll("<[^>]*>", "");
+        plainText = plainText.replace("&nbsp;", " ")
+                             .replace("&lt;", "<")
+                             .replace("&gt;", ">")
+                             .replace("&amp;", "&");
+        return plainText.trim();
     }
 
     private void checkProductNameAjax(HttpServletRequest request, HttpServletResponse response) 

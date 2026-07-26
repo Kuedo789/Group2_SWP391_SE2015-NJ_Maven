@@ -222,12 +222,14 @@
                     </div>
                 </div>
 
-                <c:if test="${not empty error}">
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="background-color: #fdf3f3; border-color: #fcebeb; color: #dc3545; border-radius: 8px; font-weight: 500; font-size: 14px; margin-bottom: 25px;">
-                        <i class="fa-solid fa-triangle-exclamation me-2"></i> ${error}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                </c:if>
+                <div id="js-alert-container">
+                    <c:if test="${not empty error}">
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="background-color: #fdf3f3; border-color: #fcebeb; color: #dc3545; border-radius: 8px; font-weight: 500; font-size: 14px; margin-bottom: 25px;">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i> ${error}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    </c:if>
+                </div>
 
                 <div class="row">
                     <!-- Left Column: Image Upload -->
@@ -284,7 +286,6 @@
                                  <div class="col-12">
                                      <label class="form-label-cz">Tên Nguyên Liệu <span>*</span></label>
                                      <input type="text" class="form-control-cz" id="ingredientName" name="ingredientName" value="${ingredient.ingredientName}" required>
-                                     <div id="error-name" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
 
                                  <div class="col-md-6">
@@ -307,7 +308,6 @@
                                  <div class="col-md-6">
                                      <label class="form-label-cz">Đơn giá (VND) <span>*</span></label>
                                      <input type="number" step="0.01" class="form-control-cz" id="pricePerUnit" name="pricePerUnit" value="${ingredient.pricePerUnit}" required>
-                                     <div id="error-price" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                  </div>
                             </div>
                         </div>
@@ -400,39 +400,50 @@
         form.addEventListener('submit', function(e) {
             const nameInput = document.getElementById('ingredientName');
             const priceInput = document.getElementById('pricePerUnit');
-            const errorName = document.getElementById('error-name');
-            const errorPrice = document.getElementById('error-price');
             
-            errorName.style.display = 'none';
-            errorPrice.style.display = 'none';
             nameInput.classList.remove('is-invalid');
             priceInput.classList.remove('is-invalid');
 
-            let hasError = false;
+            let errors = [];
 
             const nameVal = nameInput.value.trim();
             if (nameVal.length === 0) {
-                errorName.textContent = 'Tên nguyên liệu không được để trống hoặc chỉ chứa khoảng trắng.';
-                errorName.style.display = 'block';
+                errors.push('Tên nguyên liệu không được để trống hoặc chỉ chứa khoảng trắng.');
                 nameInput.classList.add('is-invalid');
-                hasError = true;
             } else if (nameVal.length < 2) {
-                errorName.textContent = 'Tên nguyên liệu phải có tối thiểu 2 ký tự (không tính khoảng trắng).';
-                errorName.style.display = 'block';
+                errors.push('Tên nguyên liệu phải có tối thiểu 2 ký tự (không tính khoảng trắng).');
                 nameInput.classList.add('is-invalid');
-                hasError = true;
+            } else if (nameVal.length > 50) {
+                errors.push('Tên nguyên liệu tối đa 50 ký tự.');
+                nameInput.classList.add('is-invalid');
             }
 
             const priceVal = parseFloat(priceInput.value);
             if (isNaN(priceVal) || priceVal < 0) {
-                errorPrice.textContent = 'Đơn giá phải lớn hơn hoặc bằng 0.';
-                errorPrice.style.display = 'block';
+                errors.push('Đơn giá phải lớn hơn hoặc bằng 0.');
                 priceInput.classList.add('is-invalid');
-                hasError = true;
             }
 
-            if (hasError) {
+            if (errors.length > 0) {
                 e.preventDefault();
+                
+                // Build alert html
+                let alertHtml = '<div class="alert alert-danger alert-dismissible fade show" role="alert" style="background-color: #fdf3f3; border-color: #fcebeb; color: #dc3545; border-radius: 8px; font-weight: 500; font-size: 14px; margin-bottom: 25px;">';
+                alertHtml += '<i class="fa-solid fa-triangle-exclamation me-2"></i>';
+                if (errors.length === 1) {
+                    alertHtml += errors[0];
+                } else {
+                    alertHtml += '<ul class="mb-0 ps-3">';
+                    errors.forEach(function(err) {
+                        alertHtml += '<li>' + err + '</li>';
+                    });
+                    alertHtml += '</ul>';
+                }
+                alertHtml += '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+                alertHtml += '</div>';
+                
+                document.getElementById('js-alert-container').innerHTML = alertHtml;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 return false;
             }
         });
