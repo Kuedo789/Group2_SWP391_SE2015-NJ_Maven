@@ -188,8 +188,12 @@ public class AdminUnitController extends HttpServlet {
 
         boolean idFormatValid = unitId != null && unitId.matches("^[A-Z0-9]+$");
         boolean idValid = unitId != null && !unitId.isEmpty() && unitId.length() <= 10 && idFormatValid;
-        boolean nameValid = unitName != null && !unitName.isEmpty() && unitName.length() >= 2 && unitName.length() <= 50;
-        boolean descValid = description == null || description.length() <= 255;
+        
+        String namePattern = "^(?=.*[a-zA-Z0-9ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơ])[a-zA-Z0-9\\sÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơ\\/\\-]+$";
+        boolean nameValid = unitName != null && unitName.length() >= 3 && unitName.length() <= 10 && unitName.matches(namePattern);
+        
+        String descPattern = "^(?=.*[a-zA-Z0-9ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơ]).{3,100}$";
+        boolean descValid = description != null && description.length() >= 3 && description.length() <= 100 && description.matches(descPattern);
 
         if (!idValid || !nameValid || !descValid) {
             UnitMeasure unit = new UnitMeasure(unitId, unitName, description);
@@ -201,9 +205,9 @@ public class AdminUnitController extends HttpServlet {
                     request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mã đơn vị chỉ được phép chứa chữ cái không dấu và chữ số (không khoảng cách).");
                 }
             } else if (!nameValid) {
-                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Tên đơn vị phải từ 2 đến 50 ký tự.");
+                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Tên đơn vị phải từ 3 đến 10 ký tự và không chứa toàn bộ khoảng trắng hoặc ký tự đặc biệt.");
             } else {
-                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mô tả chi tiết tối đa 255 ký tự.");
+                request.setAttribute("error", "Dữ liệu nhập vào không hợp lệ. Mô tả chi tiết phải từ 3 đến 100 ký tự và không chứa toàn bộ khoảng trắng hoặc ký tự đặc biệt.");
             }
             request.setAttribute("formAction", isNew ? "create" : "update");
             request.setAttribute("isEdit", !isNew);

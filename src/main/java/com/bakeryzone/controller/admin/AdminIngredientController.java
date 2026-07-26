@@ -233,7 +233,7 @@ public class AdminIngredientController extends HttpServlet {
             priceValid = false;
         }
 
-        boolean nameValid = name != null && !name.trim().isEmpty() && name.trim().length() >= 2;
+        boolean nameValid = name != null && !name.trim().isEmpty() && name.trim().length() >= 2 && name.trim().length() <= 50;
 
         if (unitId == null || unitId.trim().isEmpty()) {
             unitId = "G";
@@ -303,7 +303,7 @@ public class AdminIngredientController extends HttpServlet {
             request.setAttribute("unitMeasures", unitMeasureDAO.getAllUnitMeasures());
             request.setAttribute("isUsed", isUsed);
             
-            String errorMsg = "Dữ liệu nhập vào không hợp lệ. Tên nguyên liệu tối thiểu 2 ký tự, đơn giá phải lớn hơn hoặc bằng 0.";
+            String errorMsg = "Dữ liệu nhập vào không hợp lệ. Tên nguyên liệu từ 2 đến 50 ký tự, đơn giá phải lớn hơn hoặc bằng 0.";
             if (imageError != null) {
                 errorMsg = imageError;
             }
