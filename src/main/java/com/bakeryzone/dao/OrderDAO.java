@@ -232,9 +232,13 @@ public class OrderDAO {
                 while (rs.next()) {
                     String dbStatus = rs.getString("OrderStatus");
                     int cnt = rs.getInt("cnt");
-                    counts.put("all", counts.get("all") + cnt);
+                    if (dbStatus != null && !dbStatus.equalsIgnoreCase("Waiting_Payment")) {
+                        counts.put("all", counts.get("all") + cnt);
+                    }
                     if (dbStatus != null) {
-                        if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed")) {
+                        if (dbStatus.equalsIgnoreCase("Waiting_Payment")) {
+                            counts.put("waiting", counts.getOrDefault("waiting", 0) + cnt);
+                        } else if (dbStatus.equalsIgnoreCase("Pending") || dbStatus.equalsIgnoreCase("Confirmed")) {
                             counts.put("confirmed", counts.get("confirmed") + cnt);
                         } else if (dbStatus.equalsIgnoreCase("Processing") || dbStatus.equalsIgnoreCase("PAID")) {
                             counts.put("processing", counts.get("processing") + cnt);
@@ -256,9 +260,15 @@ public class OrderDAO {
 
     /** Helper: Thêm điều kiện WHERE cho uiStatus vào câu SQL đang build. */
     private void appendCustomerStatusFilter(StringBuilder sql, List<Object> params, String uiStatus) {
-        if (uiStatus == null || uiStatus.equalsIgnoreCase("all"))
+        if (uiStatus == null || uiStatus.equalsIgnoreCase("all")) {
+            sql.append(" AND o.OrderStatus != 'Waiting_Payment'");
             return;
+        }
         switch (uiStatus.toLowerCase()) {
+            case "waiting":
+            case "waiting_payment":
+                sql.append(" AND o.OrderStatus = 'Waiting_Payment'");
+                break;
             case "confirmed":
                 sql.append(" AND o.OrderStatus IN ('Pending', 'Confirmed')");
                 break;
