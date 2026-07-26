@@ -313,16 +313,20 @@
                         </form>
                     </div>
 
-                    <div class="address-card">
+                    <div class="address-card" style="overflow:hidden; position:relative;">
                         <div class="address-header">
                             <h2>Bản đồ & Tuyến đường</h2>
                         </div>
 
                         <div style="margin-bottom:10px;padding:8px 12px;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;font-size:13px;color:#7b5800;">
-                            <i class="fa fa-hand-pointer"></i> <strong>Mẹo:</strong> Nhấp vào bản đồ để ghim vị trí giao hàng bằng tay.
+                            <i class="fa fa-hand-pointer"></i> <strong>Mẹo:</strong> Nhấp vào bản đồ để ghim vị trí giao hàng bằng tay. Phạm vi giao hàng tối đa <strong>20 km</strong>.
                         </div>
 
-                        <div id="map"></div>
+                        <div id="rangeErrorBox" style="display:none;margin-bottom:10px;padding:10px 14px;background:#fff0f0;border:1px solid #f5b5b5;border-radius:8px;font-size:13px;color:#d62828;font-weight:600;">
+                            <i class="fa fa-exclamation-triangle"></i> Địa chỉ nằm ngoài phạm vi giao hàng (tối đa 20 km). Vui lòng chọn địa chỉ gần hơn.
+                        </div>
+
+                        <div id="map" style="position:relative; z-index:0;"></div>
 
                         <div class="address-info">
                             <div><strong>Địa chỉ:</strong> <span id="selectedAddress">${isEditMode ? addressToEdit.addressDetail : 'Chưa chọn'}</span></div>
@@ -348,8 +352,11 @@
             const editLat = ${isEditMode ? addressToEdit.latitude : 'null'};
             const editLng = ${isEditMode ? addressToEdit.longitude : 'null'};
             const editAddress = "${escapedAddress}";
-            const shopLat = 21.0278;
-            const shopLng = 105.8342;
+            // Tọa độ cửa hàng: Cổng chính ĐH Bách Khoa Hà Nội - Số 1 Đại Cồ Việt
+            const shopLat = 21.0047;
+            const shopLng = 105.8433;
+            const MAX_DELIVERY_KM = 20; // Giới hạn giao hàng tối đa 20 km
+            let isOutOfRange = false;
 
             let customerMarker = null;
             let routeLine = null;
@@ -369,7 +376,7 @@
 
                 L.marker([shopLat, shopLng])
                         .addTo(map)
-                        .bindPopup("Cửa hàng bánh")
+                        .bindPopup("BakeryZone - ĐH Bách Khoa Hà Nội")
                         .openPopup();
             }
 
@@ -533,11 +540,37 @@
                     document.getElementById("duration").innerText =
                             formatDuration(motoSeconds);
 
+                    // Kiểm tra giới hạn phạm vi giao hàng 20km
+                    const rangeErrorBox = document.getElementById("rangeErrorBox");
+                    const saveBtn = document.querySelector(".btn-save");
+                    if (distanceKm > MAX_DELIVERY_KM) {
+                        isOutOfRange = true;
+                        if (rangeErrorBox) rangeErrorBox.style.display = "block";
+                        if (saveBtn) {
+                            saveBtn.disabled = true;
+                            saveBtn.style.opacity = "0.5";
+                            saveBtn.style.cursor = "not-allowed";
+                        }
+                        document.getElementById("distance").style.color = "#d62828";
+                        document.getElementById("distance").innerText = distanceKm.toFixed(2) + " km ⚠ Ngoài vùng giao hàng";
+                    } else {
+                        isOutOfRange = false;
+                        if (rangeErrorBox) rangeErrorBox.style.display = "none";
+                        if (saveBtn) {
+                            saveBtn.disabled = false;
+                            saveBtn.style.opacity = "";
+                            saveBtn.style.cursor = "";
+                        }
+                        document.getElementById("distance").style.color = "";
+                    }
+
                     if (routeLine !== null) {
                         map.removeLayer(routeLine);
                     }
 
-                    routeLine = L.geoJSON(route.geometry).addTo(map);
+                    routeLine = L.geoJSON(route.geometry, {
+                        style: { color: isOutOfRange ? '#d62828' : '#3388ff', weight: 4 }
+                    }).addTo(map);
                     map.fitBounds(routeLine.getBounds());
 
                 } catch (error) {
@@ -671,6 +704,10 @@
                     const lngVal = lngInput ? lngInput.value.trim() : "";
                     if (latVal === "" || lngVal === "") {
                         return showError("Vui lòng tìm địa chỉ trên bản đồ trước khi lưu.", addressInput);
+                    }
+
+                    if (isOutOfRange) {
+                        return showError("Địa chỉ nằm ngoài phạm vi giao hàng (tối đa 20 km). Vui lòng chọn địa chỉ gần hơn.", addressInput);
                     }
 
                     // Append addressNote to addressDetail before submit

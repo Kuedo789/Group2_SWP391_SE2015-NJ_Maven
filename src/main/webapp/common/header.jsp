@@ -8,7 +8,7 @@
             dbSettings.put("bakeryName", "BakeryZone");
             dbSettings.put("hotline", "0901234567");
             dbSettings.put("email", "support@bakeryzone.vn");
-            dbSettings.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
+            dbSettings.put("address", "Số 1 Đại Cồ Việt, Hài Bà Trưng, Hà Nội");
             dbSettings.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
             dbSettings.put("shippingRate", "5000");
             dbSettings.put("depositPercent", "30");

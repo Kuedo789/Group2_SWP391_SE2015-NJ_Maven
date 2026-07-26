@@ -84,6 +84,7 @@
         <!-- Filters Section -->
         <section class="orders-filter" style="display: flex; gap: 12px; justify-content: flex-start; margin-bottom: 25px; flex-wrap: wrap;">
             <a href="<%= request.getContextPath() %>/OrderList?status=all<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "all".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Tất cả (<%= request.getAttribute("countAll") != null ? request.getAttribute("countAll") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=waiting<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "waiting".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Chờ thanh toán (<%= request.getAttribute("countWaiting") != null ? request.getAttribute("countWaiting") : 0 %>)</a>
             <a href="<%= request.getContextPath() %>/OrderList?status=paid<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "paid".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><%= com.bakeryzone.model.OrderStatus.PAID.getDescription() %> (<%= request.getAttribute("countPaid") != null ? request.getAttribute("countPaid") : 0 %>)</a>
             <a href="<%= request.getContextPath() %>/OrderList?status=processing<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "processing".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><%= com.bakeryzone.model.OrderStatus.Processing.getDescription() %> (<%= request.getAttribute("countProcessing") != null ? request.getAttribute("countProcessing") : 0 %>)</a>
             <a href="<%= request.getContextPath() %>/OrderList?status=shipping<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "shipping".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><%= com.bakeryzone.model.OrderStatus.Delivering.getDescription() %> (<%= request.getAttribute("countShipping") != null ? request.getAttribute("countShipping") : 0 %>)</a>
@@ -170,7 +171,10 @@
 
                     if (dbStatus != null) {
                         displayStatus = order.getOrderStatusForCustomer(); // Lấy tên tiếng việt (ẩn Waiting_Delivery)
-                        if (dbStatus.equals("PAID")) {
+                        if (dbStatus.equals("Waiting_Payment")) {
+                            dataStatus = "waiting";
+                            badgeClass = "status-waiting\" style=\"background-color: #fef3c7; color: #92400e;";
+                        } else if (dbStatus.equals("PAID")) {
                             dataStatus = "paid";
                             badgeClass = "status-confirmed\" style=\"background-color: #d1fae5; color: #065f46;";
                         } else if (dbStatus.equals("Processing") || dbStatus.equals("Waiting_Delivery")) {
@@ -376,7 +380,9 @@
                             <span class="material-symbols-outlined" style="font-size: 20px;">add_shopping_cart</span>
                         </button>
                         
-                        <% if ("completed".equals(dataStatus)) { %>
+                        <% if ("waiting".equals(dataStatus)) { %>
+                            <button class="btn" onclick="window.location.href='<%= request.getContextPath() %>/bank-transfer?orderNo=<%= order.getOrderNo() %>&total=<%= order.getDepositAmount() != null ? order.getDepositAmount() : order.getTotalCost() %>'" style="background-color: #e67e22; color: white; border: none; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#d35400'" onmouseout="this.style.backgroundColor='#e67e22'">Thanh toán ngay</button>
+                        <% } else if ("completed".equals(dataStatus)) { %>
                             <button class="btn" onclick="reorderOrder('<%= order.getOrderNo() %>')" style="background-color: #2e7d32; color: white; border: none; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#1b5e20'" onmouseout="this.style.backgroundColor='#2e7d32'">Đặt lại</button>
                         <% } else if ("cancelled".equals(dataStatus)) { %>
                             <button class="btn" onclick="reorderOrder('<%= order.getOrderNo() %>')" style="background-color: #2e7d32; color: white; border: none; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#1b5e20'" onmouseout="this.style.backgroundColor='#2e7d32'">Đặt lại</button>

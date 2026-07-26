@@ -61,7 +61,7 @@
                             <div class="form-row">
                                 <div class="form-group full-width">
                                     <label>Địa chỉ tiệm bánh</label>
-                                    <input type="text" name="address" value="${not empty settings.address ? settings.address : '123 Đường Sourdough, TP. Hồ Chí Minh'}" class="settings-input" required />
+                                    <input type="text" name="address" value="${not empty settings.address ? settings.address : 'Số 1 Đại Cồ Việt, Hài Bà Trưng, Hà Nội'}" class="settings-input" required />
                                 </div>
                             </div>
                         </div>
