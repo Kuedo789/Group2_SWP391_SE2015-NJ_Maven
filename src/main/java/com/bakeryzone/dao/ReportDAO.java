@@ -172,7 +172,9 @@ public class ReportDAO {
                     String status = rs.getString("OrderStatus");
                     int count = rs.getInt("count");
                     if (status != null) {
-                        if (status.equalsIgnoreCase("Pending") || status.equals("Chờ xác nhận")) {
+                        if (status.equalsIgnoreCase("PAID") || status.equals("Đã thanh toán")) {
+                            counts.put("Đã thanh toán", counts.getOrDefault("Đã thanh toán", 0) + count);
+                        } else if (status.equalsIgnoreCase("Pending") || status.equals("Chờ xác nhận")) {
                             counts.put("Chờ xác nhận", counts.getOrDefault("Chờ xác nhận", 0) + count);
                         } else if (status.equalsIgnoreCase("Confirmed") || status.equals("Đã xác nhận")) {
                             counts.put("Đã xác nhận", counts.getOrDefault("Đã xác nhận", 0) + count);

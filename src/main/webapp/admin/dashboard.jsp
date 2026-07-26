@@ -57,7 +57,7 @@
                             <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
                             <div class="stat-info">
                                 <div class="stat-label"><span>Đơn đã thanh toán</span></div>
-                                <div class="stat-value">${pendingCount}</div>
+                                <div class="stat-value">${paidCount}</div>
                             </div>
                         </a>
                         <a href="${pageContext.request.contextPath}/admin/orders?action=list&status=Processing" class="stat-card stat-revenue" style="text-decoration: none; color: inherit;">
@@ -188,7 +188,7 @@
                                                     <form action="${pageContext.request.contextPath}/admin/orders" method="POST">
                                                         <input type="hidden" name="action" value="update-status" />
                                                         <input type="hidden" name="orderNo" value="${pOrd.orderNo}" />
-                                                        <input type="hidden" name="status" value="Ready" />
+                                                        <input type="hidden" name="status" value="<%= com.bakeryzone.model.Order.STATUS_WAITING_DELIVERY %>" />
                                                         <button type="submit" class="kitchen-btn-finish">
                                                             <i class="fa-solid fa-circle-check me-1"></i> HOÀN THÀNH MẺ BÁNH
                                                         </button>

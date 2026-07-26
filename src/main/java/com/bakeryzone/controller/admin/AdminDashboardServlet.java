@@ -114,6 +114,7 @@ public class AdminDashboardServlet extends HttpServlet {
             totalIngredients = 0;
         }
 
+        int paidCount = statusCounts.getOrDefault("Đã thanh toán", 0);
         int pendingCount = statusCounts.getOrDefault("Đã xác nhận", 0);
         int processingCount = statusCounts.getOrDefault("Đang xử lý", 0);
         int deliveringCount = statusCounts.getOrDefault("Đang giao", 0);
@@ -159,6 +160,7 @@ public class AdminDashboardServlet extends HttpServlet {
         request.setAttribute("totalCustomers", totalCustomers);
         request.setAttribute("totalProducts", totalProducts);
         request.setAttribute("totalIngredients", totalIngredients);
+        request.setAttribute("paidCount", paidCount);
         request.setAttribute("pendingCount", pendingCount);
         request.setAttribute("processingCount", processingCount);
         request.setAttribute("deliveringCount", deliveringCount);
