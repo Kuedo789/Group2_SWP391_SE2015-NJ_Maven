@@ -92,10 +92,7 @@ public class ShipperStatusZoneServlet extends HttpServlet {
             // Update status and zone
             boolean updateSuccess = staffDAO.updateShipperStatusAndZone(staff.getStaffId(), isActive, workingZoneId);
             if (updateSuccess) {
-                // If workingZoneId was updated, save it back into staff profile object
-                if (workingZoneId != null && !workingZoneId.trim().isEmpty()) {
-                    staff.setManagedZone(workingZoneId);
-                }
+                staff.setManagedZone(workingZoneId != null ? workingZoneId.trim() : "");
                 staff.setIsActiveStaff(isActive);
                 
                 jsonResponse.addProperty("success", true);

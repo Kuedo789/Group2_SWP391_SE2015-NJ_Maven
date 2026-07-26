@@ -63,7 +63,7 @@ public class ShipperTripDAO {
                         "LEFT JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
                         "LEFT JOIN `staff` s ON (s.Staff_ID = ? OR s.User_ID = ?) " +
                         "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
-                        "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID OR 1=1)");
+                        "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID OR s.Managed_Zone IS NULL OR s.Managed_Zone = '' OR s.Managed_Zone LIKE '%Toàn thành phố%' OR LOCATE(LOWER(s.Managed_Zone), LOWER(o.Delivery_Address)) > 0)");
         List<Object> params = new ArrayList<>();
         params.add(shipperId);
         params.add(shipperId);
@@ -115,7 +115,7 @@ public class ShipperTripDAO {
                         "LEFT JOIN `delivery_trip` t ON o.Trip_ID = t.Trip_ID " +
                         "LEFT JOIN `staff` s ON (s.Staff_ID = ? OR s.User_ID = ?) " +
                         "LEFT JOIN customer c ON o.Customer_ID = c.Customer_ID " +
-                        "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID OR 1=1)");
+                        "WHERE (t.Shipper_ID = ? OR t.Shipper_ID = s.Staff_ID OR s.Managed_Zone IS NULL OR s.Managed_Zone = '' OR s.Managed_Zone LIKE '%Toàn thành phố%' OR LOCATE(LOWER(s.Managed_Zone), LOWER(o.Delivery_Address)) > 0)");
         List<Object> params = new ArrayList<>();
         params.add(shipperId);
         params.add(shipperId);

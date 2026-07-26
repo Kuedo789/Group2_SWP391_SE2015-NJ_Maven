@@ -166,21 +166,30 @@
 
                                             </ul>
 
-                                            <div class="nav-section-title">Hạng Thành Viên</div>
-                                            <ul class="sidebar-menu">
+                                            <c:set var="canViewMembership" value="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/membership')}" />
+                                            <c:set var="canViewTierConfig" value="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/tier-config')}" />
 
-                                                <li class="menu-item ${param.activeMenu == 'membership-overview' ? 'active' : ''}">
-                                                    <a href="${pageContext.request.contextPath}/admin/membership">
-                                                        <i class="fa-solid fa-id-card-clip"></i> Hạng Thành viên
-                                                    </a>
-                                                </li>
-                                                <li class="menu-item ${param.activeMenu == 'tier-config' ? 'active' : ''}">
-                                                    <a href="${pageContext.request.contextPath}/admin/tier-config">
-                                                        <i class="fa-solid fa-sliders"></i> Cấu hình
-                                                    </a>
-                                                </li>
+                                            <c:if test="${canViewMembership || canViewTierConfig}">
+                                                <div class="nav-section-title">Hạng Thành Viên</div>
+                                                <ul class="sidebar-menu">
 
-                                            </ul>
+                                                    <c:if test="${canViewMembership}">
+                                                        <li class="menu-item ${param.activeMenu == 'membership-overview' ? 'active' : ''}">
+                                                            <a href="${pageContext.request.contextPath}/admin/membership">
+                                                                <i class="fa-solid fa-id-card-clip"></i> Hạng Thành viên
+                                                            </a>
+                                                        </li>
+                                                    </c:if>
+                                                    <c:if test="${canViewTierConfig}">
+                                                        <li class="menu-item ${param.activeMenu == 'tier-config' ? 'active' : ''}">
+                                                            <a href="${pageContext.request.contextPath}/admin/tier-config">
+                                                                <i class="fa-solid fa-sliders"></i> Cấu hình
+                                                            </a>
+                                                        </li>
+                                                    </c:if>
+
+                                                </ul>
+                                            </c:if>
 
                                             <div class="nav-section-title">Hệ thống</div>
                                             <ul class="sidebar-menu">

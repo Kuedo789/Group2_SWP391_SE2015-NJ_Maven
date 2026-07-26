@@ -919,7 +919,7 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
-                                <c:if test="${userRole eq 'SHIPPER'}">
+                                <c:if test="${empty pickupPhoto && userRole eq 'SHIPPER' && order.orderStatus ne 'Completed' && order.orderStatus ne 'Hoàn thành' && order.orderStatus ne 'Đã giao' && order.orderStatus ne 'Cancelled' && order.orderStatus ne 'Canceled' && order.orderStatus ne 'Đã hủy'}">
                                     <input type="file" id="pickup-file-input" accept="image/*" capture="camera" style="display: none;" onchange="uploadEvidence(this, 'pickup')">
                                 <button type="button" class="btn" style="background-color: var(--cz-primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="openWebRTCCamera('pickup')">
                                     <i class="fa-solid fa-camera"></i> Chụp ảnh lấy bánh
@@ -944,7 +944,7 @@
                                         </c:otherwise>
                                     </c:choose>
                                 </div>
-                                <c:if test="${userRole eq 'SHIPPER'}">
+                                <c:if test="${empty deliveryPhoto && userRole eq 'SHIPPER' && order.orderStatus ne 'Completed' && order.orderStatus ne 'Hoàn thành' && order.orderStatus ne 'Đã giao' && order.orderStatus ne 'Cancelled' && order.orderStatus ne 'Canceled' && order.orderStatus ne 'Đã hủy'}">
                                 <input type="file" id="delivery-file-input" accept="image/*" capture="camera" style="display: none;" onchange="uploadEvidence(this, 'delivery')" ${empty pickupPhoto ? 'disabled' : ''}>
                                 <button type="button" class="btn" id="btn-delivery-upload" style="background-color: ${empty pickupPhoto ? '#aaa' : 'var(--cz-primary)'}; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="${empty pickupPhoto ? "showToast('Bạn cần chụp ảnh lấy bánh tại tiệm trước!', 'error')" : "openWebRTCCamera('delivery')"}" ${empty pickupPhoto ? 'disabled' : ''}>
                                     <i class="fa-solid fa-camera"></i> Chụp ảnh giao bánh
@@ -967,10 +967,16 @@
                             <c:when test="${userRole eq 'SHIPPER'}">
 
                         <c:choose>
-                            <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao' || order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Canceled' || order.orderStatus eq 'Đã hủy'}">
+                            <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao'}">
+                                <div style="padding: 20px; text-align: center; color: #15803d; background-color: #dcfce7; border: 1px solid #bbf7d0; border-radius: 6px; font-weight: bold;">
+                                    <i class="fa-solid fa-circle-check" style="font-size: 24px; margin-bottom: 8px; display: block; color: #15803d;"></i>
+                                    Đơn hàng đã hoàn thành giao hàng thành công. Không thể thay đổi trạng thái nữa.
+                                </div>
+                            </c:when>
+                            <c:when test="${order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Canceled' || order.orderStatus eq 'Đã hủy'}">
                                 <div style="padding: 20px; text-align: center; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px; font-weight: bold;">
-                                    <i class="fa-solid fa-lock" style="font-size: 24px; margin-bottom: 8px; display: block; color: #721c24;"></i>
-                                    Đơn hàng đã hoàn thành hoặc đã hủy. Không thể thay đổi trạng thái nữa.
+                                    <i class="fa-solid fa-circle-xmark" style="font-size: 24px; margin-bottom: 8px; display: block; color: #721c24;"></i>
+                                    Đơn hàng đã bị hủy. Không thể thay đổi trạng thái nữa.
                                 </div>
                             </c:when>
                             <c:otherwise>
@@ -1014,10 +1020,22 @@
                                     Đơn hàng đang chờ thanh toán.<br>Hệ thống sẽ tự động cập nhật khi khách thanh toán xong.
                                 </div>
                             </c:when>
-                            <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Cancelled'}">
+                            <c:when test="${sessionScope.user.roleId eq 'STAFF' && (order.orderStatus eq 'Waiting_Delivery' || order.orderStatus eq 'Delivering')}">
+                                <div style="padding: 20px; text-align: center; color: #1e40af; background-color: #dbeafe; border: 1px solid #bfdbfe; border-radius: 6px; font-weight: bold;">
+                                    <i class="fa-solid fa-truck-fast" style="font-size: 24px; margin-bottom: 8px; display: block; color: #1e40af;"></i>
+                                    Đơn hàng đã ở trạng thái Chờ giao / Đang giao hàng.<br>Nhân viên làm bánh không thể thay đổi trạng thái nữa.
+                                </div>
+                            </c:when>
+                            <c:when test="${order.orderStatus eq 'Completed' || order.orderStatus eq 'Hoàn thành' || order.orderStatus eq 'Đã giao'}">
+                                <div style="padding: 20px; text-align: center; color: #15803d; background-color: #dcfce7; border: 1px solid #bbf7d0; border-radius: 6px; font-weight: bold;">
+                                    <i class="fa-solid fa-circle-check" style="font-size: 24px; margin-bottom: 8px; display: block; color: #15803d;"></i>
+                                    Đơn hàng đã hoàn thành giao hàng thành công. Không thể thay đổi trạng thái nữa.
+                                </div>
+                            </c:when>
+                            <c:when test="${order.orderStatus eq 'Cancelled' || order.orderStatus eq 'Canceled' || order.orderStatus eq 'Đã hủy'}">
                                 <div style="padding: 20px; text-align: center; color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px; font-weight: bold;">
-                                    <i class="fa-solid fa-lock" style="font-size: 24px; margin-bottom: 8px; display: block; color: #721c24;"></i>
-                                    Đơn hàng đã hoàn thành hoặc đã hủy.<br>Không thể thay đổi trạng thái nữa.
+                                    <i class="fa-solid fa-circle-xmark" style="font-size: 24px; margin-bottom: 8px; display: block; color: #721c24;"></i>
+                                    Đơn hàng đã bị hủy. Không thể thay đổi trạng thái nữa.
                                 </div>
                             </c:when>
                             <c:otherwise>
