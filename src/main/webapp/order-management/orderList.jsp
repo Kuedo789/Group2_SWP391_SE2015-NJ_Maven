@@ -84,6 +84,7 @@
         <!-- Filters Section -->
         <section class="orders-filter" style="display: flex; gap: 12px; justify-content: flex-start; margin-bottom: 25px; flex-wrap: wrap;">
             <a href="<%= request.getContextPath() %>/OrderList?status=all<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "all".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Tất cả (<%= request.getAttribute("countAll") != null ? request.getAttribute("countAll") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=waiting<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "waiting".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Chờ thanh toán (<%= request.getAttribute("countWaiting") != null ? request.getAttribute("countWaiting") : 0 %>)</a>
             <a href="<%= request.getContextPath() %>/OrderList?status=paid<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "paid".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><%= com.bakeryzone.model.OrderStatus.PAID.getDescription() %> (<%= request.getAttribute("countPaid") != null ? request.getAttribute("countPaid") : 0 %>)</a>
             <a href="<%= request.getContextPath() %>/OrderList?status=processing<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "processing".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><%= com.bakeryzone.model.OrderStatus.Processing.getDescription() %> (<%= request.getAttribute("countProcessing") != null ? request.getAttribute("countProcessing") : 0 %>)</a>
             <a href="<%= request.getContextPath() %>/OrderList?status=shipping<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "shipping".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><%= com.bakeryzone.model.OrderStatus.Delivering.getDescription() %> (<%= request.getAttribute("countShipping") != null ? request.getAttribute("countShipping") : 0 %>)</a>
@@ -170,7 +171,10 @@
 
                     if (dbStatus != null) {
                         displayStatus = order.getOrderStatusForCustomer(); // Lấy tên tiếng việt (ẩn Waiting_Delivery)
-                        if (dbStatus.equals("PAID")) {
+                        if (dbStatus.equals("Waiting_Payment")) {
+                            dataStatus = "waiting";
+                            badgeClass = "status-waiting\" style=\"background-color: #fef3c7; color: #92400e;";
+                        } else if (dbStatus.equals("PAID")) {
                             dataStatus = "paid";
                             badgeClass = "status-confirmed\" style=\"background-color: #d1fae5; color: #065f46;";
                         } else if (dbStatus.equals("Processing") || dbStatus.equals("Waiting_Delivery")) {
@@ -376,7 +380,9 @@
                             <span class="material-symbols-outlined" style="font-size: 20px;">add_shopping_cart</span>
                         </button>
                         
-                        <% if ("completed".equals(dataStatus)) { %>
+                        <% if ("waiting".equals(dataStatus)) { %>
+                            <button class="btn" onclick="window.location.href='<%= request.getContextPath() %>/bank-transfer?orderNo=<%= order.getOrderNo() %>&total=<%= order.getDepositAmount() != null ? order.getDepositAmount() : order.getTotalCost() %>'" style="background-color: #e67e22; color: white; border: none; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#d35400'" onmouseout="this.style.backgroundColor='#e67e22'">Thanh toán ngay</button>
+                        <% } else if ("completed".equals(dataStatus)) { %>
                             <button class="btn" onclick="reorderOrder('<%= order.getOrderNo() %>')" style="background-color: #2e7d32; color: white; border: none; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#1b5e20'" onmouseout="this.style.backgroundColor='#2e7d32'">Đặt lại</button>
                         <% } else if ("cancelled".equals(dataStatus)) { %>
                             <button class="btn" onclick="reorderOrder('<%= order.getOrderNo() %>')" style="background-color: #2e7d32; color: white; border: none; font-weight: 700; transition: all 0.2s;" onmouseover="this.style.backgroundColor='#1b5e20'" onmouseout="this.style.backgroundColor='#2e7d32'">Đặt lại</button>
@@ -411,6 +417,11 @@
             String sortParam = "&sort=" + sortVal;
             String statusParam = "&status=" + currentStatus;
             
+            String cakeTypeParam = "";
+            if (request.getAttribute("cakeType") != null && !request.getAttribute("cakeType").toString().isEmpty()) {
+                cakeTypeParam = "&cakeType=" + request.getAttribute("cakeType");
+            }
+            
             if (totalPages > 0) {
                 // Windowed pagination: hiển thị tối đa 7 số trang quanh trang hiện tại
                 int windowSize = 7;
@@ -424,31 +435,31 @@
             <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 40px; margin-bottom: 40px;">
                 <%-- Nút Trước --%>
                 <% if (currentPage > 1) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage - 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Trước</a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage - 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %><%= cakeTypeParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Trước</a>
                 <% } else { %>
                     <button class="btn btn-outline" style="padding: 8px 16px; border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;" disabled>Trước</button>
                 <% } %>
 
                 <%-- Ellipsis đầu nếu cần --%>
                 <% if (winStart > 1) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=1<%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">1</a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=1<%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %><%= cakeTypeParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">1</a>
                     <% if (winStart > 2) { %><span style="padding: 0 4px; color: #999;">...</span><% } %>
                 <% } %>
 
                 <%-- Số trang trong cửa sổ --%>
                 <% for (int i = winStart; i <= winEnd; i++) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= i %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn <%= i == currentPage ? "btn-primary" : "btn-outline" %>" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= i %></a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= i %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %><%= cakeTypeParam %>" class="btn <%= i == currentPage ? "btn-primary" : "btn-outline" %>" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= i %></a>
                 <% } %>
 
                 <%-- Ellipsis cuối nếu cần --%>
                 <% if (winEnd < totalPages) { %>
                     <% if (winEnd < totalPages - 1) { %><span style="padding: 0 4px; color: #999;">...</span><% } %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= totalPages %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= totalPages %></a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= totalPages %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %><%= cakeTypeParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= totalPages %></a>
                 <% } %>
 
                 <%-- Nút Sau --%>
                 <% if (currentPage < totalPages) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage + 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Sau</a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage + 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %><%= cakeTypeParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Sau</a>
                 <% } else { %>
                     <button class="btn btn-outline" style="padding: 8px 16px; border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;" disabled>Sau</button>
                 <% } %>
@@ -880,7 +891,7 @@
                     <ul class="pagination-nav">
                         <c:if test="${currentPage > 1}">
                             <li class="page-num-item">
-                                <a href="${formAction}?action=list&page=${currentPage - 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}">
+                                <a href="${formAction}?action=list&page=${currentPage - 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}&cakeType=${cakeType}">
                                     <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                 </a>
                             </li>
@@ -888,13 +899,13 @@
 
                         <c:forEach begin="1" end="${totalPages}" var="i">
                             <li class="page-num-item ${currentPage == i ? 'active' : ''}">
-                                <a href="${formAction}?action=list&page=${i}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}">${i}</a>
+                                <a href="${formAction}?action=list&page=${i}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}&cakeType=${cakeType}">${i}</a>
                             </li>
                         </c:forEach>
 
                         <c:if test="${currentPage < totalPages}">
                             <li class="page-num-item">
-                                <a href="${formAction}?action=list&page=${currentPage + 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}">
+                                <a href="${formAction}?action=list&page=${currentPage + 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}&cakeType=${cakeType}">
                                     <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                 </a>
                             </li>
