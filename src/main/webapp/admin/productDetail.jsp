@@ -1177,6 +1177,34 @@
                 document.getElementById('instructionSteps').value = recipeQuill.root.innerHTML;
             }
 
+            // Validate editors (3-300 chars, required)
+            if (quill) {
+                const descText = quill.getText().trim();
+                if (descText.length === 0) {
+                    alert('Mô tả chi tiết không được để trống.');
+                    return false;
+                } else if (descText.length < 3) {
+                    alert('Mô tả chi tiết phải có tối thiểu 3 ký tự.');
+                    return false;
+                } else if (descText.length > 300) {
+                    alert('Mô tả chi tiết không được vượt quá 300 ký tự (Hiện tại: ' + descText.length + ' ký tự).');
+                    return false;
+                }
+            }
+            if (recipeQuill) {
+                const recipeText = recipeQuill.getText().trim();
+                if (recipeText.length === 0) {
+                    alert('Quy trình & Hướng dẫn làm bếp không được để trống.');
+                    return false;
+                } else if (recipeText.length < 3) {
+                    alert('Quy trình & Hướng dẫn làm bếp phải có tối thiểu 3 ký tự.');
+                    return false;
+                } else if (recipeText.length > 300) {
+                    alert('Quy trình & Hướng dẫn làm bếp không được vượt quá 300 ký tự (Hiện tại: ' + recipeText.length + ' ký tự).');
+                    return false;
+                }
+            }
+
             // Submit programmatically after passing all validation steps
             isFormSubmitting = true;
             form.submit();

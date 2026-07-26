@@ -194,7 +194,8 @@
                                                  </c:choose>
                                              </td>
                                             <td class="text-center" style="text-align: center;">
-                                                    <a href="${pageContext.request.contextPath}/admin/product?action=bom&id=${p.id}" class="btn-action-view" title="Xem định lượng nguyên liệu" style="background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; border-radius: 4px; padding: 6px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
+                                                <div class="actions-cell" style="justify-content: center; align-items: center; gap: 6px;">
+                                                    <a href="${pageContext.request.contextPath}/admin/product?action=bom&id=${p.id}" class="btn-action-view" title="Xem định lượng nguyên liệu" style="background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none;">
                                                         <i class="fa-solid fa-kitchen-set"></i>
                                                     </a>
                                                     <c:if test="${sessionScope.user.roleId eq 'ADMIN'}">
@@ -211,7 +212,7 @@
                                                                 </button>
                                                             </c:when>
                                                             <c:otherwise>
-                                                                <button class="btn-action-restore" title="Khôi phục" onclick="if(confirm('Bạn có chắc chắn muốn khôi phục bánh kem ${p.name} không?')) { restoreProduct('${p.id}'); }" style="border: none; background: none; color: #10b981; cursor: pointer; padding: 6px; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; transition: color 0.2s;">
+                                                                <button class="btn-action-restore" title="Khôi phục" onclick="if(confirm('Bạn có chắc chắn muốn khôi phục bánh kem ${p.name} không?')) { restoreProduct('${p.id}'); }" style="border: 1px solid var(--cz-border-color); background-color: #fff; color: #10b981; cursor: pointer; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;">
                                                                     <i class="fa-solid fa-rotate-left"></i>
                                                                 </button>
                                                             </c:otherwise>

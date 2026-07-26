@@ -103,24 +103,57 @@ public class CustomerDAO {
     public boolean updateCustomer(Customer c) {
         Connection conn = null;
         PreparedStatement ps = null;
+        PreparedStatement psSync = null;
         try {
+            conn = DBContext.getJDBCConnection();
+            conn.setAutoCommit(false);
             String sql = "UPDATE `customer` c "
                     + "JOIN `user` u ON c.User_ID = u.User_ID "
-                    + "SET c.Full_Name = ?, c.Phone = ?,c.Default_Address = ?, u.Email = ?, u.Password = ?, u.Account_Status = ? "
+                    + "SET c.Full_Name = ?, c.Phone = ?, c.Default_Address = ?, u.Email = ?, u.Password = ?, u.Account_Status = ? "
                     + "WHERE c.Customer_ID = ?";
-            conn = DBContext.getJDBCConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, c.getFullName());
             ps.setString(2, c.getPhone());
             ps.setString(3, c.getDefaultAddress());
-            ps.setString(4, c.getUser().getEmail()); // Lấy email từ object User
+            ps.setString(4, c.getUser().getEmail());
             ps.setString(5, c.getUser().getPassword());
             ps.setString(6, c.getUser().getAccountStatus());
             ps.setString(7, c.getCustomerId());
-            return ps.executeUpdate() > 0;
+            int rowsUpdated = ps.executeUpdate();
+            if (rowsUpdated > 0 && c.getDefaultAddress() != null && !c.getDefaultAddress().trim().isEmpty()) {
+                String syncAddressSql = "UPDATE `delivery_address` da "
+                        + "JOIN `customer` c ON da.User_ID = c.User_ID "
+                        + "SET da.Address_Detail = ?, da.Receiver_Name = ?, da.Receiver_Phone = ? "
+                        + "WHERE c.Customer_ID = ? AND da.Is_Default = 1";
+                psSync = conn.prepareStatement(syncAddressSql);
+                psSync.setString(1, c.getDefaultAddress().trim());
+                psSync.setString(2, c.getFullName().trim());
+                psSync.setString(3, c.getPhone().trim());
+                psSync.setString(4, c.getCustomerId());
+                int syncRows = psSync.executeUpdate();
+                if (syncRows == 0) {
+                    String insertAddressSql = "INSERT INTO `delivery_address` (User_ID, Receiver_Name, Receiver_Phone, Address_Detail, Is_Default) "
+                            + "SELECT User_ID, Full_Name, Phone, ?, 1 FROM `customer` WHERE Customer_ID = ?";
+                    try (PreparedStatement psInsert = conn.prepareStatement(insertAddressSql)) {
+                        psInsert.setString(1, c.getDefaultAddress().trim());
+                        psInsert.setString(2, c.getCustomerId());
+                        psInsert.executeUpdate();
+                    }
+                }
+            }
+            conn.commit();
+            return rowsUpdated > 0;
         } catch (Exception e) {
+            try {
+                if (conn != null) {
+                    conn.rollback();
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
             e.printStackTrace();
         } finally {
+            close(null, psSync, null);
             close(conn, ps, null);
         }
         return false;

@@ -148,13 +148,11 @@ public class ReviewManagementServlet extends HttpServlet {
         redirectToDefault(request, response, "error");
     }
 
-    // 🟢 THÊM: Hàm điều hướng mặc định không kèm thông báo
     private void redirectToDefault(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         response.sendRedirect(request.getContextPath() + "/admin/reviews?action=list");
     }
 
-    // 🟢 THÊM: Hàm điều hướng nạp kèm tham số thông báo (success, fail, error) cho Toastify nhận diện
     private void redirectToDefault(HttpServletRequest request, HttpServletResponse response, String msg)
             throws IOException {
         response.sendRedirect(request.getContextPath() + "/admin/reviews?action=list&msg=" + msg);

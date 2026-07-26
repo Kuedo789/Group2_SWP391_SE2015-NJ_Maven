@@ -44,8 +44,8 @@ public class MembershipDAO {
         UserMembership um = getMembershipByUserIdRaw(userId);
         if (um != null && um.getTotalSpending() != null && um.getCurrentTier() != null) {
             MembershipTier qualifyingTier = getHighestQualifyingTier(um.getTotalSpending());
-            if (qualifyingTier != null && qualifyingTier.getMinSpending().compareTo(um.getCurrentTier().getMinSpending()) > 0) {
-                // Perform JIT upgrade in database
+            if (qualifyingTier != null && qualifyingTier.getTierId() != um.getCurrentTier().getTierId()) {
+                // Perform JIT upgrade/downgrade in database
                 setTier(userId, qualifyingTier.getTierId());
                 // Re-fetch the updated membership with proper next tier joins
                 um = getMembershipByUserIdRaw(userId);
@@ -922,6 +922,7 @@ public class MembershipDAO {
             conn = DBContext.getJDBCConnection();
             if (conn == null) return false;
             
+            boolean success = false;
             if (t.getTierId() > 0) {
                 // Update
                 String sql = "UPDATE MembershipTier SET TierName=?, MinSpending=?, PointMultiplier=?, MonthlyVouchers=?, Description=? WHERE TierID=?";
@@ -932,6 +933,7 @@ public class MembershipDAO {
                 ps.setInt(4, t.getMonthlyVouchers());
                 ps.setString(5, t.getDescription());
                 ps.setInt(6, t.getTierId());
+                success = ps.executeUpdate() > 0;
             } else {
                 // Insert
                 String sql = "INSERT INTO MembershipTier (TierName, MinSpending, PointMultiplier, MonthlyVouchers, Description) VALUES (?, ?, ?, ?, ?)";
@@ -941,9 +943,40 @@ public class MembershipDAO {
                 ps.setDouble(3, t.getPointMultiplier());
                 ps.setInt(4, t.getMonthlyVouchers());
                 ps.setString(5, t.getDescription());
+                success = ps.executeUpdate() > 0;
             }
             
-            return ps.executeUpdate() > 0;
+            if (success) {
+                recalculateAllMemberTiers();
+            }
+            return success;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, ps, null);
+        }
+        return false;
+    }
+
+    public boolean recalculateAllMemberTiers() {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+            
+            String sql = "UPDATE UserMembership um "
+                       + "JOIN ("
+                       + "  SELECT um2.UserID, ("
+                       + "    SELECT mt.TierID FROM MembershipTier mt "
+                       + "    WHERE mt.MinSpending <= um2.TotalSpending "
+                       + "    ORDER BY mt.MinSpending DESC LIMIT 1"
+                       + "  ) AS BestTierID "
+                       + "  FROM UserMembership um2"
+                       + ") AS temp ON um.UserID = temp.UserID "
+                       + "SET um.CurrentTierID = COALESCE(temp.BestTierID, um.CurrentTierID)";
+            ps = conn.prepareStatement(sql);
+            return ps.executeUpdate() >= 0;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

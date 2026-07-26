@@ -330,25 +330,46 @@ public class OrderMapper {
         String st = status.trim();
         switch (st) {
             case "Pending":
-                sql.append(" AND o.OrderStatus IN ('Pending', 'Chờ xác nhận')");
+            case "Waiting_Payment":
+            case "Chờ xác nhận":
+            case "Chờ thanh toán":
+                sql.append(" AND o.OrderStatus IN ('Pending', 'Waiting_Payment', 'Chờ xác nhận', 'Chờ thanh toán')");
                 break;
             case "Confirmed":
+            case "Đã xác nhận":
+            case "Chờ làm":
                 sql.append(" AND o.OrderStatus IN ('Confirmed', 'Đã xác nhận', 'Chờ làm')");
                 break;
             case "PAID":
+            case "Đã thanh toán":
+            case "Đã chuyển khoản":
                 sql.append(" AND o.OrderStatus IN ('PAID', 'Đã thanh toán', 'Đã chuyển khoản')");
                 break;
             case "Processing":
+            case "Chờ xử lý":
+            case "Đang làm bánh":
                 sql.append(" AND o.OrderStatus IN ('Processing', 'Confirmed', 'Chờ xử lý', 'Đang làm bánh', 'Đã xác nhận')");
                 break;
+            case "Waiting_Delivery":
+            case "Chờ giao hàng":
+            case "Chờ giao":
+                sql.append(" AND o.OrderStatus IN ('Waiting_Delivery', 'Chờ giao hàng', 'Chờ giao')");
+                break;
             case "Delivering":
-                sql.append(" AND o.OrderStatus IN ('Delivering', 'Đang giao hàng', 'Đang giao', 'Chờ giao')");
+            case "Đang giao hàng":
+            case "Đang giao":
+                sql.append(" AND o.OrderStatus IN ('Delivering', 'Đang giao hàng', 'Đang giao')");
                 break;
             case "Completed":
+            case "Hoàn thành":
+            case "Đã giao":
                 sql.append(" AND o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");
                 break;
             case "Cancelled":
-                sql.append(" AND o.OrderStatus IN ('Cancelled', 'Canceled', 'Đã hủy')");
+            case "Canceled":
+            case "Đã hủy":
+            case "Đã huỷ":
+                sql.append(" AND o.OrderStatus IN ('Cancelled', 'Canceled', 'Đã hủy', 'Đã huỷ')");
                 break;
             default:
                 sql.append(" AND (o.OrderStatus = ? OR o.OrderStatus LIKE ?)");
@@ -367,12 +388,13 @@ public class OrderMapper {
                .append("  SELECT 1 FROM order_item oi ")
                .append("  WHERE oi.Order_No = o.Order_No ")
                .append("  AND oi.Product_ID IS NOT NULL ")
+               .append("  AND oi.Custom_Cake_ID IS NULL ")
                .append(" )");
         } else if ("custom".equalsIgnoreCase(cakeType.trim())) {
             sql.append(" AND EXISTS (")
                .append("  SELECT 1 FROM order_item oi ")
                .append("  WHERE oi.Order_No = o.Order_No ")
-               .append("  AND oi.Product_ID IS NULL ")
+               .append("  AND oi.Custom_Cake_ID IS NOT NULL ")
                .append(" )");
         }
     }
