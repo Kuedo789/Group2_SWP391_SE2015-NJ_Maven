@@ -22,14 +22,7 @@ public class ReportDAO {
                 "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
                 "                 FROM template_ingredient_detail d" +
                 "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
-                "                 WHERE d.Template_ID = (CASE" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0001' THEN 'TPL_0001'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0002' THEN 'TPL_0005'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0003' THEN 'TPL_0009'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0004' THEN 'TPL_0011'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0005' THEN 'TPL_0013'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0006' THEN 'TPL_0017'" +
-                "                     ELSE cc.Cake_Hash_Structure END)" +
+                "                 WHERE d.Template_ID = COALESCE(oi.Product_ID, cc.Cake_Hash_Structure)" +
                 "             ))" +
                 "              FROM order_item oi" +
                 "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
@@ -172,7 +165,9 @@ public class ReportDAO {
                     String status = rs.getString("OrderStatus");
                     int count = rs.getInt("count");
                     if (status != null) {
-                        if (status.equalsIgnoreCase("Pending") || status.equals("Chờ xác nhận")) {
+                        if (status.equalsIgnoreCase("PAID") || status.equals("Đã thanh toán")) {
+                            counts.put("Đã thanh toán", counts.getOrDefault("Đã thanh toán", 0) + count);
+                        } else if (status.equalsIgnoreCase("Pending") || status.equals("Chờ xác nhận")) {
                             counts.put("Chờ xác nhận", counts.getOrDefault("Chờ xác nhận", 0) + count);
                         } else if (status.equalsIgnoreCase("Confirmed") || status.equals("Đã xác nhận")) {
                             counts.put("Đã xác nhận", counts.getOrDefault("Đã xác nhận", 0) + count);
@@ -284,14 +279,7 @@ public class ReportDAO {
                 "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
                 "                 FROM template_ingredient_detail d" +
                 "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
-                "                 WHERE d.Template_ID = (CASE" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0001' THEN 'TPL_0001'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0002' THEN 'TPL_0005'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0003' THEN 'TPL_0009'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0004' THEN 'TPL_0011'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0005' THEN 'TPL_0013'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0006' THEN 'TPL_0017'" +
-                "                     ELSE cc.Cake_Hash_Structure END)" +
+                "                 WHERE d.Template_ID = COALESCE(oi.Product_ID, cc.Cake_Hash_Structure)" +
                 "             ))" +
                 "              FROM order_item oi" +
                 "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
@@ -381,14 +369,7 @@ public class ReportDAO {
                 "                 SELECT COALESCE(SUM(d.Quantity * ing.Price_Per_Unit), 0)" +
                 "                 FROM template_ingredient_detail d" +
                 "                 JOIN ingredients ing ON d.Ingredient_ID = ing.Ingredient_ID" +
-                "                 WHERE d.Template_ID = (CASE" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0001' THEN 'TPL_0001'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0002' THEN 'TPL_0005'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0003' THEN 'TPL_0009'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0004' THEN 'TPL_0011'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0005' THEN 'TPL_0013'" +
-                "                     WHEN cc.Cake_Hash_Structure = 'HASH_CC_0006' THEN 'TPL_0017'" +
-                "                     ELSE cc.Cake_Hash_Structure END)" +
+                "                 WHERE d.Template_ID = COALESCE(oi.Product_ID, cc.Cake_Hash_Structure)" +
                 "             ))" +
                 "              FROM order_item oi" +
                 "              LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID" +
@@ -425,14 +406,8 @@ public class ReportDAO {
                 +
                 "       SUM(oi.Quantity) AS quantity_sold, SUM(oi.Quantity * oi.Price_At_Purchase) AS total_revenue " +
                 "FROM order_item oi " +
-                "JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID " +
-                "JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR " +
-                "  (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR " +
-                "  (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR " +
-                "  (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR " +
-                "  (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR " +
-                "  (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR " +
-                "  (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')) " +
+                "LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID " +
+                "LEFT JOIN cake_template t ON t.Template_ID = COALESCE(oi.Product_ID, cc.Cake_Hash_Structure) " +
                 "LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID " +
                 "JOIN orders o ON oi.Order_No = o.Order_No " +
                 "WHERE o.OrderStatus IN ('Completed', 'Hoàn thành', 'Đã giao')");

@@ -112,7 +112,8 @@
                 </div>
 
                 <div class="form-card">
-                    <form action="${pageContext.request.contextPath}/admin/categories" method="POST">
+                    <form action="${pageContext.request.contextPath}/admin/categories"
+                          method="POST" enctype="multipart/form-data">
                         
                         <input type="hidden" name="formAction" value="add">
 
@@ -145,7 +146,11 @@
 
                         <div class="form-group">
                             <label class="form-label" for="categoryName">Tên Danh Mục (Category Name) <span style="color: #ef4444;">*</span></label>
-                            <input type="text" id="categoryName" name="categoryName" class="form-control" placeholder="Nhập tên danh mục..." required maxlength="100">
+                            <input type="text" id="categoryName" name="categoryName" class="form-control" placeholder="Nhập tên danh mục..." required maxlength="49">
+                            <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">Tên danh mục phải ít hơn 50 ký tự.</small>
+                            <c:if test="${param.error == 'name_too_long'}">
+                                <small style="color: #dc2626; font-size: 12px; margin-top: 5px; display: block;">Tên danh mục phải ít hơn 50 ký tự.</small>
+                            </c:if>
                         </div>
 
                         <div class="form-group">
@@ -154,11 +159,7 @@
                             <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">Lưu ý: Nhóm Nguyên liệu không hiển thị mô tả.</small>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label" for="iconUrl">Đường dẫn Icon (Icon URL)</label>
-                            <input type="text" id="iconUrl" name="iconUrl" class="form-control" placeholder="Ví dụ: assets/images/categories/icons/default.png" maxlength="255">
-                            <small style="color: var(--text-muted); font-size: 12px; margin-top: 5px; display: block;">Lưu ý: Nhóm Nguyên liệu không hiển thị icon.</small>
-                        </div>
+                        <jsp:include page="category-icon-input.jsp" />
 
                         <div class="form-actions">
                             <button type="submit" class="btn-primary">
@@ -174,22 +175,20 @@
                                 const type = this.value;
                                 const idInput = document.getElementById('categoryId');
                                 const descInput = document.getElementById('description');
-                                const iconInput = document.getElementById('iconUrl');
                                 
                                 if (type === 'Sản phẩm chính') {
                                     idInput.value = 'CAT-PROD-';
                                     descInput.disabled = false;
-                                    iconInput.disabled = false;
+                                    setCategoryIconEnabled(true);
                                 } else if (type === 'Nguyên liệu') {
                                     idInput.value = 'CAT-ING-';
                                     descInput.disabled = true;
                                     descInput.value = '';
-                                    iconInput.disabled = true;
-                                    iconInput.value = '';
+                                    setCategoryIconEnabled(false);
                                 } else if (type === 'Phụ kiện') {
                                     idInput.value = 'CAT-ACC-';
                                     descInput.disabled = false;
-                                    iconInput.disabled = false;
+                                    setCategoryIconEnabled(true);
                                 }
                                 
                                 idInput.focus(); // Snap the cursor to the input box so they can finish typing

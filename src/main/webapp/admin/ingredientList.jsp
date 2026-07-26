@@ -122,7 +122,8 @@
                                                           <c:set var="resolvedUrl" value="${i.imageUrl}" />
                                                       </c:when>
                                                       <c:otherwise>
-                                                          <c:set var="resolvedUrl" value="${pageContext.request.contextPath}/${i.imageUrl}" />
+                                                          <c:set var="cleanImg" value="${i.imageUrl.startsWith('/') ? i.imageUrl.substring(1) : i.imageUrl}" />
+                                                          <c:set var="resolvedUrl" value="${pageContext.request.contextPath}/${cleanImg.startsWith('assets/') ? '' : 'assets/'}${cleanImg}" />
                                                       </c:otherwise>
                                                   </c:choose>
                                                   <img src="${resolvedUrl}" alt="${i.ingredientName}" style="width: 64px; height: 64px; border-radius: 8px; border: 1px solid #ddd; object-fit: cover;">

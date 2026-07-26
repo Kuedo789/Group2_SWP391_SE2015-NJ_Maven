@@ -10,15 +10,7 @@ import java.util.List;
 
 public class ReviewDAO {
 
-    private String getHashForTemplate(String templateId) {
-        if ("TPL_0001".equals(templateId)) return "HASH_CC_0001";
-        if ("TPL_0005".equals(templateId)) return "HASH_CC_0002";
-        if ("TPL_0009".equals(templateId)) return "HASH_CC_0003";
-        if ("TPL_0011".equals(templateId)) return "HASH_CC_0004";
-        if ("TPL_0013".equals(templateId)) return "HASH_CC_0005";
-        if ("TPL_0017".equals(templateId)) return "HASH_CC_0006";
-        return templateId;
-    }
+
 
     public List<Review> getReviewsByProductId(String productId) {
         List<Review> list = new ArrayList<>();
@@ -41,18 +33,10 @@ public class ReviewDAO {
                 t.Default_Margin_Percent,
                 t.Default_Service_Percent
             FROM product_review r
-            JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
-            LEFT JOIN cake_template t ON (
-                cc.Cake_Hash_Structure = t.Template_ID OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')
-            )
+            LEFT JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
+            LEFT JOIN cake_template t ON t.Template_ID = COALESCE(r.Product_ID, cc.Cake_Hash_Structure)
             LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
-            WHERE (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) AND r.Moderation_Status IN ('Approved', 'Featured')
+            WHERE COALESCE(r.Product_ID, cc.Cake_Hash_Structure) = ? AND r.Moderation_Status IN ('Approved', 'Featured')
             ORDER BY 
                 CASE WHEN r.Moderation_Status = 'Featured' THEN 1 ELSE 2 END ASC, 
                 r.Review_ID DESC
@@ -60,7 +44,6 @@ public class ReviewDAO {
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, productId);
-            ps.setString(2, getHashForTemplate(productId));
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Review r = new Review();
@@ -101,14 +84,13 @@ public class ReviewDAO {
             SELECT COUNT(*) 
             FROM order_item oi
             JOIN orders o ON oi.Order_No = o.Order_No
-            JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-            WHERE o.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) 
+            LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
+            WHERE o.Customer_ID = ? AND COALESCE(oi.Product_ID, cc.Cake_Hash_Structure) = ? 
               AND (o.OrderStatus = 'Completed')
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customerId);
             ps.setString(2, productId);
-            ps.setString(3, getHashForTemplate(productId));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -125,15 +107,14 @@ public class ReviewDAO {
             SELECT cc.Custom_Cake_ID 
             FROM order_item oi
             JOIN orders o ON oi.Order_No = o.Order_No
-            JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-            WHERE o.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?) 
+            LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
+            WHERE o.Customer_ID = ? AND COALESCE(oi.Product_ID, cc.Cake_Hash_Structure) = ? 
               AND (o.OrderStatus = 'Completed')
             ORDER BY o.Order_Time DESC LIMIT 1
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customerId);
             ps.setString(2, productId);
-            ps.setString(3, getHashForTemplate(productId));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getString("Custom_Cake_ID");
@@ -149,13 +130,12 @@ public class ReviewDAO {
         String sql = """
             SELECT COUNT(*) 
             FROM product_review r
-            JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
-            WHERE r.Customer_ID = ? AND (cc.Cake_Hash_Structure = ? OR cc.Cake_Hash_Structure = ?)
+            LEFT JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
+            WHERE r.Customer_ID = ? AND COALESCE(r.Product_ID, cc.Cake_Hash_Structure) = ?
             """;
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, customerId);
             ps.setString(2, productId);
-            ps.setString(3, getHashForTemplate(productId));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;
@@ -167,14 +147,15 @@ public class ReviewDAO {
         return false;
     }
 
-    public boolean addReview(String reviewId, String customCakeId, String customerId, int ratingStars, String comment) {
-        String sql = "INSERT INTO product_review (Review_ID, Custom_Cake_ID, Customer_ID, Rating_Stars, Comment, Moderation_Status) VALUES (?, ?, ?, ?, ?, 'Pending')";
+    public boolean addReview(String reviewId, String customCakeId, String productId, String customerId, int ratingStars, String comment) {
+        String sql = "INSERT INTO product_review (Review_ID, Custom_Cake_ID, Product_ID, Customer_ID, Rating_Stars, Comment, Moderation_Status) VALUES (?, ?, ?, ?, ?, ?, 'Pending')";
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, reviewId);
-            ps.setString(2, customCakeId);
-            ps.setString(3, customerId);
-            ps.setInt(4, ratingStars);
-            ps.setString(5, comment);
+            ps.setString(2, customCakeId != null && !customCakeId.trim().isEmpty() ? customCakeId : null);
+            ps.setString(3, productId != null && !productId.trim().isEmpty() ? productId : null);
+            ps.setString(4, customerId);
+            ps.setInt(5, ratingStars);
+            ps.setString(6, comment);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             e.printStackTrace();
@@ -234,16 +215,8 @@ public class ReviewDAO {
         String query = """
             SELECT COUNT(*) FROM product_review r 
             JOIN customer c ON r.Customer_ID = c.Customer_ID 
-            JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID 
-            LEFT JOIN cake_template t ON (
-                cc.Cake_Hash_Structure = t.Template_ID OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')
-            )
+            LEFT JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID 
+            LEFT JOIN cake_template t ON t.Template_ID = COALESCE(r.Product_ID, cc.Cake_Hash_Structure)
             WHERE 1=1 
             """;
 
@@ -292,16 +265,8 @@ public class ReviewDAO {
             SELECT r.*, c.Full_Name AS Customer_Name, COALESCE(t.Template_Name, cc.Cake_Hash_Structure) AS Template_Name 
             FROM product_review r 
             JOIN customer c ON r.Customer_ID = c.Customer_ID 
-            JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID 
-            LEFT JOIN cake_template t ON (
-                cc.Cake_Hash_Structure = t.Template_ID OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')
-            )
+            LEFT JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID 
+            LEFT JOIN cake_template t ON t.Template_ID = COALESCE(r.Product_ID, cc.Cake_Hash_Structure)
             WHERE 1=1 
             """;
 
@@ -374,16 +339,8 @@ public class ReviewDAO {
                  WHERE d.Template_ID = t.Template_ID) AS Ingredient_Cost,
                 t.Default_Margin_Percent, t.Default_Service_Percent
             FROM product_review r
-            JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
-            LEFT JOIN cake_template t ON (
-                cc.Cake_Hash_Structure = t.Template_ID OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')
-            )
+            LEFT JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
+            LEFT JOIN cake_template t ON t.Template_ID = COALESCE(r.Product_ID, cc.Cake_Hash_Structure)
             LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
             WHERE r.Review_ID = ?
             """;
@@ -446,16 +403,8 @@ public class ReviewDAO {
                 COALESCE(t.Template_Name, cc.Cake_Hash_Structure) AS Template_Name,
                 COALESCE(pi.Image_URL, t.Image_URL, cc.Canvas_Image_URL) AS Image_URL 
             FROM product_review r
-            JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
-            LEFT JOIN cake_template t ON (
-                cc.Cake_Hash_Structure = t.Template_ID OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
-                (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')
-            )
+            LEFT JOIN custom_cake cc ON r.Custom_Cake_ID = cc.Custom_Cake_ID
+            LEFT JOIN cake_template t ON t.Template_ID = COALESCE(r.Product_ID, cc.Cake_Hash_Structure)
             LEFT JOIN customer c ON r.Customer_ID = c.Customer_ID
             -- 🟢 JOIN THÊM BẢNG ẢNH: Khớp Template_ID với Product_ID trong bảng ảnh của bạn, chỉ lấy ảnh đại diện chính
             LEFT JOIN product_image pi ON t.Template_ID = pi.Product_ID AND pi.Is_Cover = 1

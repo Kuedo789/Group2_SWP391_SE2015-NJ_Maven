@@ -12,15 +12,18 @@ public class CustomCake {
     private String cakeHashStructure;
     private double calculatedPrice;
 
+    private String cakeSize;
+
     public CustomCake() {}
 
     public CustomCake(String customCakeId, String canvasImageUrl, String greetingText,
-                      String cakeHashStructure, double calculatedPrice) {
+                      String cakeHashStructure, double calculatedPrice, String cakeSize) {
         this.customCakeId = customCakeId;
         this.canvasImageUrl = canvasImageUrl;
         this.greetingText = greetingText;
         this.cakeHashStructure = cakeHashStructure;
         this.calculatedPrice = calculatedPrice;
+        this.cakeSize = cakeSize;
     }
 
     public String getCustomCakeId() {
@@ -61,5 +64,13 @@ public class CustomCake {
 
     public void setCalculatedPrice(double calculatedPrice) {
         this.calculatedPrice = calculatedPrice;
+    }
+
+    public String getCakeSize() {
+        return cakeSize;
+    }
+
+    public void setCakeSize(String cakeSize) {
+        this.cakeSize = cakeSize;
     }
 }

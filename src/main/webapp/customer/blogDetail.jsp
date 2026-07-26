@@ -114,7 +114,8 @@
 
                     <c:if test="${not empty blog.imageUrl}">
                         <div class="blog-detail-image-wrapper">
-                            <c:set var="resolvedBlogImg" value="${blog.imageUrl.startsWith('http') ? blog.imageUrl : pageContext.request.contextPath.concat('/').concat(blog.imageUrl.startsWith('/') ? blog.imageUrl.substring(1) : blog.imageUrl)}" />
+                            <c:set var="cleanBlogImg" value="${blog.imageUrl.startsWith('/') ? blog.imageUrl.substring(1) : blog.imageUrl}" />
+                            <c:set var="resolvedBlogImg" value="${blog.imageUrl.startsWith('http') ? blog.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg.startsWith('assets/') ? '' : 'assets/').concat(cleanBlogImg)}" />
                             <img src="${resolvedBlogImg}" alt="${blog.title}" style="width:100%; height:auto; display:block;">
                         </div>
                     </c:if>
@@ -158,5 +159,6 @@
 
     <!-- Footer -->
     <jsp:include page="../common/footer.jsp" />
+    <jsp:include page="../common/scripts.jsp" />
 </body>
 </html>

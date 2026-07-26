@@ -131,7 +131,8 @@ public class CustomCakeServlet extends HttpServlet {
                 canvasImageData,   // stored as LONGTEXT / base64 data URL
                 greetingText,
                 cakeHashStructure,
-                calculatedPrice
+                calculatedPrice,
+                cakeSize + "cm"
             );
 
             // 4. Build layer-ingredient list

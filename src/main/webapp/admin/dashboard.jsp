@@ -57,7 +57,7 @@
                             <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
                             <div class="stat-info">
                                 <div class="stat-label"><span>Đơn đã thanh toán</span></div>
-                                <div class="stat-value">${pendingCount}</div>
+                                <div class="stat-value">${paidCount}</div>
                             </div>
                         </a>
                         <a href="${pageContext.request.contextPath}/admin/orders?action=list&status=Processing" class="stat-card stat-revenue" style="text-decoration: none; color: inherit;">
@@ -91,14 +91,6 @@
                             <div class="stat-info">
                                 <div class="stat-label">
                                     <span>Tổng doanh thu</span>
-                                    <c:choose>
-                                        <c:when test="${revChangePct >= 0}">
-                                            <span class="stat-trend trend-up">+<fmt:formatNumber value="${revChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-up"></i></span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="stat-trend trend-down"><fmt:formatNumber value="${revChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-down"></i></span>
-                                        </c:otherwise>
-                                    </c:choose>
                                 </div>
                                 <div class="stat-value">
                                     <fmt:formatNumber value="${totalRevenue}" type="number" pattern="#,##0"/>đ
@@ -110,14 +102,6 @@
                             <div class="stat-info">
                                 <div class="stat-label">
                                     <span>Đơn hàng</span>
-                                    <c:choose>
-                                        <c:when test="${ordChangePct >= 0}">
-                                            <span class="stat-trend trend-up">+<fmt:formatNumber value="${ordChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-up"></i></span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="stat-trend trend-down"><fmt:formatNumber value="${ordChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-down"></i></span>
-                                        </c:otherwise>
-                                    </c:choose>
                                 </div>
                                 <div class="stat-value">${totalOrders}</div>
                             </div>
@@ -127,37 +111,19 @@
                             <div class="stat-info">
                                 <div class="stat-label">
                                     <span>Khách hàng</span>
-                                    <c:choose>
-                                        <c:when test="${custChangePct >= 0}">
-                                            <span class="stat-trend trend-up">+<fmt:formatNumber value="${custChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-up"></i></span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="stat-trend trend-down"><fmt:formatNumber value="${custChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-down"></i></span>
-                                        </c:otherwise>
-                                    </c:choose>
                                 </div>
                                 <div class="stat-value">${totalCustomers}</div>
                             </div>
                         </a>
-                        <div class="stat-card stat-products" style="text-decoration: none; color: inherit; cursor: default;">
-                            <div class="stat-icon" style="background-color: #dcfce7; color: #15803d;"><i class="fa-solid fa-sack-dollar"></i></div>
+                        <a href="${pageContext.request.contextPath}/admin/product?action=list" class="stat-card stat-products" style="text-decoration: none; color: inherit;">
+                            <div class="stat-icon"><i class="fa-solid fa-cake-candles"></i></div>
                             <div class="stat-info">
                                 <div class="stat-label">
-                                    <span>Tổng lợi nhuận</span>
-                                    <c:choose>
-                                        <c:when test="${profitChangePct >= 0}">
-                                            <span class="stat-trend trend-up">+<fmt:formatNumber value="${profitChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-up"></i></span>
-                                        </c:when>
-                                        <c:otherwise>
-                                            <span class="stat-trend trend-down"><fmt:formatNumber value="${profitChangePct}" pattern="#.#"/>% <i class="fa-solid fa-arrow-trend-down"></i></span>
-                                        </c:otherwise>
-                                    </c:choose>
+                                    <span>Mẫu bánh</span>
                                 </div>
-                                <div class="stat-value">
-                                    <fmt:formatNumber value="${totalProfit != null ? totalProfit : 0}" type="number" pattern="#,##0"/>đ
-                                </div>
+                                <div class="stat-value">${totalProducts}</div>
                             </div>
-                        </div>
+                        </a>
                     </c:otherwise>
                 </c:choose>
             </div>
@@ -222,7 +188,7 @@
                                                     <form action="${pageContext.request.contextPath}/admin/orders" method="POST">
                                                         <input type="hidden" name="action" value="update-status" />
                                                         <input type="hidden" name="orderNo" value="${pOrd.orderNo}" />
-                                                        <input type="hidden" name="status" value="Ready" />
+                                                        <input type="hidden" name="status" value="<%= com.bakeryzone.model.Order.STATUS_WAITING_DELIVERY %>" />
                                                         <button type="submit" class="kitchen-btn-finish">
                                                             <i class="fa-solid fa-circle-check me-1"></i> HOÀN THÀNH MẺ BÁNH
                                                         </button>
@@ -288,50 +254,7 @@
                                         </div>
                                     </div>
 
-                                    <!-- Thẻ Doanh thu hôm nay (VNĐ) (Độ rộng 8 cột) -->
-                                    <div class="card border-0 shadow-sm flex-grow-1" style="border-radius: 16px; background-color: #ffffff; overflow: hidden;">
-                                        <div class="card-body p-4 d-flex flex-column justify-content-between">
-                                            <div>
-                                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                                    <h5 class="fw-bold text-dark m-0 d-flex align-items-center gap-2" style="font-size: 18px;">
-                                                        <i class="fa-solid fa-chart-line" style="color: #162e21;"></i> Doanh thu hôm nay (VNĐ)
-                                                    </h5>
-                                                    <a href="${pageContext.request.contextPath}/shipper/orders?action=list&status=Completed" style="font-size: 13px; font-weight: 600; color: #475569; text-decoration: none;">
-                                                        Xem tất cả
-                                                    </a>
-                                                </div>
 
-                                                <!-- Khung hiển thị nổi bật màu tối -->
-                                                <div class="p-4 mb-3 text-white" style="border-radius: 14px; background: linear-gradient(135deg, #162e21 0%, #1a3828 100%); position: relative; overflow: hidden;">
-                                                    <div style="font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">
-                                                        <fmt:formatNumber value="${not empty dailyStats.todayRevenue ? dailyStats.todayRevenue : 0}" type="number" pattern="#,##0"/>đ
-                                                    </div>
-                                                    <div class="mt-2 d-flex align-items-center gap-2">
-                                                        <c:choose>
-                                                            <c:when test="${dailyStats.revDiffPercent >= 0}">
-                                                                <span class="badge" style="background-color: rgba(34, 197, 94, 0.2); color: #4ade80; font-weight: 700; font-size: 12.5px; padding: 5px 12px; border-radius: 20px;">
-                                                                    <i class="fa-solid fa-arrow-trend-up me-1"></i>+<fmt:formatNumber value="${dailyStats.revDiffPercent}" pattern="#,##0.0"/>% so với hôm qua
-                                                                </span>
-                                                            </c:when>
-                                                            <c:otherwise>
-                                                                <span class="badge" style="background-color: rgba(239, 68, 68, 0.2); color: #f87171; font-weight: 700; font-size: 12.5px; padding: 5px 12px; border-radius: 20px;">
-                                                                    <i class="fa-solid fa-arrow-trend-down me-1"></i><fmt:formatNumber value="${dailyStats.revDiffPercent}" pattern="#,##0.0"/>% so với hôm qua
-                                                                </span>
-                                                            </c:otherwise>
-                                                        </c:choose>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Thanh tổng kết tình hình giao hàng phía dưới -->
-                                            <div class="p-3 d-flex align-items-center justify-content-between" style="background-color: #f0f7ff; border-radius: 12px;">
-                                                <span style="font-size: 14px; font-weight: 600; color: #334155;">Số lượt giao thành công</span>
-                                                <strong style="font-size: 17px; font-weight: 800; color: #0f172a;">
-                                                    <c:out value="${not empty dailyStats.todayDeliveriesCount ? dailyStats.todayDeliveriesCount : 0}"/> đơn
-                                                </strong>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
 
                                 <!-- BÊN PHẢI: LỊCH SỬ GIAO HÀNG (4 Cột bên trên góc phải) -->

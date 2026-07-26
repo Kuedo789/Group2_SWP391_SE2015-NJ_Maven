@@ -128,12 +128,7 @@
                                                             </li>
                                                         </c:if>
 
-                                                        <li class="menu-item ${param.activeMenu == 'attributes' ? 'active' : ''} product-child-item"
-                                                            style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
-                                                            <a href="#" style="font-size: 13px; padding: 8px 25px;">
-                                                                <i class="fa-solid fa-caret-right"></i> Thuộc tính
-                                                            </a>
-                                                        </li>
+
 
                                                 </c:if>
 
@@ -147,11 +142,7 @@
                                                     </li>
                                                 </c:if>
 
-                                                <li
-                                                    class="menu-item ${param.activeMenu == 'inventory' ? 'active' : ''}">
-                                                    <a href="#"><i class="fa-solid fa-warehouse"></i> Kho hàng <i
-                                                            class="fa-solid fa-chevron-down arrow"></i></a>
-                                                </li>
+
 
                                                 <c:if
                                                     test="${sessionScope.user.roleId eq 'ADMIN' || requestScope.LIVE_PERMISSIONS.contains('/admin/reviews?action=list')}">

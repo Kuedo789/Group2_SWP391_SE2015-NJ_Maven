@@ -21,6 +21,11 @@ public class CartItemDTO {
     private String imageUrl;
     
     private String customCakeId;
+    private String productId;
+    
+    private String snapshotName;
+    private String snapshotImage;
+    private BigDecimal priceAtPurchase;
 
     // Soft-Delete Flag for UI rendering
     private boolean isActive; 
@@ -112,5 +117,37 @@ public class CartItemDTO {
 
     public void setCustomCakeId(String customCakeId) {
         this.customCakeId = customCakeId;
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
+
+    public String getSnapshotName() {
+        return snapshotName;
+    }
+
+    public void setSnapshotName(String snapshotName) {
+        this.snapshotName = snapshotName;
+    }
+
+    public String getSnapshotImage() {
+        return snapshotImage;
+    }
+
+    public void setSnapshotImage(String snapshotImage) {
+        this.snapshotImage = snapshotImage;
+    }
+
+    public BigDecimal getPriceAtPurchase() {
+        return priceAtPurchase;
+    }
+
+    public void setPriceAtPurchase(BigDecimal priceAtPurchase) {
+        this.priceAtPurchase = priceAtPurchase;
     }
 }

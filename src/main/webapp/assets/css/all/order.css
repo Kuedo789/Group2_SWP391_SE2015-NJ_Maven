@@ -159,6 +159,44 @@
     color: #b91c1c;
 }
 
+.status-pending {
+    background-color: #fef08a;
+    color: #854d0e;
+}
+
+.status-confirmed {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+/* Cake Type Badges */
+.badge-available {
+    background-color: #e0f2fe;
+    color: #0369a1;
+    border: 1px solid #bae6fd;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    width: fit-content;
+}
+
+.badge-custom {
+    background-color: #f3e8ff;
+    color: #7e22ce;
+    border: 1px solid #e9d5ff;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    width: fit-content;
+}
+
+.badge-available.badge-lg, .badge-custom.badge-lg {
+    padding: 4px 10px;
+    font-size: 11.5px;
+}
+
 /* Order Item Info */
 .order-card-body {
     display: flex;

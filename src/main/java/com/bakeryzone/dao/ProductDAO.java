@@ -444,14 +444,8 @@ public class ProductDAO {
                 + "    SELECT t.Template_ID, SUM(oi.Quantity) as total_qty "
                 + "    FROM order_item oi "
                 + "    JOIN orders o ON oi.Order_No = o.Order_No "
-                + "    JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID "
-                + "    JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR "
-                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR "
-                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR "
-                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR "
-                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR "
-                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR "
-                + "       (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')) "
+                + "    LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID "
+                + "    JOIN cake_template t ON t.Template_ID = COALESCE(oi.Product_ID, cc.Cake_Hash_Structure) "
                 + "    WHERE o.OrderStatus = 'Completed' "
                 + "    GROUP BY t.Template_ID"
                 + ") AS sales ON p.Product_ID = sales.Template_ID "
@@ -555,22 +549,10 @@ public class ProductDAO {
 
     public boolean hasOrders(String productId) {
         String sql = "SELECT COUNT(*) FROM order_item oi "
-                   + "JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID "
-                   + "WHERE cc.Cake_Hash_Structure = ? "
-                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND ? = 'TPL_0001') "
-                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND ? = 'TPL_0005') "
-                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND ? = 'TPL_0009') "
-                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND ? = 'TPL_0011') "
-                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND ? = 'TPL_0013') "
-                   + "   OR (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND ? = 'TPL_0017')";
+                   + "LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID "
+                   + "WHERE COALESCE(oi.Product_ID, cc.Cake_Hash_Structure) = ?";
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, productId);
-            ps.setString(2, productId);
-            ps.setString(3, productId);
-            ps.setString(4, productId);
-            ps.setString(5, productId);
-            ps.setString(6, productId);
-            ps.setString(7, productId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1) > 0;

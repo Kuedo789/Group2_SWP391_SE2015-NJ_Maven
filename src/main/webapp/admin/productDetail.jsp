@@ -716,7 +716,7 @@
                                                     </td>
                                                     <td>
                                                         <div class="d-flex align-items-center gap-2">
-                                                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px; width: 90px; min-width: 90px;" required ${isReadOnly ? 'disabled' : ''}>
+                                                            <input type="number" step="1" min="1" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px; width: 90px; min-width: 90px;" required ${isReadOnly ? 'disabled' : ''}>
                                                             <span class="bom-unit-label text-muted small" style="min-width: 45px; text-align: left; font-weight: 500;">${item.unitMeasure}</span>
                                                         </div>
                                                     </td>
@@ -1033,10 +1033,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             const productNameInput = document.getElementById('productName');
             if (productNameInput) {
-                productNameInput.addEventListener('blur', checkDuplicateProductName);
+                // Clear validation error style as the user edits the input
                 productNameInput.addEventListener('input', function() {
-                    if (isDuplicateProductName) {
-                        checkDuplicateProductName();
+                    const errorName = document.getElementById('error-name');
+                    if (errorName && errorName.textContent.includes('đã tồn tại')) {
+                        errorName.style.display = 'none';
+                        productNameInput.classList.remove('is-invalid');
                     }
                 });
             }
@@ -1044,11 +1046,15 @@
 
         // Sync Quill HTML contents on form submit
         const form = document.querySelector('form');
-        form.addEventListener('submit', function(e) {
+        let isFormSubmitting = false;
+        form.addEventListener('submit', async function(e) {
             if (${isReadOnly}) {
                 e.preventDefault();
                 return false;
             }
+            if (isFormSubmitting) return; // Allow programmatic submit
+            e.preventDefault(); // Stop default submit to do validation first
+            
             let hasError = false;
             
             const errorName = document.getElementById('error-name');
@@ -1091,13 +1097,12 @@
                     }
                     nameInput.classList.add('is-invalid');
                     hasError = true;
-                } else if (isDuplicateProductName) {
-                    if (errorName) {
-                        errorName.textContent = 'Tên bánh kem này đã tồn tại trên hệ thống. Vui lòng nhập tên khác.';
-                        errorName.style.display = 'block';
+                } else {
+                    // Check duplicate asynchronously on form submit
+                    const isDuplicate = await checkDuplicateProductName();
+                    if (isDuplicate) {
+                        hasError = true;
                     }
-                    nameInput.classList.add('is-invalid');
-                    hasError = true;
                 }
             }
 
@@ -1135,7 +1140,23 @@
             }
 
             if (hasError) {
-                e.preventDefault();
+                return false;
+            }
+
+            // Validate BOM quantities (Must be positive integers)
+            const bomGramsInputs = document.querySelectorAll('.bom-grams');
+            let isBomGramsValid = true;
+            bomGramsInputs.forEach(input => {
+                const val = parseFloat(input.value);
+                if (isNaN(val) || val <= 0 || val % 1 !== 0) {
+                    input.classList.add('is-invalid');
+                    isBomGramsValid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+            if (!isBomGramsValid) {
+                alert("Số lượng của tất cả nguyên liệu trong bảng định lượng phải là số nguyên dương lớn hơn 0.");
                 return false;
             }
 
@@ -1144,7 +1165,6 @@
             if (bomRowsCount === 0) {
                 const confirmSave = confirm('Sản phẩm này chưa được thiết lập định lượng nguyên liệu. Bạn có muốn tiếp tục lưu không?');
                 if (!confirmSave) {
-                    e.preventDefault();
                     return false;
                 }
             }
@@ -1156,6 +1176,10 @@
             if (recipeQuill) {
                 document.getElementById('instructionSteps').value = recipeQuill.root.innerHTML;
             }
+
+            // Submit programmatically after passing all validation steps
+            isFormSubmitting = true;
+            form.submit();
         });
 
         // BOM Dynamism
@@ -1309,7 +1333,7 @@
                     </td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${defaultQty}" oninput="recalculateBom()" style="padding: 5px 10px; height: 38px; width: 90px; min-width: 90px;" required>
+                            <input type="number" step="1" min="1" class="form-control-cz bom-grams" name="bomStandardGram" value="\${defaultQty}" oninput="recalculateBom()" style="padding: 5px 10px; height: 38px; width: 90px; min-width: 90px;" required>
                             <span class="bom-unit-label text-muted small" style="min-width: 45px; text-align: left; font-weight: 500;"></span>
                         </div>
                     </td>
@@ -1384,7 +1408,7 @@
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = templateEl.innerHTML;
                         const options = tempDiv.querySelectorAll('option');
-                        const commonKeywords = ['bột', 'đường', 'bơ', 'sữa', 'trứng'];
+                        const commonKeywords = ['sữa', 'đường', 'bột mì', 'trứng'];
                         
                         options.forEach(opt => {
                             const nameLower = opt.textContent.toLowerCase();
@@ -1396,11 +1420,11 @@
                     }
                 }
 
-                // Format existing ingredient quantities to remove trailing .0
+                // Format existing ingredient quantities to integers
                 document.querySelectorAll('.bom-grams').forEach(input => {
                     const val = parseFloat(input.value);
                     if (!isNaN(val)) {
-                        input.value = parseFloat(val.toFixed(2));
+                        input.value = Math.round(val);
                     }
                 });
 

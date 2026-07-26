@@ -15,6 +15,9 @@ public class OrderItem {
     private String categoryName;
     private String templateId;
     private String templateImage;
+    private String productId;
+    private String snapshotName;
+    private String snapshotImage;
     
     public OrderItem() {
     }
@@ -123,5 +126,29 @@ public class OrderItem {
 
     public void setVariationName(String variationName) {
         this.variationName = variationName;
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId;
+    }
+
+    public String getSnapshotName() {
+        return snapshotName;
+    }
+
+    public void setSnapshotName(String snapshotName) {
+        this.snapshotName = snapshotName;
+    }
+
+    public String getSnapshotImage() {
+        return snapshotImage;
+    }
+
+    public void setSnapshotImage(String snapshotImage) {
+        this.snapshotImage = snapshotImage;
     }
 }

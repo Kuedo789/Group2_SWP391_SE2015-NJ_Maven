@@ -164,7 +164,7 @@ public class CartServlet extends HttpServlet {
                 }
                 
                 if (addToCart) {
-                    boolean ok = cartDAO.addSnapshotToCart(userId, resolvedProductId, finalName, finalPrice, finalImage, qty);
+                    boolean ok = cartDAO.addTemplateToCart(userId, resolvedProductId, finalName, finalPrice, finalImage, qty);
                     if (ok) successCount++;
                 } else {
                     com.bakeryzone.model.CartItemDTO dto = new com.bakeryzone.model.CartItemDTO();
@@ -210,7 +210,7 @@ public class CartServlet extends HttpServlet {
         try {
             BigDecimal price = (priceStr != null && !priceStr.isEmpty()) ? new BigDecimal(priceStr) : BigDecimal.ZERO;
             int qty = (qtyStr != null && !qtyStr.isEmpty()) ? Integer.parseInt(qtyStr) : 1;
-            success = cartDAO.addSnapshotToCart(userId, productId, name, price, image, qty);
+            success = cartDAO.addTemplateToCart(userId, productId, name, price, image, qty);
         } catch (Exception e) {
             e.printStackTrace();
         }

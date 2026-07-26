@@ -111,7 +111,7 @@
                             <div class="row g-3">
                                 <div class="col-md-12">
                                     <label class="form-label-cz">Tiêu Đề Bài Viết <span>*</span></label>
-                                    <input type="text" class="form-control-cz" id="title" name="title" value="<c:out value='${post.title}' />" required placeholder="Nhập tiêu đề nổi bật cho bài viết...">
+                                    <input type="text" class="form-control-cz" id="title" name="title" value="<c:out value='${post.title}' />" maxlength="200" required placeholder="Nhập tiêu đề nổi bật cho bài viết...">
                                     <div id="error-title" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                 </div>
 
@@ -129,7 +129,7 @@
 
                                 <div class="col-md-6" id="customCategoryGroup" style="display: none;">
                                     <label class="form-label-cz" style="color: var(--cz-primary);">Tên Danh Mục Mới <span>*</span></label>
-                                    <input type="text" name="customCategory" id="customCategoryInput" class="form-control-cz" placeholder="Ví dụ: Tin Khuyến Mãi...">
+                                    <input type="text" name="customCategory" id="customCategoryInput" class="form-control-cz" maxlength="50" placeholder="Ví dụ: Tin Khuyến Mãi...">
                                 </div>
 
                                 <div class="col-md-6">
@@ -142,7 +142,7 @@
 
                                 <div class="col-md-12">
                                     <label class="form-label-cz">Tóm Tắt Ngắn Gọn</label>
-                                    <textarea class="form-control-cz" id="summary" name="summary" rows="3" style="height: auto; border-radius: 8px;" placeholder="Một vài dòng tóm tắt nội dung bài viết hiển thị ngoài trang chủ..."><c:out value="${post.summary}" /></textarea>
+                                    <textarea class="form-control-cz" id="summary" name="summary" rows="3" maxlength="500" style="height: auto; border-radius: 8px;" placeholder="Một vài dòng tóm tắt nội dung bài viết hiển thị ngoài trang chủ..."><c:out value="${post.summary}" /></textarea>
                                     <div id="error-summary" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                 </div>
 
@@ -169,7 +169,8 @@
                                     <div class="image-preview-box" id="previewContainer">
                                         <c:choose>
                                             <c:when test="${not empty post.imageUrl}">
-                                                <c:set var="resolvedBlogImg" value="${post.imageUrl.startsWith('http') ? post.imageUrl : pageContext.request.contextPath.concat('/').concat(post.imageUrl.startsWith('/') ? post.imageUrl.substring(1) : post.imageUrl)}" />
+                                                <c:set var="cleanBlogImg" value="${post.imageUrl.startsWith('/') ? post.imageUrl.substring(1) : post.imageUrl}" />
+                                                <c:set var="resolvedBlogImg" value="${post.imageUrl.startsWith('http') ? post.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg.startsWith('assets/') ? '' : 'assets/').concat(cleanBlogImg)}" />
                                                 <img src="${resolvedBlogImg}" alt="Preview" />
                                             </c:when>
                                             <c:otherwise>
@@ -265,8 +266,19 @@
                 const fileName = file.name.toLowerCase();
                 const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
                 const hasValidExt = validExtensions.some(ext => fileName.endsWith(ext));
+                const maxSize = 10 * 1024 * 1024; // 10MB limit
                 if (!hasValidExt) {
                     errorImage.textContent = 'Định dạng file không hợp lệ. Chỉ chấp nhận ảnh (JPG, JPEG, PNG, GIF, WEBP).';
+                    errorImage.style.display = 'block';
+                    input.classList.add('is-invalid');
+                    input.value = '';
+                    previewContainer.innerHTML = `
+                        <i class="fa-regular fa-image" style="font-size: 36px; color: #cbd5e1; margin-bottom: 8px;"></i>
+                        <span style="font-size: 13px; color: #94a3b8; font-weight: 500;">Chưa có ảnh đại diện.</span>
+                    `;
+                    return;
+                } else if (file.size > maxSize) {
+                    errorImage.textContent = 'Dung lượng ảnh vượt quá 10MB! Vui lòng chọn ảnh nhỏ hơn.';
                     errorImage.style.display = 'block';
                     input.classList.add('is-invalid');
                     input.value = '';
@@ -423,8 +435,15 @@
                 const fileName = file.name.toLowerCase();
                 const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
                 const hasValidExt = validExtensions.some(ext => fileName.endsWith(ext));
+                const maxSize = 10 * 1024 * 1024; // 10MB limit (matching Tomcat @MultipartConfig maxFileSize)
+
                 if (!hasValidExt) {
                     errorImage.textContent = 'Chỉ chấp nhận file ảnh dạng JPG, JPEG, PNG, GIF hoặc WEBP.';
+                    errorImage.style.display = 'block';
+                    imageInput.classList.add('is-invalid');
+                    hasError = true;
+                } else if (file.size > maxSize) {
+                    errorImage.textContent = 'Dung lượng ảnh quá lớn! Vui lòng chọn file dưới 10MB.';
                     errorImage.style.display = 'block';
                     imageInput.classList.add('is-invalid');
                     hasError = true;

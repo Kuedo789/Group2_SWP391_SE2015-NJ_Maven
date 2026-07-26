@@ -236,7 +236,7 @@
                                     <span class="badge-icon">🎖</span>
                                 </c:otherwise>
                             </c:choose>
-                            <span>${membership.currentTier.tierName}</span>
+                            <span>${membership.currentTier.vietnameseName}</span>
                         </div>
 
                         <div class="ms-tier-info">
@@ -247,7 +247,7 @@
                                         membership.currentTier.tierName eq 'BRONZE'  ? 'BRONZE'  :
                                         membership.currentTier.tierName eq 'SILVER'  ? 'SILVER'  :
                                         membership.currentTier.tierName eq 'GOLD'    ? 'GOLD'    : 'DIAMOND'}">
-                                 <c:out value="${membership.currentTier.tierName}" />
+                                 <c:out value="${membership.currentTier.vietnameseName}" />
                             </div>
 
                             <c:if test="${not empty membership.currentTier.description}">
@@ -309,7 +309,7 @@
                                     <span class="ms-progress-title">
                                         Tiến độ lên hạng
                                         <span class="tier-chip chip-${membership.nextTier.tierName}">
-                                            ${membership.nextTier.tierName}
+                                            ${membership.nextTier.vietnameseName}
                                         </span>
                                     </span>
                                     <span class="ms-progress-meta">
@@ -341,8 +341,8 @@
                                 </div>
 
                                 <div class="ms-progress-labels">
-                                    <span>${membership.currentTier.tierName}</span>
-                                    <span>${membership.nextTier.tierName}</span>
+                                    <span>${membership.currentTier.vietnameseName}</span>
+                                    <span>${membership.nextTier.vietnameseName}</span>
                                 </div>
                             </c:otherwise>
                         </c:choose>
@@ -382,7 +382,7 @@
                                         <tr class="${tier.tierId eq membership.currentTierId ? 'active-tier-row' : ''}">
                                             <td>
                                                 <span class="tier-chip chip-${tier.tierName}">
-                                                    ${tier.tierName}
+                                                    ${tier.vietnameseName}
                                                 </span>
                                             </td>
                                             <td>
@@ -488,7 +488,7 @@
                      Shows all un-used, active, in-date vouchers the user has
                      claimed through the rewards exchange.
                 ============================================================ --%>
-                <div class="ms-card ms-wallet-card">
+                <div class="ms-card ms-wallet-card" id="voucher-wallet">
 
                     <div class="ms-wallet-header">
                         <h2 class="ms-section-title" style="margin:0;">
@@ -752,7 +752,7 @@
              *  Copy-to-clipboard helper (unchanged behaviour)
              * ================================================================ */
             function copyCode(code, elementId) {
-                navigator.clipboard.writeText(code).then(function () {
+                var showFeedback = function() {
                     var el = document.getElementById(elementId);
                     if (!el) return;
                     var original = el.innerHTML;
@@ -764,16 +764,29 @@
                         el.style.background = '';
                         el.style.color = '';
                     }, 1800);
-                }).catch(function () {
-                    var ta = document.createElement('textarea');
-                    ta.value = code;
-                    ta.style.position = 'fixed';
-                    ta.style.opacity = '0';
-                    document.body.appendChild(ta);
-                    ta.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(ta);
-                });
+                };
+
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(code).then(showFeedback).catch(fallbackCopy);
+                } else {
+                    fallbackCopy();
+                }
+
+                function fallbackCopy() {
+                    try {
+                        var ta = document.createElement('textarea');
+                        ta.value = code;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        showFeedback();
+                    } catch (err) {
+                        console.error('Không thể copy:', err);
+                    }
+                }
             }
         </script>
 

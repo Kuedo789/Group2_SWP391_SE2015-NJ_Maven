@@ -86,8 +86,8 @@ public class CustomCakeDAO {
 
     private void insertCustomCake(Connection conn, CustomCake cake) throws SQLException {
         String sql = "INSERT INTO custom_cake "
-                   + "(Custom_Cake_ID, Canvas_Image_URL, Greeting_Text, Cake_Hash_Structure, Calculated_Price) "
-                   + "VALUES (?, ?, ?, ?, ?)";
+                   + "(Custom_Cake_ID, Canvas_Image_URL, Greeting_Text, Cake_Hash_Structure, Calculated_Price, Cake_Size) "
+                   + "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, cake.getCustomCakeId());
@@ -95,6 +95,7 @@ public class CustomCakeDAO {
             ps.setString(3, cake.getGreetingText());
             ps.setString(4, cake.getCakeHashStructure());
             ps.setDouble(5, cake.getCalculatedPrice());
+            ps.setString(6, cake.getCakeSize());
             ps.executeUpdate();
         }
     }
@@ -164,6 +165,7 @@ public class CustomCakeDAO {
                     cc.setGreetingText(rs.getString("Greeting_Text"));
                     cc.setCakeHashStructure(rs.getString("Cake_Hash_Structure"));
                     cc.setCalculatedPrice(rs.getDouble("Calculated_Price"));
+                    cc.setCakeSize(rs.getString("Cake_Size"));
                     return cc;
                 }
             }

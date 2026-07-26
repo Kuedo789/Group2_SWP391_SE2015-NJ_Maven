@@ -368,11 +368,12 @@ public class AdminProductController extends HttpServlet {
         
         boolean isNewProductForced = false;
         String oldId = id;
+        boolean hasOrders = !isNew && id != null && !id.trim().isEmpty() && !"new".equalsIgnoreCase(id) && productDAO.hasOrders(id);
         if (!isNew && id != null && !id.trim().isEmpty() && !"new".equalsIgnoreCase(id)) {
             String[] bomIngredientIds = request.getParameterValues("bomIngredientId");
             String[] bomStandardGrams = request.getParameterValues("bomStandardGram");
             
-            if (productDAO.hasOrders(id) && isBomChanged(id, bomIngredientIds, bomStandardGrams)) {
+            if (hasOrders && isBomChanged(id, bomIngredientIds, bomStandardGrams)) {
                 isNew = true;
                 isNewProductForced = true;
             }
@@ -527,12 +528,30 @@ public class AdminProductController extends HttpServlet {
         boolean isDuplicateName = false;
         if (nameValid) {
             String checkId = (isNew || id == null || id.trim().isEmpty() || "new".equalsIgnoreCase(id.trim())) ? "new" : id;
-            if (productDAO.isProductNameExists(name, checkId)) {
+            String ignoreId = isNewProductForced ? oldId : checkId;
+            if (productDAO.isProductNameExists(name, ignoreId)) {
                 isDuplicateName = true;
             }
         }
 
-        if (!nameValid || isDuplicateName || !laborValid || !marginValid || !serviceValid || imageError != null) {
+        boolean bomGramsValid = true;
+        String[] bomStandardGrams = request.getParameterValues("bomStandardGram");
+        if (bomStandardGrams != null) {
+            for (String gramStr : bomStandardGrams) {
+                try {
+                    int g = Integer.parseInt(gramStr);
+                    if (g <= 0) {
+                        bomGramsValid = false;
+                        break;
+                    }
+                } catch (NumberFormatException e) {
+                    bomGramsValid = false;
+                    break;
+                }
+            }
+        }
+
+        if (hasOrders || !nameValid || isDuplicateName || !laborValid || !marginValid || !serviceValid || imageError != null || !bomGramsValid) {
             Product product = new Product();
             product.setId(id);
             product.setName(name);
@@ -547,7 +566,12 @@ public class AdminProductController extends HttpServlet {
             product.setInstructionSteps(request.getParameter("instructionSteps"));
             product.setAdditionalImages(additionalImageUrls);
             
-            StringBuilder errorMsg = new StringBuilder("Dữ liệu nhập vào không hợp lệ: ");
+            StringBuilder errorMsg = new StringBuilder();
+            if (hasOrders) {
+                errorMsg.append("Không thể cập nhật sản phẩm này vì đã phát sinh đơn hàng/giao dịch trong hệ thống. ");
+            } else {
+                errorMsg.append("Dữ liệu nhập vào không hợp lệ: ");
+            }
             if (!nameValid) {
                 errorMsg.append("Tên bánh phải từ 3 đến 100 ký tự. ");
             } else if (isDuplicateName) {
@@ -559,6 +583,9 @@ public class AdminProductController extends HttpServlet {
             if (!marginValid || !serviceValid) {
                 errorMsg.append("Tỷ lệ biên lãi và phí dịch vụ phải hợp lệ, tổng cộng phải nhỏ hơn 100%. ");
             }
+            if (!bomGramsValid) {
+                errorMsg.append("Số lượng của tất cả nguyên liệu trong bảng định lượng phải là số nguyên dương lớn hơn 0. ");
+            }
             if (imageError != null) {
                 errorMsg.append(imageError);
             }
@@ -567,7 +594,7 @@ public class AdminProductController extends HttpServlet {
             request.setAttribute("productCategories", productDAO.getAllProductCategories());
             request.setAttribute("allIngredients", ingredientDAO.getAllIngredients());
             request.setAttribute("error", errorMsg.toString().trim());
-            request.setAttribute("formAction", isNew ? "create" : "update");
+            request.setAttribute("formAction", (isNew && !hasOrders) ? "create" : "update");
             
             request.getRequestDispatcher("/admin/productDetail.jsp").forward(request, response);
             return;
@@ -598,7 +625,7 @@ public class AdminProductController extends HttpServlet {
             
             // Process and save BOM (Bill of Materials) Ingredients
             String[] bomIngredientIds = request.getParameterValues("bomIngredientId");
-            String[] bomStandardGrams = request.getParameterValues("bomStandardGram");
+            bomStandardGrams = request.getParameterValues("bomStandardGram");
             productDAO.saveProductIngredients(id, bomIngredientIds, bomStandardGrams);
             
             String pageParam = request.getParameter("page");

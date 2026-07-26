@@ -6,6 +6,7 @@
 
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -115,6 +116,9 @@
                             <c:when test="${error == 'not_found'}">
                                 Không tìm thấy danh mục bạn yêu cầu.
                             </c:when>
+                            <c:when test="${error == 'icon_too_large'}">
+                                Ảnh icon vượt quá dung lượng cho phép. Vui lòng chọn ảnh không quá 2 MB.
+                            </c:when>
                             <c:otherwise>
                                 Đã xảy ra lỗi cơ sở dữ liệu. Vui lòng thử lại sau.
                             </c:otherwise>
@@ -132,13 +136,10 @@
                                 <input type="text" name="search" value="${searchQuery}" placeholder="Tìm kiếm theo mã, tên danh mục...">
                             </div>
 
-                            <select name="filterType" style="padding: 10px 15px; border-radius: 50px; border: 1px solid var(--border-soft); background: var(--bg-cream); outline: none; font-size: 14px; cursor: pointer;">
-                                <option value="all" ${filterType == 'all' ? 'selected' : ''}>Tất cả phân loại</option>
-                                <option value="Sản phẩm chính" ${filterType == 'Sản phẩm chính' ? 'selected' : ''}>Sản phẩm chính</option>
-                                <option value="Nguyên liệu" ${filterType == 'Nguyên liệu' ? 'selected' : ''}>Nguyên liệu</option>
-                            </select>
-
-                            <button type="submit" class="btn-primary" style="padding: 10px 20px;">Lọc</button>
+                            <button type="submit" class="btn-primary" style="padding: 10px 20px;">Tìm kiếm</button>
+                            <c:if test="${not empty searchQuery}">
+                                <a href="${pageContext.request.contextPath}/admin/categories" style="padding: 10px 20px; text-decoration: none; border-radius: 50px; background: #f1f5f9; color: #475569; font-size: 14px; font-weight: 500; border: 1px solid #e2e8f0;">Làm mới</a>
+                            </c:if>
                         </form>
                     </div>
 
@@ -154,7 +155,17 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <c:forEach var="cat" items="${categoryList}">
+                            <c:choose>
+                                <c:when test="${empty categoryList}">
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+                                            <i class="fa-solid fa-folder-open" style="font-size: 32px; color: #cbd5e1; margin-bottom: 12px;"></i>
+                                            <br>Không tìm thấy danh mục nào.
+                                        </td>
+                                    </tr>
+                                </c:when>
+                                <c:otherwise>
+                                    <c:forEach var="cat" items="${categoryList}">
                                 <tr style="${!cat.enable ? 'opacity: 0.6; background-color: #f8fafc;' : ''}">
                                     <td class="cat-id">
                                         ${cat.categoryId}
@@ -165,7 +176,15 @@
                                     <td class="cat-icon">
                                         <c:choose>
                                             <c:when test="${not empty cat.iconUrl}">
-                                                <img src="${pageContext.request.contextPath}/${cat.iconUrl}" alt="${cat.categoryName}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px; background-color: #f1f5f9; padding: 2px;">
+                                                <c:choose>
+                                                    <c:when test="${fn:startsWith(cat.iconUrl, 'http://') || fn:startsWith(cat.iconUrl, 'https://')}">
+                                                        <c:set var="categoryIconSrc" value="${cat.iconUrl}" />
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <c:url var="categoryIconSrc" value="/${cat.iconUrl}" />
+                                                    </c:otherwise>
+                                                </c:choose>
+                                                <img src="${categoryIconSrc}" alt="${cat.categoryName}" style="width: 32px; height: 32px; object-fit: contain; border-radius: 4px; background-color: #f1f5f9; padding: 2px;">
                                             </c:when>
                                             <c:otherwise>
                                                 <span style="color: #94a3b8; font-size: 11px;">Mặc định</span>
@@ -191,7 +210,7 @@
 
                                         <c:choose>
                                             <c:when test="${cat.enable}">
-                                                <a href="${pageContext.request.contextPath}/admin/categories?action=delete&id=${cat.categoryId}" class="btn-icon" title="Vô hiệu hóa" style="text-decoration: none; color: #ef4444;" onclick="return confirm('Bạn có chắc chắn muốn vô hiệu hóa danh mục này?');"><i class="fa-regular fa-trash-can"></i></a>
+                                                <a href="javascript:void(0);" class="btn-icon" title="Vô hiệu hóa" style="text-decoration: none; color: #ef4444;" onclick="showConfirmModal('${pageContext.request.contextPath}/admin/categories?action=delete&id=${cat.categoryId}')"><i class="fa-regular fa-trash-can"></i></a>
                                                 </c:when>
                                                 <c:otherwise>
                                                 <a href="${pageContext.request.contextPath}/admin/categories?action=restore&id=${cat.categoryId}" class="btn-icon" title="Khôi phục" style="text-decoration: none; color: #10b981;" onclick="return confirm('Bạn có muốn khôi phục danh mục này không?');"><i class="fa-solid fa-rotate-left"></i></a>
@@ -199,7 +218,9 @@
                                             </c:choose>
                                     </td>
                                 </tr>
-                            </c:forEach>
+                                    </c:forEach>
+                                </c:otherwise>
+                            </c:choose>
                         </tbody>
                     </table>
 
@@ -233,5 +254,38 @@
             </div>
         </div>
 
+    <!-- Custom Modal for Delete Confirmation -->
+    <div id="confirmModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:12px; width:360px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.1); animation: fadeScale 0.2s ease-out;">
+            <style>
+                @keyframes fadeScale {
+                    from { opacity: 0; transform: scale(0.95); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+            </style>
+            <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-triangle-exclamation" style="color:#ef4444; font-size:18px;"></i>
+                <h3 style="margin:0; font-size:16px; color:#1e293b;">Xác nhận vô hiệu hóa</h3>
+            </div>
+            <div style="padding:20px; color:#475569; font-size:14px; line-height:1.5;">
+                <p style="margin:0;">Bạn có chắc chắn muốn vô hiệu hóa danh mục này không?</p>
+            </div>
+            <div style="padding:16px 20px; background:#f8fafc; display:flex; justify-content:flex-end; gap:12px;">
+                <button type="button" style="padding:8px 16px; border:none; background:#e2e8f0; color:#475569; border-radius:6px; cursor:pointer; font-weight:500; font-size:14px;" onclick="closeConfirmModal()">Hủy</button>
+                <a id="btnConfirmDelete" href="#" style="padding:8px 16px; border:none; background:#ef4444; color:#fff; border-radius:6px; cursor:pointer; font-weight:500; font-size:14px; text-decoration:none;">Vô hiệu hóa</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showConfirmModal(url) {
+            document.getElementById('btnConfirmDelete').href = url;
+            const modal = document.getElementById('confirmModal');
+            modal.style.display = 'flex';
+        }
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+    </script>
     </body>
 </html>

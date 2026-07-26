@@ -44,17 +44,97 @@ public class AdminTierConfigServlet extends HttpServlet {
                 int tierId = (idStr != null && !idStr.trim().isEmpty()) ? Integer.parseInt(idStr.trim()) : 0;
                 
                 String tierName = request.getParameter("tierName");
-                BigDecimal minSpending = new BigDecimal(request.getParameter("minSpending").trim());
-                double pointMultiplier = Double.parseDouble(request.getParameter("pointMultiplier").trim());
-                int monthlyVouchers = Integer.parseInt(request.getParameter("monthlyVouchers").trim());
+                String minSpendStr = request.getParameter("minSpending");
+                String multStr = request.getParameter("pointMultiplier");
+                String vouchersStr = request.getParameter("monthlyVouchers");
                 String description = request.getParameter("description");
                 
                 if (tierName == null || tierName.trim().isEmpty()) {
                     response.getWriter().write("{\"status\":\"error\",\"message\":\"Tên hạng không được để trống.\"}");
                     return;
                 }
+                
+                if (tierName.trim().length() > 50) {
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Tên hạng không được vượt quá 50 ký tự.\"}");
+                    return;
+                }
 
-                MembershipTier t = new MembershipTier(tierId, tierName.trim(), minSpending, pointMultiplier, monthlyVouchers, description);
+                if (dao.checkDuplicateTierName(tierName, tierId)) {
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Tên hạng thành viên đã tồn tại.\"}");
+                    return;
+                }
+
+                if (minSpendStr == null || minSpendStr.trim().isEmpty()) {
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Chi tiêu tối thiểu không được để trống.\"}");
+                    return;
+                }
+                BigDecimal minSpending;
+                try {
+                    minSpending = new BigDecimal(minSpendStr.trim());
+                    if (minSpending.compareTo(BigDecimal.ZERO) < 0) {
+                        response.getWriter().write("{\"status\":\"error\",\"message\":\"Chi tiêu tối thiểu không được là số âm.\"}");
+                        return;
+                    }
+                    if (minSpending.compareTo(new BigDecimal("9999999999.99")) > 0) {
+                        response.getWriter().write("{\"status\":\"error\",\"message\":\"Chi tiêu tối thiểu không được vượt quá 9,999,999,999.99₫.\"}");
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Chi tiêu tối thiểu không hợp lệ.\"}");
+                    return;
+                }
+
+                if (dao.checkDuplicateMinSpending(minSpending, tierId)) {
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Mốc chi tiêu tối thiểu này đã tồn tại ở hạng thành viên khác.\"}");
+                    return;
+                }
+
+                if (multStr == null || multStr.trim().isEmpty()) {
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Hệ số tích điểm không được để trống.\"}");
+                    return;
+                }
+                double pointMultiplier;
+                try {
+                    pointMultiplier = Double.parseDouble(multStr.trim());
+                    if (pointMultiplier < 1.0) {
+                        response.getWriter().write("{\"status\":\"error\",\"message\":\"Hệ số tích điểm phải từ 1.0 trở lên.\"}");
+                        return;
+                    }
+                    if (pointMultiplier > 99.9) {
+                        response.getWriter().write("{\"status\":\"error\",\"message\":\"Hệ số tích điểm không được vượt quá 99.9.\"}");
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Hệ số tích điểm không hợp lệ.\"}");
+                    return;
+                }
+
+                if (vouchersStr == null || vouchersStr.trim().isEmpty()) {
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Số lượng voucher không được để trống.\"}");
+                    return;
+                }
+                int monthlyVouchers;
+                try {
+                    monthlyVouchers = Integer.parseInt(vouchersStr.trim());
+                    if (monthlyVouchers < 0) {
+                        response.getWriter().write("{\"status\":\"error\",\"message\":\"Số lượng voucher không được nhỏ hơn 0.\"}");
+                        return;
+                    }
+                    if (monthlyVouchers > 1000) {
+                        response.getWriter().write("{\"status\":\"error\",\"message\":\"Số lượng voucher không được vượt quá 1000.\"}");
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Số lượng voucher không hợp lệ.\"}");
+                    return;
+                }
+
+                if (description != null && description.trim().length() > 500) {
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Mô tả không được vượt quá 500 ký tự.\"}");
+                    return;
+                }
+
+                MembershipTier t = new MembershipTier(tierId, tierName.trim(), minSpending, pointMultiplier, monthlyVouchers, description == null ? "" : description.trim());
                 boolean success = dao.saveTier(t);
                 
                 if (success) {

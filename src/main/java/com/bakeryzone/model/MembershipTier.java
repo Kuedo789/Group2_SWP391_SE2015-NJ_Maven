@@ -45,6 +45,18 @@ public class MembershipTier {
         return tierName;
     }
 
+    public String getVietnameseName() {
+        if (tierName == null) return "";
+        switch (tierName.toUpperCase()) {
+            case "MEMBER": return "Thành Viên";
+            case "BRONZE": return "Đồng";
+            case "SILVER": return "Bạc";
+            case "GOLD": return "Vàng";
+            case "DIAMOND": return "Kim Cương";
+            default: return tierName;
+        }
+    }
+
     public void setTierName(String tierName) {
         this.tierName = tierName;
     }
