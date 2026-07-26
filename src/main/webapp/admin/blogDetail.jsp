@@ -169,7 +169,8 @@
                                     <div class="image-preview-box" id="previewContainer">
                                         <c:choose>
                                             <c:when test="${not empty post.imageUrl}">
-                                                <c:set var="resolvedBlogImg" value="${post.imageUrl.startsWith('http') ? post.imageUrl : pageContext.request.contextPath.concat('/').concat(post.imageUrl.startsWith('/') ? post.imageUrl.substring(1) : post.imageUrl)}" />
+                                                <c:set var="cleanBlogImg" value="${post.imageUrl.startsWith('/') ? post.imageUrl.substring(1) : post.imageUrl}" />
+                                                <c:set var="resolvedBlogImg" value="${post.imageUrl.startsWith('http') ? post.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg.startsWith('assets/') ? '' : 'assets/').concat(cleanBlogImg)}" />
                                                 <img src="${resolvedBlogImg}" alt="Preview" />
                                             </c:when>
                                             <c:otherwise>

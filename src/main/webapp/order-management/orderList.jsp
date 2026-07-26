@@ -268,7 +268,7 @@
                             String imgPath = item.getItemImage();
                             if (imgPath == null || imgPath.trim().isEmpty()) {
                                 itemImage = request.getContextPath() + "/assets/images/default-cake.png";
-                            } else if (!imgPath.startsWith("http") && !imgPath.startsWith("https")) {
+                            } else if (!imgPath.startsWith("http") && !imgPath.startsWith("https") && !imgPath.startsWith("data:image")) {
                                 if (!imgPath.startsWith("/")) {
                                     itemImage = request.getContextPath() + "/" + imgPath;
                                 } else {
@@ -281,7 +281,7 @@
                             String tplImg = item.getTemplateImage();
                             String itemTemplateImage = "";
                             if (tplImg != null && !tplImg.trim().isEmpty()) {
-                                if (!tplImg.startsWith("http") && !tplImg.startsWith("https")) {
+                                if (!tplImg.startsWith("http") && !tplImg.startsWith("https") && !tplImg.startsWith("data:image")) {
                                     if (!tplImg.startsWith("/")) {
                                         itemTemplateImage = request.getContextPath() + "/" + tplImg;
                                     } else {

@@ -219,7 +219,8 @@
                                     <a href="blog?action=detail&id=${blog.postId}">
                                         <c:choose>
                                             <c:when test="${not empty blog.imageUrl}">
-                                                <c:set var="resolvedBlogImg" value="${blog.imageUrl.startsWith('http') ? blog.imageUrl : pageContext.request.contextPath.concat('/').concat(blog.imageUrl.startsWith('/') ? blog.imageUrl.substring(1) : blog.imageUrl)}" />
+                                                <c:set var="cleanBlogImg" value="${blog.imageUrl.startsWith('/') ? blog.imageUrl.substring(1) : blog.imageUrl}" />
+                                                <c:set var="resolvedBlogImg" value="${blog.imageUrl.startsWith('http') ? blog.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg.startsWith('assets/') ? '' : 'assets/').concat(cleanBlogImg)}" />
                                                 <img src="${resolvedBlogImg}" alt="${blog.title}" class="blog-image">
                                             </c:when>
                                             <c:otherwise>
@@ -297,5 +298,6 @@
 
     <!-- Footer -->
     <jsp:include page="../common/footer.jsp" />
+    <jsp:include page="../common/scripts.jsp" />
 </body>
 </html>

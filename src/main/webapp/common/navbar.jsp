@@ -122,7 +122,7 @@
                             <span class="material-symbols-outlined">workspace_premium</span>
                             <span>Xem hạng của bạn</span>
                         </a>
-                        <a href="<%= contextPath %>/membership" class="user-dropdown-item">
+                        <a href="<%= contextPath %>/membership#voucher-wallet" class="user-dropdown-item">
                             <span class="material-symbols-outlined">local_activity</span>
                             <span>Ví Voucher</span>
                         </a>

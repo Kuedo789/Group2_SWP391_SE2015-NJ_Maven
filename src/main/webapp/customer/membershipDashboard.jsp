@@ -488,7 +488,7 @@
                      Shows all un-used, active, in-date vouchers the user has
                      claimed through the rewards exchange.
                 ============================================================ --%>
-                <div class="ms-card ms-wallet-card">
+                <div class="ms-card ms-wallet-card" id="voucher-wallet">
 
                     <div class="ms-wallet-header">
                         <h2 class="ms-section-title" style="margin:0;">

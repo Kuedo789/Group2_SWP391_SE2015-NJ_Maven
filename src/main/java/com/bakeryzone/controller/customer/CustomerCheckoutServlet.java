@@ -332,8 +332,7 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     } else {
                         // 2. Bánh mẫu có sẵn từ Menu Admin (TPL_XXXX)
                         oi.setTemplateId(finalTplId);
-                        String cakeId = "TPL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-                        oi.setCustomCakeId(cakeId);
+                        oi.setCustomCakeId(null);
                     }
 
                     order.getItems().add(oi);

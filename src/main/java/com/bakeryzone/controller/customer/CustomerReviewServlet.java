@@ -73,19 +73,22 @@ public class CustomerReviewServlet extends HttpServlet {
                 // If customCakeId not provided, find the most recent completed custom cake purchase
                 if (customCakeId == null || customCakeId.trim().isEmpty()) {
                     customCakeId = reviewDAO.getRecentCustomCakeId(customerId, productId);
-                }
-
-                if (customCakeId == null) {
-                    jsonResponse.put("success", false);
-                    jsonResponse.put("message", "Bạn chưa mua sản phẩm này hoặc đơn hàng chưa hoàn thành.");
-                    response.getWriter().write(gson.toJson(jsonResponse));
-                    return;
+                    
+                    // If still null, it might be a template cake. Check if they bought it.
+                    if (customCakeId == null) {
+                        if (!reviewDAO.hasBoughtProduct(customerId, productId)) {
+                            jsonResponse.put("success", false);
+                            jsonResponse.put("message", "Bạn chưa mua sản phẩm này hoặc đơn hàng chưa hoàn thành.");
+                            response.getWriter().write(gson.toJson(jsonResponse));
+                            return;
+                        }
+                    }
                 }
 
                 // Generate a unique Review_ID
                 String reviewId = "REV_" + System.currentTimeMillis();
 
-                boolean success = reviewDAO.addReview(reviewId, customCakeId, customerId, rating, comment.trim());
+                boolean success = reviewDAO.addReview(reviewId, customCakeId, productId, customerId, rating, comment.trim());
                 jsonResponse.put("success", success);
                 if (success) {
                     jsonResponse.put("message", "Gửi đánh giá thành công!");

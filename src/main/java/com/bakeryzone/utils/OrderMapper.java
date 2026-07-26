@@ -42,10 +42,13 @@ public class OrderMapper {
                     oi.Order_Item_ID,
                     oi.Order_No,
                     oi.Custom_Cake_ID,
+                    oi.Product_ID,
+                    oi.Snapshot_Name,
+                    oi.Snapshot_Image,
                     oi.Quantity,
                     oi.Price_At_Purchase,
-                    COALESCE(NULLIF(TRIM(t.Template_Name), ''), 'Bánh ngọt') AS Item_Name,
-                    COALESCE(NULLIF(TRIM(cc.Canvas_Image_URL), ''), NULLIF(TRIM(t.Image_URL), '')) AS Item_Image,
+                    COALESCE(oi.Snapshot_Name, cc.Cake_Hash_Structure, t.Template_Name, 'Bánh ngọt') AS Item_Name,
+                    COALESCE(oi.Snapshot_Image, cc.Canvas_Image_URL, t.Image_URL) AS Item_Image,
                     cc.Greeting_Text,
                     COALESCE(NULLIF(TRIM(cat.Category_Name), ''), 'Bánh ngọt') AS Category_Name,
                     t.Template_ID,
@@ -59,13 +62,7 @@ public class OrderMapper {
                     cc.Cake_Hash_Structure
                 FROM order_item oi
                 LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-                LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))
+                LEFT JOIN cake_template t ON t.Template_ID = COALESCE(oi.Product_ID, cc.Cake_Hash_Structure)
                 LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID
                 WHERE oi.Order_No IN (
                 """
@@ -81,6 +78,9 @@ public class OrderMapper {
                     item.setOrderItemId(rs.getString("Order_Item_ID"));
                     item.setOrderNo(rs.getString("Order_No"));
                     item.setCustomCakeId(rs.getString("Custom_Cake_ID"));
+                    item.setProductId(rs.getString("Product_ID"));
+                    item.setSnapshotName(rs.getString("Snapshot_Name"));
+                    item.setSnapshotImage(rs.getString("Snapshot_Image"));
                     item.setQuantity(rs.getInt("Quantity"));
                     item.setPriceAtPurchase(rs.getBigDecimal("Price_At_Purchase"));
                     item.setItemName(rs.getString("Item_Name"));
@@ -148,10 +148,13 @@ public class OrderMapper {
                     oi.Order_Item_ID,
                     oi.Order_No,
                     oi.Custom_Cake_ID,
+                    oi.Product_ID,
+                    oi.Snapshot_Name,
+                    oi.Snapshot_Image,
                     oi.Quantity,
                     oi.Price_At_Purchase,
-                    COALESCE(NULLIF(TRIM(t.Template_Name), ''), 'Bánh ngọt') AS Item_Name,
-                    COALESCE(NULLIF(TRIM(cc.Canvas_Image_URL), ''), NULLIF(TRIM(t.Image_URL), '')) AS Item_Image,
+                    COALESCE(oi.Snapshot_Name, cc.Cake_Hash_Structure, t.Template_Name, 'Bánh ngọt') AS Item_Name,
+                    COALESCE(oi.Snapshot_Image, cc.Canvas_Image_URL, t.Image_URL) AS Item_Image,
                     cc.Greeting_Text,
                     COALESCE(NULLIF(TRIM(cat.Category_Name), ''), 'Bánh ngọt') AS Category_Name,
                     t.Template_ID,
@@ -165,13 +168,7 @@ public class OrderMapper {
                     cc.Cake_Hash_Structure
                 FROM order_item oi
                 LEFT JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID
-                LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR
-                    (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017'))
+                LEFT JOIN cake_template t ON t.Template_ID = COALESCE(oi.Product_ID, cc.Cake_Hash_Structure)
                 LEFT JOIN product_category cat ON t.Category_ID = cat.Category_ID
                 WHERE oi.Order_No = ?
                 """;
@@ -184,6 +181,9 @@ public class OrderMapper {
                     item.setOrderItemId(rs.getString("Order_Item_ID"));
                     item.setOrderNo(rs.getString("Order_No"));
                     item.setCustomCakeId(rs.getString("Custom_Cake_ID"));
+                    item.setProductId(rs.getString("Product_ID"));
+                    item.setSnapshotName(rs.getString("Snapshot_Name"));
+                    item.setSnapshotImage(rs.getString("Snapshot_Image"));
                     item.setQuantity(rs.getInt("Quantity"));
                     item.setPriceAtPurchase(rs.getBigDecimal("Price_At_Purchase"));
                     item.setItemName(rs.getString("Item_Name"));
@@ -365,30 +365,14 @@ public class OrderMapper {
         if ("template".equalsIgnoreCase(cakeType.trim())) {
             sql.append(" AND EXISTS (")
                .append("  SELECT 1 FROM order_item oi ")
-               .append("  JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID ")
-               .append("  LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')) ")
                .append("  WHERE oi.Order_No = o.Order_No ")
-               .append("  AND t.Template_ID IS NOT NULL ")
+               .append("  AND oi.Product_ID IS NOT NULL ")
                .append(" )");
         } else if ("custom".equalsIgnoreCase(cakeType.trim())) {
             sql.append(" AND EXISTS (")
                .append("  SELECT 1 FROM order_item oi ")
-               .append("  JOIN custom_cake cc ON oi.Custom_Cake_ID = cc.Custom_Cake_ID ")
-               .append("  LEFT JOIN cake_template t ON (cc.Cake_Hash_Structure = t.Template_ID OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0001' AND t.Template_ID = 'TPL_0001') OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0002' AND t.Template_ID = 'TPL_0005') OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0003' AND t.Template_ID = 'TPL_0009') OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0004' AND t.Template_ID = 'TPL_0011') OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0005' AND t.Template_ID = 'TPL_0013') OR ")
-               .append("   (cc.Cake_Hash_Structure = 'HASH_CC_0006' AND t.Template_ID = 'TPL_0017')) ")
                .append("  WHERE oi.Order_No = o.Order_No ")
-               .append("  AND t.Template_ID IS NULL ")
+               .append("  AND oi.Product_ID IS NULL ")
                .append(" )");
         }
     }

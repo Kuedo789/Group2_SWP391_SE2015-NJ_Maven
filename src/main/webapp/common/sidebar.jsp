@@ -128,12 +128,7 @@
                                                             </li>
                                                         </c:if>
 
-                                                        <li class="menu-item ${param.activeMenu == 'attributes' ? 'active' : ''} product-child-item"
-                                                            style="padding-left: 20px; display: ${isProductActive ? 'block' : 'none'};">
-                                                            <a href="#" style="font-size: 13px; padding: 8px 25px;">
-                                                                <i class="fa-solid fa-caret-right"></i> Thuộc tính
-                                                            </a>
-                                                        </li>
+
 
                                                 </c:if>
 

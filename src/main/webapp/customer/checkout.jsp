@@ -782,7 +782,7 @@
                     <c:forEach var="item" items="${checkoutCartItems}">
                         currentCart.push({
                             id: "${item.customCakeId != null ? item.customCakeId : item.cartItemId}",
-                            templateId: "${item.customCakeId != null ? '' : 'TPL'}",
+                            templateId: "${item.productId != null ? item.productId : ''}",
                             customCakeId: "${item.customCakeId != null ? item.customCakeId : ''}",
                             name: "${item.name}",
                             price: ${item.unitPrice != null ? item.unitPrice : 0},

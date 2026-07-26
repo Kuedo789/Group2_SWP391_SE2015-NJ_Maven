@@ -22,10 +22,9 @@ public class CartDAO {
     public String getCartAggregateStatus(String userId) {
         String sql = "SELECT "
                 + "  COUNT(ci.Cart_Item_ID) AS Total, "
-                + "  SUM(CASE WHEN (cc.Custom_Cake_ID IS NOT NULL) THEN 1 ELSE 0 END) AS ActiveCount, "
+                + "  SUM(CASE WHEN (ci.Custom_Cake_ID IS NOT NULL OR ci.Product_ID IS NOT NULL) THEN 1 ELSE 0 END) AS ActiveCount, "
                 + "  0 AS DisabledCount "
                 + "FROM cart_item ci "
-                + "LEFT JOIN custom_cake cc ON ci.Custom_Cake_ID = cc.Custom_Cake_ID "
                 + "WHERE ci.User_ID = ?";
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -52,10 +51,19 @@ public class CartDAO {
     public List<CartItemDTO> getCartItemsForUser(String userId) {
         List<CartItemDTO> items = new ArrayList<>();
         // Joins across your 3NF structure to flatten data for the JSP
-        String sql = "SELECT ci.Cart_Item_ID, ci.Quantity, "
-                + "  cc.Cake_Hash_Structure AS Template_Name, cc.Calculated_Price, cc.Canvas_Image_URL AS CakeImg, 'Active' AS CakeStatus, cc.Greeting_Text "
+        String sql = "SELECT ci.Cart_Item_ID, ci.Quantity, ci.Snapshot_Name, ci.Snapshot_Image, ci.Price_At_Purchase, "
+                + "  COALESCE(ci.Snapshot_Name, t.Template_Name, cc.Cake_Hash_Structure) AS Template_Name, "
+                + "  COALESCE(ci.Price_At_Purchase, "
+                + "     (SELECT COALESCE(SUM(d.Quantity * i.Price_Per_Unit), 0) "
+                + "      FROM template_ingredient_detail d JOIN ingredients i ON d.Ingredient_ID = i.Ingredient_ID "
+                + "      WHERE d.Template_ID = t.Template_ID) / (1.0 - (t.Default_Margin_Percent + t.Default_Service_Percent)/100.0), "
+                + "     cc.Calculated_Price"
+                + "  ) AS Calculated_Price, "
+                + "  COALESCE(ci.Snapshot_Image, t.Image_URL, cc.Canvas_Image_URL) AS CakeImg, "
+                + "  'Active' AS CakeStatus, cc.Greeting_Text, ci.Product_ID, ci.Custom_Cake_ID "
                 + "FROM cart_item ci "
-                + "JOIN custom_cake cc ON ci.Custom_Cake_ID = cc.Custom_Cake_ID "
+                + "LEFT JOIN custom_cake cc ON ci.Custom_Cake_ID = cc.Custom_Cake_ID "
+                + "LEFT JOIN cake_template t ON ci.Product_ID = t.Template_ID "
                 + "WHERE ci.User_ID = ? ORDER BY ci.Added_At DESC";
 
         try (Connection conn = DBContext.getJDBCConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -75,6 +83,18 @@ public class CartDAO {
 
                     String greeting = rs.getString("Greeting_Text");
                     dto.setGreetingText(greeting);
+                    
+                    dto.setProductId(rs.getString("Product_ID"));
+                    dto.setCustomCakeId(rs.getString("Custom_Cake_ID"));
+
+                    // Set raw snapshot fields if they exist, catching exception if column doesn't exist
+                    try {
+                        dto.setSnapshotName(rs.getString("Snapshot_Name"));
+                        dto.setSnapshotImage(rs.getString("Snapshot_Image"));
+                        dto.setPriceAtPurchase(rs.getBigDecimal("Price_At_Purchase"));
+                    } catch (SQLException ignore) {
+                        // Columns might not exist yet
+                    }
 
                     // Explicitly flags if it is a custom configuration based on greeting text existence
                     //dto.setCustom(greeting != null && !greeting.trim().isEmpty());
@@ -177,16 +197,16 @@ public class CartDAO {
         return 0;
     }
 
-    public boolean addSnapshotToCart(String userId, String productId, String templateName, java.math.BigDecimal price, String imageUrl, int quantity) {
-        // 1. Check if the user already has this exact standard product (and variant/size) in their cart
+    public boolean addTemplateToCart(String userId, String productId, String templateName, java.math.BigDecimal price, String imageUrl, int quantity) {
+        // 1. Check if the user already has this exact standard product in their cart
         if (productId != null && !productId.isEmpty()) {
-            String sqlCheck = "SELECT ci.Cart_Item_ID FROM cart_item ci " +
-                              "JOIN custom_cake cc ON ci.Custom_Cake_ID = cc.Custom_Cake_ID " +
-                              "WHERE ci.User_ID = ? AND cc.Cake_Hash_Structure = ?";
+            String sqlCheck = "SELECT Cart_Item_ID FROM cart_item " +
+                              "WHERE User_ID = ? AND Product_ID = ? AND Snapshot_Name = ?";
             try (Connection conn = DBContext.getJDBCConnection();
                  PreparedStatement psCheck = conn.prepareStatement(sqlCheck)) {
                 psCheck.setString(1, userId);
-                psCheck.setString(2, templateName);
+                psCheck.setString(2, productId);
+                psCheck.setString(3, templateName);
                 try (ResultSet rs = psCheck.executeQuery()) {
                     if (rs.next()) {
                         String existingCartItemId = rs.getString("Cart_Item_ID");
@@ -200,44 +220,31 @@ public class CartDAO {
                     }
                 }
             } catch (SQLException e) {
-                e.printStackTrace();
+                // If Snapshot_Name column doesn't exist, it will throw an exception here, but we will catch it and try to insert below (which will also fail).
+                // But we print it to see.
+                System.out.println("Error checking cart item: " + e.getMessage());
             }
         }
 
-        // 2. If it does not exist, create a new custom_cake snapshot and cart_item link
-        String customCakeId = "TPL-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        // 2. If it does not exist, insert into cart_item directly
         String cartItemId = "CRT-" + java.util.UUID.randomUUID().toString().toUpperCase();
 
-        String sqlCake = "INSERT INTO custom_cake (Custom_Cake_ID, Canvas_Image_URL, Greeting_Text, Cake_Hash_Structure, Calculated_Price) VALUES (?, ?, ?, ?, ?)";
-        String sqlCart = "INSERT INTO cart_item (Cart_Item_ID, User_ID, Custom_Cake_ID, Quantity, Added_At) VALUES (?, ?, ?, ?, ?)";
+        String sqlCart = "INSERT INTO cart_item (Cart_Item_ID, User_ID, Product_ID, Quantity, Added_At, Snapshot_Name, Snapshot_Image, Price_At_Purchase) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection conn = DBContext.getJDBCConnection()) {
-            conn.setAutoCommit(false);
-            try (PreparedStatement psCake = conn.prepareStatement(sqlCake);
-                 PreparedStatement psCart = conn.prepareStatement(sqlCart)) {
-                
-                // Insert snapshot into custom_cake
-                psCake.setString(1, customCakeId);
-                psCake.setString(2, imageUrl != null ? imageUrl : "assets/images/products/basic.png");
-                psCake.setNull(3, java.sql.Types.VARCHAR); // No greeting for standard product yet
-                psCake.setString(4, templateName); // Name + size
-                psCake.setBigDecimal(5, price);
-                psCake.executeUpdate();
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement psCart = conn.prepareStatement(sqlCart)) {
+            
+            psCart.setString(1, cartItemId);
+            psCart.setString(2, userId);
+            psCart.setString(3, productId);
+            psCart.setInt(4, quantity);
+            psCart.setTimestamp(5, new java.sql.Timestamp(System.currentTimeMillis()));
+            psCart.setString(6, templateName);
+            psCart.setString(7, imageUrl);
+            psCart.setBigDecimal(8, price);
+            psCart.executeUpdate();
 
-                // Insert link into cart_item
-                psCart.setString(1, cartItemId);
-                psCart.setString(2, userId);
-                psCart.setString(3, customCakeId);
-                psCart.setInt(4, quantity);
-                psCart.setTimestamp(5, new java.sql.Timestamp(System.currentTimeMillis()));
-                psCart.executeUpdate();
-
-                conn.commit();
-                return true;
-            } catch (SQLException e) {
-                conn.rollback();
-                e.printStackTrace();
-            }
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
         }
