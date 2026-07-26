@@ -7,6 +7,7 @@ import com.bakeryzone.dao.ReportDAO;
 import com.bakeryzone.model.Customer;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.model.User;
+import com.bakeryzone.service.OrderService;
 import com.bakeryzone.utils.ValidationUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -26,6 +27,7 @@ import java.util.List;
 public class ShipperOrderServlet extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
+    private final OrderService orderService = new OrderService();
     private final ShipperTripDAO shipperTripDAO = new ShipperTripDAO();
     private final ReportDAO reportDAO = new ReportDAO();
     private final CustomerDAO customerDAO = new CustomerDAO();
@@ -149,7 +151,7 @@ public class ShipperOrderServlet extends HttpServlet {
 
             // 4. Tự động cập nhật trạng thái đơn hàng tương ứng
             String nextStatus = "pickup".equalsIgnoreCase(type) ? "Delivering" : "Completed";
-            boolean statusSuccess = orderDAO.updateOrderStatus(orderNo, nextStatus);
+            boolean statusSuccess = orderService.updateOrderStatus(orderNo, nextStatus, null);
 
             if (statusSuccess) {
                 out.print("{\"success\":true,\"message\":\"Tải ảnh lên và cập nhật trạng thái thành công!\",\"photoUrl\":\"" + request.getContextPath() + "/" + relativePath + "\"}");
@@ -429,13 +431,16 @@ public class ShipperOrderServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/shipper/orders?action=detail&orderNo=" + orderNo);
             return;
         }
-
-        boolean success;
-        if ("Cancelled".equalsIgnoreCase(status) && shipperNote != null && !shipperNote.trim().isEmpty()) {
-            success = orderDAO.updateOrderStatusWithNote(orderNo, status, shipperNote.trim());
-        } else {
-            success = orderDAO.updateOrderStatus(orderNo, status);
+        
+        // Ngăn chặn Shipper đổi trạng thái khi đơn đã COMPLETED
+        if (Order.STATUS_COMPLETED.equals(currentStatus)) {
+            session.setAttribute("errorMessage", "Đơn hàng đã hoàn thành, Shipper không thể cập nhật thêm!");
+            response.sendRedirect(request.getContextPath() + "/shipper/orders?action=detail&orderNo=" + orderNo);
+            return;
         }
+
+        String noteToSave = ("Cancelled".equalsIgnoreCase(status) && shipperNote != null && !shipperNote.trim().isEmpty()) ? shipperNote.trim() : null;
+        boolean success = orderService.updateOrderStatus(orderNo, status, noteToSave);
 
         if (success) {
             session.setAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + orderNo + " thành công!");

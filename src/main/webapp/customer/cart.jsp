@@ -275,7 +275,7 @@
                                         <!-- Rendered by JS -->
                                     </div>
                                 </div>
-                                <button type="submit" name="action" value="checkout" class="checkout-btn" ${empty cartItems ? 'disabled' : ''}>Thanh toán ngay</button>
+                                <button type="submit" name="action" value="checkout" class="checkout-btn">Thanh toán ngay</button>
 
                                 <div style="text-align: center; margin-top: 16px; font-size: 11px; color: var(--text-muted);">
                                     Bảo mật thanh toán 100%. CakeZone cam kết mang đến những trải nghiệm tuyệt vời nhất cho bạn.
@@ -664,11 +664,6 @@
                 document.getElementById('cartDiscountDisplay').innerText = discount > 0 ? "-" + formatCurrency(discount) : "-0₫";
                 document.getElementById('cartTotalDisplay').innerText = formatCurrency(finalTotal);
                 
-                // Disable checkout button if no items selected
-                const checkoutBtn = document.querySelector('.checkout-btn');
-                if (checkoutBtn) {
-                    checkoutBtn.disabled = (subtotal === 0);
-                }
             }
 
             // Bind change listeners to checkboxes
@@ -759,7 +754,7 @@
                     localStorage.setItem("cart", JSON.stringify(checkoutCart));
                 } else {
                     e.preventDefault();
-                    alert("Vui lòng chọn ít nhất 1 sản phẩm để thanh toán.");
+                    showFloatingAlert("Hãy chọn ít nhất 1 sản phẩm", "error");
                 }
             });
         </script>

@@ -750,6 +750,41 @@ public class MembershipDAO {
         return false;
     }
 
+    public boolean adjustTotalSpending(String userId, java.math.BigDecimal delta) {
+        Connection conn = null;
+        PreparedStatement psUpdate = null;
+        try {
+            conn = DBContext.getJDBCConnection();
+            if (conn == null) return false;
+            
+            // First check current spending to cap at 0
+            UserMembership um = getMembershipByUserIdRaw(userId);
+            if (um == null) return false;
+            
+            java.math.BigDecimal currentSpending = um.getTotalSpending() != null ? um.getTotalSpending() : java.math.BigDecimal.ZERO;
+            if (currentSpending.add(delta).compareTo(java.math.BigDecimal.ZERO) < 0) {
+                delta = currentSpending.negate();
+            }
+
+            String updateSql = "UPDATE UserMembership SET TotalSpending = TotalSpending + ? WHERE UserID = ?";
+            psUpdate = conn.prepareStatement(updateSql);
+            psUpdate.setBigDecimal(1, delta);
+            psUpdate.setString(2, userId);
+            int updated = psUpdate.executeUpdate();
+
+            // After updating spending, we might need to upgrade tier!
+            if (updated > 0) {
+                getMembershipByUserId(userId); // This triggers the JIT tier upgrade check!
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            close(conn, psUpdate, null);
+        }
+        return false;
+    }
+
     public boolean setTier(String userId, int newTierId) {
         Connection conn = null;
         PreparedStatement ps = null;

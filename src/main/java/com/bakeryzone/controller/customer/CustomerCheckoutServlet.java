@@ -129,6 +129,10 @@ public class CustomerCheckoutServlet extends HttpServlet {
                     // Invalidated by deselecting items
                     appliedOrderVoucherCode = null;
                 }
+                
+                request.setAttribute("orderVoucherType", orderVoucher.getDiscountType());
+                request.setAttribute("orderVoucherValue", orderVoucher.getDiscountValue());
+                request.setAttribute("orderVoucherMax", orderVoucher.getMaxDiscountAmount() != null ? orderVoucher.getMaxDiscountAmount() : BigDecimal.ZERO);
             }
         }
 

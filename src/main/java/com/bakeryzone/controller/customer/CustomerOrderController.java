@@ -6,6 +6,7 @@ import com.bakeryzone.model.Customer;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.model.OrderItem;
 import com.bakeryzone.model.User;
+import com.bakeryzone.service.OrderService;
 import com.bakeryzone.utils.ValidationUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -19,6 +20,7 @@ import java.io.IOException;
 public class CustomerOrderController extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
+    private final OrderService orderService = new OrderService();
     private final CustomerDAO customerDAO = new CustomerDAO();
 
     @Override
@@ -205,7 +207,7 @@ public class CustomerOrderController extends HttpServlet {
                 if (order != null && order.getCustomerId().equals(actualCustomerId)) {
                     String dbStatus = order.getOrderStatus();
                     if (OrderDAO.canCustomerCancel(dbStatus)) {
-                        boolean success = orderDAO.updateOrderStatus(orderNo, "Cancelled");
+                        boolean success = orderService.updateOrderStatus(orderNo, "Cancelled", null);
                         if (success) {
                             session.setAttribute("successMessage", "Huỷ đơn hàng #" + orderNo + " thành công!");
                         } else {

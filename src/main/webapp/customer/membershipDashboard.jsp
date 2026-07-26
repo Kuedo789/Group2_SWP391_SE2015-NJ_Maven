@@ -292,6 +292,10 @@
 
                     </div>
 
+                    <div style="font-size: 13px; color: var(--text-muted, #756b64); text-align: center; margin-top: 15px; background: rgba(52, 95, 61, 0.05); padding: 8px; border-radius: 6px;">
+                        💡 <b>Mức quy đổi:</b> 1,000 VNĐ = 1 điểm <i>(chưa nhân với hệ số hạng)</i>. Điểm thưởng được cộng tự động khi đơn hàng giao thành công.
+                    </div>
+
                     <%-- --- Progress bar toward next tier --------------------- --%>
                     <div class="ms-progress-section">
 

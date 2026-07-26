@@ -7,6 +7,7 @@ import com.bakeryzone.dao.ReportDAO;
 import com.bakeryzone.model.Customer;
 import com.bakeryzone.model.Order;
 import com.bakeryzone.model.User;
+import com.bakeryzone.service.OrderService;
 import com.bakeryzone.utils.ValidationUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -21,6 +22,7 @@ import java.util.List;
 public class AdminOrderController extends HttpServlet {
 
     private final OrderDAO orderDAO = new OrderDAO();
+    private final OrderService orderService = new OrderService();
     private final ShipperTripDAO shipperTripDAO = new ShipperTripDAO();
     private final ReportDAO reportDAO = new ReportDAO();
     private final CustomerDAO customerDAO = new CustomerDAO();
@@ -264,12 +266,8 @@ public class AdminOrderController extends HttpServlet {
             return;
         }
 
-        boolean success = orderDAO.updateOrderStatus(orderNo, status);
+        boolean success = orderService.updateOrderStatus(orderNo, status, null);
         if (success) {
-            // Trigger AutoAssign chỉ khi chuyển sang Waiting_Delivery
-            if (Order.STATUS_WAITING_DELIVERY.equals(status)) {
-                shipperTripDAO.autoAssignShipperAndTrip(orderNo);
-            }
             session.setAttribute("successMessage", "Cập nhật trạng thái đơn hàng #" + orderNo + " thành công!");
         } else {
             session.setAttribute("errorMessage", "Không thể cập nhật trạng thái đơn hàng.");

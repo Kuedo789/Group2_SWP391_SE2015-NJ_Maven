@@ -384,12 +384,11 @@ public class AdminCategoryServlet extends HttpServlet {
         try {
             URI uri = URI.create(iconUrl);
             if (uri.isAbsolute()) {
-                String scheme = uri.getScheme();
-                if (!("http".equalsIgnoreCase(scheme)
-                        || "https".equalsIgnoreCase(scheme))
+                if (!"http".equals(uri.getScheme()) && !"https".equals(uri.getScheme())
                         || uri.getHost() == null) {
                     return false;
                 }
+                return true; // Bỏ qua check đuôi file với ảnh ngoài mạng
             } else if (!iconUrl.matches(
                     "^/?(?:assets/images|uploads)/[A-Za-z0-9._/-]+$")) {
                 return false;

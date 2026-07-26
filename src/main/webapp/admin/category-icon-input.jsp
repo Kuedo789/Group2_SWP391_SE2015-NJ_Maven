@@ -227,8 +227,8 @@
 
             if (/^https?:\/\//i.test(value)) {
                 try {
-                    const parsed = new URL(value);
-                    return /\.(png|jpe?g|gif|webp)$/i.test(parsed.pathname);
+                    new URL(value);
+                    return true;
                 } catch (e) {
                     return false;
                 }

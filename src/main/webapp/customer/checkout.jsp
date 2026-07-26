@@ -303,19 +303,23 @@
                         </div>
                         <div id="discountContainer">
                             <c:if test="${requestScope.checkoutOrderDiscount > 0}">
-                                <div class="summary-row" id="discountSummaryRow" style="color: #d9534f;">
+                                <div class="summary-row" id="orderDiscountSummaryRow" style="color: #d9534f;">
                                     <div class="summary-row-label">
-                                        <span>Giảm giá Đơn hàng</span>
+                                        <span>Giảm giá đơn hàng</span>
                                     </div>
-                                    <span>- <fmt:formatNumber value="${requestScope.checkoutOrderDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
+                                    <div class="summary-row-value">
+                                        <span>- <fmt:formatNumber value="${requestScope.checkoutOrderDiscount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/></span>
+                                    </div>
                                 </div>
                             </c:if>
                             <c:if test="${not empty requestScope.checkoutShippingVoucherCode}">
                                 <div class="summary-row" id="shippingDiscountSummaryRow" style="color: #d9534f;">
                                     <div class="summary-row-label">
-                                        <span>Giảm phí Vận chuyển</span>
+                                        <span>Giảm phí vận chuyển</span>
                                     </div>
-                                    <span id="shippingDiscountDisplay">- 0₫</span>
+                                    <div class="summary-row-value">
+                                        <span id="shippingDiscountDisplay">- 0₫</span>
+                                    </div>
                                 </div>
                             </c:if>
                         </div>
@@ -345,7 +349,7 @@
                                     <div id="noVoucherText" style="font-size: 13px; color: var(--text-muted); font-style: italic;">Chưa có voucher nào được áp dụng.</div>
                                 </c:if>
                                 <c:if test="${not empty requestScope.checkoutOrderVoucherCode}">
-                                    <div class="applied-voucher-item" data-code="${requestScope.checkoutOrderVoucherCode}" data-scope="ORDER" data-type="PERCENT" data-val="${requestScope.checkoutOrderDiscount}" data-max="0" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
+                                    <div class="applied-voucher-item" data-code="${requestScope.checkoutOrderVoucherCode}" data-scope="ORDER" data-type="${requestScope.orderVoucherType}" data-val="${requestScope.orderVoucherValue}" data-max="${requestScope.orderVoucherMax}" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 12px; background: #f3f7f2; border: 1px dashed var(--primary); border-radius: 8px;">
                                         <div style="display: flex; align-items: center; gap: 6px;">
                                             <span style="font-size: 12px; background: var(--primary); color: white; padding: 2px 6px; border-radius: 4px; font-weight: 700;">ĐƠN HÀNG</span>
                                             <span style="font-weight: 600; color: var(--primary);">${requestScope.checkoutOrderVoucherCode}</span>
@@ -509,15 +513,24 @@
 
             if (shippingEl) shippingEl.innerText = currentShippingFee.toLocaleString("vi-VN") + "₫";
             
-            const shippingDiscountRow = document.getElementById("shippingDiscountSummaryRow");
-            if (shippingDiscountRow) {
-                if (appliedShippingDiscount > 0) {
-                    const sdVal = shippingDiscountRow.querySelector(".summary-row-value span");
-                    if (sdVal) sdVal.innerText = "- " + appliedShippingDiscount.toLocaleString("vi-VN") + "₫";
-                    shippingDiscountRow.style.display = "flex";
-                } else {
-                    shippingDiscountRow.style.display = "none";
+            let shippingDiscountRow = document.getElementById("shippingDiscountSummaryRow");
+            if (appliedShippingDiscount > 0) {
+                if (!shippingDiscountRow) {
+                    const row = document.createElement("div");
+                    row.className = "summary-row";
+                    row.id = "shippingDiscountSummaryRow";
+                    row.style.color = "#d9534f";
+                    row.innerHTML = `<div class="summary-row-label"><span>Giảm phí vận chuyển</span></div><div class="summary-row-value"><span></span></div>`;
+                    
+                    const totalRow = document.querySelector(".summary-row.total");
+                    if (totalRow) totalRow.parentNode.insertBefore(row, totalRow);
+                    shippingDiscountRow = document.getElementById("shippingDiscountSummaryRow");
                 }
+                const sdVal = shippingDiscountRow.querySelector(".summary-row-value span");
+                if (sdVal) sdVal.innerText = "- " + appliedShippingDiscount.toLocaleString("vi-VN") + "₫";
+                shippingDiscountRow.style.display = "flex";
+            } else if (shippingDiscountRow) {
+                shippingDiscountRow.style.display = "none";
             }
             if (totalEl) totalEl.innerText = finalTotal.toLocaleString("vi-VN") + "₫";
 

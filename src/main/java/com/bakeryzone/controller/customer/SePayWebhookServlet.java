@@ -2,6 +2,7 @@ package com.bakeryzone.controller.customer;
 
 import com.bakeryzone.dao.OrderDAO;
 import com.bakeryzone.model.Order;
+import com.bakeryzone.service.OrderService;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -88,7 +89,7 @@ public class SePayWebhookServlet extends HttpServlet {
                 
                 // If transfer amount matches or exceeds expected amount
                 if (BigDecimal.valueOf(transferAmount).compareTo(expectedAmount) >= 0) {
-                    boolean success = orderDAO.updateOrderStatus(orderNo, "PAID");
+                    boolean success = new OrderService().updateOrderStatus(orderNo, Order.STATUS_PAID, null);
                     if (success) {
                         System.out.println("[SePay] Order " + orderNo + " successfully marked as PAID via webhook.");
                         // AutoAssign sẽ được trigger khi Staff chuyển sang Waiting_Delivery.
@@ -96,9 +97,11 @@ public class SePayWebhookServlet extends HttpServlet {
                         response.setStatus(HttpServletResponse.SC_OK);
                         response.getWriter().write("{\"success\":true,\"message\":\"Order status updated\"}");
                         return;
+                    } else {
+                        System.err.println("[SePay] Failed to update order status to PAID for " + orderNo);
                     }
                 } else {
-                    System.out.println("[SePay] Order " + orderNo + " received insufficient amount: " + transferAmount + " < " + expectedAmount);
+                    System.out.println("[SePay] Ignored order " + orderNo + ": Transfer amount (" + transferAmount + ") is less than expected (" + expectedAmount + ")");
                 }
             } else {
                 System.out.println("[SePay] Order " + orderNo + " not found.");

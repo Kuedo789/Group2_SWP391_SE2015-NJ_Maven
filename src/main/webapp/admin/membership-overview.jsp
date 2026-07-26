@@ -943,7 +943,7 @@
                     chipsEl.innerHTML = m.ownedVouchers.map(function(v) {
                         return '<span class="voucher-chip active-chip" style="display:inline-flex;align-items:center;gap:6px;">' + 
                                '<i class="fa-solid fa-ticket" style="font-size:10px;"></i>' + v + 
-                               '<i class="fa-solid fa-xmark" onclick="removeVoucher(\'' + v + '\')" style="cursor:pointer;color:#ef4444;font-size:11px;" title="Xóa voucher này"></i></span>';
+                               '</span>';
                     }).join('');
                 } else {
                     section.style.display = 'block';
@@ -1128,7 +1128,16 @@
                 if (!tierId) { alert('Vui lòng chọn hạng mới.'); return; }
                 if (!currentMemberId) return;
 
-                if (!confirm('Bạn có chắc chắn muốn thay đổi hạng thành viên này không?')) return;
+                document.getElementById('tierConfirmModal').style.display = 'flex';
+            }
+
+            function closeTierConfirmModal() {
+                document.getElementById('tierConfirmModal').style.display = 'none';
+            }
+
+            function proceedTierUpgrade() {
+                closeTierConfirmModal();
+                const tierId = document.getElementById('upgradeTierSelect').value;
 
                 const btn = document.getElementById('btnSaveTier');
                 btn.disabled = true;
@@ -1163,9 +1172,35 @@
 
             // Close on Escape key
             document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') closeMemberDrawer();
+                if (e.key === 'Escape') {
+                    closeMemberDrawer();
+                    closeTierConfirmModal();
+                }
             });
         </script>
+
+    <!-- Custom Modal for Tier Update Confirmation -->
+    <div id="tierConfirmModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:12px; width:360px; overflow:hidden; box-shadow:0 10px 25px rgba(0,0,0,0.1); animation: fadeScale 0.2s ease-out;">
+            <style>
+                @keyframes fadeScale {
+                    from { opacity: 0; transform: scale(0.95); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+            </style>
+            <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-circle-info" style="color:#3b82f6; font-size:18px;"></i>
+                <h3 style="margin:0; font-size:16px; color:#1e293b;">Xác nhận thay đổi hạng</h3>
+            </div>
+            <div style="padding:20px; color:#475569; font-size:14px; line-height:1.5;">
+                <p style="margin:0;">Bạn có chắc chắn muốn thay đổi hạng thành viên này không?</p>
+            </div>
+            <div style="padding:16px 20px; background:#f8fafc; display:flex; justify-content:flex-end; gap:12px;">
+                <button type="button" style="padding:8px 16px; border:none; background:#e2e8f0; color:#475569; border-radius:6px; cursor:pointer; font-weight:500; font-size:14px;" onclick="closeTierConfirmModal()">Hủy</button>
+                <button type="button" style="padding:8px 16px; border:none; background:#3b82f6; color:#fff; border-radius:6px; cursor:pointer; font-weight:500; font-size:14px;" onclick="proceedTierUpgrade()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
 
     </body>
 </html>
