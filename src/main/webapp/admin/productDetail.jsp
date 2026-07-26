@@ -716,7 +716,7 @@
                                                     </td>
                                                     <td>
                                                         <div class="d-flex align-items-center gap-2">
-                                                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px; width: 90px; min-width: 90px;" required ${isReadOnly ? 'disabled' : ''}>
+                                                            <input type="number" step="1" min="1" class="form-control-cz bom-grams" name="bomStandardGram" value="${item.standardGram}" oninput="recalculateBom()" style="padding: 6px 12px; height: 38px; width: 90px; min-width: 90px;" required ${isReadOnly ? 'disabled' : ''}>
                                                             <span class="bom-unit-label text-muted small" style="min-width: 45px; text-align: left; font-weight: 500;">${item.unitMeasure}</span>
                                                         </div>
                                                     </td>
@@ -1143,6 +1143,23 @@
                 return false;
             }
 
+            // Validate BOM quantities (Must be positive integers)
+            const bomGramsInputs = document.querySelectorAll('.bom-grams');
+            let isBomGramsValid = true;
+            bomGramsInputs.forEach(input => {
+                const val = parseFloat(input.value);
+                if (isNaN(val) || val <= 0 || val % 1 !== 0) {
+                    input.classList.add('is-invalid');
+                    isBomGramsValid = false;
+                } else {
+                    input.classList.remove('is-invalid');
+                }
+            });
+            if (!isBomGramsValid) {
+                alert("Số lượng của tất cả nguyên liệu trong bảng định lượng phải là số nguyên dương lớn hơn 0.");
+                return false;
+            }
+
             // 4. Warning confirmation if no ingredients (BOM) are configured
             const bomRowsCount = document.querySelectorAll('#bomTableBody tr').length;
             if (bomRowsCount === 0) {
@@ -1316,7 +1333,7 @@
                     </td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <input type="number" step="0.01" class="form-control-cz bom-grams" name="bomStandardGram" value="${defaultQty}" oninput="recalculateBom()" style="padding: 5px 10px; height: 38px; width: 90px; min-width: 90px;" required>
+                            <input type="number" step="1" min="1" class="form-control-cz bom-grams" name="bomStandardGram" value="\${defaultQty}" oninput="recalculateBom()" style="padding: 5px 10px; height: 38px; width: 90px; min-width: 90px;" required>
                             <span class="bom-unit-label text-muted small" style="min-width: 45px; text-align: left; font-weight: 500;"></span>
                         </div>
                     </td>
@@ -1391,7 +1408,7 @@
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = templateEl.innerHTML;
                         const options = tempDiv.querySelectorAll('option');
-                        const commonKeywords = ['bột', 'đường', 'bơ', 'sữa', 'trứng'];
+                        const commonKeywords = ['sữa', 'đường', 'bột mì', 'trứng'];
                         
                         options.forEach(opt => {
                             const nameLower = opt.textContent.toLowerCase();
@@ -1403,11 +1420,11 @@
                     }
                 }
 
-                // Format existing ingredient quantities to remove trailing .0
+                // Format existing ingredient quantities to integers
                 document.querySelectorAll('.bom-grams').forEach(input => {
                     const val = parseFloat(input.value);
                     if (!isNaN(val)) {
-                        input.value = parseFloat(val.toFixed(2));
+                        input.value = Math.round(val);
                     }
                 });
 

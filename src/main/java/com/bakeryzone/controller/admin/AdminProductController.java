@@ -534,7 +534,24 @@ public class AdminProductController extends HttpServlet {
             }
         }
 
-        if (hasOrders || !nameValid || isDuplicateName || !laborValid || !marginValid || !serviceValid || imageError != null) {
+        boolean bomGramsValid = true;
+        String[] bomStandardGrams = request.getParameterValues("bomStandardGram");
+        if (bomStandardGrams != null) {
+            for (String gramStr : bomStandardGrams) {
+                try {
+                    int g = Integer.parseInt(gramStr);
+                    if (g <= 0) {
+                        bomGramsValid = false;
+                        break;
+                    }
+                } catch (NumberFormatException e) {
+                    bomGramsValid = false;
+                    break;
+                }
+            }
+        }
+
+        if (hasOrders || !nameValid || isDuplicateName || !laborValid || !marginValid || !serviceValid || imageError != null || !bomGramsValid) {
             Product product = new Product();
             product.setId(id);
             product.setName(name);
@@ -565,6 +582,9 @@ public class AdminProductController extends HttpServlet {
             }
             if (!marginValid || !serviceValid) {
                 errorMsg.append("Tỷ lệ biên lãi và phí dịch vụ phải hợp lệ, tổng cộng phải nhỏ hơn 100%. ");
+            }
+            if (!bomGramsValid) {
+                errorMsg.append("Số lượng của tất cả nguyên liệu trong bảng định lượng phải là số nguyên dương lớn hơn 0. ");
             }
             if (imageError != null) {
                 errorMsg.append(imageError);
@@ -605,7 +625,7 @@ public class AdminProductController extends HttpServlet {
             
             // Process and save BOM (Bill of Materials) Ingredients
             String[] bomIngredientIds = request.getParameterValues("bomIngredientId");
-            String[] bomStandardGrams = request.getParameterValues("bomStandardGram");
+            bomStandardGrams = request.getParameterValues("bomStandardGram");
             productDAO.saveProductIngredients(id, bomIngredientIds, bomStandardGrams);
             
             String pageParam = request.getParameter("page");
