@@ -1,4 +1,4 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+﻿<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
     <%@ taglib prefix="c" uri="jakarta.tags.core" %>
         <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
@@ -8,62 +8,7 @@
             <head>
                 <jsp:include page="../common/header.jsp" />
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer/checkout.css">
-                <style>
-                    .pm-card {
-                        display: flex;
-                        align-items: center;
-                        gap: 16px;
-                        padding: 16px;
-                        border: 1px solid var(--border-color);
-                        border-radius: var(--radius-md);
-                        cursor: pointer;
-                        background: #fff;
-                        transition: all 0.2s ease;
-                        margin-bottom: 12px;
-                    }
-
-                    .pm-card:last-child {
-                        margin-bottom: 0;
-                    }
-
-                    .pm-card.active {
-                        border: 2px solid var(--primary-dark);
-                        background: #f6f8f5;
-                        padding: 15px;
-                    }
-
-                    .pm-card input[type="radio"] {
-                        display: none;
-                    }
-
-                    .pm-radio-circle {
-                        width: 18px;
-                        height: 18px;
-                        border: 1px solid #999;
-                        border-radius: 50%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        flex-shrink: 0;
-                    }
-
-                    .pm-card.active .pm-radio-circle {
-                        border: 5px solid var(--primary-dark);
-                        background: #fff;
-                    }
-
-                    .pm-icon {
-                        font-size: 18px;
-                        color: var(--text-dark);
-                    }
-
-                    .pm-title {
-                        font-size: 15px;
-                        font-weight: 700;
-                        color: var(--text-dark);
-                        display: block;
-                    }
-                </style>
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/customer/checkout.css">
             </head>
 
             <body>
