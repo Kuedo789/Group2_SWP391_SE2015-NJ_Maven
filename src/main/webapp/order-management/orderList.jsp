@@ -411,6 +411,11 @@
             String sortParam = "&sort=" + sortVal;
             String statusParam = "&status=" + currentStatus;
             
+            String cakeTypeParam = "";
+            if (request.getAttribute("cakeType") != null && !request.getAttribute("cakeType").toString().isEmpty()) {
+                cakeTypeParam = "&cakeType=" + request.getAttribute("cakeType");
+            }
+            
             if (totalPages > 0) {
                 // Windowed pagination: hiển thị tối đa 7 số trang quanh trang hiện tại
                 int windowSize = 7;
@@ -424,31 +429,31 @@
             <div class="pagination" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 40px; margin-bottom: 40px;">
                 <%-- Nút Trước --%>
                 <% if (currentPage > 1) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage - 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Trước</a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage - 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %><%= cakeTypeParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Trước</a>
                 <% } else { %>
                     <button class="btn btn-outline" style="padding: 8px 16px; border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;" disabled>Trước</button>
                 <% } %>
 
                 <%-- Ellipsis đầu nếu cần --%>
                 <% if (winStart > 1) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=1<%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">1</a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=1<%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %><%= cakeTypeParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">1</a>
                     <% if (winStart > 2) { %><span style="padding: 0 4px; color: #999;">...</span><% } %>
                 <% } %>
 
                 <%-- Số trang trong cửa sổ --%>
                 <% for (int i = winStart; i <= winEnd; i++) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= i %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn <%= i == currentPage ? "btn-primary" : "btn-outline" %>" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= i %></a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= i %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %><%= cakeTypeParam %>" class="btn <%= i == currentPage ? "btn-primary" : "btn-outline" %>" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= i %></a>
                 <% } %>
 
                 <%-- Ellipsis cuối nếu cần --%>
                 <% if (winEnd < totalPages) { %>
                     <% if (winEnd < totalPages - 1) { %><span style="padding: 0 4px; color: #999;">...</span><% } %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= totalPages %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= totalPages %></a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= totalPages %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %><%= cakeTypeParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);"><%= totalPages %></a>
                 <% } %>
 
                 <%-- Nút Sau --%>
                 <% if (currentPage < totalPages) { %>
-                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage + 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Sau</a>
+                    <a href="<%= request.getContextPath() %>/OrderList?page=<%= currentPage + 1 %><%= statusParam %><%= startDateParam %><%= endDateParam %><%= searchParam %><%= sortParam %><%= cakeTypeParam %>" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px; border-radius: var(--radius-sm);">Sau</a>
                 <% } else { %>
                     <button class="btn btn-outline" style="padding: 8px 16px; border-radius: var(--radius-sm); opacity: 0.5; cursor: not-allowed;" disabled>Sau</button>
                 <% } %>
@@ -880,7 +885,7 @@
                     <ul class="pagination-nav">
                         <c:if test="${currentPage > 1}">
                             <li class="page-num-item">
-                                <a href="${formAction}?action=list&page=${currentPage - 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}">
+                                <a href="${formAction}?action=list&page=${currentPage - 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}&cakeType=${cakeType}">
                                     <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                 </a>
                             </li>
@@ -888,13 +893,13 @@
 
                         <c:forEach begin="1" end="${totalPages}" var="i">
                             <li class="page-num-item ${currentPage == i ? 'active' : ''}">
-                                <a href="${formAction}?action=list&page=${i}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}">${i}</a>
+                                <a href="${formAction}?action=list&page=${i}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}&cakeType=${cakeType}">${i}</a>
                             </li>
                         </c:forEach>
 
                         <c:if test="${currentPage < totalPages}">
                             <li class="page-num-item">
-                                <a href="${formAction}?action=list&page=${currentPage + 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}">
+                                <a href="${formAction}?action=list&page=${currentPage + 1}&search=${search}&status=${status}&startDate=${startDate}&endDate=${endDate}&sort=${sort}&cakeType=${cakeType}">
                                     <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                 </a>
                             </li>

@@ -367,12 +367,13 @@ public class OrderMapper {
                .append("  SELECT 1 FROM order_item oi ")
                .append("  WHERE oi.Order_No = o.Order_No ")
                .append("  AND oi.Product_ID IS NOT NULL ")
+               .append("  AND oi.Custom_Cake_ID IS NULL ")
                .append(" )");
         } else if ("custom".equalsIgnoreCase(cakeType.trim())) {
             sql.append(" AND EXISTS (")
                .append("  SELECT 1 FROM order_item oi ")
                .append("  WHERE oi.Order_No = o.Order_No ")
-               .append("  AND oi.Product_ID IS NULL ")
+               .append("  AND oi.Custom_Cake_ID IS NOT NULL ")
                .append(" )");
         }
     }
