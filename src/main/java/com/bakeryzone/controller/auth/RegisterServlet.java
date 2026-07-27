@@ -118,13 +118,11 @@ public class RegisterServlet extends HttpServlet {
             }
         }
 
-        boolean sent = EmailUtils.sendRegisterOtpEmail(email, otp);
-
-        if (!sent) {
-            request.setAttribute("error", "Không thể gửi mã OTP. Vui lòng thử lại sau.");
-            request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
-            return;
-        }
+        final String finalEmail = email;
+        final String finalOtp = otp;
+        new Thread(() -> {
+            EmailUtils.sendRegisterOtpEmail(finalEmail, finalOtp);
+        }).start();
 
         request.getSession().setAttribute("otpEmail", email);
         request.getSession().setAttribute("otpExpireAtMillis", otpExpiry.getTime());

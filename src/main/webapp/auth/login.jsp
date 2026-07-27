@@ -49,6 +49,13 @@
                             <h2>Vào tài khoản</h2>
                         </div>
 
+                        <% if (request.getAttribute("message") != null) { %>
+                        <div class="auth-message auth-success">
+                            <span class="material-symbols-outlined">check_circle</span>
+                            <span><%= request.getAttribute("message") %></span>
+                        </div>
+                        <% } %>
+
                         <% if (request.getAttribute("error") != null) { %>
                         <div class="auth-message auth-error">
                             <span class="material-symbols-outlined">error</span>

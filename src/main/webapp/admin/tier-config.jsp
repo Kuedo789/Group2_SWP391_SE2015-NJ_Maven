@@ -139,6 +139,28 @@
                 transition: all 0.2s;
             }
             .btn-edit-tier:hover { background: #f1f5f9; border-color: #94a3b8; }
+            .btn-delete-tier {
+                width: 40px;
+                border-radius: 8px;
+                border: 1.5px solid var(--border-soft);
+                background: var(--surface-white);
+                color: #ef4444;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s;
+            }
+            .btn-delete-tier:hover { background: #fee2e2; border-color: #f87171; }
+            
+            /* --- Dark Mode Overrides for Cards --- */
+            html.dark-theme .tier-rule-card.standard { background: #1e293b; border-color: #334155; }
+            html.dark-theme .tier-rule-card.bronze { background: linear-gradient(145deg, #451a03, #78350f); border-color: #b45309; }
+            html.dark-theme .tier-rule-card.silver { background: linear-gradient(145deg, #1e293b, #334155); border-color: #475569; }
+            html.dark-theme .tier-rule-card.gold { background: linear-gradient(145deg, #422006, #713f12); border-color: #a16207; }
+            html.dark-theme .btn-edit-tier { background: #0f172a; border-color: #334155; color: #f8fafc; }
+            html.dark-theme .btn-edit-tier:hover { background: #1e293b; border-color: #475569; }
+            html.dark-theme .btn-delete-tier { background: #0f172a; border-color: #334155; }
+            html.dark-theme .btn-delete-tier:hover { background: #7f1d1d; border-color: #991b1b; color: #fca5a5; }
 
             /* ── Config section card ─────────────────────────────────────── */
             .config-card {

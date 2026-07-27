@@ -400,7 +400,7 @@
                                             </c:choose>
                                         </td>
                                         <td>
-                                            <div style="font-weight: 600; color: #111; font-size: 14.5px; line-height: 1.4; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            <div style="font-weight: 600; color: var(--text-dark, #111); font-size: 14.5px; line-height: 1.4; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                                 ${b.title}
                                             </div>
                                             <div class="text-muted" style="font-size: 12.5px; max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 3px;">

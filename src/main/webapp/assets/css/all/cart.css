@@ -343,3 +343,24 @@ html.dark-theme .system-status-footer {
     border-top-color: #2e4433 !important;
     color: #9ca3af !important;
 }
+
+/* --- Dark Mode Variables --- */
+html.dark-theme {
+    --bg-page: #121212;
+    --bg-card: #1e1e1e;
+    --bg-summary: #242424;
+    --text-main: #e0e0e0;
+    --text-muted: #a0a0a0;
+    --accent-green: #345f3d;
+    --accent-green-hover: #4a7c56;
+    --border-light: #333333;
+    --shadow-card: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+html.dark-theme .unauth-card-wrapper {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-light) !important;
+}
+html.dark-theme .unauth-icon-circle {
+    background-color: #2a3a2e !important;
+    color: #5d976a !important;
+}

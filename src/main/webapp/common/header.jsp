@@ -8,7 +8,7 @@
             dbSettings.put("bakeryName", "BakeryZone");
             dbSettings.put("hotline", "0901234567");
             dbSettings.put("email", "support@bakeryzone.vn");
-            dbSettings.put("address", "Số 1 Đại Cồ Việt, Hài Bà Trưng, Hà Nội");
+            dbSettings.put("address", "Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội");
             dbSettings.put("announcement", "Chào mừng bạn đến với BakeryZone - Thế giới bánh ngọt tinh tế!");
             dbSettings.put("shippingRate", "5000");
             dbSettings.put("depositPercent", "30");
@@ -32,8 +32,8 @@
 <title>${not empty settings.bakeryName ? settings.bakeryName : 'BakeryZone'}</title>
 <script>
     (function() {
-        var isDarkMode = ${not empty settings.darkMode ? settings.darkMode : 'false'};
-        if (isDarkMode) {
+        var savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
             document.documentElement.classList.add('dark-theme');
         }
     })();

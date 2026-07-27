@@ -76,7 +76,7 @@ public class VerifyOtpServlet extends HttpServlet {
                 request.getSession().removeAttribute("otpEmail");
                 request.getSession().removeAttribute("otpExpireAtMillis");
                 request.getSession().removeAttribute("otpAttempts");
-                
+
                 request.setAttribute("error", "Bạn đã nhập sai OTP quá 5 lần. Mã OTP đã bị hủy, vui lòng đăng ký lại.");
                 request.getRequestDispatcher("/auth/register.jsp").forward(request, response);
                 return;
@@ -86,7 +86,8 @@ public class VerifyOtpServlet extends HttpServlet {
 
             if (user == null) {
                 request.setAttribute("error", "Không tìm thấy tài khoản cần xác thực. Vui lòng đăng ký lại.");
-            } else if (user.getOtpExpiry() == null || user.getOtpExpiry().before(new Timestamp(System.currentTimeMillis()))) {
+            } else if (user.getOtpExpiry() == null
+                    || user.getOtpExpiry().before(new Timestamp(System.currentTimeMillis()))) {
                 request.setAttribute("error", "Mã OTP đã hết hạn. Vui lòng bấm gửi lại mã.");
             } else {
                 request.setAttribute("error", "Mã OTP không đúng. Bạn còn " + (5 - attempts) + " lần thử.");
@@ -109,7 +110,7 @@ public class VerifyOtpServlet extends HttpServlet {
         request.getSession().removeAttribute("otpEmail");
         request.getSession().removeAttribute("otpExpireAtMillis");
 
-        request.setAttribute("message", "Xác thực tài khoản thành công. Vui lòng đăng nhập.");
+        request.setAttribute("message", "Đăng kí tài khoản thành công. Vui lòng đăng nhập.");
         request.getRequestDispatcher("/auth/login.jsp").forward(request, response);
     }
 
@@ -166,13 +167,11 @@ public class VerifyOtpServlet extends HttpServlet {
             return;
         }
 
-        boolean sent = EmailUtils.sendRegisterOtpEmail(email, newOtp);
-
-        if (!sent) {
-            request.setAttribute("error", "Không thể gửi lại mã OTP. Vui lòng thử lại sau.");
-            request.getRequestDispatcher("/auth/verify-otp.jsp").forward(request, response);
-            return;
-        }
+        final String finalEmail = email;
+        final String finalNewOtp = newOtp;
+        new Thread(() -> {
+            EmailUtils.sendRegisterOtpEmail(finalEmail, finalNewOtp);
+        }).start();
 
         request.getSession().setAttribute("otpExpireAtMillis", newExpiry.getTime());
         request.getSession().removeAttribute("otpAttempts"); // Reset đếm số lần sai
