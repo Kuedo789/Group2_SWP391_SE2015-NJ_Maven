@@ -18,6 +18,7 @@ public class PasswordUtils {
             return null;
         }
         try {
+            
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(password.getBytes("UTF-8"));
             StringBuilder hexString = new StringBuilder();
