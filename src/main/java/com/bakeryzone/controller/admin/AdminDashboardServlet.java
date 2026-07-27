@@ -65,7 +65,7 @@ public class AdminDashboardServlet extends HttpServlet {
             Map<String, Integer> customOrders = reportDAO.getOrdersTrendCustom(sDate, eDate);
             Map<String, Double> customProfit = reportDAO.getProfitTrendCustom(sDate, eDate);
             
-            // Cập nhật lại thông số các thẻ và danh sách theo khoảng ngày tùy chọn
+            
             totalRevenue = reportDAO.getTotalRevenue(sDate, eDate);
             totalProfit = reportDAO.getTotalProfit(sDate, eDate);
             totalOrders = orderDAO.getTotalOrdersCount(null, null, sDate, eDate);
@@ -120,39 +120,6 @@ public class AdminDashboardServlet extends HttpServlet {
         int deliveringCount = statusCounts.getOrDefault("Đang giao", 0);
         int completedCount = statusCounts.getOrDefault("Hoàn thành", 0);
 
-        // Tính % thay đổi doanh thu so với tháng trước (lấy 2 giá trị cuối của map xu hướng 6 tháng)
-        java.util.List<Double> revValues = new java.util.ArrayList<>(monthlyRevenue.values());
-        double revThisMonth  = revValues.size() > 0 ? revValues.get(revValues.size() - 1) : 0;
-        double revLastMonth  = revValues.size() > 1 ? revValues.get(revValues.size() - 2) : 0;
-        double revChangePct  = revLastMonth > 0 ? Math.round(((revThisMonth - revLastMonth) / revLastMonth * 100) * 10.0) / 10.0 : (revThisMonth > 0 ? 100.0 : 0.0);
-
-        // Tính % thay đổi số đơn hàng so với tháng trước
-        java.util.List<Integer> ordValues = new java.util.ArrayList<>(monthlyOrders.values());
-        int ordThisMonth   = ordValues.size() > 0 ? ordValues.get(ordValues.size() - 1) : 0;
-        int ordLastMonth   = ordValues.size() > 1 ? ordValues.get(ordValues.size() - 2) : 0;
-        double ordChangePct = ordLastMonth > 0 ? Math.round(((ordThisMonth - ordLastMonth) / (double) ordLastMonth * 100) * 10.0) / 10.0 : (ordThisMonth > 0 ? 100.0 : 0.0);
-
-        // Tính % thay đổi số khách hàng (so sánh tháng hiện tại với tháng trước theo dữ liệu DB)
-        double custThisMonth = reportDAO.getTotalCustomers(
-                java.time.LocalDate.now().withDayOfMonth(1).toString(),
-                java.time.LocalDate.now().toString());
-        double custLastMonth = reportDAO.getTotalCustomers(
-                java.time.LocalDate.now().minusMonths(1).withDayOfMonth(1).toString(),
-                java.time.LocalDate.now().minusMonths(1).withDayOfMonth(java.time.LocalDate.now().minusMonths(1).lengthOfMonth()).toString());
-        double custChangePct = custLastMonth > 0 ? Math.round(((custThisMonth - custLastMonth) / custLastMonth * 100) * 10.0) / 10.0 : (custThisMonth > 0 ? 100.0 : 0.0);
-
-        // Tính % thay đổi lợi nhuận so với tháng trước
-        java.util.List<Double> profitValues = new java.util.ArrayList<>(monthlyProfit.values());
-        double profitThisMonth  = profitValues.size() > 0 ? profitValues.get(profitValues.size() - 1) : 0;
-        double profitLastMonth  = profitValues.size() > 1 ? profitValues.get(profitValues.size() - 2) : 0;
-        double profitChangePct  = profitLastMonth > 0 ? Math.round(((profitThisMonth - profitLastMonth) / profitLastMonth * 100) * 10.0) / 10.0 : (profitThisMonth > 0 ? 100.0 : 0.0);
-
-        // Gán thuộc tính % thay đổi vào request
-        request.setAttribute("revChangePct", revChangePct);
-        request.setAttribute("ordChangePct", ordChangePct);
-        request.setAttribute("custChangePct", custChangePct);
-        request.setAttribute("profitChangePct", profitChangePct);
-        // Lưu ý: Mẫu bánh (products) là dữ liệu tổng số, không có xu hướng tháng → giữ nguyên không hardcode
 
         request.setAttribute("totalRevenue", totalRevenue);
         request.setAttribute("totalProfit", totalProfit);
@@ -261,10 +228,6 @@ public class AdminDashboardServlet extends HttpServlet {
         request.setAttribute("daily7PrfLabels", mapKeysToString(daily7Profit));
         request.setAttribute("daily7PrfData", mapValuesToString(daily7Profit));
 
-        // Giữ các thuộc tính dự phòng nếu có tham chiếu cũ
-        request.setAttribute("revenueLabels", mapKeysToString(monthlyRevenue));
-        request.setAttribute("revenueData", mapValuesToString(monthlyRevenue));
-        
         StringBuilder statLabels = new StringBuilder();
         StringBuilder statData = new StringBuilder();
         int j = 0;
