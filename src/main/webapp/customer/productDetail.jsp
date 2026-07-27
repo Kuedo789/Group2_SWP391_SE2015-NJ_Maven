@@ -161,7 +161,7 @@
                 document.getElementById("breadcrumbName").innerText = product.name;
                 document.getElementById("productCategory").innerText = product.category;
                 document.getElementById("productName").innerText = product.name;
-                document.getElementById("productDesc").innerText = product.desc;
+                document.getElementById("productDesc").innerHTML = product.desc;
                 document.getElementById("mainImage").src = images[selectedImage];
 
                 renderImages();
