@@ -155,7 +155,7 @@ public class CustomerServlet extends HttpServlet {
         if (inputPassword == null || inputPassword.trim().isEmpty()) {
             c.getUser().setPassword(oldCus.getUser().getPassword());
         } else {
-            c.getUser().setPassword(inputPassword);
+            c.getUser().setPassword(com.bakeryzone.utils.PasswordUtils.hashPassword(inputPassword.trim()));
         }
 
         if (dao.updateCustomer(c)) {
@@ -195,7 +195,7 @@ public class CustomerServlet extends HttpServlet {
         if (password == null || password.trim().isEmpty()) {
             password = "123456"; // Mật khẩu mặc định khi tạo mới
         }
-        u.setPassword(password);
+        u.setPassword(com.bakeryzone.utils.PasswordUtils.hashPassword(password.trim()));
 
         String fullName = request.getParameter("fullName");
         c.setFullName(fullName != null ? fullName.trim() : "");

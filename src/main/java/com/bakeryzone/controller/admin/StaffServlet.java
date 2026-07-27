@@ -170,7 +170,7 @@ public class StaffServlet extends HttpServlet {
         if (inputPassword == null || inputPassword.trim().isEmpty()) {
             s.getUser().setPassword(oldStaff.getUser().getPassword());
         } else {
-            s.getUser().setPassword(inputPassword);
+            s.getUser().setPassword(com.bakeryzone.utils.PasswordUtils.hashPassword(inputPassword.trim()));
         }
 
         if (dao.updateStaff(s)) {
@@ -221,7 +221,7 @@ public class StaffServlet extends HttpServlet {
         u.setRoleId(roleId);
         u.setAccountStatus(accountStatus);
         u.setVerified(true);
-        u.setPassword(password);
+        u.setPassword(com.bakeryzone.utils.PasswordUtils.hashPassword(password.trim()));
 
         String fullName = request.getParameter("fullName");
         if (fullName != null) {

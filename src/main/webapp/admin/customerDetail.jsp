@@ -300,10 +300,12 @@
                                 <input type="email" name="email" value="${CUSTOMER_DATA.user.email}" class="form-control" placeholder="username@gmail.com" required>
                             </div>
 
-                            <div class="col-12">
-                                <label class="form-label">Địa chỉ mặc định</label>
-                                <input type="text" name="defaultAddress" value="${CUSTOMER_DATA.defaultAddress}" class="form-control" placeholder="Nhập địa chỉ chi tiết (Ví dụ: Số 12 Nguyễn Trãi, Hà Nội)...">
-                            </div>  
+                            <c:if test="${cusId != null}">
+                                <div class="col-12">
+                                    <label class="form-label">Địa chỉ mặc định</label>
+                                    <input type="text" name="defaultAddress" value="${CUSTOMER_DATA.defaultAddress}" class="form-control" placeholder="Nhập địa chỉ chi tiết (Ví dụ: Số 12 Nguyễn Trãi, Hà Nội)...">
+                                </div>  
+                            </c:if>
 
                             <div class="col-md-6">
                                 <label class="form-label">Trạng thái tài khoản <span class="text-danger">*</span></label>
@@ -338,7 +340,8 @@
                 let fullName = document.getElementsByName("fullName")[0].value.trim();
                 let email = document.getElementsByName("email")[0].value.trim();
                 let phone = document.getElementsByName("phone")[0].value.trim();
-                let defaultAddress = document.getElementsByName("defaultAddress")[0].value.trim();
+                let defaultAddressInput = document.getElementsByName("defaultAddress")[0];
+                let defaultAddress = defaultAddressInput ? defaultAddressInput.value.trim() : "";
 
                 if (fullName.length < 2) {
                     alert("Họ và tên khách hàng phải có ít nhất 2 ký tự!");
@@ -356,7 +359,7 @@
                     alert("Số điện thoại không hợp lệ! Phải gồm 10 chữ số và bắt đầu bằng đầu số VN (03, 05, 07, 08, 09)!");
                     return false;
                 }
-                if (defaultAddress.length > 100) {
+                if (defaultAddress && defaultAddress.length > 100) {
                     alert("Địa chỉ mặc định không được vượt quá 100 ký tự!");
                     return false;
                 }
