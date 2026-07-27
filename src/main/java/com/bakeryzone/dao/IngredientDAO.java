@@ -43,14 +43,22 @@ public class IngredientDAO {
         return list;
     }
 
-    public List<Ingredient> getIngredientsFiltered(String search, String unitId, String sortBy, int page, int pageSize) {
+    public List<Ingredient> getIngredientsFiltered(String search, String unitId, String status, String sortBy, int page, int pageSize) {
         List<Ingredient> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
             "SELECT i.Ingredient_ID, i.Ingredient_Name, i.Price_Per_Unit, i.Unit_ID, u.Unit_Name, i.Image_URL, i.enable " +
             "FROM ingredients i " +
             "LEFT JOIN unit_measure u ON i.Unit_ID = u.Unit_ID " +
-            "WHERE i.enable = 1 "
+            "WHERE 1=1 "
         );
+        
+        if (status != null && !status.trim().isEmpty()) {
+            if ("Active".equalsIgnoreCase(status)) {
+                sql.append("AND i.enable = 1 ");
+            } else if ("Inactive".equalsIgnoreCase(status)) {
+                sql.append("AND i.enable = 0 ");
+            }
+        }
         
         if (search != null && !search.trim().isEmpty()) {
             sql.append("AND (i.Ingredient_Name LIKE ? OR i.Ingredient_ID LIKE ?) ");
@@ -111,10 +119,18 @@ public class IngredientDAO {
         return list;
     }
 
-    public int getIngredientsCountFiltered(String search, String unitId) {
+    public int getIngredientsCountFiltered(String search, String unitId, String status) {
         StringBuilder sql = new StringBuilder(
-            "SELECT COUNT(*) FROM ingredients WHERE enable = 1 "
+            "SELECT COUNT(*) FROM ingredients WHERE 1=1 "
         );
+        
+        if (status != null && !status.trim().isEmpty()) {
+            if ("Active".equalsIgnoreCase(status)) {
+                sql.append("AND enable = 1 ");
+            } else if ("Inactive".equalsIgnoreCase(status)) {
+                sql.append("AND enable = 0 ");
+            }
+        }
         
         if (search != null && !search.trim().isEmpty()) {
             sql.append("AND (Ingredient_Name LIKE ? OR Ingredient_ID LIKE ?) ");
@@ -225,6 +241,19 @@ public class IngredientDAO {
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to delete ingredient: " + id, e);
+        }
+        return false;
+    }
+
+    public boolean activateIngredient(String id) {
+        if (id == null || id.trim().isEmpty()) return false;
+        String sql = "UPDATE ingredients SET enable = 1 WHERE Ingredient_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to activate ingredient: " + id, e);
         }
         return false;
     }

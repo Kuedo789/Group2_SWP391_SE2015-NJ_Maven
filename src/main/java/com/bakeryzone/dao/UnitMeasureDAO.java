@@ -34,6 +34,34 @@ public class UnitMeasureDAO {
         return list;
     }
 
+    public List<UnitMeasure> getAllUnitMeasuresAdmin(String status) {
+        List<UnitMeasure> list = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT Unit_ID, Unit_Name, Description, enable FROM unit_measure WHERE 1=1");
+        if (status != null && !status.trim().isEmpty()) {
+            if ("Active".equalsIgnoreCase(status)) {
+                sql.append(" AND enable = 1");
+            } else if ("Inactive".equalsIgnoreCase(status)) {
+                sql.append(" AND enable = 0");
+            }
+        }
+        sql.append(" ORDER BY Unit_ID ASC");
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql.toString());
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                UnitMeasure u = new UnitMeasure(
+                        rs.getString("Unit_ID"),
+                        rs.getString("Unit_Name"),
+                        rs.getString("Description"),
+                        rs.getBoolean("enable"));
+                list.add(u);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to get all unit measures for admin", e);
+        }
+        return list;
+    }
+
     public UnitMeasure getUnitMeasureById(String id) {
         if (id == null || id.trim().isEmpty())
             return null;
@@ -124,6 +152,20 @@ public class UnitMeasureDAO {
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed to check unit name exists: " + unitName, e);
+        }
+        return false;
+    }
+
+    public boolean activateUnitMeasure(String id) {
+        if (id == null || id.trim().isEmpty())
+            return false;
+        String sql = "UPDATE unit_measure SET enable = 1 WHERE Unit_ID = ?";
+        try (Connection conn = DBContext.getJDBCConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, id);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Failed to restore/activate unit measure: " + id, e);
         }
         return false;
     }

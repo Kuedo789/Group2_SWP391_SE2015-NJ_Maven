@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -560,19 +561,61 @@ public class AdminProductController extends HttpServlet {
         }
 
         if (hasOrders || !nameValid || isDuplicateName || !laborValid || !marginValid || !serviceValid || imageError != null || !bomGramsValid || !descValid || !instructValid) {
-            Product product = new Product();
-            product.setId(id);
-            product.setName(name);
-            product.setCategoryId(categoryId);
-            product.setEstimatedLaborHours(estimatedLaborHours);
-            product.setAllowsGreeting(request.getParameter("allowsGreeting") != null && "true".equalsIgnoreCase(request.getParameter("allowsGreeting")));
-            product.setImageUrl(imageUrl);
-            product.setStatus(request.getParameter("status"));
-            product.setFullDescription(fullDescription);
-            product.setDefaultMarginPercent(defaultMarginPercent);
-            product.setDefaultServicePercent(defaultServicePercent);
-            product.setInstructionSteps(instructionSteps);
-            product.setAdditionalImages(additionalImageUrls);
+            Product product = null;
+            List<Map<String, Object>> productIngredients = new ArrayList<>();
+
+            if (hasOrders) {
+                // Revert to database state since update is disallowed due to orders
+                if (id != null && !id.trim().isEmpty() && !"new".equalsIgnoreCase(id)) {
+                    product = productDAO.getProductById(id);
+                    productIngredients = productDAO.getProductIngredients(id);
+                }
+            }
+            
+            if (product == null) {
+                // Fallback / standard validation error path (keeps user submitted values)
+                product = new Product();
+                product.setId(id);
+                product.setName(name);
+                product.setCategoryId(categoryId);
+                product.setEstimatedLaborHours(estimatedLaborHours);
+                product.setAllowsGreeting(request.getParameter("allowsGreeting") != null && "true".equalsIgnoreCase(request.getParameter("allowsGreeting")));
+                product.setImageUrl(imageUrl);
+                product.setStatus(request.getParameter("status"));
+                product.setFullDescription(fullDescription);
+                product.setDefaultMarginPercent(defaultMarginPercent);
+                product.setDefaultServicePercent(defaultServicePercent);
+                product.setInstructionSteps(instructionSteps);
+                product.setAdditionalImages(additionalImageUrls);
+
+                String[] paramIngredientIds = request.getParameterValues("bomIngredientId");
+                String[] paramStandardGrams = request.getParameterValues("bomStandardGram");
+                if (paramIngredientIds != null && paramStandardGrams != null) {
+                    for (int idx = 0; idx < paramIngredientIds.length; idx++) {
+                        String ingId = paramIngredientIds[idx];
+                        String gramStr = (idx < paramStandardGrams.length) ? paramStandardGrams[idx] : "0";
+                        if (ingId != null && !ingId.trim().isEmpty()) {
+                            com.bakeryzone.model.Ingredient ing = ingredientDAO.getIngredientById(ingId.trim());
+                            if (ing != null) {
+                                Map<String, Object> map = new HashMap<>();
+                                map.put("ingredientId", ing.getIngredientId());
+                                map.put("ingredientName", ing.getIngredientName());
+                                double grams = 0;
+                                try {
+                                    grams = Double.parseDouble(gramStr.trim());
+                                } catch (Exception e) {}
+                                map.put("standardGram", grams);
+                                map.put("pricePerUnit", ing.getPricePerUnit());
+                                map.put("unitMeasure", ing.getUnitName());
+                                map.put("unitId", ing.getUnitId());
+                                productIngredients.add(map);
+                            }
+                        }
+                    }
+                } else if (id != null && !id.trim().isEmpty() && !"new".equalsIgnoreCase(id)) {
+                    productIngredients = productDAO.getProductIngredients(id);
+                }
+            }
             
             StringBuilder errorMsg = new StringBuilder();
             if (hasOrders) {
@@ -603,10 +646,11 @@ public class AdminProductController extends HttpServlet {
             if (imageError != null) {
                 errorMsg.append(imageError);
             }
-            
+
             request.setAttribute("product", product);
             request.setAttribute("productCategories", productDAO.getAllProductCategories());
             request.setAttribute("allIngredients", ingredientDAO.getAllIngredients());
+            request.setAttribute("productIngredients", productIngredients);
             request.setAttribute("error", errorMsg.toString().trim());
             request.setAttribute("formAction", (isNew && !hasOrders) ? "create" : "update");
             
