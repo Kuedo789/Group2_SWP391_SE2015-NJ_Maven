@@ -205,17 +205,19 @@
                                         </c:choose>
                                     </td>
 
-                                    <td class="action-btns">
+                                    <td>
+                                        <div class="action-btns">
                                         <a href="${pageContext.request.contextPath}/admin/categories?action=edit&id=${cat.categoryId}" class="btn-icon" title="Chỉnh sửa" style="text-decoration: none;"><i class="fa-regular fa-pen-to-square"></i></a>
 
                                         <c:choose>
                                             <c:when test="${cat.enable}">
                                                 <a href="javascript:void(0);" class="btn-icon" title="Vô hiệu hóa" style="text-decoration: none; color: #ef4444;" onclick="showConfirmModal('${pageContext.request.contextPath}/admin/categories?action=delete&id=${cat.categoryId}')"><i class="fa-regular fa-trash-can"></i></a>
-                                                </c:when>
-                                                <c:otherwise>
+                                            </c:when>
+                                            <c:otherwise>
                                                 <a href="${pageContext.request.contextPath}/admin/categories?action=restore&id=${cat.categoryId}" class="btn-icon" title="Khôi phục" style="text-decoration: none; color: #10b981;" onclick="return confirm('Bạn có muốn khôi phục danh mục này không?');"><i class="fa-solid fa-rotate-left"></i></a>
-                                                </c:otherwise>
-                                            </c:choose>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        </div>
                                     </td>
                                 </tr>
                                     </c:forEach>

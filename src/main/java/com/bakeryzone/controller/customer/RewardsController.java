@@ -170,6 +170,23 @@ public class RewardsController extends HttpServlet {
 
         int pointCost = voucher.getPointCost();
 
+        // -- Check Membership Tier Requirement --
+        Integer requiredTierId = voucher.getRequiredTierId();
+        if (requiredTierId != null) {
+            UserMembership userMembership = membershipDAO.getMembershipByUserId(userId);
+            if (userMembership != null && userMembership.getCurrentTierId() < requiredTierId) {
+                if (isAjax) {
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+                    response.getWriter().write("{\"success\":false, \"message\":\"Hạng thành viên của bạn chưa đủ điều kiện để đổi voucher này.\"}");
+                    return;
+                }
+                session.setAttribute("rewardError", "Hạng thành viên của bạn chưa đủ điều kiện để đổi voucher này.");
+                response.sendRedirect(request.getContextPath() + "/rewards");
+                return;
+            }
+        }
+
         // -- Execute the atomic transaction --
         RedeemResult result = voucherDAO.redeemVoucher(userId, voucherId, pointCost);
 

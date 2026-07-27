@@ -244,6 +244,13 @@ public class VoucherManagementServlet extends HttpServlet {
         }
         boolean isStackable = "true".equalsIgnoreCase(request.getParameter("isStackable"));
 
+        // -- Required Tier --
+        Integer requiredTierId = null;
+        String tierParam = request.getParameter("requiredTier");
+        if (tierParam != null && !tierParam.trim().isEmpty() && !"ALL".equalsIgnoreCase(tierParam)) {
+            try { requiredTierId = Integer.parseInt(tierParam.trim()); } catch (NumberFormatException ignored) {}
+        }
+
         // -- Build model --
         Voucher v = new Voucher();
         v.setVoucherCode(code.toUpperCase());
@@ -258,6 +265,7 @@ public class VoucherManagementServlet extends HttpServlet {
         v.setActive(isActive);
         v.setVoucherScope(voucherScope.toUpperCase());
         v.setStackable(isStackable);
+        v.setRequiredTierId(requiredTierId);
 
         // -- Persist --
         boolean ok = dao.addVoucher(v);
@@ -331,6 +339,13 @@ public class VoucherManagementServlet extends HttpServlet {
         }
         boolean isStackable = "true".equalsIgnoreCase(request.getParameter("isStackable"));
 
+        // -- Required Tier --
+        Integer requiredTierId = null;
+        String tierParam = request.getParameter("requiredTier");
+        if (tierParam != null && !tierParam.trim().isEmpty() && !"ALL".equalsIgnoreCase(tierParam)) {
+            try { requiredTierId = Integer.parseInt(tierParam.trim()); } catch (NumberFormatException ignored) {}
+        }
+
         // -- Build model --
         Voucher v = new Voucher();
         v.setVoucherId(id);
@@ -345,6 +360,7 @@ public class VoucherManagementServlet extends HttpServlet {
         v.setActive(isActive);
         v.setVoucherScope(voucherScope.toUpperCase());
         v.setStackable(isStackable);
+        v.setRequiredTierId(requiredTierId);
 
         // -- Persist --
         boolean ok = dao.updateVoucher(v);

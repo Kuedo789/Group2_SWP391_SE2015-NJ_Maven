@@ -426,7 +426,8 @@
                                                 </c:choose>
                                             </td>
 
-                                            <td class="action-btns">
+                                            <td>
+                                                <div class="action-btns">
                                                 <%-- Toggle active/inactive --%>
                                                 <c:choose>
                                                     <c:when test="${v.active}">
@@ -451,6 +452,7 @@
                                                    style="text-decoration:none;color:#3b82f6;">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </a>
+                                                </div>
                                             </td>
                                         </tr>
                                     </c:forEach>

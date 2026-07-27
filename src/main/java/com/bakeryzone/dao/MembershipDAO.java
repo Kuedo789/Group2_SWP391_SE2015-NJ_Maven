@@ -498,7 +498,7 @@ public class MembershipDAO {
         boolean scopeIsShipping = "SHIPPING".equalsIgnoreCase(scope);
 
         if (scopeIsOrder) {
-            sql.append("  AND v.VoucherScope = 'ORDER' ");
+            sql.append("  AND v.VoucherScope IN ('ORDER', 'CATEGORY', 'MEMBERSHIP') ");
         } else if (scopeIsShipping) {
             sql.append("  AND v.VoucherScope = 'SHIPPING' ");
         }
@@ -565,7 +565,7 @@ public class MembershipDAO {
         boolean scopeIsOrder = "ORDER".equalsIgnoreCase(scope);
         boolean scopeIsShipping = "SHIPPING".equalsIgnoreCase(scope);
         if (scopeIsOrder) {
-            sql.append(" AND v.VoucherScope = 'ORDER' ");
+            sql.append(" AND v.VoucherScope IN ('ORDER', 'CATEGORY', 'MEMBERSHIP') ");
         } else if (scopeIsShipping) {
             sql.append(" AND v.VoucherScope = 'SHIPPING' ");
         }

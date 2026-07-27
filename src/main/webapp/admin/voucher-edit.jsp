@@ -243,8 +243,8 @@
                                     Loại giảm giá <span class="req">*</span>
                                 </label>
                                 <select id="discountType" name="discountType" class="form-control" required>
-                                    <option value="PERCENT" ${editVoucher.discountType == 'PERCENT' ? 'selected' : ''}>Phần trăm (%)</option>
-                                    <option value="FIXED"   ${editVoucher.discountType == 'FIXED'   ? 'selected' : ''}>Tiền mặt cố định (₫)</option>
+                                    <option value="PERCENT" ${editVoucher.discountType == 'PERCENT' || editVoucher.discountType == 'PERCENTAGE' ? 'selected' : ''}>Phần trăm (%)</option>
+                                    <option value="FIXED"   ${editVoucher.discountType == 'FIXED' || editVoucher.discountType == 'FIXED_AMOUNT' || editVoucher.discountType == 'FLAT' ? 'selected' : ''}>Tiền mặt cố định (₫)</option>
                                 </select>
                             </div>
 
@@ -295,6 +295,8 @@
                                 <select id="voucherScope" name="voucherScope" class="form-control" required>
                                     <option value="ORDER" ${editVoucher.voucherScope == 'ORDER' ? 'selected' : ''}>Toàn đơn (ORDER)</option>
                                     <option value="SHIPPING" ${editVoucher.voucherScope == 'SHIPPING' ? 'selected' : ''}>Freeship (SHIPPING)</option>
+                                    <option value="CATEGORY" ${editVoucher.voucherScope == 'CATEGORY' ? 'selected' : ''}>Danh mục (CATEGORY)</option>
+                                    <option value="MEMBERSHIP" ${editVoucher.voucherScope == 'MEMBERSHIP' ? 'selected' : ''}>Thành viên (MEMBERSHIP)</option>
                                 </select>
                             </div>
 
@@ -304,11 +306,11 @@
                                     <span style="font-weight:400;color:var(--text-muted);font-size:12px;">(Required Tier)</span>
                                 </label>
                                 <select id="requiredTier" name="requiredTier" class="form-control">
-                                    <option value="ALL"     ${empty editVoucher.requiredTier || editVoucher.requiredTier == 'ALL'     ? 'selected' : ''}>Tất cả khách hàng (Default)</option>
-                                    <option value="BRONZE"  ${editVoucher.requiredTier == 'BRONZE'  ? 'selected' : ''}>Thành viên Đồng</option>
-                                    <option value="SILVER"  ${editVoucher.requiredTier == 'SILVER'  ? 'selected' : ''}>Thành viên Bạc</option>
-                                    <option value="GOLD"    ${editVoucher.requiredTier == 'GOLD'    ? 'selected' : ''}>Thành viên Vàng</option>
-                                    <option value="DIAMOND" ${editVoucher.requiredTier == 'DIAMOND' ? 'selected' : ''}>Thành viên Kim Cương</option>
+                                    <option value="ALL"     ${empty editVoucher.requiredTierId ? 'selected' : ''}>Tất cả khách hàng (Default)</option>
+                                    <option value="2"       ${editVoucher.requiredTierId == 2 ? 'selected' : ''}>Thành viên Đồng</option>
+                                    <option value="3"       ${editVoucher.requiredTierId == 3 ? 'selected' : ''}>Thành viên Bạc</option>
+                                    <option value="4"       ${editVoucher.requiredTierId == 4 ? 'selected' : ''}>Thành viên Vàng</option>
+                                    <option value="5"       ${editVoucher.requiredTierId == 5 ? 'selected' : ''}>Thành viên Kim Cương</option>
                                 </select>
                                 <span class="form-hint">Giới hạn voucher chỉ dành cho khách đạt hạng được chọn trở lên.</span>
                             </div>

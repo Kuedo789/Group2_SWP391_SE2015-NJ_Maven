@@ -657,8 +657,8 @@ public class VoucherDAO {
     public boolean addVoucher(Voucher v) {
         String sql = "INSERT INTO voucher "
             + "(VoucherCode, Title, DiscountType, DiscountValue, MaxDiscountAmount, "
-            + " MinOrderValue, StartDate, EndDate, IsActive, UsageLimit, VoucherScope, TargetCategory, IsStackable) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            + " MinOrderValue, StartDate, EndDate, IsActive, UsageLimit, VoucherScope, TargetCategory, IsStackable, RequiredTierID) "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         Connection conn = null;
         PreparedStatement ps = null;
@@ -685,6 +685,11 @@ public class VoucherDAO {
             ps.setString(11, v.getVoucherScope());
             ps.setString(12, v.getTargetCategory());
             ps.setBoolean(13, v.isStackable());
+            if (v.getRequiredTierId() != null) {
+                ps.setInt(14, v.getRequiredTierId());
+            } else {
+                ps.setNull(14, java.sql.Types.INTEGER);
+            }
 
             return ps.executeUpdate() > 0;
 
@@ -805,7 +810,7 @@ public class VoucherDAO {
             + "  Title = ?, DiscountType = ?, DiscountValue = ?, "
             + "  MaxDiscountAmount = ?, MinOrderValue = ?, "
             + "  StartDate = ?, EndDate = ?, IsActive = ?, UsageLimit = ?, "
-            + "  VoucherScope = ?, TargetCategory = ?, IsStackable = ? "
+            + "  VoucherScope = ?, TargetCategory = ?, IsStackable = ?, RequiredTierID = ? "
             + "WHERE VoucherID = ?";
 
         Connection conn = null;
@@ -832,7 +837,12 @@ public class VoucherDAO {
             ps.setString(10, v.getVoucherScope());
             ps.setString(11, v.getTargetCategory());
             ps.setBoolean(12, v.isStackable());
-            ps.setInt(13, v.getVoucherId());
+            if (v.getRequiredTierId() != null) {
+                ps.setInt(13, v.getRequiredTierId());
+            } else {
+                ps.setNull(13, java.sql.Types.INTEGER);
+            }
+            ps.setInt(14, v.getVoucherId());
 
             return ps.executeUpdate() > 0;
 
