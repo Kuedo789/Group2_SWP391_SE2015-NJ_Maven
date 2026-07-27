@@ -10,7 +10,8 @@
     String fullName = (String) request.getAttribute("fullName");
     String email = (String) request.getAttribute("email");
     String phone = (String) request.getAttribute("phone");
-
+    String password = (String) request.getParameter("password");
+    String confirmPassword = (String) request.getParameter("confirmPassword");
     if (fullName == null) {
         fullName = "";
     }
@@ -21,6 +22,12 @@
 
     if (phone == null) {
         phone = "";
+    }
+     if (password == null) {
+        password = "";
+    }
+     if (confirmPassword == null) {
+        confirmPassword = "";
     }
 %>
 
