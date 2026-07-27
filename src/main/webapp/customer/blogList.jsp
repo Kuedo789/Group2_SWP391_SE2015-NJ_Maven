@@ -220,8 +220,8 @@
                                         <c:choose>
                                             <c:when test="${not empty blog.imageUrl}">
                                                 <c:set var="cleanBlogImg" value="${blog.imageUrl.startsWith('/') ? blog.imageUrl.substring(1) : blog.imageUrl}" />
-                                                <c:set var="resolvedBlogImg" value="${blog.imageUrl.startsWith('http') ? blog.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg.startsWith('assets/') ? '' : 'assets/').concat(cleanBlogImg)}" />
-                                                <img src="${resolvedBlogImg}" alt="${blog.title}" class="blog-image">
+                                                <c:set var="resolvedBlogImg" value="${blog.imageUrl.startsWith('http') ? blog.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg)}" />
+                                                <img src="${resolvedBlogImg}" alt="${blog.title}" class="blog-image" onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/default-cake.png';">
                                             </c:when>
                                             <c:otherwise>
                                                 <!-- Dynamic styling banner matching image placeholder in user request -->

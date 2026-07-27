@@ -389,8 +389,8 @@
                                              <c:choose>
                                                  <c:when test="${not empty b.imageUrl}">
                                                      <c:set var="cleanBlogImg" value="${b.imageUrl.startsWith('/') ? b.imageUrl.substring(1) : b.imageUrl}" />
-                                                     <c:set var="resolvedBlogImg" value="${b.imageUrl.startsWith('http') ? b.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg.startsWith('assets/') ? '' : 'assets/').concat(cleanBlogImg)}" />
-                                                     <img src="${resolvedBlogImg}" alt="Thumbnail" style="width: 75px; height: 50px; object-fit: cover; object-position: center; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                                     <c:set var="resolvedBlogImg" value="${b.imageUrl.startsWith('http') ? b.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg)}" />
+                                                     <img src="${resolvedBlogImg}" alt="Thumbnail" style="width: 75px; height: 50px; object-fit: cover; object-position: center; border-radius: 6px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/default-cake.png';">
                                                  </c:when>
                                                 <c:otherwise>
                                                     <div style="width: 70px; height: 45px; background: #eee; display: flex; align-items: center; justify-content: center; border-radius: 4px;">
