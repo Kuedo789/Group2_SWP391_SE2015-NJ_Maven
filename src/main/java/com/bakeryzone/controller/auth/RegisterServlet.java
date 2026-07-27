@@ -37,17 +37,15 @@ public class RegisterServlet extends HttpServlet {
         fullName = fullName == null ? "" : fullName.trim();
         email = email == null ? "" : email.trim().toLowerCase();
         phone = phone == null ? "" : phone.trim();
-
-        // Không trim password, vì yêu cầu là mật khẩu không được chứa space.
-        // Nếu trim thì user nhập "abc123 " vẫn bị tự xóa space và có thể qua validate sai ý.
         password = password == null ? "" : password;
         confirmPassword = confirmPassword == null ? "" : confirmPassword;
 
-        // Giữ lại dữ liệu khi validate lỗi
         request.setAttribute("fullName", fullName);
         request.setAttribute("email", email);
         request.setAttribute("phone", phone);
-
+        request.setAttribute("password", password);
+        request.setAttribute("confirmPassword", confirmPassword);
+        
         String validationError = com.bakeryzone.utils.ValidationUtils.validateRegisterInput(fullName, email, phone, password, confirmPassword);
         if (validationError != null) {
             request.setAttribute("error", validationError);
