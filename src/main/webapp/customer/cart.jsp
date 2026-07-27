@@ -13,20 +13,10 @@
 <!DOCTYPE html>
 <html lang="vi">
     <head>
-        <meta charset="UTF-8">
-        <title>BakeryZone | Giỏ hàng</title>
-        <script>
-            (function() {
-                var isDarkMode = ${not empty settings.darkMode ? settings.darkMode : 'false'};
-                if (isDarkMode) {
-                    document.documentElement.classList.add('dark-theme');
-                }
-            })();
-        </script>
-
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all/style.css">
+        <jsp:include page="../common/header.jsp">
+            <jsp:param name="title" value="BakeryZone | Giỏ hàng" />
+        </jsp:include>
+        
         <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/all/cart.css">
         <style>
             /* Adjust the 90px value up or down depending on your actual header height */

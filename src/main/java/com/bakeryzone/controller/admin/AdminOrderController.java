@@ -46,8 +46,6 @@ public class AdminOrderController extends HttpServlet {
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         
-        // Lazy-cleanup: Tự động dọn các đơn "Chờ thanh toán" quá 15 phút
-        orderDAO.cancelExpiredWaitingPaymentOrders();
 
         String action = request.getParameter("action");
         if (action == null || action.trim().isEmpty()) {

@@ -84,7 +84,7 @@
                     <button type="button" class="user-dropdown-btn" id="userDropdownBtn" title="Tài khoản"
                             style="display: flex; align-items: center; border: none; background: transparent; cursor: pointer; padding: 0;">
                         <div class="avatar-container" style="display: flex; align-items: center; line-height: 1;">
-                            <span class="material-symbols-outlined" style="font-size: 28px; color: var(--text-dark, #333);">account_circle</span>
+                            <span class="material-symbols-outlined" style="font-size: 28px; color: inherit;">account_circle</span>
                         </div>
                     </button>
 
@@ -135,6 +135,17 @@
                         </a>
                         <% } %>
                         <div class="user-dropdown-divider"></div>
+                        <div class="user-dropdown-item" id="darkModeToggleItem" style="cursor: pointer; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="material-symbols-outlined">dark_mode</span>
+                                <span>Giao diện tối</span>
+                            </div>
+                            <div class="theme-toggle-switch">
+                                <input type="checkbox" id="darkModeCheckbox" style="pointer-events: none;">
+                                <span class="theme-slider"></span>
+                            </div>
+                        </div>
+                        <div class="user-dropdown-divider"></div>
                         <a href="<%= contextPath %>/logout" class="user-dropdown-item logout-item">
                             <span class="material-symbols-outlined">logout</span>
                             <span>Đăng xuất</span>
@@ -147,4 +158,68 @@
         </div>
     </div>
 </nav>
-
+<style>
+    .theme-toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 36px;
+        height: 20px;
+    }
+    .theme-toggle-switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .theme-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 20px;
+    }
+    .theme-slider:before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .theme-slider {
+        background-color: #345f3d;
+    }
+    input:checked + .theme-slider:before {
+        transform: translateX(16px);
+    }
+</style>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const toggleItem = document.getElementById("darkModeToggleItem");
+        const checkbox = document.getElementById("darkModeCheckbox");
+        
+        if (toggleItem && checkbox) {
+            // Check state
+            const isDark = localStorage.getItem('theme') === 'dark';
+            checkbox.checked = isDark;
+            
+            toggleItem.addEventListener("click", function(e) {
+                e.stopPropagation(); // Keep dropdown open
+                
+                const currentState = document.documentElement.classList.contains('dark-theme');
+                if (currentState) {
+                    document.documentElement.classList.remove('dark-theme');
+                    localStorage.setItem('theme', 'light');
+                    checkbox.checked = false;
+                } else {
+                    document.documentElement.classList.add('dark-theme');
+                    localStorage.setItem('theme', 'dark');
+                    checkbox.checked = true;
+                }
+            });
+        }
+    });
+</script>

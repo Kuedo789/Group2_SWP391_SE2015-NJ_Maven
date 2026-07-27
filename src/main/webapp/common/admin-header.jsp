@@ -35,9 +35,8 @@
 <!-- Dark Mode Init Script (Runs before render to prevent white flash) -->
 <script>
     (function() {
-        var globalDark = ${not empty settings.darkMode ? settings.darkMode : 'false'};
-        var saved = localStorage.getItem('darkMode');
-        if (globalDark || saved === 'true') {
+        var savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
             document.documentElement.classList.add('dark-theme');
         }
     })();

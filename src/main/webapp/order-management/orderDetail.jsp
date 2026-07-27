@@ -63,13 +63,19 @@
     String badgeClass = "status-processing";
     String displayStatus = dbStatus != null ? dbStatus : "Đang xử lý";
 
+    boolean isFull = false;
     if (dbStatus != null) {
         displayStatus = order.getOrderStatusForCustomer();
+        String method = order.getPaymentMethod();
+        isFull = method != null && (method.equalsIgnoreCase("BANK_TRANSFER_FULL") || method.equalsIgnoreCase("Chuyển khoản") || method.equalsIgnoreCase("Bank Transfer"));
+
         if (dbStatus.equals("Waiting_Payment")) {
             dataStatus = "processing";
+            displayStatus = isFull ? "Chờ thanh toán" : "Chờ cọc";
             badgeClass = "status-pending";
         } else if (dbStatus.equals("PAID")) {
             dataStatus = "paid";
+            displayStatus = isFull ? "Đã thanh toán" : "Đã cọc";
             badgeClass = "status-confirmed";
         } else if (dbStatus.equals("Processing") || dbStatus.equals("Waiting_Delivery")) {
             dataStatus = "processing";
@@ -194,6 +200,27 @@
             <span>Chi tiết đơn hàng</span>
         </nav>
 
+        <!-- Flash Messages -->
+        <c:if test="${not empty sessionScope.successMessage}">
+            <div class="cz-banner-success" style="margin-bottom: 20px;">
+                <span class="material-symbols-outlined banner-icon">check_circle</span>
+                <div>
+                    <div class="banner-desc" style="font-weight: 500;">${sessionScope.successMessage}</div>
+                </div>
+                <button onclick="this.parentElement.style.display='none'" class="banner-close">&times;</button>
+            </div>
+            <c:remove var="successMessage" scope="session" />
+        </c:if>
+        
+        <c:if test="${not empty sessionScope.errorMessage}">
+            <div class="cz-banner-error" style="margin-bottom: 20px;">
+                <span class="material-symbols-outlined banner-icon">error</span>
+                <div class="banner-desc" style="font-weight: 500;">${sessionScope.errorMessage}</div>
+                <button onclick="this.parentElement.style.display='none'" class="banner-close">&times;</button>
+            </div>
+            <c:remove var="errorMessage" scope="session" />
+        </c:if>
+
         <!-- Order Header -->
         <section class="order-header-wrap">
             <div class="order-header-info">
@@ -264,7 +291,7 @@
                         <div class="step-circle">
                             <span class="material-symbols-outlined">shopping_bag</span>
                         </div>
-                        <span class="step-text">Đã thanh toán</span>
+                        <span class="step-text"><%= isFull ? "Đã thanh toán" : "Đã cọc" %></span>
                     </div>
                     
                     <div class="timeline-step <%= step2Active ? "active" : "" %>">
@@ -513,6 +540,7 @@
                         </span>
                     </div>
                     
+                    <% if (dbStatus != null && !"Waiting_Payment".equals(dbStatus)) { %>
                     <div class="invoice-total-row" style="border-top: 1px dashed var(--border); padding-top: 16px; margin-top: 16px; font-size: 1.1rem; font-weight: 700;">
                         <span class="invoice-total-label">THÀNH TIỀN: </span>
                         <span class="invoice-total-val">
@@ -523,6 +551,7 @@
                             <% } %>
                         </span>
                     </div>
+                    <% } %>
                     
                     <% 
                         StringBuilder jsonBuilder = new StringBuilder();

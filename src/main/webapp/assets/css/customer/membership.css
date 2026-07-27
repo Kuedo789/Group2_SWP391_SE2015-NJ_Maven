@@ -931,3 +931,17 @@ body {
         align-items: flex-start;
     }
 }
+
+/* --- Dark Mode --- */
+html.dark-theme {
+    --clr-bg:        #121212;
+    --clr-surface:   #1e1e1e;
+    --clr-surface2:  #242424;
+    --clr-border:    #333333;
+    --clr-text:      #e0e0e0;
+    --clr-muted:     #a0a0a0;
+    --clr-accent:    #4a7c56;
+    --clr-accent2:   #5d976a;
+    --shadow-card:   0 4px 12px rgba(0,0,0,.3);
+}
+html.dark-theme .membership-page-header h1 { color: var(--clr-accent); }

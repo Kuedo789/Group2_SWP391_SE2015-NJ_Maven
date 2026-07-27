@@ -167,12 +167,12 @@
                                     <input type="file" name="image" id="imageInput" class="form-control-cz" accept="image/*" onchange="previewImage(this)">
                                     <div id="error-image" class="text-danger mt-1 small" style="display: none; font-weight: 500;"></div>
                                     <div class="image-preview-box" id="previewContainer">
-                                        <c:choose>
-                                            <c:when test="${not empty post.imageUrl}">
-                                                <c:set var="cleanBlogImg" value="${post.imageUrl.startsWith('/') ? post.imageUrl.substring(1) : post.imageUrl}" />
-                                                <c:set var="resolvedBlogImg" value="${post.imageUrl.startsWith('http') ? post.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg.startsWith('assets/') ? '' : 'assets/').concat(cleanBlogImg)}" />
-                                                <img src="${resolvedBlogImg}" alt="Preview" />
-                                            </c:when>
+                                         <c:choose>
+                                             <c:when test="${not empty post.imageUrl}">
+                                                 <c:set var="cleanBlogImg" value="${post.imageUrl.startsWith('/') ? post.imageUrl.substring(1) : post.imageUrl}" />
+                                                 <c:set var="resolvedBlogImg" value="${post.imageUrl.startsWith('http') ? post.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg)}" />
+                                                 <img src="${resolvedBlogImg}" alt="Preview" onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/default-cake.png';" />
+                                             </c:when>
                                             <c:otherwise>
                                                 <i class="fa-regular fa-image" style="font-size: 36px; color: #cbd5e1; margin-bottom: 8px;"></i>
                                                 <span style="font-size: 13px; color: #94a3b8; font-weight: 500;">Chưa có ảnh đại diện.</span>

@@ -37,6 +37,21 @@
                     <i class="fa-regular fa-user" style="font-size: 16px; color: #345f3d; width: 18px; text-align: center;"></i>
                     <span>Hồ sơ cá nhân</span>
                 </a>
+                
+                <div style="height: 1px; background: #eee; margin: 6px 0;"></div>
+                
+                <div class="admin-dropdown-item" id="darkModeToggleItemAdmin" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; font-size: 14px; color: #333; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-moon" style="font-size: 16px; color: #345f3d; width: 18px; text-align: center;"></i>
+                        <span>Giao diện tối</span>
+                    </div>
+                    <div class="theme-toggle-switch">
+                        <input type="checkbox" id="darkModeCheckboxAdmin" style="pointer-events: none;">
+                        <span class="theme-slider"></span>
+                    </div>
+                </div>
+
+                <div style="height: 1px; background: #eee; margin: 6px 0;"></div>
 
                 <a href="${pageContext.request.contextPath}/logout" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; font-size: 14px; color: #dc3545; text-decoration: none; font-weight: 600; transition: background 0.2s;" class="admin-dropdown-item">
                     <i class="fa-solid fa-arrow-right-from-bracket" style="font-size: 16px; color: #dc3545; width: 18px; text-align: center;"></i>
@@ -52,6 +67,42 @@
             .admin-dropdown-item:hover {
                 background-color: #f7f9f6 !important;
                 color: #345f3d !important;
+            }
+            .theme-toggle-switch {
+                position: relative;
+                display: inline-block;
+                width: 36px;
+                height: 20px;
+            }
+            .theme-toggle-switch input { 
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+            .theme-slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background-color: #ccc;
+                transition: .4s;
+                border-radius: 20px;
+            }
+            .theme-slider:before {
+                position: absolute;
+                content: "";
+                height: 14px;
+                width: 14px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+            }
+            input:checked + .theme-slider {
+                background-color: #345f3d;
+            }
+            input:checked + .theme-slider:before {
+                transform: translateX(16px);
             }
         </style>
         <script>
@@ -77,8 +128,31 @@
                         }
                     });
                     
-                    menu.addEventListener("click", function(e) {
+                menu.addEventListener("click", function(e) {
                         e.stopPropagation();
+                    });
+                }
+                
+                const toggleItemAdmin = document.getElementById("darkModeToggleItemAdmin");
+                const checkboxAdmin = document.getElementById("darkModeCheckboxAdmin");
+                
+                if (toggleItemAdmin && checkboxAdmin) {
+                    const isDarkAdmin = localStorage.getItem('theme') === 'dark';
+                    checkboxAdmin.checked = isDarkAdmin;
+                    
+                    toggleItemAdmin.addEventListener("click", function(e) {
+                        e.stopPropagation(); 
+                        
+                        const currentStateAdmin = document.documentElement.classList.contains('dark-theme');
+                        if (currentStateAdmin) {
+                            document.documentElement.classList.remove('dark-theme');
+                            localStorage.setItem('theme', 'light');
+                            checkboxAdmin.checked = false;
+                        } else {
+                            document.documentElement.classList.add('dark-theme');
+                            localStorage.setItem('theme', 'dark');
+                            checkboxAdmin.checked = true;
+                        }
                     });
                 }
             });

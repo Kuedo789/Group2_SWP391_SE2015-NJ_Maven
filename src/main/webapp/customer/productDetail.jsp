@@ -460,8 +460,7 @@
                         '<div class="review-actions-menu" style="position: relative; float: right;">' +
                         '<button class="btn-dots" onclick="toggleReviewMenu(event, \'' + r.reviewId + '\')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--muted); padding: 4px 8px;">•••</button>' +
                         '<div class="review-dropdown" id="dropdown-' + r.reviewId + '" style="display: none; position: absolute; right: 0; top: 28px; background: white; border: 1px solid var(--border); border-radius: 4px; box-shadow: var(--shadow-soft); z-index: 10; min-width: 100px;">' +
-                        '<button onclick="editReview(\'' + r.reviewId + '\', \'' + r.comment.replace(/'/g, "\\'") + '\', ' + r.ratingStars + ')" style="width: 100%; text-align: left; background: none; border: none; padding: 8px 12px; cursor: pointer; font-size: 13px; font-weight: 500; display: block; color: var(--text);">Chỉnh sửa</button>' +
-                        '<button onclick="deleteReview(\'' + r.reviewId + '\')" style="width: 100%; text-align: left; background: none; border: none; padding: 8px 12px; cursor: pointer; font-size: 13px; font-weight: 500; color: #dc2626; border-top: 1px solid var(--border); display: block;">Xóa</button>' +
+                        '<button onclick="deleteReview(\'' + r.reviewId + '\')" style="width: 100%; text-align: left; background: none; border: none; padding: 8px 12px; cursor: pointer; font-size: 13px; font-weight: 500; color: #dc2626; display: block;">Xóa</button>' +
                         '</div>' +
                         '</div>';
                 }

@@ -278,13 +278,6 @@
                                     <textarea name="heroSubtitle" class="settings-textarea" placeholder="Khám phá những chiếc bánh ngọt, bánh sinh nhật và quà tặng được làm thủ công từ nguyên liệu tự nhiên...">${not empty settings.heroSubtitle ? settings.heroSubtitle : ''}</textarea>
                                 </div>
                             </div>
-                            <div class="form-row" style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 14px; font-weight: 500; color: var(--text-dark);">Giao diện sáng/ tối</span>
-                                <label class="switch-toggle">
-                                    <input type="checkbox" name="darkMode" ${settings.darkMode ? 'checked' : ''} />
-                                    <span class="switch-slider"></span>
-                                </label>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -354,19 +347,6 @@
             }
         }
 
-        // ==============================
-        // 4. Dark Mode Live Toggle
-        // ==============================
-        const darkModeToggle = document.querySelector('input[name="darkMode"]');
-        if (darkModeToggle) {
-            darkModeToggle.addEventListener('change', function() {
-                if (this.checked) {
-                    document.documentElement.classList.add('dark-theme');
-                } else {
-                    document.documentElement.classList.remove('dark-theme');
-                }
-            });
-        }
 
         // ==============================
         // 5. Validate inline từng trường

@@ -91,7 +91,7 @@ public class AdminSettingsServlet extends HttpServlet {
         String appPassword = request.getParameter("appPassword");
         String otpExpiry = request.getParameter("otpExpiry");
 
-        boolean darkMode = request.getParameter("darkMode") != null;
+
         String heroTitle = request.getParameter("heroTitle");
         String heroSubtitle = request.getParameter("heroSubtitle");
 
@@ -128,7 +128,7 @@ public class AdminSettingsServlet extends HttpServlet {
             settings.put("systemEmail", systemEmail);
             settings.put("appPassword", appPassword);
             settings.put("otpExpiry", otpExpiry);
-            settings.put("darkMode", darkMode);
+
             settings.put("banner1Align", banner1Align);
             settings.put("heroTitle", heroTitle);
             settings.put("heroSubtitle", heroSubtitle);
@@ -215,7 +215,7 @@ public class AdminSettingsServlet extends HttpServlet {
         settings.put("appPassword", appPassword);
         settings.put("otpExpiry", otpExpiry);
 
-        settings.put("darkMode", darkMode);
+
         settings.put("banner1", banner1);
         settings.put("heroTitle", heroTitle != null ? heroTitle.trim() : "");
         settings.put("heroSubtitle", heroSubtitle != null ? heroSubtitle.trim() : "");
@@ -249,7 +249,7 @@ public class AdminSettingsServlet extends HttpServlet {
         defaults.put("bakeryName", "BakeryZone");
         defaults.put("hotline", "0901234567");
         defaults.put("email", "support@bakeryzone.vn");
-        defaults.put("address", "123 Đường Sourdough, TP. Hồ Chí Minh");
+        defaults.put("address", "Số 1 Đại Cồ Việt, Hai Bà Trưng, Hà Nội");
 
         defaults.put("depositPercent", "30");
         defaults.put("shippingRate", "5000");
@@ -260,7 +260,7 @@ public class AdminSettingsServlet extends HttpServlet {
         defaults.put("appPassword", "erqx uoeu fsdv nwlk");
         defaults.put("otpExpiry", "5");
 
-        defaults.put("darkMode", false);
+
         defaults.put("heroTitle", "Bánh tươi mỗi ngày, ngọt lành từng khoảnh khắc");
         defaults.put("heroSubtitle", "Khám phá những chiếc bánh ngọt, bánh sinh nhật và quà tặng được làm thủ công từ nguyên liệu tự nhiên.");
         defaults.put("banner1", "assets/images/hero/hero-1.jpg");

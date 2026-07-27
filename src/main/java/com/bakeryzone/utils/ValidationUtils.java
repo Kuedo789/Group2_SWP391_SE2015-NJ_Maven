@@ -18,20 +18,22 @@ public class ValidationUtils {
         if (fullName.length() > NAME_MAX_LENGTH) {
             return "Họ tên không được vượt quá " + NAME_MAX_LENGTH + " ký tự.";
         }
-        if (!fullName.matches("^[\\p{L}]+(?: [\\p{L}]+)*$")) {
-            return "Họ tên chỉ được chứa chữ cái và không được có nhiều hơn 1 khoảng trắng liên tiếp.";
+        if (fullName.contains("  ")) {
+            return "Họ tên không được có quá 1 khoảng trắng liên tiếp.";
         }
+        if (!fullName.matches("[\\p{L}]+( [\\p{L}]+)*")) {
+            return "Họ tên không được chứa số hoặc ký tự đặc biệt.";
+        }
+
         if (email.length() > EMAIL_MAX_LENGTH) {
             return "Email không được vượt quá " + EMAIL_MAX_LENGTH + " ký tự.";
         }
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z]+\\.[A-Za-z.]+$")) {
             return "Email không đúng định dạng (tên miền sau dấu @ chỉ chứa chữ cái).";
         }
-        if (!phone.matches("^0\\d{9}$")) {
-            return "Số điện thoại phải bắt đầu bằng 0 và có đúng 10 chữ số.";
-        }
-        if (phone.substring(1).matches("^(\\d)\\1{8}$")) {
-            return "Số điện thoại không hợp lệ (không được trùng lặp liên tiếp các chữ số).";
+
+        if (!phone.matches("0(3|5|7|8|9)\\d{8}")) {
+            return "Số điện thoại không hợp lệ. Số điện thoại Việt Nam phải bắt đầu bằng 03, 05, 07, 08 hoặc 09 và có đúng 10 chữ số.";
         }
         if (password.matches(".*\\s.*") || confirmPassword.matches(".*\\s.*")) {
             return "Mật khẩu không được chứa khoảng trắng.";

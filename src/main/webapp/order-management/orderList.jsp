@@ -82,14 +82,14 @@
         </c:if>
 
         <!-- Filters Section -->
-        <section class="orders-filter" style="display: flex; gap: 12px; justify-content: flex-start; margin-bottom: 25px; flex-wrap: wrap;">
-            <a href="<%= request.getContextPath() %>/OrderList?status=all<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "all".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Tất cả (<%= request.getAttribute("countAll") != null ? request.getAttribute("countAll") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=waiting<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "waiting".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Chờ thanh toán (<%= request.getAttribute("countWaiting") != null ? request.getAttribute("countWaiting") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=paid<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "paid".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><%= com.bakeryzone.model.OrderStatus.PAID.getDescription() %> (<%= request.getAttribute("countPaid") != null ? request.getAttribute("countPaid") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=processing<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "processing".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><%= com.bakeryzone.model.OrderStatus.Processing.getDescription() %> (<%= request.getAttribute("countProcessing") != null ? request.getAttribute("countProcessing") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=shipping<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "shipping".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><%= com.bakeryzone.model.OrderStatus.Delivering.getDescription() %> (<%= request.getAttribute("countShipping") != null ? request.getAttribute("countShipping") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=completed<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "completed".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><%= com.bakeryzone.model.OrderStatus.Completed.getDescription() %> (<%= request.getAttribute("countCompleted") != null ? request.getAttribute("countCompleted") : 0 %>)</a>
-            <a href="<%= request.getContextPath() %>/OrderList?status=cancelled<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "cancelled".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;"><%= com.bakeryzone.model.OrderStatus.Cancelled.getDescription() %> (<%= request.getAttribute("countCancelled") != null ? request.getAttribute("countCancelled") : 0 %>)</a>
+        <section class="orders-filter" style="display: flex; gap: 8px; justify-content: flex-start; margin-bottom: 25px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 5px; scrollbar-width: thin;">
+            <a href="<%= request.getContextPath() %>/OrderList?status=all<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "all".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;">Tất cả (<%= request.getAttribute("countAll") != null ? request.getAttribute("countAll") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=waiting<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "waiting".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;">Chờ thanh toán (<%= request.getAttribute("countWaiting") != null ? request.getAttribute("countWaiting") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=paid<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "paid".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;"><%= com.bakeryzone.model.OrderStatus.PAID.getDescription() %> (<%= request.getAttribute("countPaid") != null ? request.getAttribute("countPaid") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=processing<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "processing".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;"><%= com.bakeryzone.model.OrderStatus.Processing.getDescription() %> (<%= request.getAttribute("countProcessing") != null ? request.getAttribute("countProcessing") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=shipping<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "shipping".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;"><%= com.bakeryzone.model.OrderStatus.Delivering.getDescription() %> (<%= request.getAttribute("countShipping") != null ? request.getAttribute("countShipping") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=completed<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "completed".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;"><%= com.bakeryzone.model.OrderStatus.Completed.getDescription() %> (<%= request.getAttribute("countCompleted") != null ? request.getAttribute("countCompleted") : 0 %>)</a>
+            <a href="<%= request.getContextPath() %>/OrderList?status=cancelled<%= dateParams %><%= searchParams %><%= sortParams %>" class="filter-btn <%= "cancelled".equals(currentStatus) ? "active" : "" %>" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;"><%= com.bakeryzone.model.OrderStatus.Cancelled.getDescription() %> (<%= request.getAttribute("countCancelled") != null ? request.getAttribute("countCancelled") : 0 %>)</a>
         </section>
 
 
@@ -171,11 +171,16 @@
 
                     if (dbStatus != null) {
                         displayStatus = order.getOrderStatusForCustomer(); // Lấy tên tiếng việt (ẩn Waiting_Delivery)
+                        String method = order.getPaymentMethod();
+                        boolean isFull = method != null && (method.equalsIgnoreCase("BANK_TRANSFER_FULL") || method.equalsIgnoreCase("Chuyển khoản") || method.equalsIgnoreCase("Bank Transfer"));
+
                         if (dbStatus.equals("Waiting_Payment")) {
                             dataStatus = "waiting";
+                            displayStatus = isFull ? "Chờ thanh toán" : "Chờ cọc";
                             badgeClass = "status-waiting\" style=\"background-color: #fef3c7; color: #92400e;";
                         } else if (dbStatus.equals("PAID")) {
                             dataStatus = "paid";
+                            displayStatus = isFull ? "Đã thanh toán" : "Đã cọc";
                             badgeClass = "status-confirmed\" style=\"background-color: #d1fae5; color: #065f46;";
                         } else if (dbStatus.equals("Processing") || dbStatus.equals("Waiting_Delivery")) {
                             dataStatus = "processing";
@@ -338,8 +343,13 @@
                 <div class="order-card-footer">
                     <div class="order-total" style="display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; flex: 1;">
                         <div style="display: flex; align-items: baseline; gap: 8px;">
-                            <span style="font-size: 14px; font-weight: 500;">Thành tiền:</span>
-                            <strong style="color: #9b1c1c; font-size: 18px;"><%= currencyFormat.format(order.getRemainingCodBalance() != null ? order.getRemainingCodBalance().doubleValue() : (order.getTotalCost() != null ? order.getTotalCost().doubleValue() : 0)) %>đ</strong>
+                            <% if ("waiting".equals(dataStatus)) { %>
+                                <span style="font-size: 14px; font-weight: 500;">Tiền cọc:</span>
+                                <strong style="color: #9b1c1c; font-size: 18px;"><%= currencyFormat.format(order.getDepositAmount() != null ? order.getDepositAmount().doubleValue() : 0) %>đ</strong>
+                            <% } else { %>
+                                <span style="font-size: 14px; font-weight: 500;">Thành tiền:</span>
+                                <strong style="color: #9b1c1c; font-size: 18px;"><%= currencyFormat.format(order.getRemainingCodBalance() != null ? order.getRemainingCodBalance().doubleValue() : (order.getTotalCost() != null ? order.getTotalCost().doubleValue() : 0)) %>đ</strong>
+                            <% } %>
                         </div>
                     </div>
                     <%

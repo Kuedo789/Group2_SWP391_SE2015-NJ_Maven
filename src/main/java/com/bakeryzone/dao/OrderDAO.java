@@ -232,7 +232,7 @@ public class OrderDAO {
                 while (rs.next()) {
                     String dbStatus = rs.getString("OrderStatus");
                     int cnt = rs.getInt("cnt");
-                    if (dbStatus != null && !dbStatus.equalsIgnoreCase("Waiting_Payment")) {
+                    if (dbStatus != null) {
                         counts.put("all", counts.get("all") + cnt);
                     }
                     if (dbStatus != null) {
@@ -261,7 +261,6 @@ public class OrderDAO {
     /** Helper: Thêm điều kiện WHERE cho uiStatus vào câu SQL đang build. */
     private void appendCustomerStatusFilter(StringBuilder sql, List<Object> params, String uiStatus) {
         if (uiStatus == null || uiStatus.equalsIgnoreCase("all")) {
-            sql.append(" AND o.OrderStatus != 'Waiting_Payment'");
             return;
         }
         switch (uiStatus.toLowerCase()) {
@@ -623,19 +622,7 @@ public class OrderDAO {
         }
         return "TRIP_" + System.currentTimeMillis();
     }
-    // Tự động dọn các đơn "Chờ thanh toán" quá 15 phút
-    public void cancelExpiredWaitingPaymentOrders() {
-        long thresholdMillis = System.currentTimeMillis() - (15 * 60 * 1000);
-        java.sql.Timestamp thresholdTime = new java.sql.Timestamp(thresholdMillis);
-        String sql = "UPDATE `orders` SET OrderStatus = 'Cancelled', Shipper_Note = 'Hệ thống tự động hủy do quá hạn thanh toán' WHERE OrderStatus = 'Waiting_Payment' AND Order_Time <= ?";
-        try (Connection conn = DBContext.getJDBCConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setTimestamp(1, thresholdTime);
-            ps.executeUpdate();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+
 
     public int countWaitingPaymentByCustomer(String customerId) {
         String sql = "SELECT COUNT(*) FROM `orders` WHERE Customer_ID = ? AND OrderStatus = 'Waiting_Payment'";

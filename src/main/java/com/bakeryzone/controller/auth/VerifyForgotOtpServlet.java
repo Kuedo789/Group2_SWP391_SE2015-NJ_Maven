@@ -159,13 +159,14 @@ public class VerifyForgotOtpServlet extends HttpServlet {
             return;
         }
 
-        boolean sent = EmailUtils.sendForgotPasswordOtpEmail(email, newOtp);
-
-        if (!sent) {
-            request.setAttribute("error", "Không thể gửi lại mã OTP. Vui lòng thử lại sau.");
-            request.getRequestDispatcher("/auth/verify-forgot-otp.jsp").forward(request, response);
-            return;
-        }
+        final String finalEmail = email;
+        final String finalNewOtp = newOtp;
+        new Thread(() -> {
+            boolean sent = EmailUtils.sendForgotPasswordOtpEmail(finalEmail, finalNewOtp);
+            if (!sent) {
+                dao.clearOtp(finalEmail);
+            }
+        }).start();
 
         request.getSession().setAttribute("otpExpireAtMillis", newExpiry.getTime());
         request.getSession().removeAttribute("otpAttempts"); // Reset đếm số lần sai

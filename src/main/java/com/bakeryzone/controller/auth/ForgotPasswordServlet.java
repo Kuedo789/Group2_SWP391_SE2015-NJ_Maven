@@ -71,14 +71,14 @@ public class ForgotPasswordServlet extends HttpServlet {
             return;
         }
 
-        boolean sent = EmailUtils.sendForgotPasswordOtpEmail(email, otp);
-
-        if (!sent) {
-            dao.clearOtp(email);
-            request.setAttribute("error", "Không thể gửi mã OTP. Vui lòng thử lại sau.");
-            request.getRequestDispatcher("/auth/forgot-password.jsp").forward(request, response);
-            return;
-        }
+        final String finalEmail = email;
+        final String finalOtp = otp;
+        new Thread(() -> {
+            boolean sent = EmailUtils.sendForgotPasswordOtpEmail(finalEmail, finalOtp);
+            if (!sent) {
+                dao.clearOtp(finalEmail);
+            }
+        }).start();
 
         request.getSession().setAttribute("resetEmail", email);
         request.getSession().setAttribute("resetVerified", false);

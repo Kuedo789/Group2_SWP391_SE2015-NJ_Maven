@@ -115,8 +115,8 @@
                     <c:if test="${not empty blog.imageUrl}">
                         <div class="blog-detail-image-wrapper">
                             <c:set var="cleanBlogImg" value="${blog.imageUrl.startsWith('/') ? blog.imageUrl.substring(1) : blog.imageUrl}" />
-                            <c:set var="resolvedBlogImg" value="${blog.imageUrl.startsWith('http') ? blog.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg.startsWith('assets/') ? '' : 'assets/').concat(cleanBlogImg)}" />
-                            <img src="${resolvedBlogImg}" alt="${blog.title}" style="width:100%; height:auto; display:block;">
+                            <c:set var="resolvedBlogImg" value="${blog.imageUrl.startsWith('http') ? blog.imageUrl : pageContext.request.contextPath.concat('/').concat(cleanBlogImg)}" />
+                            <img src="${resolvedBlogImg}" alt="${blog.title}" style="width:100%; height:auto; display:block;" onerror="this.onerror=null; this.src='${pageContext.request.contextPath}/assets/images/default-cake.png';">
                         </div>
                     </c:if>
 

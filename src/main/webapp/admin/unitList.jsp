@@ -30,14 +30,16 @@
         <div class="content-container">
 
             <!-- Flash Message Alerts -->
-            <c:if test="${param.msg eq 'add_success' or param.msg eq 'edit_success' or param.msg eq 'delete_success' or param.msg eq 'delete_error'}">
-                <div class="alert alert-${param.msg eq 'delete_error' ? 'danger' : 'success'} alert-dismissible fade show" role="alert">
-                    <i class="fa-solid fa-${param.msg eq 'delete_error' ? 'triangle-exclamation' : 'circle-check'} me-2"></i>
+            <c:if test="${param.msg eq 'add_success' or param.msg eq 'edit_success' or param.msg eq 'delete_success' or param.msg eq 'delete_error' or param.msg eq 'restore_success' or param.msg eq 'restore_error'}">
+                <div class="alert alert-${(param.msg eq 'delete_error' or param.msg eq 'restore_error') ? 'danger' : 'success'} alert-dismissible fade show" role="alert">
+                    <i class="fa-solid fa-${(param.msg eq 'delete_error' or param.msg eq 'restore_error') ? 'triangle-exclamation' : 'circle-check'} me-2"></i>
                     <c:choose>
                         <c:when test="${param.msg eq 'add_success'}">Đã thêm mới đơn vị tính thành công!</c:when>
                         <c:when test="${param.msg eq 'edit_success'}">Đã cập nhật đơn vị tính thành công!</c:when>
-                        <c:when test="${param.msg eq 'delete_success'}">Đã xóa đơn vị tính thành công!</c:when>
-                        <c:when test="${param.msg eq 'delete_error'}">Xóa thất bại! Đơn vị tính này đang được liên kết trong bảng nguyên liệu.</c:when>
+                        <c:when test="${param.msg eq 'delete_success'}">Đã vô hiệu hóa đơn vị tính thành công!</c:when>
+                        <c:when test="${param.msg eq 'delete_error'}">Vô hiệu hóa thất bại! Đơn vị tính này đang được liên kết trong bảng nguyên liệu.</c:when>
+                        <c:when test="${param.msg eq 'restore_success'}">Đã khôi phục đơn vị tính thành công!</c:when>
+                        <c:when test="${param.msg eq 'restore_error'}">Khôi phục đơn vị tính thất bại!</c:when>
                     </c:choose>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
                 </div>
@@ -49,7 +51,7 @@
                     <h1 class="page-title">Quản lý đơn vị tính</h1>
                     <p class="page-subtitle">Định nghĩa danh mục các đơn vị đo lường sử dụng cho công thức và kho hàng.</p>
                 </div>
-                <a href="${pageContext.request.contextPath}/admin/unit?action=create&search=${search}" class="btn btn-cz-primary">
+                <a href="${pageContext.request.contextPath}/admin/unit?action=create&search=${search}&status=${status}" class="btn btn-cz-primary">
                     <i class="fa-solid fa-circle-plus"></i> Thêm đơn vị tính
                 </a>
             </div>
@@ -58,6 +60,12 @@
             <div class="filter-card">
                 <form class="filter-form" action="${pageContext.request.contextPath}/admin/unit" method="get">
                     <input type="hidden" name="action" value="list">
+
+                    <select class="filter-select" name="status" onchange="this.form.submit()" style="height: 42px; border-radius: 8px; border: 1px solid #ddd; padding: 0 15px; margin-right: 10px;">
+                        <option value="" ${empty status ? 'selected' : ''}>Tất cả trạng thái</option>
+                        <option value="Active" ${status eq 'Active' ? 'selected' : ''}>Hoạt động</option>
+                        <option value="Inactive" ${status eq 'Inactive' ? 'selected' : ''}>Vô hiệu hóa</option>
+                    </select>
 
                     <div class="search-wrapper">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -78,6 +86,7 @@
                             <th class="text-center" style="width: 150px; text-align: center;">Mã đơn vị (ID)</th>
                             <th style="width: 220px;">Tên đơn vị</th>
                             <th>Mô tả chi tiết</th>
+                            <th class="text-center" style="white-space: nowrap; width: 140px; text-align: center;">Trạng thái</th>
                             <th class="text-center" style="white-space: nowrap; width: 120px; text-align: center;">Thao tác</th>
                         </tr>
                     </thead>
@@ -93,15 +102,34 @@
                                             </span>
                                         </td>
                                         <td style="max-width: 220px; word-break: break-all; white-space: normal;"><strong>${u.unitName}</strong></td>
-                                        <td class="text-muted" style="font-size: 13.5px; font-weight: 400; color: var(--cz-text-muted) !important; max-width: 300px; word-break: break-all; white-space: normal;">${not empty u.description ? u.description : '—'}</td>
+                                        <td class="text-muted" style="font-size: 13.5px; font-weight: 400; color: var(--cz-text-muted) !important; max-width: 300px; word-break: break-all; word-wrap: break-word; white-space: normal;">${not empty u.description ? u.description : '—'}</td>
+                                        <td class="text-center" style="text-align: center;">
+                                            <c:choose>
+                                                <c:when test="${u.enable}">
+                                                    <span class="status-badge-active" style="white-space: nowrap;">Hoạt động</span>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <span class="status-badge-inactive" style="white-space: nowrap;">Vô hiệu hóa</span>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </td>
                                         <td class="text-center" style="text-align: center;">
                                             <div class="actions-cell" style="justify-content: center; display: inline-flex; gap: 8px;">
-                                                <a href="${pageContext.request.contextPath}/admin/unit?action=edit&id=${u.unitId}&search=${search}&page=${currentPage}" class="btn-action-edit" title="Chỉnh sửa">
+                                                <a href="${pageContext.request.contextPath}/admin/unit?action=edit&id=${u.unitId}&search=${search}&status=${status}&page=${currentPage}" class="btn-action-edit" title="Chỉnh sửa">
                                                     <i class="fa-regular fa-pen-to-square"></i>
                                                 </a>
-                                                <button type="button" class="btn-action-delete" title="Xóa" onclick="confirmDelete('${u.unitId}', '${u.unitName}')">
-                                                    <i class="fa-regular fa-trash-can"></i>
-                                                </button>
+                                                <c:choose>
+                                                    <c:when test="${u.enable}">
+                                                        <button type="button" class="btn-action-delete" title="Vô hiệu hóa" onclick="confirmDelete('${u.unitId}', '${u.unitName}')">
+                                                            <i class="fa-regular fa-trash-can"></i>
+                                                        </button>
+                                                    </c:when>
+                                                    <c:otherwise>
+                                                        <button type="button" class="btn-action-restore" title="Khôi phục" onclick="confirmRestore('${u.unitId}', '${u.unitName}')" style="border: 1px solid var(--cz-border-color); background-color: #fff; color: #10b981; cursor: pointer; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                                                            <i class="fa-solid fa-rotate-left"></i>
+                                                        </button>
+                                                    </c:otherwise>
+                                                </c:choose>
                                             </div>
                                         </td>
                                     </tr>
@@ -109,7 +137,7 @@
                             </c:when>
                              <c:otherwise>
                                  <tr>
-                                     <td colspan="5" class="text-center py-5 text-muted">
+                                     <td colspan="6" class="text-center py-5 text-muted">
                                          <i class="fa-solid fa-ruler-combined d-block fs-2 mb-3" style="color: #ccc;"></i>
                                          Không tìm thấy đơn vị tính nào phù hợp.
                                      </td>
@@ -124,26 +152,23 @@
                     <span class="pagination-text">Hiển thị ${totalCount > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} đến ${((currentPage - 1) * pageSize) + unitList.size()} trong tổng số ${totalCount} đơn vị tính</span>
                     <div class="d-flex align-items-center gap-3">
                         <ul class="pagination-nav">
-                            <!-- Prev page -->
                              <c:if test="${currentPage > 1}">
                                  <li class="page-num-item">
-                                     <a href="${pageContext.request.contextPath}/admin/unit?action=list&page=${currentPage - 1}&search=${search}">
+                                     <a href="${pageContext.request.contextPath}/admin/unit?action=list&page=${currentPage - 1}&search=${search}&status=${status}">
                                          <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                      </a>
                                  </li>
                              </c:if>
                              
-                             <!-- Page Numbers -->
                              <c:forEach var="pageNum" begin="1" end="${totalPages}">
                                  <li class="page-num-item ${pageNum == currentPage ? 'active' : ''}">
-                                     <a href="${pageContext.request.contextPath}/admin/unit?action=list&page=${pageNum}&search=${search}">${pageNum}</a>
+                                     <a href="${pageContext.request.contextPath}/admin/unit?action=list&page=${pageNum}&search=${search}&status=${status}">${pageNum}</a>
                                  </li>
                              </c:forEach>
                              
-                             <!-- Next page -->
                              <c:if test="${currentPage < totalPages}">
                                  <li class="page-num-item">
-                                     <a href="${pageContext.request.contextPath}/admin/unit?action=list&page=${currentPage + 1}&search=${search}">
+                                     <a href="${pageContext.request.contextPath}/admin/unit?action=list&page=${currentPage + 1}&search=${search}&status=${status}">
                                          <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                      </a>
                                  </li>
@@ -160,6 +185,14 @@
     <form id="deleteForm" action="${pageContext.request.contextPath}/admin/unit?action=delete" method="post" style="display: none;">
         <input type="hidden" name="id" id="deleteId">
         <input type="hidden" name="search" value="${search}">
+        <input type="hidden" name="status" value="${status}">
+    </form>
+
+    <!-- Hidden form for restoring -->
+    <form id="restoreForm" action="${pageContext.request.contextPath}/admin/unit?action=restore" method="post" style="display: none;">
+        <input type="hidden" name="id" id="restoreId">
+        <input type="hidden" name="search" value="${search}">
+        <input type="hidden" name="status" value="${status}">
     </form>
 
     <!-- Bootstrap Bundle JS -->
@@ -177,9 +210,16 @@
         });
 
         function confirmDelete(id, name) {
-            if (confirm('Bạn có chắc chắn muốn xóa đơn vị tính "' + name + '" không?\nLưu ý: Bạn không thể xóa nếu có nguyên liệu đang sử dụng đơn vị này.')) {
+            if (confirm('Bạn có chắc chắn muốn vô hiệu hóa đơn vị tính "' + name + '" không?\nLưu ý: Bạn không thể vô hiệu hóa nếu có nguyên liệu đang sử dụng đơn vị này.')) {
                 document.getElementById('deleteId').value = id;
                 document.getElementById('deleteForm').submit();
+            }
+        }
+
+        function confirmRestore(id, name) {
+            if (confirm('Bạn có chắc chắn muốn khôi phục đơn vị tính "' + name + '" không?')) {
+                document.getElementById('restoreId').value = id;
+                document.getElementById('restoreForm').submit();
             }
         }
     </script>
