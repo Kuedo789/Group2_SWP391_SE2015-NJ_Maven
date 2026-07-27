@@ -134,6 +134,21 @@ public class AdminTierConfigServlet extends HttpServlet {
                     return;
                 }
 
+                // Validation: monthlyVouchers must be greater than the lower tier
+                List<MembershipTier> tiers = dao.getAllTiers();
+                MembershipTier lowerTier = null;
+                for (MembershipTier existing : tiers) {
+                    if (existing.getTierId() != tierId && existing.getMinSpending().compareTo(minSpending) < 0) {
+                        if (lowerTier == null || existing.getMinSpending().compareTo(lowerTier.getMinSpending()) > 0) {
+                            lowerTier = existing;
+                        }
+                    }
+                }
+                if (lowerTier != null && monthlyVouchers <= lowerTier.getMonthlyVouchers()) {
+                    response.getWriter().write("{\"status\":\"error\",\"message\":\"Số lượng voucher phải lớn hơn hạng dưới (" + lowerTier.getTierName() + " có " + lowerTier.getMonthlyVouchers() + " voucher).\"}");
+                    return;
+                }
+
                 MembershipTier t = new MembershipTier(tierId, tierName.trim(), minSpending, pointMultiplier, monthlyVouchers, description == null ? "" : description.trim());
                 boolean success = dao.saveTier(t);
                 

@@ -32,14 +32,16 @@
         <div class="content-container">
             
              <!-- Flash Message Alerts -->
-             <c:if test="${param.msg eq 'add_success' or param.msg eq 'edit_success' or param.msg eq 'delete_success' or param.msg eq 'delete_error'}">
-                  <div class="alert alert-success alert-dismissible fade show" role="alert">
-                      <i class="fa-solid fa-circle-check me-2"></i> 
+             <c:if test="${param.msg eq 'add_success' or param.msg eq 'edit_success' or param.msg eq 'delete_success' or param.msg eq 'delete_error' or param.msg eq 'restore_success' or param.msg eq 'restore_error'}">
+                  <div class="alert alert-${(param.msg eq 'delete_error' or param.msg eq 'restore_error') ? 'danger' : 'success'} alert-dismissible fade show" role="alert">
+                      <i class="fa-solid fa-${(param.msg eq 'delete_error' or param.msg eq 'restore_error') ? 'triangle-exclamation' : 'circle-check'} me-2"></i> 
                       <c:choose>
                           <c:when test="${param.msg eq 'add_success'}">Đã thêm mới nguyên liệu thành công!</c:when>
                           <c:when test="${param.msg eq 'edit_success'}">Đã cập nhật nguyên liệu thành công!</c:when>
-                          <c:when test="${param.msg eq 'delete_success'}">Đã xóa nguyên liệu thành công!</c:when>
-                          <c:when test="${param.msg eq 'delete_error'}">Xóa thất bại do lỗi ràng buộc dữ liệu (nguyên liệu đang có trong bánh mẫu)!</c:when>
+                          <c:when test="${param.msg eq 'delete_success'}">Đã vô hiệu hóa nguyên liệu thành công!</c:when>
+                          <c:when test="${param.msg eq 'delete_error'}">Vô hiệu hóa thất bại do lỗi ràng buộc dữ liệu (nguyên liệu đang có trong bánh mẫu)!</c:when>
+                          <c:when test="${param.msg eq 'restore_success'}">Đã khôi phục nguyên liệu thành công!</c:when>
+                          <c:when test="${param.msg eq 'restore_error'}">Khôi phục nguyên liệu thất bại!</c:when>
                       </c:choose>
                       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
                   </div>
@@ -51,7 +53,7 @@
                     <h1 class="page-title">Quản lý nguyên liệu</h1>
                     <p class="page-subtitle">Quản lý định giá và phân nhóm nguyên liệu làm bánh.</p>
                 </div>
-                <a href="${pageContext.request.contextPath}/admin/ingredient?action=create&page=${currentPage}&pageSize=${pageSize}&search=${search}&unitId=${unitId}&sortBy=${sortBy}" class="btn btn-cz-primary">
+                <a href="${pageContext.request.contextPath}/admin/ingredient?action=create&page=${currentPage}&pageSize=${pageSize}&search=${search}&unitId=${unitId}&status=${status}&sortBy=${sortBy}" class="btn btn-cz-primary">
                     <i class="fa-solid fa-circle-plus"></i> Thêm nguyên liệu
                 </a>
             </div>
@@ -68,6 +70,12 @@
                         <c:forEach var="u" items="${unitMeasures}">
                             <option value="${u.unitId}" ${unitId eq u.unitId ? 'selected' : ''}>${u.unitName} (${u.unitId})</option>
                         </c:forEach>
+                    </select>
+
+                    <select class="filter-select" name="status" onchange="this.form.submit()" style="height: 42px; border-radius: 8px; border: 1px solid #ddd; padding: 0 15px;">
+                        <option value="" ${empty status ? 'selected' : ''}>Tất cả trạng thái</option>
+                        <option value="Active" ${status eq 'Active' ? 'selected' : ''}>Hoạt động</option>
+                        <option value="Inactive" ${status eq 'Inactive' ? 'selected' : ''}>Vô hiệu hóa</option>
                     </select>
 
                     <select class="filter-select" name="sortBy" onchange="this.form.submit()" style="height: 42px; border-radius: 8px; border: 1px solid #ddd; padding: 0 15px;">
@@ -99,6 +107,7 @@
                              <th class="text-center" style="white-space: nowrap; width: 130px; text-align: center;">Đơn vị tính</th>
                              <th class="text-center" style="white-space: nowrap; width: 140px; text-align: center;">Ảnh</th>
                              <th class="text-center" style="white-space: nowrap; width: 160px; text-align: center;">Đơn giá</th>
+                             <th class="text-center" style="white-space: nowrap; width: 140px; text-align: center;">Trạng thái</th>
                              <th class="text-center" style="white-space: nowrap; width: 120px; text-align: center;">Thao tác</th>
                         </tr>
                     </thead>
@@ -139,14 +148,33 @@
                                                   <fmt:formatNumber value="${i.pricePerUnit}" type="number" pattern="#,##0"/>đ <span style="font-weight: 500; color: var(--cz-text-muted); font-size: 13px;">/ ${i.unitName}</span>
                                               </span>
                                           </td>
+                                          <td class="text-center" style="text-align: center;">
+                                              <c:choose>
+                                                  <c:when test="${i.enable}">
+                                                      <span class="status-badge-active" style="white-space: nowrap;">Hoạt động</span>
+                                                  </c:when>
+                                                  <c:otherwise>
+                                                      <span class="status-badge-inactive" style="white-space: nowrap;">Vô hiệu hóa</span>
+                                                  </c:otherwise>
+                                              </c:choose>
+                                          </td>
                                          <td class="text-center" style="text-align: center;">
                                              <div class="actions-cell" style="justify-content: center; align-items: center; gap: 6px; display: flex;">
-                                                 <a href="${pageContext.request.contextPath}/admin/ingredient?action=edit&id=${i.ingredientId}&page=${currentPage}&pageSize=${pageSize}&search=${search}&unitId=${unitId}&sortBy=${sortBy}" class="btn-action-edit" title="Chỉnh sửa">
+                                                 <a href="${pageContext.request.contextPath}/admin/ingredient?action=edit&id=${i.ingredientId}&page=${currentPage}&pageSize=${pageSize}&search=${search}&unitId=${unitId}&status=${status}&sortBy=${sortBy}" class="btn-action-edit" title="Chỉnh sửa">
                                                      <i class="fa-regular fa-pen-to-square"></i>
                                                  </a>
-                                                 <button class="btn-action-delete" title="Xóa nguyên liệu" onclick="if(confirm('Bạn có chắc chắn muốn xóa nguyên liệu ${i.ingredientName} không?')) { deleteIngredient('${i.ingredientId}'); }" style="border: 1px solid var(--cz-border-color); background-color: #fff; border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
-                                                     <i class="fa-regular fa-trash-can"></i>
-                                                 </button>
+                                                 <c:choose>
+                                                     <c:when test="${i.enable}">
+                                                         <button class="btn-action-delete" title="Vô hiệu hóa" onclick="if(confirm('Bạn có chắc chắn muốn vô hiệu hóa nguyên liệu ${i.ingredientName} không?')) { deleteIngredient('${i.ingredientId}'); }" style="border: 1px solid var(--cz-border-color); background-color: #fff; border-radius: 8px; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">
+                                                             <i class="fa-regular fa-trash-can"></i>
+                                                         </button>
+                                                     </c:when>
+                                                     <c:otherwise>
+                                                         <button class="btn-action-restore" title="Khôi phục" onclick="if(confirm('Bạn có chắc chắn muốn khôi phục nguyên liệu ${i.ingredientName} không?')) { restoreIngredient('${i.ingredientId}'); }" style="border: 1px solid var(--cz-border-color); background-color: #fff; color: #10b981; cursor: pointer; width: 32px; height: 32px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                                                             <i class="fa-solid fa-rotate-left"></i>
+                                                         </button>
+                                                     </c:otherwise>
+                                                 </c:choose>
                                              </div>
                                          </td>
                                     </tr>
@@ -154,7 +182,7 @@
                             </c:when>
                             <c:otherwise>
                                  <tr>
-                                     <td colspan="7" class="text-center py-5 text-muted">
+                                     <td colspan="8" class="text-center py-5 text-muted">
                                          <i class="fa-solid fa-warehouse d-block fs-2 mb-3" style="color: #ccc;"></i>
                                          Không tìm thấy nguyên liệu nào phù hợp với bộ lọc.
                                      </td>
@@ -169,32 +197,28 @@
                     <span class="pagination-text">Hiển thị ${totalCount > 0 ? ((currentPage - 1) * pageSize) + 1 : 0} đến ${((currentPage - 1) * pageSize) + ingredientList.size()} trong tổng số ${totalCount} nguyên liệu</span>
                     <div class="d-flex align-items-center gap-3">
                         <ul class="pagination-nav">
-                            <!-- Prev page -->
                              <c:if test="${currentPage > 1}">
                                  <li class="page-num-item">
-                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage - 1}&search=${search}&pageSize=${pageSize}&unitId=${unitId}&sortBy=${sortBy}">
+                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage - 1}&search=${search}&pageSize=${pageSize}&unitId=${unitId}&status=${status}&sortBy=${sortBy}">
                                          <i class="fa-solid fa-chevron-left" style="font-size: 11px;"></i>
                                      </a>
                                  </li>
                              </c:if>
                              
-                             <!-- Page Numbers -->
                              <c:forEach var="pageNum" begin="1" end="${totalPages}">
                                  <li class="page-num-item ${pageNum == currentPage ? 'active' : ''}">
-                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${pageNum}&search=${search}&pageSize=${pageSize}&unitId=${unitId}&sortBy=${sortBy}">${pageNum}</a>
+                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${pageNum}&search=${search}&pageSize=${pageSize}&unitId=${unitId}&status=${status}&sortBy=${sortBy}">${pageNum}</a>
                                  </li>
                              </c:forEach>
                              
-                             <!-- Next page -->
                              <c:if test="${currentPage < totalPages}">
                                  <li class="page-num-item">
-                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage + 1}&search=${search}&pageSize=${pageSize}&unitId=${unitId}&sortBy=${sortBy}">
+                                     <a href="${pageContext.request.contextPath}/admin/ingredient?action=list&page=${currentPage + 1}&search=${search}&pageSize=${pageSize}&unitId=${unitId}&status=${status}&sortBy=${sortBy}">
                                          <i class="fa-solid fa-chevron-right" style="font-size: 11px;"></i>
                                      </a>
                                  </li>
                              </c:if>
                         </ul>
-                        
 
                     </div>
                 </div>
@@ -209,6 +233,20 @@
         <input type="hidden" name="page" value="${currentPage}">
         <input type="hidden" name="pageSize" value="${pageSize}">
         <input type="hidden" name="search" value="${search}">
+        <input type="hidden" name="unitId" value="${unitId}">
+        <input type="hidden" name="status" value="${status}">
+        <input type="hidden" name="sortBy" value="${sortBy}">
+    </form>
+
+    <!-- Hidden restore form for POST request -->
+    <form id="restoreIngredientForm" action="${pageContext.request.contextPath}/admin/ingredient?action=restore" method="post" style="display:none;">
+        <input type="hidden" name="id" id="restoreIngredientId">
+        <input type="hidden" name="page" value="${currentPage}">
+        <input type="hidden" name="pageSize" value="${pageSize}">
+        <input type="hidden" name="search" value="${search}">
+        <input type="hidden" name="unitId" value="${unitId}">
+        <input type="hidden" name="status" value="${status}">
+        <input type="hidden" name="sortBy" value="${sortBy}">
     </form>
 
     <!-- Bootstrap 5 JS Bundle -->
@@ -217,6 +255,10 @@
         function deleteIngredient(id) {
             document.getElementById('deleteIngredientId').value = id;
             document.getElementById('deleteIngredientForm').submit();
+        }
+        function restoreIngredient(id) {
+            document.getElementById('restoreIngredientId').value = id;
+            document.getElementById('restoreIngredientForm').submit();
         }
     </script>
 </body>

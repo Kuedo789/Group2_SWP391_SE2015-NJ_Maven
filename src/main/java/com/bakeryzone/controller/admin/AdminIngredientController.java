@@ -71,6 +71,9 @@ public class AdminIngredientController extends HttpServlet {
             case "delete":
                 deleteIngredient(request, response);
                 break;
+            case "restore":
+                restoreIngredient(request, response);
+                break;
             default:
                 response.sendRedirect(request.getContextPath() + "/admin/ingredient?action=list");
                 break;
@@ -87,6 +90,11 @@ public class AdminIngredientController extends HttpServlet {
         String unitId = request.getParameter("unitId");
         if (unitId == null) {
             unitId = "";
+        }
+
+        String status = request.getParameter("status");
+        if (status == null) {
+            status = "";
         }
 
         String sortBy = request.getParameter("sortBy");
@@ -116,20 +124,21 @@ public class AdminIngredientController extends HttpServlet {
             }
         }
         
-        List<Ingredient> list = ingredientDAO.getIngredientsFiltered(search, unitId, sortBy, page, pageSize);
-        int totalCount = ingredientDAO.getIngredientsCountFiltered(search, unitId);
+        List<Ingredient> list = ingredientDAO.getIngredientsFiltered(search, unitId, status, sortBy, page, pageSize);
+        int totalCount = ingredientDAO.getIngredientsCountFiltered(search, unitId, status);
         int totalPages = (int) Math.ceil((double) totalCount / pageSize);
         if (totalPages < 1) {
             totalPages = 1;
         }
         if (page > totalPages) {
             page = totalPages;
-            list = ingredientDAO.getIngredientsFiltered(search, unitId, sortBy, page, pageSize);
+            list = ingredientDAO.getIngredientsFiltered(search, unitId, status, sortBy, page, pageSize);
         }
         
         request.setAttribute("ingredientList", list);
         request.setAttribute("search", search);
         request.setAttribute("unitId", unitId);
+        request.setAttribute("status", status);
         request.setAttribute("sortBy", sortBy);
         request.setAttribute("currentPage", page);
         request.setAttribute("pageSize", pageSize);
@@ -203,6 +212,37 @@ public class AdminIngredientController extends HttpServlet {
                 response.sendRedirect(redirectUrl.toString() + "&msg=delete_success");
             } else {
                 response.sendRedirect(redirectUrl.toString() + "&msg=delete_error");
+            }
+        } else {
+            response.sendRedirect(redirectUrl.toString());
+        }
+    }
+
+    private void restoreIngredient(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String id = request.getParameter("id");
+        
+        String pageParam = request.getParameter("page");
+        String pageSizeParam = request.getParameter("pageSize");
+        String searchParam = request.getParameter("search");
+        String unitIdParam = request.getParameter("unitId");
+        String statusParam = request.getParameter("status");
+        String sortByParam = request.getParameter("sortBy");
+        
+        StringBuilder redirectUrl = new StringBuilder(request.getContextPath() + "/admin/ingredient?action=list");
+        if (pageParam != null && !pageParam.trim().isEmpty()) redirectUrl.append("&page=").append(pageParam);
+        if (pageSizeParam != null && !pageSizeParam.trim().isEmpty()) redirectUrl.append("&pageSize=").append(pageSizeParam);
+        if (searchParam != null && !searchParam.trim().isEmpty()) redirectUrl.append("&search=").append(java.net.URLEncoder.encode(searchParam, "UTF-8"));
+        if (unitIdParam != null && !unitIdParam.trim().isEmpty()) redirectUrl.append("&unitId=").append(java.net.URLEncoder.encode(unitIdParam, "UTF-8"));
+        if (statusParam != null && !statusParam.trim().isEmpty()) redirectUrl.append("&status=").append(java.net.URLEncoder.encode(statusParam, "UTF-8"));
+        if (sortByParam != null && !sortByParam.trim().isEmpty()) redirectUrl.append("&sortBy=").append(java.net.URLEncoder.encode(sortByParam, "UTF-8"));
+
+        if (id != null && !id.trim().isEmpty()) {
+            boolean success = ingredientDAO.activateIngredient(id);
+            if (success) {
+                response.sendRedirect(redirectUrl.toString() + "&msg=restore_success");
+            } else {
+                response.sendRedirect(redirectUrl.toString() + "&msg=restore_error");
             }
         } else {
             response.sendRedirect(redirectUrl.toString());
